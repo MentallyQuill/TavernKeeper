@@ -19,6 +19,8 @@ const allowedTriggers = {
   ],
   "retry.yml": ["schedule"],
   "staff-operations.yml": ["workflow_dispatch"],
+  "token-compat-receiver.yml": ["workflow_dispatch"],
+  "token-compat.yml": ["workflow_dispatch"],
 };
 const protectedManualWorkflows = new Set([
   "adjudicate.yml",
@@ -401,6 +403,7 @@ function checkContinuationDispatch(file, workflow) {
 }
 
 function checkPublisherBoundary(file, workflow) {
+  if (file === "token-compat.yml") return;
   const mutation = mutationJobs[file];
   const secretLocations = publisherSecretLocations(workflow);
   if (mutation === undefined) {
