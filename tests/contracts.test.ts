@@ -1,14 +1,148 @@
+import { readFile } from "node:fs/promises";
+
+import { Ajv } from "ajv";
 import { describe, expect, test } from "vitest";
 
 import {
+  deriveResult,
   ReportIndexSchema,
   ScanReportSchema,
 } from "../src/contracts/reports.js";
 import { TargetManifestSchema } from "../src/contracts/targets.js";
 
 const fullSha = "a".repeat(40);
+const validFinding = {
+  origin: "opengrep",
+  rule_id: "credential-exfiltration",
+  category: "credential-theft",
+  severity: "high",
+  confidence: "high",
+  path: "src/index.ts",
+  line_start: 7,
+  line_end: 9,
+  evidence_sha: fullSha,
+  title: "Credential read followed by network send",
+  explanation:
+    "Credential access and an outbound request occur in the same flow.",
+  remediation:
+    "Remove the credential access or constrain the outbound destination.",
+  reference_url:
+    "https://mentallyquill.github.io/TavernKeeper/rules/credential-exfiltration/",
+  fingerprint: "b".repeat(64),
+  disposition: "active",
+};
+const validReport = {
+  schema_version: 1,
+  report_id: "c".repeat(64),
+  report_version: 1,
+  supersedes_report_id: null,
+  scanner_version: "1.0.0",
+  scanner_policy_version: "1",
+  prompt_policy_version: "1",
+  source_id: "github-42",
+  provider: "github",
+  repository_id: 42,
+  repository: "owner/repo",
+  canonical_url: "https://github.com/owner/repo",
+  target_sha: fullSha,
+  completed_at: "2026-07-31T12:05:00.000Z",
+  mode: "standard",
+  history: { base_sha: null, commits: 20 },
+  coverage: {
+    inventory: {
+      files: 3,
+      bytes: 120,
+      eligible_text_files: 2,
+      eligible_text_bytes: 100,
+      excluded: {
+        dependency_lockfiles: 0,
+        vendored_dependencies: 0,
+        generated_bundles: 0,
+        minified_files: 0,
+        binaries: 1,
+        archives: 0,
+        oversized_files: 0,
+        unsafe_entries: 0,
+      },
+    },
+    tools: [
+      { name: "inventory", version: "1.0.0", status: "completed" },
+      { name: "gitleaks", version: "8.30.1", status: "completed" },
+      {
+        name: "osv-scanner",
+        version: "2.4.0",
+        status: "not-applicable",
+      },
+    ],
+    model: {
+      status: "completed",
+      provider: "minimax",
+      model: "MiniMax-M3",
+      input_chunks: 2,
+      completed_chunks: 2,
+      input_tokens: 1000,
+      output_tokens: 100,
+      total_tokens: 1100,
+    },
+  },
+  result: "yellow",
+  finding_counts: {
+    total: 1,
+    actionable: 1,
+    severity: { critical: 0, high: 1, medium: 0, low: 0, info: 0 },
+    confidence: { high: 1, medium: 0, low: 0 },
+    disposition: { active: 1, dismissed: 0 },
+    categories: [{ category: "credential-theft", count: 1 }],
+  },
+  findings: [validFinding],
+};
+const validIndexEntry = {
+  report_id: validReport.report_id,
+  report_version: validReport.report_version,
+  supersedes_report_id: validReport.supersedes_report_id,
+  scanner_version: validReport.scanner_version,
+  scanner_policy_version: validReport.scanner_policy_version,
+  prompt_policy_version: validReport.prompt_policy_version,
+  source_id: validReport.source_id,
+  provider: validReport.provider,
+  repository_id: validReport.repository_id,
+  repository: validReport.repository,
+  target_sha: validReport.target_sha,
+  completed_at: validReport.completed_at,
+  mode: validReport.mode,
+  result: validReport.result,
+  finding_counts: validReport.finding_counts,
+  coverage: {
+    history_commits: 20,
+    inventory_files: 3,
+    inventory_bytes: 120,
+    tools_completed: 2,
+    tools_not_applicable: 1,
+    model_chunks: 2,
+  },
+  report_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${fullSha}/1/standard/1/`,
+};
 
 describe("public contracts", () => {
+  test("derives yellow only from active review-level findings", () => {
+    expect(
+      deriveResult([
+        { severity: "medium", confidence: "medium", disposition: "active" },
+      ]),
+    ).toBe("yellow");
+    expect(
+      deriveResult([
+        { severity: "low", confidence: "high", disposition: "active" },
+        { severity: "high", confidence: "low", disposition: "active" },
+        {
+          severity: "critical",
+          confidence: "high",
+          disposition: "dismissed",
+        },
+      ]),
+    ).toBe("green");
+  });
+
   test("accepts exact-SHA Tavernary targets and rejects branch names", () => {
     const manifest = {
       schema_version: 1,
@@ -32,66 +166,190 @@ describe("public contracts", () => {
         repositories: [{ ...manifest.repositories[0], target_sha: "main" }],
       }).success,
     ).toBe(false);
+    expect(
+      TargetManifestSchema.safeParse({
+        ...manifest,
+        repositories: [
+          {
+            ...manifest.repositories[0],
+            canonical_url: "https://github.com/other/repo",
+          },
+        ],
+      }).success,
+    ).toBe(false);
   });
 
-  test("requires advisory statuses and sanitized normalized findings", () => {
-    const report = {
-      schema_version: 1,
-      scanner_version: "0.1.0",
+  test("rejects mismatched and duplicate target identities", () => {
+    const target = {
       source_id: "github-42",
       provider: "github",
       repository_id: 42,
       repository: "owner/repo",
       target_sha: fullSha,
-      scanned_at: "2026-07-31T12:05:00.000Z",
-      mode: "standard",
-      status: "review-suggested",
-      summary: { critical: 0, high: 1, medium: 0, low: 0, info: 0 },
-      coverage: {
-        complete: true,
-        history_commits: 20,
-        inventory: { files: 3, bytes: 120 },
-        tools: [{ name: "built-in", status: "completed", version: "0.1.0" }],
-        model: { status: "disabled", provider: null, model: null },
-      },
-      findings: [
-        {
-          detector: "built-in",
-          rule_id: "credential-exfiltration",
-          severity: "high",
-          path: "src/index.ts",
-          line: 7,
-          title: "Credential read followed by network send",
-          evidence: "process.env.[REDACTED] -> fetch(â€¦)",
-          fingerprint: "b".repeat(64),
-        },
-      ],
+      canonical_url: "https://github.com/owner/repo",
+    };
+    const manifest = {
+      schema_version: 1,
+      generated_at: "2026-07-31T12:00:00.000Z",
+      repositories: [target],
     };
 
-    expect(ScanReportSchema.safeParse(report).success).toBe(true);
     expect(
-      ScanReportSchema.safeParse({ ...report, status: "safe" }).success,
+      TargetManifestSchema.safeParse({
+        ...manifest,
+        repositories: [{ ...target, source_id: "github-7" }],
+      }).success,
     ).toBe(false);
     expect(
-      ReportIndexSchema.safeParse({
-        schema_version: 1,
-        generated_at: report.scanned_at,
-        reports: [
+      TargetManifestSchema.safeParse({
+        ...manifest,
+        repositories: [
+          target,
           {
-            source_id: report.source_id,
-            provider: report.provider,
-            repository_id: report.repository_id,
-            repository: report.repository,
-            target_sha: report.target_sha,
-            scanned_at: report.scanned_at,
-            mode: report.mode,
-            status: report.status,
-            summary: report.summary,
-            coverage: { complete: true },
-            report_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${fullSha}/`,
+            ...target,
+            repository: "owner/other",
+            canonical_url: "https://github.com/owner/other",
           },
         ],
       }).success,
+    ).toBe(false);
+  });
+
+  test("accepts only complete public scan reports", () => {
+    expect(ScanReportSchema.safeParse(validReport).success).toBe(true);
+    expect(
+      ScanReportSchema.safeParse({ ...validReport, result: "incomplete" })
+        .success,
+    ).toBe(false);
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        coverage: {
+          ...validReport.coverage,
+          tools: [
+            { name: "inventory", version: "1.0.0", status: "unavailable" },
+          ],
+        },
+      }).success,
+    ).toBe(false);
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        coverage: {
+          ...validReport.coverage,
+          model: { ...validReport.coverage.model, status: "disabled" },
+        },
+      }).success,
+    ).toBe(false);
+  });
+
+  test("rejects unknown report fields and inconsistent finding totals", () => {
+    expect(
+      ScanReportSchema.safeParse({ ...validReport, current: true }).success,
+    ).toBe(false);
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        findings: [{ ...validFinding, raw_evidence: "secret source text" }],
+      }).success,
+    ).toBe(false);
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        finding_counts: { ...validReport.finding_counts, total: 0 },
+      }).success,
+    ).toBe(false);
+  });
+
+  test("accepts immutable preferred reports and rejects duplicate report IDs", () => {
+    const index = {
+      schema_version: 1,
+      generated_at: "2026-07-31T12:10:00.000Z",
+      reports: [validIndexEntry],
+    };
+    const otherSha = "d".repeat(40);
+
+    expect(ReportIndexSchema.safeParse(index).success).toBe(true);
+    expect(
+      ReportIndexSchema.safeParse({
+        ...index,
+        reports: [
+          validIndexEntry,
+          {
+            ...validIndexEntry,
+            target_sha: otherSha,
+            report_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${otherSha}/1/standard/1/`,
+          },
+        ],
+      }).success,
+    ).toBe(false);
+  });
+
+  test("ships strict JSON Schemas with shared valid fixtures", async () => {
+    const fixtureNames = ["targets", "report", "index"] as const;
+    const fixtures = await Promise.all(
+      fixtureNames.map(async (name) =>
+        JSON.parse(
+          await readFile(
+            new URL(`./fixtures/contracts/${name}.valid.json`, import.meta.url),
+            "utf8",
+          ),
+        ),
+      ),
+    );
+    const schemaNames = [
+      "tavernary-targets.v1",
+      "scan-report.v1",
+      "report-index.v1",
+    ] as const;
+    const schemas = await Promise.all(
+      schemaNames.map(
+        async (name) =>
+          JSON.parse(
+            await readFile(
+              new URL(`../schemas/${name}.schema.json`, import.meta.url),
+              "utf8",
+            ),
+          ) as Record<string, unknown>,
+      ),
+    );
+
+    expect(TargetManifestSchema.safeParse(fixtures[0]).success).toBe(true);
+    expect(ScanReportSchema.safeParse(fixtures[1]).success).toBe(true);
+    expect(ReportIndexSchema.safeParse(fixtures[2]).success).toBe(true);
+    const objectSchemas = schemas.flatMap((schema) => {
+      const objects: Array<Record<string, unknown>> = [];
+      const visit = (value: unknown) => {
+        if (Array.isArray(value)) {
+          value.forEach(visit);
+          return;
+        }
+        if (!value || typeof value !== "object") return;
+        const object = value as Record<string, unknown>;
+        if (object.type === "object") objects.push(object);
+        Object.values(object).forEach(visit);
+      };
+      visit(schema);
+      return objects;
+    });
+    expect(
+      schemas.every(
+        (schema) =>
+          schema.$schema === "http://json-schema.org/draft-07/schema#" &&
+          schema.additionalProperties === false,
+      ),
     ).toBe(true);
+    expect(
+      objectSchemas.every((schema) => schema.additionalProperties === false),
+    ).toBe(true);
+    const ajv = new Ajv({
+      allErrors: true,
+      allowUnionTypes: true,
+      formats: { "date-time": true, uri: true },
+      strict: true,
+    });
+    schemas.forEach((schema, index) => {
+      expect(ajv.validate(schema, fixtures[index])).toBe(true);
+    });
   });
 });

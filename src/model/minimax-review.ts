@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 
 import {
+  ConfidenceSchema,
   FindingSchema,
   SeveritySchema,
   type Finding,
@@ -11,23 +12,39 @@ import {
 import { err, ok, type Result } from "../core/result.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
 
-const ModelFindingSchema = FindingSchema.omit({
-  detector: true,
-  fingerprint: true,
-}).extend({ severity: SeveritySchema });
+const ModelFindingSchema = z.strictObject({
+  rule_id: z.string().min(1).max(120),
+  category: z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/u),
+  severity: SeveritySchema,
+  confidence: ConfidenceSchema,
+  path: z.string().min(1).max(500),
+  line_start: z.number().int().positive().nullable(),
+  line_end: z.number().int().positive().nullable(),
+  title: z.string().min(1).max(200),
+  explanation: z.string().min(1).max(1_000),
+  remediation: z.string().min(1).max(1_000).optional(),
+  reference_url: z
+    .url()
+    .startsWith("https://mentallyquill.github.io/TavernKeeper/rules/")
+    .optional(),
+});
 const ModelPayloadSchema = z.strictObject({
   findings: z.array(ModelFindingSchema).max(100),
 });
-const ProviderResponseSchema = z.object({
-  choices: z.array(
-    z.object({ message: z.object({ content: z.string() }).passthrough() }).passthrough(),
-  ).min(1),
-}).passthrough();
+const ProviderResponseSchema = z
+  .object({
+    choices: z
+      .array(
+        z
+          .object({ message: z.object({ content: z.string() }).passthrough() })
+          .passthrough(),
+      )
+      .min(1),
+  })
+  .passthrough();
 
 export type ModelReviewErrorCode =
-  | "MISSING_CONFIGURATION"
-  | "REQUEST_FAILED"
-  | "INVALID_RESPONSE";
+  "MISSING_CONFIGURATION" | "REQUEST_FAILED" | "INVALID_RESPONSE";
 
 export interface ModelReviewOutcome {
   status: "completed" | "disabled" | "failed" | "skipped";
@@ -56,18 +73,25 @@ function redact(value: string) {
     .replace(/\bgh[pousr]_[A-Za-z0-9_]{20,}\b/gu, "[REDACTED_SECRET]")
     .replace(/\bgithub_pat_[A-Za-z0-9_]{20,}\b/gu, "[REDACTED_SECRET]")
     .replace(/\bsk-[A-Za-z0-9_-]{20,}\b/gu, "[REDACTED_SECRET]")
-    .replace(/process\.env(?:\.[A-Za-z_][A-Za-z0-9_]*|\[[^\]]+\])/gu, "process.env.[REDACTED]");
+    .replace(
+      /process\.env(?:\.[A-Za-z_][A-Za-z0-9_]*|\[[^\]]+\])/gu,
+      "process.env.[REDACTED]",
+    );
 }
 
 function selectEvidence(spec: ReviewEvidenceSpec) {
-  const findingPaths = new Set(spec.deterministicFindings.map(({ path }) => path));
+  const findingPaths = new Set(
+    spec.deterministicFindings.map(({ path }) => path),
+  );
   const candidates = spec.files.filter(
     (file) =>
       file.kind === "text" &&
       file.content !== null &&
       (spec.mode === "deep" ||
         findingPaths.has(file.path) ||
-        /(^|\/)(?:package\.json|manifest\.json|.*\.(?:js|mjs|cjs|ts|tsx|py|sh|ps1|yml|yaml))$/iu.test(file.path)),
+        /(^|\/)(?:package\.json|manifest\.json|.*\.(?:js|mjs|cjs|ts|tsx|py|sh|ps1|yml|yaml))$/iu.test(
+          file.path,
+        )),
   );
   let usedCharacters = 0;
   return candidates.slice(0, spec.maxFiles).flatMap((file) => {
@@ -83,10 +107,14 @@ function selectEvidence(spec: ReviewEvidenceSpec) {
 }
 
 function extractJson(content: string) {
-  const withoutThinking = content.replace(/<think>[\s\S]*?<\/think>/giu, "").trim();
+  const withoutThinking = content
+    .replace(/<think>[\s\S]*?<\/think>/giu, "")
+    .trim();
   const start = withoutThinking.indexOf("{");
   const end = withoutThinking.lastIndexOf("}");
-  if (start < 0 || end < start) throw new Error("No JSON object in model response.");
+  if (start < 0 || end < start) {
+    throw new Error("No JSON object in model response.");
+  }
   return JSON.parse(withoutThinking.slice(start, end + 1)) as unknown;
 }
 
@@ -94,14 +122,27 @@ export async function reviewEvidence(
   spec: ReviewEvidenceSpec,
 ): Promise<Result<ModelReviewOutcome, ModelReviewErrorCode>> {
   if (!spec.enabled) {
-    return ok({ status: "disabled", provider: null, model: null, findings: [] });
+    return ok({
+      status: "disabled",
+      provider: null,
+      model: null,
+      findings: [],
+    });
   }
   if (!spec.apiKey || !spec.baseUrl || !spec.model) {
-    return err("MISSING_CONFIGURATION", "Enabled model review requires endpoint, model, and API key.");
+    return err(
+      "MISSING_CONFIGURATION",
+      "Enabled model review requires endpoint, model, and API key.",
+    );
   }
   const evidence = selectEvidence(spec);
   if (evidence.length === 0) {
-    return ok({ status: "skipped", provider: "minimax", model: spec.model, findings: [] });
+    return ok({
+      status: "skipped",
+      provider: "minimax",
+      model: spec.model,
+      findings: [],
+    });
   }
 
   const requestBody = {
@@ -121,11 +162,23 @@ export async function reviewEvidence(
         content: JSON.stringify({
           mode: spec.mode,
           deterministic_findings: spec.deterministicFindings.map(
-            ({ rule_id, severity, path, line, title }) => ({
+            ({
               rule_id,
+              category,
               severity,
+              confidence,
               path,
-              line,
+              line_start,
+              line_end,
+              title,
+            }) => ({
+              rule_id,
+              category,
+              severity,
+              confidence,
+              path,
+              line_start,
+              line_end,
               title,
             }),
           ),
@@ -134,11 +187,14 @@ export async function reviewEvidence(
             findings: [
               {
                 rule_id: "string",
+                category: "lowercase-kebab-case",
                 severity: "critical|high|medium|low|info",
+                confidence: "high|medium|low",
                 path: "submitted path",
-                line: "positive integer or null",
+                line_start: "positive integer or null",
+                line_end: "positive integer or null",
                 title: "string",
-                evidence: "redacted explanation, never raw secret text",
+                explanation: "redacted explanation, never raw secret text",
               },
             ],
           },
@@ -163,21 +219,34 @@ export async function reviewEvidence(
     if (!response.ok) {
       return err("REQUEST_FAILED", `MiniMax returned HTTP ${response.status}.`);
     }
-    const providerResponse = ProviderResponseSchema.parse(await response.json());
+    const providerResponse = ProviderResponseSchema.parse(
+      await response.json(),
+    );
     const modelPayload = ModelPayloadSchema.parse(
       extractJson(providerResponse.choices[0]!.message.content),
     );
     const submittedPaths = new Set(evidence.map(({ path }) => path));
     const findings = modelPayload.findings
       .filter(({ path }) => submittedPaths.has(path))
-      .map((finding): Finding => ({
-        ...finding,
-        detector: "model:minimax",
-        evidence: redact(finding.evidence).slice(0, 500),
-        fingerprint: createHash("sha256")
-          .update(["model:minimax", finding.rule_id, finding.path, finding.line ?? 0].join(":"))
-          .digest("hex"),
-      }));
+      .map((finding): Finding =>
+        FindingSchema.parse({
+          ...finding,
+          origin: "model:minimax",
+          evidence_sha: null,
+          explanation: redact(finding.explanation).slice(0, 1_000),
+          fingerprint: createHash("sha256")
+            .update(
+              [
+                "model:minimax",
+                finding.rule_id,
+                finding.path,
+                finding.line_start ?? 0,
+              ].join(":"),
+            )
+            .digest("hex"),
+          disposition: "active",
+        }),
+      );
     return ok({
       status: "completed",
       provider: "minimax",
@@ -185,6 +254,9 @@ export async function reviewEvidence(
       findings,
     });
   } catch {
-    return err("INVALID_RESPONSE", "MiniMax returned an invalid structured review.");
+    return err(
+      "INVALID_RESPONSE",
+      "MiniMax returned an invalid structured review.",
+    );
   }
 }

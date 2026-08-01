@@ -59,13 +59,26 @@ describe("exact target checkout", () => {
     expect(runner.calls).toContainEqual(
       expect.objectContaining({
         command: "git",
-        args: ["-c", "core.hooksPath=/dev/null", "checkout", "--detach", fullSha],
+        args: [
+          "-c",
+          "core.hooksPath=/dev/null",
+          "checkout",
+          "--detach",
+          fullSha,
+        ],
       }),
     );
     expect(runner.calls).toContainEqual(
       expect.objectContaining({
         command: "git",
-        args: ["fetch", "--no-tags", "--depth=21", "--filter=blob:none", "origin", fullSha],
+        args: [
+          "fetch",
+          "--no-tags",
+          "--depth=21",
+          "--filter=blob:none",
+          "origin",
+          fullSha,
+        ],
       }),
     );
     expect(runner.calls.every(({ options }) => options.shell === false)).toBe(

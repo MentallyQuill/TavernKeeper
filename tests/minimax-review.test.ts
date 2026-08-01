@@ -1,5 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
+import { FindingSchema } from "../src/contracts/reports.js";
 import { reviewEvidence } from "../src/model/minimax-review.js";
 
 const file = {
@@ -42,40 +43,46 @@ describe("MiniMax evidence review", () => {
   });
 
   test("sends bounded redacted evidence and validates structured findings", async () => {
-    const fetchImpl = vi.fn(async (_url: string, init: RequestInit) => {
-      const body = JSON.parse(String(init.body)) as Record<string, unknown>;
-      expect(JSON.stringify(body)).not.toContain(
-        "ghp_abcdefghijklmnopqrstuvwxyz1234567890",
-      );
-      expect(body).toMatchObject({
-        model: "MiniMax-M3",
-        temperature: 0,
-        max_completion_tokens: 1_000,
-      });
-      return new Response(
-        JSON.stringify({
-          choices: [
-            {
-              message: {
-                content: JSON.stringify({
-                  findings: [
-                    {
-                      rule_id: "suspicious-network",
-                      severity: "medium",
-                      path: "src/index.ts",
-                      line: 2,
-                      title: "Suspicious network destination",
-                      evidence: "Outbound request deserves manual review.",
-                    },
-                  ],
-                }),
+    const fetchImpl = vi.fn(
+      async (_url: string | URL | Request, init?: RequestInit) => {
+        if (!init) throw new Error("Expected request options.");
+        const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+        expect(JSON.stringify(body)).not.toContain(
+          "ghp_abcdefghijklmnopqrstuvwxyz1234567890",
+        );
+        expect(body).toMatchObject({
+          model: "MiniMax-M3",
+          temperature: 0,
+          max_completion_tokens: 1_000,
+        });
+        return new Response(
+          JSON.stringify({
+            choices: [
+              {
+                message: {
+                  content: JSON.stringify({
+                    findings: [
+                      {
+                        rule_id: "suspicious-network",
+                        category: "network-exfiltration",
+                        severity: "medium",
+                        confidence: "medium",
+                        path: "src/index.ts",
+                        line_start: 2,
+                        line_end: 2,
+                        title: "Suspicious network destination",
+                        explanation: "Outbound request deserves manual review.",
+                      },
+                    ],
+                  }),
+                },
               },
-            },
-          ],
-        }),
-        { status: 200, headers: { "content-type": "application/json" } },
-      );
-    });
+            ],
+          }),
+          { status: 200, headers: { "content-type": "application/json" } },
+        );
+      },
+    );
 
     const result = await reviewEvidence({
       enabled: true,
@@ -100,13 +107,19 @@ describe("MiniMax evidence review", () => {
         model: "MiniMax-M3",
         findings: [
           {
-            detector: "model:minimax",
+            origin: "model:minimax",
             rule_id: "suspicious-network",
             path: "src/index.ts",
           },
         ],
       },
     });
+    expect(
+      result.ok &&
+        result.value.findings.every(
+          (finding) => FindingSchema.safeParse(finding).success,
+        ),
+    ).toBe(true);
   });
 
   test("rejects malformed provider output", async () => {
@@ -123,7 +136,9 @@ describe("MiniMax evidence review", () => {
       maxInputChars: 2_000,
       maxOutputTokens: 100,
       fetchImpl: async () =>
-        new Response(JSON.stringify({ choices: [{ message: { content: "no" } }] })),
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: "no" } }] }),
+        ),
     });
 
     expect(result).toMatchObject({

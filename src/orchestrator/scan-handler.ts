@@ -1,9 +1,7 @@
 import {
-  ScanReportSchema,
   type Finding,
   type ScanMode,
   type ScanReport,
-  type Severity,
 } from "../contracts/reports.js";
 import type { Target } from "../contracts/targets.js";
 import { err, ok, type Result } from "../core/result.js";
@@ -46,17 +44,6 @@ export interface ScanDependencies {
   review(spec: ReviewEvidenceSpec): Promise<Result<ModelReviewOutcome>>;
 }
 
-const severityOrder: Severity[] = ["critical", "high", "medium", "low", "info"];
-
-function summary(findings: Finding[]) {
-  return Object.fromEntries(
-    severityOrder.map((value) => [
-      value,
-      findings.filter(({ severity }) => severity === value).length,
-    ]),
-  ) as ScanReport["summary"];
-}
-
 const defaultDependencies: ScanDependencies = {
   inventory: inventoryRepository,
   staticScan: scanStaticRules,
@@ -68,7 +55,14 @@ const defaultDependencies: ScanDependencies = {
 export async function scanRepository(
   spec: ScanRepositorySpec,
   dependencies: ScanDependencies = defaultDependencies,
-): Promise<Result<ScanReport, "INVENTORY_FAILED" | "INVALID_REPORT">> {
+): Promise<
+  Result<
+    ScanReport,
+    | "INVENTORY_FAILED"
+    | "REQUIRED_COVERAGE_INCOMPLETE"
+    | "REPORT_ASSEMBLY_PENDING"
+  >
+> {
   const inventoryResult = await dependencies.inventory({
     root: spec.root,
     maxFiles: spec.mode === "deep" ? 100_000 : 50_000,
@@ -103,56 +97,19 @@ export async function scanRepository(
         model: spec.model.enabled ? spec.model.model : null,
         findings: [],
       };
-  const findings = [
-    ...deterministicFindings,
-    ...externalFindings,
-    ...modelOutcome.findings,
-  ]
-    .filter(
-      (finding, index, values) =>
-        values.findIndex(({ fingerprint }) => fingerprint === finding.fingerprint) === index,
-    )
-    .sort((left, right) => left.fingerprint.localeCompare(right.fingerprint));
-  const tools = [
-    { name: "built-in", status: "completed" as const, version: spec.scannerVersion },
-    ...externalRuns.map(({ findings: _findings, ...coverage }) => coverage),
-  ];
-  const complete =
-    externalRuns.every(({ status }) => status === "completed") &&
-    modelOutcome.status !== "failed";
-  const counts = summary(findings);
-  const requiresReview = counts.critical + counts.high + counts.medium > 0;
-  const report: ScanReport = {
-    schema_version: 1,
-    scanner_version: spec.scannerVersion,
-    source_id: spec.target.source_id,
-    provider: "github",
-    repository_id: spec.target.repository_id,
-    repository: spec.target.repository,
-    target_sha: spec.target.target_sha,
-    scanned_at: new Date(spec.scannedAt).toISOString(),
-    mode: spec.mode,
-    status: requiresReview
-      ? "review-suggested"
-      : complete
-        ? "no-high-confidence-indicators"
-        : "incomplete",
-    summary: counts,
-    coverage: {
-      complete,
-      history_commits: spec.historyCommits,
-      inventory: { files: inventory.files.length, bytes: inventory.totalBytes },
-      tools,
-      model: {
-        status: modelOutcome.status,
-        provider: modelOutcome.provider,
-        model: modelOutcome.model,
-      },
-    },
-    findings,
-  };
-  const parsed = ScanReportSchema.safeParse(report);
-  return parsed.success
-    ? ok(parsed.data)
-    : err("INVALID_REPORT", "Constructed report failed its public contract.");
+  if (
+    externalRuns.some(
+      ({ status }) => status !== "completed" && status !== "not-applicable",
+    ) ||
+    modelOutcome.status !== "completed"
+  ) {
+    return err(
+      "REQUIRED_COVERAGE_INCOMPLETE",
+      "Required scanner and model coverage must complete before publication.",
+    );
+  }
+  return err(
+    "REPORT_ASSEMBLY_PENDING",
+    "Complete report assembly is not available in the frozen transitional pipeline.",
+  );
 }

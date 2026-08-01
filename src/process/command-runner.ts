@@ -15,11 +15,19 @@ export interface CommandResult {
 }
 
 export interface CommandRunner {
-  run(command: string, args: string[], options: CommandOptions): Promise<CommandResult>;
+  run(
+    command: string,
+    args: string[],
+    options: CommandOptions,
+  ): Promise<CommandResult>;
 }
 
 export class ProcessCommandRunner implements CommandRunner {
-  run(command: string, args: string[], options: CommandOptions): Promise<CommandResult> {
+  run(
+    command: string,
+    args: string[],
+    options: CommandOptions,
+  ): Promise<CommandResult> {
     return new Promise((resolve, reject) => {
       const child = spawn(command, args, {
         cwd: options.cwd,
@@ -69,7 +77,9 @@ export class ProcessCommandRunner implements CommandRunner {
   }
 }
 
-export function restrictedEnvironment(additions: Record<string, string> = {}): Record<string, string> {
+export function restrictedEnvironment(
+  additions: Record<string, string> = {},
+): Record<string, string> {
   const environment: Record<string, string> = { ...additions };
   for (const name of ["PATH", "Path", "SystemRoot", "WINDIR", "TMP", "TEMP"]) {
     const value = process.env[name];

@@ -4,8 +4,7 @@ export type ServiceError<Code extends string = string> = {
 };
 
 export type Result<T, Code extends string = string> =
-  | { ok: true; value: T }
-  | { ok: false; error: ServiceError<Code> };
+  { ok: true; value: T } | { ok: false; error: ServiceError<Code> };
 
 export function ok<T>(value: T): Result<T, never> {
   return { ok: true, value };

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import { FindingSchema } from "../src/contracts/reports.js";
 import { runExternalTools } from "../src/scanners/external-tools.js";
 import type {
   CommandOptions,
@@ -20,6 +21,20 @@ class MixedRunner implements CommandRunner {
       const error = new Error("not found") as NodeJS.ErrnoException;
       error.code = "ENOENT";
       throw error;
+    }
+    if (command === "gitleaks") {
+      return {
+        exitCode: 1,
+        stdout: JSON.stringify([
+          {
+            RuleID: "generic-api-key",
+            Description: "Generic API key",
+            File: "src/index.ts",
+            StartLine: 4,
+          },
+        ]),
+        stderr: "",
+      };
     }
     return { exitCode: 0, stdout: "[]", stderr: "" };
   }
@@ -54,5 +69,10 @@ describe("external scanner adapters", () => {
       command: "zizmor",
       args: ["--format=json-v1", "--no-progress", "C:/scan/repository"],
     });
+    const findings = runs.flatMap((run) => run.findings);
+    expect(findings).toHaveLength(1);
+    expect(
+      findings.every((finding) => FindingSchema.safeParse(finding).success),
+    ).toBe(true);
   });
 });

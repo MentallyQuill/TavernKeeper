@@ -20,7 +20,7 @@ const inventory: Inventory = {
 };
 
 describe("scan orchestration", () => {
-  test("marks missing optional scanners incomplete without inventing findings", async () => {
+  test("publishes no report when required scanner or model coverage is incomplete", async () => {
     const externalRuns: ExternalToolRun[] = [
       {
         name: "gitleaks",
@@ -69,20 +69,60 @@ describe("scan orchestration", () => {
     );
 
     expect(result).toMatchObject({
-      ok: true,
-      value: {
-        status: "incomplete",
-        summary: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
-        findings: [],
-        coverage: {
-          complete: false,
-          tools: [
-            { name: "built-in", status: "completed" },
-            { name: "gitleaks", status: "unavailable" },
-          ],
-          model: { status: "disabled" },
+      ok: false,
+      error: { code: "REQUIRED_COVERAGE_INCOMPLETE" },
+    });
+  });
+
+  test("publishes no transitional report before complete report assembly exists", async () => {
+    const result = await scanRepository(
+      {
+        target: {
+          source_id: "github-42",
+          provider: "github",
+          repository_id: 42,
+          repository: "owner/repo",
+          target_sha: fullSha,
+          canonical_url: "https://github.com/owner/repo",
+        },
+        root: inventory.root,
+        historyCommits: 5,
+        scannedAt: "2026-07-31T12:00:00.000Z",
+        scannerVersion: "0.1.0",
+        mode: "standard",
+        model: {
+          enabled: true,
+          apiKey: "test-key",
+          baseUrl: "https://api.minimax.io/v1",
+          model: "MiniMax-M3",
         },
       },
+      {
+        inventory: async () => ({ ok: true, value: inventory }),
+        staticScan: () => [],
+        externalScan: async () => [
+          {
+            name: "gitleaks",
+            status: "completed",
+            version: "8.30.1",
+            findings: [],
+          },
+        ],
+        review: async () => ({
+          ok: true,
+          value: {
+            status: "completed",
+            provider: "minimax",
+            model: "MiniMax-M3",
+            findings: [],
+          },
+        }),
+      },
+    );
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: "REPORT_ASSEMBLY_PENDING" },
     });
   });
 });

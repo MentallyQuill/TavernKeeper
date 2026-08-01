@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import { FindingSchema } from "../src/contracts/reports.js";
 import { scanStaticRules } from "../src/scanners/static-rules.js";
 
 describe("built-in static rules", () => {
@@ -36,6 +37,9 @@ describe("built-in static rules", () => {
       "ghp_abcdefghijklmnopqrstuvwxyz1234567890",
     );
     expect(JSON.stringify(first)).not.toContain("GITHUB_TOKEN");
+    expect(
+      first.every((finding) => FindingSchema.safeParse(finding).success),
+    ).toBe(true);
   });
 
   test("flags network-capable install hooks in package manifests", () => {
@@ -57,7 +61,7 @@ describe("built-in static rules", () => {
       expect.objectContaining({
         rule_id: "network-install-hook",
         severity: "high",
-        line: 1,
+        line_start: 1,
       }),
     ]);
   });

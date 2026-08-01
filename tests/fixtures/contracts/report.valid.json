@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "report_id": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "report_version": 1,
+  "supersedes_report_id": null,
+  "scanner_version": "1.0.0",
+  "scanner_policy_version": "1",
+  "prompt_policy_version": "1",
+  "source_id": "github-42",
+  "provider": "github",
+  "repository_id": 42,
+  "repository": "owner/repo",
+  "canonical_url": "https://github.com/owner/repo",
+  "target_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "completed_at": "2026-07-31T12:05:00.000Z",
+  "mode": "standard",
+  "history": { "base_sha": null, "commits": 20 },
+  "coverage": {
+    "inventory": {
+      "files": 3,
+      "bytes": 120,
+      "eligible_text_files": 2,
+      "eligible_text_bytes": 100,
+      "excluded": {
+        "dependency_lockfiles": 0,
+        "vendored_dependencies": 0,
+        "generated_bundles": 0,
+        "minified_files": 0,
+        "binaries": 1,
+        "archives": 0,
+        "oversized_files": 0,
+        "unsafe_entries": 0
+      }
+    },
+    "tools": [
+      { "name": "inventory", "version": "1.0.0", "status": "completed" },
+      { "name": "gitleaks", "version": "8.30.1", "status": "completed" },
+      { "name": "osv-scanner", "version": "2.4.0", "status": "not-applicable" }
+    ],
+    "model": {
+      "status": "completed",
+      "provider": "minimax",
+      "model": "MiniMax-M3",
+      "input_chunks": 2,
+      "completed_chunks": 2,
+      "input_tokens": 1000,
+      "output_tokens": 100,
+      "total_tokens": 1100
+    }
+  },
+  "result": "yellow",
+  "finding_counts": {
+    "total": 1,
+    "actionable": 1,
+    "severity": { "critical": 0, "high": 1, "medium": 0, "low": 0, "info": 0 },
+    "confidence": { "high": 1, "medium": 0, "low": 0 },
+    "disposition": { "active": 1, "dismissed": 0 },
+    "categories": [{ "category": "credential-theft", "count": 1 }]
+  },
+  "findings": [
+    {
+      "origin": "opengrep",
+      "rule_id": "credential-exfiltration",
+      "category": "credential-theft",
+      "severity": "high",
+      "confidence": "high",
+      "path": "src/index.ts",
+      "line_start": 7,
+      "line_end": 9,
+      "evidence_sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "title": "Credential read followed by network send",
+      "explanation": "Credential access and an outbound request occur in the same flow.",
+      "remediation": "Remove the credential access or constrain the outbound destination.",
+      "reference_url": "https://mentallyquill.github.io/TavernKeeper/rules/credential-exfiltration/",
+      "fingerprint": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "disposition": "active"
+    }
+  ]
+}
