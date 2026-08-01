@@ -1,6 +1,6 @@
 # TavernKeeper Operations
 
-All privileged workflows run from trusted TavernKeeper code. Keep `main` protected, use the `tavernkeeper-scanner` environment for unattended scans, and require TavernKeeper staff approval on `tavernkeeper-staff`.
+All privileged workflows run from trusted TavernKeeper code. Keep `main` protected, use the `tavernkeeper-scanner` environment for unattended scans, and use `tavernkeeper-staff` only to control who may initiate a privileged operation. A complete production result never waits for environment or staff approval. The automation boundary is normative in [`development-rules.md`](development-rules.md).
 
 ## Runtime configuration
 
@@ -37,7 +37,7 @@ The queue is derived, not separately mutable. A target that advances before it s
 
 ## Pause and recovery
 
-The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT`. Use `staff-operations.yml` in the protected staff environment to pause, resume, or request an approved retry. Never edit state concurrently with a publication workflow.
+The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT`. Use `staff-operations.yml` in the protected staff environment to pause, resume, or request a retry. Never edit state concurrently with a publication workflow.
 
 System/provider failures stop ordinary scanning and engage the circuit breaker. No degraded report is published. The first failure is retried after one hour, again after two hours, and again after three hours, measured from the initial failure. No staff or owner notification is sent for intermediate failures. After the third retry also fails, TavernKeeper creates or updates one deduplicated `scanner-operations` Issue for staff and remains stopped until staff correct the cause and explicitly resume.
 
@@ -46,12 +46,11 @@ Repository-specific failures delay only that target. External project owners rec
 ## Staff workflows
 
 - `deep-scan.yml`: rescan every eligible first-party text file for one repository ID.
-- `policy-rescan.yml`: schedule a staff-approved campaign under a new policy.
-- `adjudicate.yml`: create a superseding immutable report version for a reviewed finding disposition.
-- `staff-operations.yml`: pause, resume, or manually retry an approved target.
+- `policy-rescan.yml`: schedule a staff-initiated campaign under a new policy.
+- `staff-operations.yml`: pause, resume, or manually retry a target.
 - `deploy-pages.yml`: deploy only an exact commit proven to be on `main`; manual runs require staff protection.
 
-Public Issues and Issue comments do not trigger these workflows. A false-positive appeal supplies only an immutable report identity and finding fingerprint; staff adjudication never deletes or mutates the original report.
+Public Issues and Issue comments do not trigger these workflows. A false-positive appeal supplies only an immutable report identity, finding fingerprint, and maintainer evidence. It cannot trigger work or change an individual report. If the evidence exposes a scanner defect, staff change global versioned policy through ordinary code review and TavernKeeper automatically rescans affected targets.
 
 ## Release checks
 
@@ -68,4 +67,4 @@ Confirm the hostile fixture marker does not exist, fixture credentials do not ap
 
 `npm run test:e2e` is an in-process hostile-data safety and publication gate, not a real-tool or live-provider certification. Its fixtures run real inventory, classification, static rules, redaction, chunking, and publication while deterministically replacing Git history, external scanner adapters, exact-HEAD verification, and model transport. Unit and contract tests cover external scanner adapters and model transport. The release and live-canary gates are the real digest-pinned tools, the configured provider, and an exact validated checkout SHA; do not represent the fixture suite as having run any of them.
 
-For the first live rollout, keep normal operations paused and scan only the explicitly approved Wandlight and Recursion targets. Do not broaden the live batch until both reports, Pages publication, Tavernary import, and inline scan-result presentation have been inspected.
+For the first live rollout, keep normal operations paused and use Tavernary's general staff-targeted GitHub-URL action to prove Recursion and Wandlight through the complete production path. Neither repository is hardcoded into scanner policy. Enable the ordinary Top-30/new/old backlog only after both reports, Pages publication, Tavernary import, and inline scan-result presentation have been inspected.
