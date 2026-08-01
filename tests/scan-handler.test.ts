@@ -7,6 +7,7 @@ import type { ExternalToolRun } from "../src/scanners/external-tools.js";
 const fullSha = "a".repeat(40);
 const inventory: Inventory = {
   root: "C:/scan/repository",
+  totals: { files: 1, bytes: 100 },
   totalBytes: 100,
   files: [
     {
@@ -14,7 +15,6 @@ const inventory: Inventory = {
       bytes: 100,
       sha256: "b".repeat(64),
       kind: "text",
-      content: "A normal project.",
     },
   ],
 };

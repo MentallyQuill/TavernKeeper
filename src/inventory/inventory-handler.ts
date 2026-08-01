@@ -1,11 +1,15 @@
 import { createHash } from "node:crypto";
-import { lstat, readFile, readdir } from "node:fs/promises";
-import { relative, resolve, sep } from "node:path";
+import { createReadStream } from "node:fs";
+import { lstat, open, readdir } from "node:fs/promises";
+import { posix, relative, resolve, sep, win32 } from "node:path";
 
 import { err, ok, type Result } from "../core/result.js";
 
 export type InventoryErrorCode =
   | "INVALID_ROOT"
+  | "UNSAFE_LINK"
+  | "AMBIGUOUS_PATH"
+  | "UNSAFE_PATH"
   | "FILE_BUDGET_EXCEEDED"
   | "BYTE_BUDGET_EXCEEDED"
   | "READ_FAILED";
@@ -22,12 +26,20 @@ export interface InventoryFile {
   bytes: number;
   sha256: string;
   kind: "text" | "binary" | "oversized";
-  content: string | null;
+  likelyMinified?: boolean;
+  executable?: boolean;
+}
+
+export interface InventoryTotals {
+  files: number;
+  bytes: number;
 }
 
 export interface Inventory {
   root: string;
   files: InventoryFile[];
+  totals: InventoryTotals;
+  /** @deprecated Use totals.bytes. */
   totalBytes: number;
 }
 
@@ -37,8 +49,77 @@ function portablePath(root: string, path: string) {
   return relative(root, path).split(sep).join("/");
 }
 
-function isText(buffer: Buffer) {
-  return !buffer.subarray(0, Math.min(buffer.length, 8192)).includes(0);
+function isText(buffer: Buffer, complete: boolean) {
+  if (buffer.includes(0)) return false;
+  try {
+    new TextDecoder("utf-8", { fatal: true }).decode(buffer, {
+      stream: !complete,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function isLikelyMinified(sample: Buffer, totalBytes: number) {
+  if (totalBytes < 4096) return false;
+  const lines = sample.toString("utf8").split(/\r?\n/u);
+  return lines.some((line) => Buffer.byteLength(line, "utf8") >= 4096);
+}
+
+async function hashFile(path: string) {
+  const hash = createHash("sha256");
+  for await (const chunk of createReadStream(path)) hash.update(chunk);
+  return hash.digest("hex");
+}
+
+async function readSample(path: string, bytes: number) {
+  const handle = await open(path, "r");
+  try {
+    const sample = Buffer.alloc(Math.min(bytes, 8192));
+    const { bytesRead } = await handle.read(sample, 0, sample.length, 0);
+    return sample.subarray(0, bytesRead);
+  } finally {
+    await handle.close();
+  }
+}
+
+export function validatePortablePaths(
+  paths: readonly string[],
+): Result<readonly string[], InventoryErrorCode> {
+  const identities = new Set<string>();
+  for (const path of paths) {
+    const segments = path.split("/");
+    const unsafeSegment = segments.some((segment) => {
+      const deviceStem = segment.split(".", 1)[0]?.toUpperCase() ?? "";
+      return (
+        segment.length === 0 ||
+        segment === "." ||
+        segment === ".." ||
+        /[. ]$/u.test(segment) ||
+        /^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])$/u.test(deviceStem)
+      );
+    });
+    if (
+      posix.isAbsolute(path) ||
+      win32.isAbsolute(path) ||
+      path.includes("\\") ||
+      unsafeSegment ||
+      /[\u0000-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069]/u.test(path) ||
+      /[\uD800-\uDFFF]/u.test(path)
+    ) {
+      return err("UNSAFE_PATH", "Repository contains an unsafe portable path.");
+    }
+    const identity = path.normalize("NFC").toLowerCase();
+    if (identities.has(identity)) {
+      return err(
+        "AMBIGUOUS_PATH",
+        `Repository paths collide under portable identity: ${path}`,
+      );
+    }
+    identities.add(identity);
+  }
+  return ok(paths);
 }
 
 export async function inventoryRepository(
@@ -69,7 +150,12 @@ export async function inventoryRepository(
       const entries = await readdir(directory, { withFileTypes: true });
       entries.sort((left, right) => left.name.localeCompare(right.name));
       for (const entry of entries) {
-        if (entry.isSymbolicLink()) continue;
+        if (entry.isSymbolicLink()) {
+          return err(
+            "UNSAFE_LINK",
+            "Repository inventory contains a symbolic link or junction.",
+          );
+        }
         const path = resolve(directory, entry.name);
         if (entry.isDirectory()) {
           if (!ignoredDirectories.has(entry.name)) pending.push(path);
@@ -88,6 +174,9 @@ export async function inventoryRepository(
     paths.sort((left, right) =>
       portablePath(root, left).localeCompare(portablePath(root, right)),
     );
+    const portablePaths = paths.map((path) => portablePath(root, path));
+    const portableValidation = validatePortablePaths(portablePaths);
+    if (!portableValidation.ok) return portableValidation;
     const files: InventoryFile[] = [];
     let totalBytes = 0;
     for (const path of paths) {
@@ -103,24 +192,30 @@ export async function inventoryRepository(
         files.push({
           path: portablePath(root, path),
           bytes: stats.size,
-          sha256: "",
+          sha256: await hashFile(path),
           kind: "oversized",
-          content: null,
+          executable: (stats.mode & 0o111) !== 0,
         });
         continue;
       }
-      const buffer = await readFile(path);
-      const text = isText(buffer);
+      const sample = await readSample(path, stats.size);
+      const text = isText(sample, stats.size <= sample.length);
       files.push({
         path: portablePath(root, path),
         bytes: stats.size,
-        sha256: createHash("sha256").update(buffer).digest("hex"),
+        sha256: await hashFile(path),
         kind: text ? "text" : "binary",
-        content: text ? buffer.toString("utf8") : null,
+        likelyMinified: text && isLikelyMinified(sample, stats.size),
+        executable: (stats.mode & 0o111) !== 0,
       });
     }
 
-    return ok({ root, files, totalBytes });
+    return ok({
+      root,
+      files,
+      totals: { files: files.length, bytes: totalBytes },
+      totalBytes,
+    });
   } catch (error) {
     return err(
       "READ_FAILED",

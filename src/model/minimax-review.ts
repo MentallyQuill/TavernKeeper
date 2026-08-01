@@ -12,6 +12,8 @@ import {
 import { err, ok, type Result } from "../core/result.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
 
+type SourceCandidate = InventoryFile & { content?: string | null };
+
 const ModelFindingSchema = z.strictObject({
   rule_id: z.string().min(1).max(120),
   category: z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/u),
@@ -59,7 +61,7 @@ export interface ReviewEvidenceSpec {
   baseUrl: string;
   model: string;
   mode: ScanMode;
-  files: InventoryFile[];
+  files: SourceCandidate[];
   deterministicFindings: Finding[];
   maxFiles: number;
   maxCharsPerFile: number;
