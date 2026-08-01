@@ -3,8 +3,8 @@ import { describe, expect, test } from "vitest";
 import { FindingSchema } from "../src/contracts/reports.js";
 import { runExternalTools } from "../src/scanners/external-tools.js";
 import type {
+  CommandExecutionResult,
   CommandOptions,
-  CommandResult,
   CommandRunner,
 } from "../src/process/command-runner.js";
 
@@ -15,28 +15,38 @@ class MixedRunner implements CommandRunner {
     command: string,
     args: string[],
     _options: CommandOptions,
-  ): Promise<CommandResult> {
+  ): Promise<CommandExecutionResult> {
     this.calls.push({ command, args });
     if (command === "opengrep") {
-      const error = new Error("not found") as NodeJS.ErrnoException;
-      error.code = "ENOENT";
-      throw error;
+      return {
+        ok: false,
+        error: {
+          code: "SPAWN_FAILED",
+          message: "Command could not be started.",
+        },
+      };
     }
     if (command === "gitleaks") {
       return {
-        exitCode: 1,
-        stdout: JSON.stringify([
-          {
-            RuleID: "generic-api-key",
-            Description: "Generic API key",
-            File: "src/index.ts",
-            StartLine: 4,
-          },
-        ]),
-        stderr: "",
+        ok: true,
+        value: {
+          exitCode: 1,
+          stdout: JSON.stringify([
+            {
+              RuleID: "generic-api-key",
+              Description: "Generic API key",
+              File: "src/index.ts",
+              StartLine: 4,
+            },
+          ]),
+          stderr: "",
+        },
       };
     }
-    return { exitCode: 0, stdout: "[]", stderr: "" };
+    return {
+      ok: true,
+      value: { exitCode: 0, stdout: "[]", stderr: "" },
+    };
   }
 }
 

@@ -182,12 +182,25 @@ export async function runExternalTools({
           shell: false,
         },
       );
-      if (!definition.acceptedExitCodes.includes(result.exitCode)) {
+      if (!result.ok) {
+        const unavailable = result.error.code === "SPAWN_FAILED";
+        runs.push({
+          name: definition.name,
+          status: unavailable ? "unavailable" : "failed",
+          version: null,
+          detail: unavailable
+            ? "Executable not found."
+            : "Scanner invocation failed.",
+          findings: [],
+        });
+        continue;
+      }
+      if (!definition.acceptedExitCodes.includes(result.value.exitCode)) {
         runs.push({
           name: definition.name,
           status: "failed",
           version: null,
-          detail: `Exited with code ${result.exitCode}.`,
+          detail: `Exited with code ${result.value.exitCode}.`,
           findings: [],
         });
         continue;
@@ -196,17 +209,14 @@ export async function runExternalTools({
         name: definition.name,
         status: "completed",
         version: null,
-        findings: parseFindings(definition.name, result.stdout),
+        findings: parseFindings(definition.name, result.value.stdout),
       });
-    } catch (error) {
-      const missing = (error as NodeJS.ErrnoException).code === "ENOENT";
+    } catch {
       runs.push({
         name: definition.name,
-        status: missing ? "unavailable" : "failed",
+        status: "failed",
         version: null,
-        detail: missing
-          ? "Executable not found."
-          : "Scanner invocation failed.",
+        detail: "Scanner invocation failed.",
         findings: [],
       });
     }

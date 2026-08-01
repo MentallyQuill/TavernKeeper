@@ -1,5 +1,7 @@
 import { spawn } from "node:child_process";
 
+import { err, ok, type Result } from "../core/result.js";
+
 export interface CommandOptions {
   cwd: string;
   environment: Record<string, string>;
@@ -14,12 +16,19 @@ export interface CommandResult {
   stderr: string;
 }
 
+export type CommandExecutionErrorCode =
+  "SPAWN_FAILED" | "TIMED_OUT" | "OUTPUT_LIMIT_EXCEEDED";
+export type CommandExecutionResult = Result<
+  CommandResult,
+  CommandExecutionErrorCode
+>;
+
 export interface CommandRunner {
   run(
     command: string,
     args: string[],
     options: CommandOptions,
-  ): Promise<CommandResult>;
+  ): Promise<CommandExecutionResult>;
 }
 
 export class ProcessCommandRunner implements CommandRunner {
@@ -27,8 +36,8 @@ export class ProcessCommandRunner implements CommandRunner {
     command: string,
     args: string[],
     options: CommandOptions,
-  ): Promise<CommandResult> {
-    return new Promise((resolve, reject) => {
+  ): Promise<CommandExecutionResult> {
+    return new Promise((resolve) => {
       const child = spawn(command, args, {
         cwd: options.cwd,
         env: options.environment,
@@ -39,7 +48,11 @@ export class ProcessCommandRunner implements CommandRunner {
       let stdout = Buffer.alloc(0);
       let stderr = Buffer.alloc(0);
       let outputExceeded = false;
-      const timer = setTimeout(() => child.kill("SIGKILL"), options.timeoutMs);
+      let timedOut = false;
+      const timer = setTimeout(() => {
+        timedOut = true;
+        child.kill("SIGKILL");
+      }, options.timeoutMs);
 
       const append = (current: Buffer, chunk: Buffer) => {
         const combined = Buffer.concat([current, chunk]);
@@ -57,21 +70,32 @@ export class ProcessCommandRunner implements CommandRunner {
       child.stderr.on("data", (chunk: Buffer) => {
         stderr = append(stderr, chunk);
       });
-      child.on("error", (error) => {
+      child.on("error", () => {
         clearTimeout(timer);
-        reject(error);
+        resolve(err("SPAWN_FAILED", "Command could not be started."));
       });
       child.on("close", (exitCode) => {
         clearTimeout(timer);
-        if (outputExceeded) {
-          reject(new Error("Command output exceeded the configured limit."));
+        if (timedOut) {
+          resolve(err("TIMED_OUT", "Command exceeded the configured timeout."));
           return;
         }
-        resolve({
-          exitCode: exitCode ?? 1,
-          stdout: stdout.toString("utf8"),
-          stderr: stderr.toString("utf8"),
-        });
+        if (outputExceeded) {
+          resolve(
+            err(
+              "OUTPUT_LIMIT_EXCEEDED",
+              "Command output exceeded the configured limit.",
+            ),
+          );
+          return;
+        }
+        resolve(
+          ok({
+            exitCode: exitCode ?? 1,
+            stdout: stdout.toString("utf8"),
+            stderr: stderr.toString("utf8"),
+          }),
+        );
       });
     });
   }

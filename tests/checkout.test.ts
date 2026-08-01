@@ -6,14 +6,16 @@ import { describe, expect, test } from "vitest";
 
 import { checkoutExactTarget } from "../src/git/checkout.js";
 import type {
+  CommandExecutionResult,
   CommandOptions,
-  CommandResult,
   CommandRunner,
 } from "../src/process/command-runner.js";
 
 const fullSha = "a".repeat(40);
 
 class RecordingRunner implements CommandRunner {
+  constructor(private readonly headSha = fullSha) {}
+
   calls: Array<{
     command: string;
     args: string[];
@@ -24,12 +26,19 @@ class RecordingRunner implements CommandRunner {
     command: string,
     args: string[],
     options: CommandOptions,
-  ): Promise<CommandResult> {
+  ): Promise<CommandExecutionResult> {
     this.calls.push({ command, args, options });
     return {
-      exitCode: 0,
-      stdout: args.includes("rev-list") ? "5\n" : "",
-      stderr: "",
+      ok: true,
+      value: {
+        exitCode: 0,
+        stdout: args.includes("rev-list")
+          ? "5\n"
+          : args.includes("rev-parse")
+            ? `${this.headSha}\n`
+            : "",
+        stderr: "",
+      },
     };
   }
 }
@@ -55,13 +64,16 @@ describe("exact target checkout", () => {
       runner,
     });
 
-    expect(result).toMatchObject({ ok: true, value: { historyCommits: 5 } });
+    expect(result).toMatchObject({
+      ok: true,
+      value: { headSha: fullSha, historyCommits: 5 },
+    });
     expect(runner.calls).toContainEqual(
       expect.objectContaining({
         command: "git",
         args: [
           "-c",
-          "core.hooksPath=/dev/null",
+          `core.hooksPath=${process.platform === "win32" ? "NUL" : "/dev/null"}`,
           "checkout",
           "--detach",
           fullSha,
@@ -74,8 +86,8 @@ describe("exact target checkout", () => {
         args: [
           "fetch",
           "--no-tags",
-          "--depth=21",
-          "--filter=blob:none",
+          "--depth=20",
+          "--no-recurse-submodules",
           "origin",
           fullSha,
         ],
@@ -86,7 +98,13 @@ describe("exact target checkout", () => {
     );
     expect(
       runner.calls.every(
-        ({ options }) => options.environment.GIT_LFS_SKIP_SMUDGE === "1",
+        ({ options }) =>
+          options.environment.GIT_CONFIG_NOSYSTEM === "1" &&
+          options.environment.GIT_CONFIG_GLOBAL ===
+            (process.platform === "win32" ? "NUL" : "/dev/null") &&
+          options.environment.GIT_LFS_SKIP_SMUDGE === "1" &&
+          options.environment.GIT_TERMINAL_PROMPT === "0" &&
+          options.environment.GIT_PROTOCOL_FROM_USER === "0",
       ),
     ).toBe(true);
   });
@@ -111,5 +129,26 @@ describe("exact target checkout", () => {
       error: { code: "INVALID_TARGET" },
     });
     expect(runner.calls).toEqual([]);
+  });
+
+  test("rejects a checked-out HEAD that differs from the requested SHA", async () => {
+    const runner = new RecordingRunner("b".repeat(40));
+    const result = await checkoutExactTarget({
+      target: {
+        source_id: "github-42",
+        provider: "github",
+        repository_id: 42,
+        repository: "owner/repo",
+        target_sha: fullSha,
+        canonical_url: "https://github.com/owner/repo",
+      },
+      destination: join(tmpdir(), "tavernkeeper-head-mismatch"),
+      runner,
+    });
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: "HEAD_MISMATCH" },
+    });
   });
 });
