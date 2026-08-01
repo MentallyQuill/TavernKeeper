@@ -203,6 +203,50 @@ describe("least-privilege GitHub Actions orchestration", () => {
     );
   });
 
+  test("workflow policy rejects Publisher secrets outside the token step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  scan:\n",
+          "  scan:\n    env:\n      TAVERNKEEPER_PUBLISHER_APP_ID: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}\n",
+        ),
+      /reconcile\.yml: Publisher App secret appears outside the reviewed token step/u,
+    );
+  });
+
+  test("workflow policy rejects an Actions dispatch in the Publisher push step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "git push origin HEAD:main",
+          "git push origin HEAD:main\n            gh workflow run reconcile.yml --ref main",
+        ),
+      /reconcile\.yml: direct push step also dispatches Actions/u,
+    );
+  });
+
+  test("workflow policy rejects an additional Publisher token consumer", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Commit reports and state\n",
+          "      - name: Unreviewed Publisher mutation\n        env:\n          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}\n        run: gh api --method PATCH repos/MentallyQuill/TavernKeeper/git/refs/heads/main -f force=true\n      - name: Commit reports and state\n",
+        ),
+      /reconcile\.yml: Publisher App token is consumed outside the reviewed commit step/u,
+    );
+  });
+
+  test("workflow policy rejects an additional force push from the Publisher step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "git push origin HEAD:main",
+          "git push origin HEAD:main\n            git push --force origin HEAD:main",
+        ),
+      /reconcile\.yml: Publisher-authenticated commit script changed from the reviewed contract/u,
+    );
+  });
+
   test("workflow policy permits non-secret configured-model cache locations", async () => {
     await expect(
       execFile(process.execPath, [workflowPolicyScript], {

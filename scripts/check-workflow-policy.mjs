@@ -54,6 +54,45 @@ const mutationJobs = {
     environment: "tavernkeeper-staff",
   },
 };
+const reviewedPublisherRuns = {
+  "adjudicate.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add reports operations/state.json rules/dismissals.json
+git commit -m "chore(reports): publish staff adjudication"
+git push origin HEAD:main
+echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
+  "deep-scan.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add reports operations/state.json
+if ! git diff --cached --quiet; then
+  git commit -m "chore(reports): publish staff deep scan"
+  git push origin HEAD:main
+fi
+echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
+  "policy-rescan.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add operations/state.json
+git commit -m "chore(scans): schedule policy campaign"
+git push origin HEAD:main`,
+  "reconcile.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add reports operations/state.json
+if ! git diff --cached --quiet; then
+  git commit -m "chore(reports): publish completed scans"
+  git push origin HEAD:main
+fi
+echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
+  "staff-operations.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add operations/state.json
+git commit -m "chore(ops): apply staff queue operation"
+git push origin HEAD:main`,
+};
 const reviewedPermissionProfiles = {
   "adjudicate.yml": {
     workflow: { contents: "read", pages: "write", "id-token": "write" },
@@ -272,13 +311,45 @@ function checkModelSecretPlacement(file, workflow) {
       fail(file, "model secret appears outside the review-step env");
 }
 
+function publisherSecretLocations(value, path = [], locations = []) {
+  if (typeof value === "string") {
+    if (publisherSecretPattern.test(value)) locations.push({ path, value });
+    return locations;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      publisherSecretLocations(child, [...path, index], locations),
+    );
+    return locations;
+  }
+  if (value === null || typeof value !== "object") return locations;
+  for (const [key, child] of Object.entries(value))
+    publisherSecretLocations(child, [...path, key], locations);
+  return locations;
+}
+
+function publisherTokenLocations(value, path = [], locations = []) {
+  if (typeof value === "string") {
+    if (value === publisherToken) locations.push(path);
+    return locations;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      publisherTokenLocations(child, [...path, index], locations),
+    );
+    return locations;
+  }
+  if (value === null || typeof value !== "object") return locations;
+  for (const [key, child] of Object.entries(value))
+    publisherTokenLocations(child, [...path, key], locations);
+  return locations;
+}
+
 function checkPublisherBoundary(file, workflow) {
   const mutation = mutationJobs[file];
-  const publisherSecretText = JSON.stringify(workflow).match(
-    publisherSecretPattern,
-  );
+  const secretLocations = publisherSecretLocations(workflow);
   if (mutation === undefined) {
-    if (publisherSecretText)
+    if (secretLocations.length > 0)
       fail(file, "Publisher App secret appears outside a mutation workflow");
     return;
   }
@@ -302,6 +373,7 @@ function checkPublisherBoundary(file, workflow) {
     fail(file, "Publisher App secrets must appear in exactly one token step");
 
   const tokenStep = steps.find((step) => step?.id === "publisher-token");
+  const tokenStepIndex = steps.indexOf(tokenStep);
   const expectedWith = {
     "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
     "private-key": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
@@ -315,6 +387,40 @@ function checkPublisherBoundary(file, workflow) {
     JSON.stringify(tokenStep?.with) !== JSON.stringify(expectedWith)
   )
     fail(file, "Publisher App token step changed from the reviewed contract");
+
+  const expectedSecretLocations = new Map([
+    [
+      JSON.stringify([
+        "jobs",
+        mutation.job,
+        "steps",
+        tokenStepIndex,
+        "with",
+        "app-id",
+      ]),
+      expectedWith["app-id"],
+    ],
+    [
+      JSON.stringify([
+        "jobs",
+        mutation.job,
+        "steps",
+        tokenStepIndex,
+        "with",
+        "private-key",
+      ]),
+      expectedWith["private-key"],
+    ],
+  ]);
+  if (
+    secretLocations.length !== expectedSecretLocations.size ||
+    secretLocations.some(
+      (location) =>
+        expectedSecretLocations.get(JSON.stringify(location.path)) !==
+        location.value,
+    )
+  )
+    fail(file, "Publisher App secret appears outside the reviewed token step");
 
   const checkouts = steps.filter(
     (step) =>
@@ -337,11 +443,37 @@ function checkPublisherBoundary(file, workflow) {
       file,
       "mutation job must contain exactly one reviewed direct push step",
     );
+  const pushStep = pushSteps[0];
+  const pushStepIndex = steps.indexOf(pushStep);
+  const expectedTokenLocation = JSON.stringify([
+    "jobs",
+    mutation.job,
+    "steps",
+    pushStepIndex,
+    "env",
+    "GH_TOKEN",
+  ]);
+  const tokenLocations = publisherTokenLocations(workflow);
+  if (
+    tokenLocations.length !== 1 ||
+    JSON.stringify(tokenLocations[0]) !== expectedTokenLocation
+  )
+    fail(
+      file,
+      "Publisher App token is consumed outside the reviewed commit step",
+    );
+  if (pushStep?.run?.trim() !== reviewedPublisherRuns[file])
+    fail(
+      file,
+      "Publisher-authenticated commit script changed from the reviewed contract",
+    );
   for (const step of pushSteps) {
     if (step?.env?.GH_TOKEN !== publisherToken)
       fail(file, "direct push does not use the Publisher App token");
     if (!step.run.includes("gh auth setup-git"))
       fail(file, "direct push does not configure Git authentication");
+    if (step.run.includes("gh workflow run"))
+      fail(file, "direct push step also dispatches Actions");
   }
 }
 
