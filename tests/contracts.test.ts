@@ -290,6 +290,22 @@ describe("public contracts", () => {
     expect(ajv.validate(schema, configuredReport)).toBe(true);
   });
 
+  test("requires staff metadata whenever a runtime finding is dismissed", () => {
+    const dismissedWithoutAdjudication = {
+      ...validReport,
+      result: "green",
+      finding_counts: {
+        ...validReport.finding_counts,
+        actionable: 0,
+        disposition: { active: 0, dismissed: 1 },
+      },
+      findings: [{ ...validFinding, disposition: "dismissed" }],
+    };
+    expect(
+      ScanReportSchema.safeParse(dismissedWithoutAdjudication).success,
+    ).toBe(false);
+  });
+
   test("rejects unknown report fields and inconsistent finding totals", () => {
     expect(
       ScanReportSchema.safeParse({ ...validReport, current: true }).success,

@@ -51,6 +51,7 @@ function isFindingNarrativePath(path: string[]) {
     "findings.*.title",
     "findings.*.explanation",
     "findings.*.remediation",
+    "findings.*.adjudication.rationale",
   ].includes(normalized.join("."));
 }
 

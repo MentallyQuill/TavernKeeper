@@ -41,10 +41,20 @@ const RuleReferenceUrlSchema = z.url().refine((value) => {
     /^\/TavernKeeper\/rules\/[a-z0-9][a-z0-9-]{0,119}\/$/u.test(url.pathname)
   );
 }, "Finding reference must identify one canonical TavernKeeper rule page.");
+const StaffActorSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/u);
 
 export const ScanModeSchema = z.enum(["standard", "deep"]);
 export const ConfidenceSchema = z.enum(["high", "medium", "low"]);
 export const DispositionSchema = z.enum(["active", "dismissed"]);
+const AdjudicationSchema = z.strictObject({
+  decision: DispositionSchema,
+  rationale: z.string().min(1).max(1_000),
+  actor: StaffActorSchema,
+  completed_at: z.iso.datetime(),
+  reusable: z.boolean(),
+});
 export const PublicResultSchema = z.enum(["green", "yellow"]);
 export const SeveritySchema = z.enum([
   "critical",
@@ -71,6 +81,7 @@ export const FindingSchema = z
     reference_url: RuleReferenceUrlSchema.optional(),
     fingerprint: ReportIdSchema,
     disposition: DispositionSchema,
+    adjudication: AdjudicationSchema.optional(),
   })
   .refine(
     (finding) =>
@@ -81,7 +92,36 @@ export const FindingSchema = z
       path: ["line_end"],
       message: "Line end must be null or at least line start.",
     },
-  );
+  )
+  .superRefine((finding, context) => {
+    if (
+      finding.adjudication !== undefined &&
+      finding.adjudication.decision !== finding.disposition
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["adjudication", "decision"],
+        message: "Adjudication decision must match finding disposition.",
+      });
+    if (
+      finding.disposition === "dismissed" &&
+      finding.adjudication === undefined
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["adjudication"],
+        message: "Dismissed findings require staff adjudication metadata.",
+      });
+    if (
+      finding.adjudication?.reusable === true &&
+      finding.disposition !== "dismissed"
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["adjudication", "reusable"],
+        message: "Only a dismissed finding can create a reusable rule.",
+      });
+  });
 
 export type ScanMode = z.infer<typeof ScanModeSchema>;
 export type Severity = z.infer<typeof SeveritySchema>;
