@@ -1,0 +1,25 @@
+import { z } from "zod";
+
+import { TargetSchema } from "../contracts/targets.js";
+
+export const StaffScanRequestSchema = z.strictObject({
+  repository_id: z.number().int().positive(),
+  mode: z.literal("deep"),
+});
+
+export function validateStaffScanRequest(input: unknown) {
+  return StaffScanRequestSchema.parse(input);
+}
+
+export const ScanRequestSchema = TargetSchema.extend({
+  reason: z.enum(["new", "changed", "retry", "policy", "staff"]),
+  mode: z.enum(["standard", "deep"]),
+  report_version: z.number().int().positive(),
+  supersedes_report_id: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/u)
+    .nullable(),
+  previous_report_shas: z.array(z.string().regex(/^[0-9a-f]{40}$/u)).max(20),
+});
+
+export type ScanRequest = z.infer<typeof ScanRequestSchema>;

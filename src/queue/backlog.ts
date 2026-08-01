@@ -96,10 +96,30 @@ export function planBatch(
       ? age
       : left.target.repository_id - right.target.repository_id;
   });
-  const blocked = state.pause !== null || state.circuit_breaker !== null;
+  const breaker = state.circuit_breaker;
+  const breakerRecovery =
+    breaker === null
+      ? planned
+      : planned.filter(({ target, reason }) => {
+          if (reason !== "retry") return false;
+          const retry = state.retries.find(
+            (entry) =>
+              entry.repository_id === target.repository_id &&
+              entry.target_sha === target.target_sha,
+          );
+          return (
+            retry?.scope === "system" &&
+            retry.error_fingerprint === breaker.error_fingerprint
+          );
+        });
+  const available =
+    breaker === null ? breakerRecovery : breakerRecovery.slice(0, 1);
+  const targets = state.pause === null ? available.slice(0, 5) : [];
+  const blocked =
+    state.pause !== null || (breaker !== null && targets.length === 0);
   return {
-    targets: blocked ? [] : planned.slice(0, 5),
-    remaining: planned.length - (blocked ? 0 : Math.min(5, planned.length)),
+    targets,
+    remaining: planned.length - targets.length,
     blocked,
   };
 }

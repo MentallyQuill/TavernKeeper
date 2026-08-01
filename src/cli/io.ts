@@ -1,0 +1,89 @@
+import { randomUUID } from "node:crypto";
+import { readFile, rename, rm, writeFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
+
+export async function readJsonFile(path: string): Promise<unknown> {
+  return JSON.parse(await readFile(path, "utf8"));
+}
+
+export async function writeJsonFile(path: string, value: unknown) {
+  const temporary = `${path}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, {
+      flag: "wx",
+    });
+    await rename(temporary, path);
+  } finally {
+    await rm(temporary, { force: true });
+  }
+}
+
+export function requiredEnvironment(
+  environment: NodeJS.ProcessEnv,
+  name: string,
+) {
+  const value = environment[name];
+  if (value === undefined || value.trim() === "")
+    throw new Error(`Required environment setting is missing: ${name}`);
+  return value;
+}
+
+export async function fetchFixedJson(url: string, maximumBytes = 10_000_000) {
+  const response = await fetch(url, {
+    redirect: "error",
+    headers: { accept: "application/json" },
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!response.ok) throw new Error("Trusted JSON endpoint did not respond.");
+  const declared = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > maximumBytes)
+    throw new Error("Trusted JSON response exceeded its size ceiling.");
+  const text = await response.text();
+  if (Buffer.byteLength(text, "utf8") > maximumBytes)
+    throw new Error("Trusted JSON response exceeded its size ceiling.");
+  return JSON.parse(text) as unknown;
+}
+
+export function isDirectExecution(metaUrl: string) {
+  return (
+    process.argv[1] !== undefined &&
+    pathToFileURL(process.argv[1]).href === metaUrl
+  );
+}
+
+export function runJsonCli(main: () => Promise<unknown>) {
+  void main()
+    .then((result) => {
+      process.stdout.write(`${JSON.stringify(result)}\n`);
+    })
+    .catch(async (error: unknown) => {
+      const candidateCode =
+        error !== null &&
+        typeof error === "object" &&
+        "code" in error &&
+        typeof error.code === "string"
+          ? error.code
+          : "CLI_FAILED";
+      const code = /^[A-Z][A-Z0-9_]{0,79}$/u.test(candidateCode)
+        ? candidateCode
+        : "CLI_FAILED";
+      const candidateScope =
+        error !== null &&
+        typeof error === "object" &&
+        "scope" in error &&
+        (error.scope === "repository" || error.scope === "system")
+          ? error.scope
+          : "system";
+      const scope =
+        code === "MODEL_INVALID_RESPONSE" ? "repository" : candidateScope;
+      const failureOutput = process.env.TAVERNKEEPER_ERROR_OUTPUT;
+      if (failureOutput !== undefined)
+        try {
+          await writeJsonFile(failureOutput, { code, scope });
+        } catch {
+          // The stderr record below remains deliberately body-free.
+        }
+      process.stderr.write(`${JSON.stringify({ code, scope })}\n`);
+      process.exitCode = 1;
+    });
+}

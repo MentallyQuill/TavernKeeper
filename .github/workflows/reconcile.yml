@@ -1,0 +1,217 @@
+name: Reconcile scan backlog
+
+on:
+  schedule:
+    - cron: "13 */6 * * *"
+  workflow_dispatch:
+  workflow_call:
+  repository_dispatch:
+    types: [tavernary-targets-updated]
+
+concurrency:
+  group: tavernkeeper-global-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      remaining: ${{ steps.plan.outputs.remaining }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Plan bounded batch
+        id: plan
+        shell: bash
+        run: |
+          planned="$(npm run --silent reconcile)"
+          matrix="$(jq -c '{include:.include}' <<< "$planned")"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "remaining=$(jq -r '.remaining' <<< "$planned")" >> "$GITHUB_OUTPUT"
+
+  scan:
+    needs: plan
+    if: ${{ fromJSON(needs.plan.outputs.matrix).include[0] != null }}
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install Go for pinned scanner tooling
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: 1.26.5
+          cache: false
+      - name: Install dependencies
+        run: npm ci
+      - name: Install and verify pinned scanners
+        run: npm run scanners:install && npm run scanners:verify
+      - name: Restore sanitized model cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: ${{ runner.temp }}/tavernkeeper-model-cache
+          key: model-cache-${{ hashFiles('config/scanner-policy.v1.json') }}-${{ github.run_id }}-${{ matrix.repository_id }}
+          restore-keys: |
+            model-cache-${{ hashFiles('config/scanner-policy.v1.json') }}-
+      - name: Prepare exact target without provider credentials
+        id: prepare
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix) }}
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent prepare-target
+      - name: Review with configured model
+        id: review
+        if: steps.prepare.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
+          TAVERNKEEPER_MODEL_CACHE: ${{ runner.temp }}/tavernkeeper-model-cache
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent review-target -- review.json
+      - name: Finalize complete review without provider credentials
+        id: finalize
+        if: steps.review.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent finalize-target -- review.json candidate.json
+      - name: Record secret-free phase transition
+        if: always()
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix) }}
+        run: npm run --silent transition-result -- candidate.json review.json transition.json phase-error.json
+      - name: Upload sanitized scan outcome
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: scan-${{ matrix.repository_id }}
+          path: |
+            candidate.json
+            transition.json
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    needs: [plan, scan]
+    if: ${{ always() && needs.plan.result == 'success' && needs.scan.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    outputs:
+      source_sha: ${{ steps.commit.outputs.source_sha }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download sanitized outcomes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: scan-*
+          path: artifacts
+      - name: Publish serialized batch
+        run: npm run --silent publish -- artifacts
+      - name: Notify staff only after retry exhaustion
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ "$(npm run --silent exhausted | jq 'length')" -gt 0 ]]; then
+            gh label create scanner-operations --color B60205 --description "TavernKeeper operational incidents" --force
+          fi
+          npm run --silent exhausted | jq -c '.[]' | while read -r failure; do
+            fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
+            code="$(jq -r '.error_code' <<< "$failure")"
+            scope="$(jq -r '.scope' <<< "$failure")"
+            repository_id="$(jq -r '.repository_id' <<< "$failure")"
+            target="$(jq -r '.target_sha' <<< "$failure")"
+            existing="$(gh issue list --state all --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            if [[ -z "$existing" ]]; then
+              gh issue create \
+                --label scanner-operations \
+                --title "[scanner-operations] $scope failure exhausted" \
+                --body "TavernKeeper exhausted its three delayed retries.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nScope: \`$scope\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nNo external repository owner was contacted and no degraded report was published."
+            fi
+          done
+      - name: Commit reports and state
+        id: commit
+        shell: bash
+        run: |
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add reports operations/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(reports): publish completed scans"
+            git push origin HEAD:main
+          fi
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: publish
+    if: ${{ needs.publish.result == 'success' }}
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      source_sha: ${{ needs.publish.outputs.source_sha }}
+    secrets: inherit
+
+  continue:
+    needs: [plan, deploy]
+    if: ${{ needs.deploy.result == 'success' && needs.plan.outputs.remaining != '0' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Continue remaining backlog without inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run reconcile.yml --ref main

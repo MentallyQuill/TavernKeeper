@@ -109,7 +109,10 @@ export interface ScanFailure {
 export type ScanResult =
   { ok: true; value: SanitizedCandidate } | { ok: false; error: ScanFailure };
 
-async function scanStructuralFiles(root: string, files: InventoryFile[]) {
+export async function scanStructuralFiles(
+  root: string,
+  files: InventoryFile[],
+) {
   const findings: Finding[] = [];
   for (const file of files) {
     const loaded = await loadModelCorpus(root, [file]);
@@ -164,7 +167,7 @@ function expectedScannerStatus(
   return "completed";
 }
 
-function validateScannerRuns(
+export function validateScannerRuns(
   runs: ScannerRun[],
   classification: InventoryClassification,
   structuralFindings: Finding[],
@@ -207,7 +210,7 @@ function validateScannerRuns(
     );
 }
 
-function canonicalScannerRuns(runs: ScannerRun[]) {
+export function canonicalScannerRuns(runs: ScannerRun[]) {
   return [...runs].sort(
     (left, right) =>
       scannerOrder.indexOf(left.name as (typeof scannerOrder)[number]) -
@@ -226,7 +229,7 @@ function scannerVersions(spec: ScanRepositorySpec) {
   };
 }
 
-function inventoryIsConsistent(inventory: Inventory) {
+export function inventoryIsConsistent(inventory: Inventory) {
   return (
     inventory.totals.files === inventory.files.length &&
     inventory.totals.bytes ===
@@ -237,7 +240,7 @@ function inventoryIsConsistent(inventory: Inventory) {
   );
 }
 
-function classificationIsConsistent(
+export function classificationIsConsistent(
   inventory: Inventory,
   classification: InventoryClassification,
 ) {
@@ -287,7 +290,7 @@ function classificationIsConsistent(
   return true;
 }
 
-function validateChunkCoverage(
+export function validateChunkCoverage(
   selected: InventoryFile[],
   chunks: ModelChunk[],
 ) {
@@ -574,7 +577,6 @@ export async function scanRepository(
     const chunks = dependencies.chunk(corpus, {
       chunkBytes: spec.policy.model.chunkBytes,
       overlapBytes: spec.policy.model.chunkOverlapBytes,
-      modelIdentifier: spec.model.identifier,
       promptPolicyVersion: spec.promptPolicyVersion,
       scannerPolicyVersion: spec.scannerPolicyVersion,
     });

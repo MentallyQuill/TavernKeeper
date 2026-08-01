@@ -1,0 +1,126 @@
+name: Staff deep scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository_id:
+        description: Tavernary GitHub repository ID
+        type: number
+        required: true
+
+concurrency:
+  group: tavernkeeper-global-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  issues: write
+  pages: write
+  id-token: write
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-staff
+    permissions:
+      contents: write
+      issues: write
+    outputs:
+      source_sha: ${{ steps.commit.outputs.source_sha }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install Go for pinned scanner tooling
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: 1.26.5
+          cache: false
+      - name: Install dependencies and scanners
+        run: npm ci && npm run scanners:install && npm run scanners:verify
+      - name: Resolve staff request from Tavernary manifest
+        id: request
+        env:
+          TAVERNKEEPER_STAFF_SCAN: '{"repository_id":${{ inputs.repository_id }},"mode":"deep"}'
+        run: |
+          request="$(npm run --silent deep-scan)"
+          echo "request=$request" >> "$GITHUB_OUTPUT"
+      - name: Restore sanitized model cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: ${{ runner.temp }}/tavernkeeper-model-cache
+          key: deep-model-cache-${{ hashFiles('config/scanner-policy.v1.json') }}-${{ github.run_id }}-${{ inputs.repository_id }}
+          restore-keys: |
+            deep-model-cache-${{ hashFiles('config/scanner-policy.v1.json') }}-
+      - name: Prepare exact target without provider credentials
+        id: prepare
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ steps.request.outputs.request }}
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ inputs.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ inputs.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent prepare-target
+      - name: Review with configured model
+        id: review
+        if: steps.prepare.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
+          TAVERNKEEPER_MODEL_CACHE: ${{ runner.temp }}/tavernkeeper-model-cache
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ inputs.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ inputs.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent review-target -- review.json
+      - name: Finalize complete review without provider credentials
+        id: finalize
+        if: steps.review.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ inputs.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent finalize-target -- review.json candidate.json
+      - name: Record secret-free phase transition
+        if: always()
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ steps.request.outputs.request }}
+        run: npm run --silent transition-result -- candidate.json review.json transition.json phase-error.json
+      - name: Publish serialized staff outcome
+        if: always()
+        run: |
+          mkdir -p artifacts/scan
+          test ! -f candidate.json || cp candidate.json artifacts/scan/candidate.json
+          cp transition.json artifacts/scan/transition.json
+          npm run --silent publish -- artifacts
+      - name: Commit reports and state
+        id: commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add reports operations/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(reports): publish staff deep scan"
+            git push origin HEAD:main
+          fi
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: scan
+    if: ${{ needs.scan.result == 'success' }}
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      source_sha: ${{ needs.scan.outputs.source_sha }}
+    secrets: inherit

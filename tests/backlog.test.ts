@@ -156,6 +156,24 @@ describe("derived scan backlog", () => {
     });
   });
 
+  test("a transient system breaker allows only its due recovery retry", () => {
+    const targets = manifest(3);
+    const recovery = targets.repositories[1]!;
+    const state = recordFailure(initialOperationsState(now), {
+      target: recovery,
+      code: "MODEL_QUOTA",
+      scope: "system",
+      at: "2026-07-31T10:00:00.000Z",
+    }).state;
+
+    const plan = planBatch(targets, emptyIndex, state, now);
+
+    expect(plan).toMatchObject({ blocked: false });
+    expect(
+      plan.targets.map(({ target, reason }) => [target.repository_id, reason]),
+    ).toEqual([[recovery.repository_id, "retry"]]);
+  });
+
   test("keeps one queue position when an active repository advances SHA", () => {
     const targets = manifest(2);
     const activeTarget = targets.repositories[0]!;

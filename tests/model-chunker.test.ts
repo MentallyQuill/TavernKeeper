@@ -15,7 +15,6 @@ function file(path: string, content: string): ModelCorpusFile {
 const policy = {
   chunkBytes: 64,
   overlapBytes: 8,
-  modelIdentifier: "deepseek/deepseek-v4-flash",
   promptPolicyVersion: "1",
   scannerPolicyVersion: "1",
 };

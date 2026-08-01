@@ -1,0 +1,99 @@
+name: Staff finding adjudication
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_id:
+        description: Immutable report ID
+        type: string
+        required: true
+      finding_fingerprint:
+        description: Finding fingerprint
+        type: string
+        required: true
+      decision:
+        description: Staff decision
+        type: choice
+        options: [dismiss, restore]
+        required: true
+      rationale:
+        description: Concise public rationale
+        type: string
+        required: true
+      reusable:
+        description: Add a reviewed repository-scoped dismissal rule
+        type: boolean
+        default: false
+
+concurrency:
+  group: tavernkeeper-global-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  adjudicate:
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-staff
+    permissions:
+      contents: write
+    outputs:
+      source_sha: ${{ steps.commit.outputs.source_sha }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Resolve exact immutable report
+        id: report
+        env:
+          REPORT_ID: ${{ inputs.report_id }}
+        run: |
+          if [[ ! "$REPORT_ID" =~ ^[0-9a-f]{64}$ ]]; then exit 1; fi
+          path="$(rg -l --fixed-strings "\"report_id\": \"$REPORT_ID\"" reports -g report.json | head -n 1)"
+          test -n "$path"
+          echo "path=$path" >> "$GITHUB_OUTPUT"
+      - name: Create superseding candidate
+        env:
+          REPORT_ID: ${{ inputs.report_id }}
+          FINDING: ${{ inputs.finding_fingerprint }}
+          DECISION: ${{ inputs.decision }}
+          RATIONALE: ${{ inputs.rationale }}
+          REUSABLE: ${{ inputs.reusable }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          mkdir -p artifacts/scan
+          request="$(jq -nc --arg report_id "$REPORT_ID" --arg fingerprint "$FINDING" --arg decision "$DECISION" --arg rationale "$RATIONALE" --arg actor "$ACTOR" --argjson reusable "$REUSABLE" '{report_id:$report_id,fingerprint:$fingerprint,decision:$decision,rationale:$rationale,actor:$actor,reusable:$reusable}')"
+          TAVERNKEEPER_ADJUDICATION="$request" npm run --silent adjudicate -- "${{ steps.report.outputs.path }}" artifacts/scan/candidate.json
+      - name: Publish adjudication
+        run: npm run --silent publish -- artifacts
+      - name: Commit adjudication
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add reports operations/state.json rules/dismissals.json
+          git commit -m "chore(reports): publish staff adjudication"
+          git push origin HEAD:main
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: adjudicate
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      source_sha: ${{ needs.adjudicate.outputs.source_sha }}
+    secrets: inherit

@@ -1,0 +1,113 @@
+name: Deploy verified reports
+
+on:
+  workflow_call:
+    inputs:
+      source_sha:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Full TavernKeeper main commit to deploy
+        type: string
+        required: true
+
+concurrency:
+  group: tavernkeeper-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  authorize-manual:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-staff
+    permissions: {}
+    steps:
+      - name: Confirm protected manual deployment
+        run: echo "Protected TavernKeeper staff deployment approved."
+
+  deploy:
+    needs: authorize-manual
+    if: ${{ always() && (needs.authorize-manual.result == 'success' || needs.authorize-manual.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Validate requested source commit
+        id: source
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          if [[ ! "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+            exit 1
+          fi
+      - name: Check out exact report commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prove source is on main
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$SOURCE_SHA" origin/main
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build allowlisted Pages artifact
+        run: npm run --silent site:build -- .site
+      - name: Configure Pages
+        uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
+        with:
+          path: .site
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
+      - name: Verify exact public report index
+        shell: bash
+        run: |
+          expected="$(sha256sum reports/index.json | cut -d' ' -f1)"
+          for attempt in $(seq 1 30); do
+            curl --fail --silent --show-error --location --max-redirs 0 \
+              --output "$RUNNER_TEMP/live-index.json" \
+              "https://mentallyquill.github.io/TavernKeeper/reports/index.json"
+            actual="$(sha256sum "$RUNNER_TEMP/live-index.json" | cut -d' ' -f1)"
+            if [[ "$actual" = "$expected" ]]; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+      - name: Create Tavernary wake token
+        id: wake-token
+        continue-on-error: true
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ secrets.TAVERNARY_WAKE_APP_ID }}
+          private-key: ${{ secrets.TAVERNARY_WAKE_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: Tavernary
+      - name: Wake Tavernary importer
+        if: steps.wake-token.outcome == 'success'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ steps.wake-token.outputs.token }}
+        run: gh api --method POST repos/MentallyQuill/Tavernary/actions/workflows/import-tavernkeeper-reports.yml/dispatches -f ref=main

@@ -8,7 +8,6 @@ export type { ModelCorpusFile } from "./corpus.js";
 export interface ChunkPolicy {
   chunkBytes: number;
   overlapBytes: number;
-  modelIdentifier: string;
   promptPolicyVersion: string;
   scannerPolicyVersion: string;
 }
@@ -190,7 +189,6 @@ function finalizeChunk(
 ): ModelChunk {
   const bytes = segments.reduce((total, segment) => total + segment.bytes, 0);
   const identity = {
-    model: policy.modelIdentifier,
     prompt_policy: policy.promptPolicyVersion,
     scanner_policy: policy.scannerPolicyVersion,
     segments: segments.map((segment) => ({
