@@ -78,9 +78,9 @@ describe("inventory classification", () => {
       zizmor: true,
       malcontent: true,
     });
-    expect(classification.scannerInputs.osv.map((entry) => entry.path)).toEqual([
-      "package.json",
-    ]);
+    expect(classification.scannerInputs.osv.map((entry) => entry.path)).toEqual(
+      ["package.json"],
+    );
     expect(
       classification.scannerInputs.zizmor.map((entry) => entry.path),
     ).toEqual([".github/workflows/scan.yml"]);
