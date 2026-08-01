@@ -1,5 +1,5 @@
-import type { ScanReport } from "../contracts/reports.js";
-import { sanitizeReport } from "./sanitize.js";
+import type { ScanReportV2 } from "../contracts/reports.js";
+import { sanitizeReportV2 } from "./sanitize.js";
 
 const TAVERNARY_URL = "https://tavernary.org/";
 const CSP = [
@@ -34,7 +34,7 @@ function link(url: string, label: string) {
   return `<a href="${escapeHtml(url)}" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
 }
 
-function renderFindings(report: ScanReport) {
+function renderFindings(report: ScanReportV2) {
   if (report.findings.length === 0)
     return "<p>No sanitized findings were published for this scan.</p>";
   return report.findings
@@ -50,7 +50,7 @@ function renderFindings(report: ScanReport) {
             }`;
       return `<article class="finding">
         <h3>${escapeHtml(finding.title)}</h3>
-        <p class="finding-meta">${escapeHtml(finding.severity)} severity · ${escapeHtml(finding.confidence)} confidence · ${escapeHtml(finding.category)}</p>
+        <p class="finding-meta">${escapeHtml(finding.severity)} severity &middot; ${escapeHtml(finding.confidence)} confidence &middot; ${escapeHtml(finding.category)} &middot; ${escapeHtml(finding.disposition)}</p>
         <p><strong>Location:</strong> <code>${escapeHtml(location)}</code></p>
         <p>${escapeHtml(finding.explanation)}</p>
         ${finding.remediation === undefined ? "" : `<p><strong>Remediation:</strong> ${escapeHtml(finding.remediation)}</p>`}
@@ -60,24 +60,23 @@ function renderFindings(report: ScanReport) {
     .join("\n");
 }
 
-function renderExclusions(report: ScanReport) {
+function renderExclusions(report: ScanReportV2) {
   return Object.entries(report.coverage.inventory.excluded)
     .map(
       ([category, totals]) =>
-        `<li><span>${escapeHtml(category.replaceAll("_", " "))}</span><strong>${escapeHtml(totals.files)} files · ${escapeHtml(totals.bytes)} bytes</strong></li>`,
+        `<li><span>${escapeHtml(category.replaceAll("_", " "))}</span><strong>${escapeHtml(totals.files)} files &middot; ${escapeHtml(totals.bytes)} bytes</strong></li>`,
     )
     .join("\n");
 }
 
 export function renderReportHtml(input: unknown) {
-  const report = sanitizeReport(input);
+  const report = sanitizeReportV2(input);
   const commitUrl = `${report.canonical_url}/commit/${report.target_sha}`;
   const resultSummary =
-    report.result === "green"
-      ? "Completed with no actionable findings under the displayed scan policy."
-      : `Completed with ${report.finding_counts.actionable} actionable finding${report.finding_counts.actionable === 1 ? "" : "s"} for review.`;
-  const resultClass =
-    report.result === "green" ? "result-green" : "result-yellow";
+    report.result === "teal"
+      ? "No review-level concerns were confirmed under the displayed scan policy."
+      : `Confirmed ${report.finding_counts.actionable} review-level concern${report.finding_counts.actionable === 1 ? "" : "s"}.`;
+  const resultClass = report.result === "teal" ? "result-teal" : "result-red";
 
   return `<!doctype html>
 <html lang="en">
@@ -85,7 +84,7 @@ export function renderReportHtml(input: unknown) {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="${escapeHtml(CSP)}">
-  <title>TavernKeeper report · ${escapeHtml(report.repository)}</title>
+  <title>TavernKeeper report &middot; ${escapeHtml(report.repository)}</title>
   <style>
     :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; background: #111318; color: #ecedf0; }
     body { max-width: 58rem; margin: 0 auto; padding: 2rem 1rem 4rem; line-height: 1.55; }
@@ -93,7 +92,7 @@ export function renderReportHtml(input: unknown) {
     header, section { border: 1px solid #353a44; background: #191c22; padding: 1.25rem; margin-block: 1rem; }
     h1, h2, h3 { line-height: 1.2; } h1 { margin-top: 0; }
     .result { border-left: .4rem solid currentColor; padding: 1rem; }
-    .result-green { color: #8ee3a1; } .result-yellow { color: #f6cf65; }
+    .result-teal { color: #56d8c9; } .result-red { color: #ff6b63; }
     .result p { color: #ecedf0; margin-bottom: 0; }
     dl { display: grid; grid-template-columns: minmax(9rem, auto) 1fr; gap: .45rem 1rem; }
     dt { color: #aeb4bf; } dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
@@ -112,7 +111,7 @@ export function renderReportHtml(input: unknown) {
       <strong>${escapeHtml(report.result.toUpperCase())}</strong>
       <p>${escapeHtml(resultSummary)}</p>
     </div>
-    <p>A green result is not a safety certification. It means only that TavernKeeper completed the displayed scan policy at this commit without actionable findings.</p>
+    <p>This result is not a safety certification. It reports only what the displayed automated scan policy concluded for this exact commit.</p>
   </header>
 
   <section>
@@ -132,14 +131,18 @@ export function renderReportHtml(input: unknown) {
     <h2>Coverage</h2>
     <dl>
       <dt>History</dt><dd>${escapeHtml(report.history.commits)} commit${report.history.commits === 1 ? "" : "s"}</dd>
-      <dt>Inventory</dt><dd>${escapeHtml(report.coverage.inventory.files)} files · ${escapeHtml(report.coverage.inventory.bytes)} bytes</dd>
-      <dt>Model corpus</dt><dd>${escapeHtml(report.coverage.inventory.eligible_text_files)} files · ${escapeHtml(report.coverage.inventory.eligible_text_bytes)} bytes</dd>
+      <dt>Inventory</dt><dd>${escapeHtml(report.coverage.inventory.files)} files &middot; ${escapeHtml(report.coverage.inventory.bytes)} bytes</dd>
+      <dt>Model corpus</dt><dd>${escapeHtml(report.coverage.inventory.eligible_text_files)} files &middot; ${escapeHtml(report.coverage.inventory.eligible_text_bytes)} bytes</dd>
       <dt>Model</dt><dd>${escapeHtml(report.coverage.model.provider)} / ${escapeHtml(report.coverage.model.model)}</dd>
       <dt>Model chunks</dt><dd>${escapeHtml(report.coverage.model.completed_chunks)} of ${escapeHtml(report.coverage.model.input_chunks)} completed</dd>
-      <dt>Model usage</dt><dd>${escapeHtml(report.coverage.model.input_tokens)} input · ${escapeHtml(report.coverage.model.cache_read_tokens)} cache read · ${escapeHtml(report.coverage.model.reasoning_tokens)} reasoning · ${escapeHtml(report.coverage.model.output_tokens)} output tokens</dd>
+      <dt>Analyzer</dt><dd>${escapeHtml(report.coverage.model.roles.analyzer.completed)} of ${escapeHtml(report.coverage.model.roles.analyzer.required)} completed</dd>
+      <dt>Challenger</dt><dd>${escapeHtml(report.coverage.model.roles.challenger.completed)} of ${escapeHtml(report.coverage.model.roles.challenger.required)} completed</dd>
+      <dt>Arbiter</dt><dd>${escapeHtml(report.coverage.model.roles.arbiter.completed)} of ${escapeHtml(report.coverage.model.roles.arbiter.required)} completed</dd>
+      <dt>Evidence validation</dt><dd>${escapeHtml(report.coverage.evidence_validation.validated_findings)} findings validated</dd>
+      <dt>Model usage</dt><dd>${escapeHtml(report.coverage.model.input_tokens)} input &middot; ${escapeHtml(report.coverage.model.cache_read_tokens)} cache read &middot; ${escapeHtml(report.coverage.model.reasoning_tokens)} reasoning &middot; ${escapeHtml(report.coverage.model.output_tokens)} output tokens</dd>
     </dl>
     <h3>Tools</h3>
-    <ul>${report.coverage.tools.map((tool) => `<li>${escapeHtml(tool.name)} ${escapeHtml(tool.version)} — ${escapeHtml(tool.status)}</li>`).join("")}</ul>
+    <ul>${report.coverage.tools.map((tool) => `<li>${escapeHtml(tool.name)} ${escapeHtml(tool.version)} &mdash; ${escapeHtml(tool.status)}</li>`).join("")}</ul>
     <h3>Excluded inventory</h3>
     <ul class="exclusions">${renderExclusions(report)}</ul>
   </section>

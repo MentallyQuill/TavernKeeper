@@ -1,7 +1,9 @@
 import { describe, expect, test } from "vitest";
 
-import type { ScanReport } from "../src/contracts/reports.js";
+import type { ScanReportV2 } from "../src/contracts/reports.js";
 import {
+  historyPath,
+  historyUrl,
   reportIdentity,
   reportPath,
   reportUrl,
@@ -15,7 +17,7 @@ const report = {
   scanner_policy_version: "1",
   mode: "standard",
   report_version: 1,
-} as ScanReport;
+} as ScanReportV2;
 
 describe("immutable report identity", () => {
   test("derives the exact canonical identity, path, and public URL", () => {
@@ -23,6 +25,10 @@ describe("immutable report identity", () => {
     expect(reportPath(report)).toBe(`reports/github/42/${sha}/1/standard/1`);
     expect(reportUrl(report)).toBe(
       `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${sha}/1/standard/1/`,
+    );
+    expect(historyPath(report)).toBe("reports/github/42/history");
+    expect(historyUrl(report)).toBe(
+      "https://mentallyquill.github.io/TavernKeeper/reports/github/42/history/",
     );
     expect(
       reportIdentity({

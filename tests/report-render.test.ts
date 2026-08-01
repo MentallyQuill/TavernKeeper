@@ -8,7 +8,7 @@ import { renderReportHtml } from "../src/publish/render-report.js";
 async function reportWithHostileText() {
   const raw = JSON.parse(
     await readFile(
-      new URL("./fixtures/contracts/report.valid.json", import.meta.url),
+      new URL("./fixtures/contracts/report.v2.valid.json", import.meta.url),
       "utf8",
     ),
   ) as Record<string, unknown>;

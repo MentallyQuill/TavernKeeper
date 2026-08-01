@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   access,
   mkdir,
@@ -7,15 +8,15 @@ import {
   rm,
   writeFile,
 } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 
 import {
-  ReportIndexEntrySchema,
-  ReportIndexSchema,
-  type ReportIndex,
-  type ReportIndexEntry,
-  type ScanReport,
+  parseReportIndex,
+  ReportIndexEntryV2Schema,
+  ReportIndexV2Schema,
+  type ReportIndexEntryV2,
+  type ReportIndexV2,
+  type ScanReportV2,
 } from "../contracts/reports.js";
 import {
   OperationsStateSchema,
@@ -23,9 +24,15 @@ import {
   type OperationsState,
 } from "../operations/state.js";
 import { recordSuccess } from "../operations/retry.js";
+import { renderHistoryHtml } from "./render-history.js";
 import { renderReportHtml } from "./render-report.js";
-import { reportPath, reportUrl } from "./report-path.js";
-import { sanitizeReport } from "./sanitize.js";
+import {
+  historyPath,
+  historyUrl,
+  reportPath,
+  reportUrl,
+} from "./report-path.js";
+import { sanitizeReportV2 } from "./sanitize.js";
 
 export interface PublishCandidatesInput {
   root: string;
@@ -55,20 +62,32 @@ async function exists(path: string) {
 
 async function readExistingIndex(path: string, generatedAt: string) {
   try {
-    return ReportIndexSchema.parse(JSON.parse(await readFile(path, "utf8")));
-  } catch (error) {
-    if (isMissing(error))
-      return ReportIndexSchema.parse({
-        schema_version: 1,
+    const parsed = parseReportIndex(JSON.parse(await readFile(path, "utf8")));
+    if (parsed.schema_version === 1) {
+      if (parsed.reports.length !== 0) {
+        throw new Error("Populated V1 report indexes cannot migrate to V2.");
+      }
+      return ReportIndexV2Schema.parse({
+        schema_version: 2,
         generated_at: generatedAt,
         reports: [],
       });
+    }
+    return parsed;
+  } catch (error) {
+    if (isMissing(error)) {
+      return ReportIndexV2Schema.parse({
+        schema_version: 2,
+        generated_at: generatedAt,
+        reports: [],
+      });
+    }
     throw error;
   }
 }
 
-function indexEntry(report: ScanReport): ReportIndexEntry {
-  return ReportIndexEntrySchema.parse({
+function indexEntry(report: ScanReportV2): ReportIndexEntryV2 {
+  return ReportIndexEntryV2Schema.parse({
     report_id: report.report_id,
     report_version: report.report_version,
     supersedes_report_id: report.supersedes_report_id,
@@ -97,23 +116,25 @@ function indexEntry(report: ScanReport): ReportIndexEntry {
       model_chunks: report.coverage.model.completed_chunks,
     },
     report_url: reportUrl(report),
+    history_url: historyUrl(report),
   });
 }
 
-function preference(left: ReportIndexEntry, right: ReportIndexEntry) {
-  if (left.report_version !== right.report_version)
-    return left.report_version - right.report_version;
+function preference(left: ReportIndexEntryV2, right: ReportIndexEntryV2) {
   if (left.mode !== right.mode) return left.mode === "deep" ? 1 : -1;
+  if (left.report_version !== right.report_version) {
+    return left.report_version - right.report_version;
+  }
   const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
   return time === 0 ? left.report_id.localeCompare(right.report_id) : time;
 }
 
 function preferredIndex(
-  existing: ReportIndex,
-  reports: ScanReport[],
+  existing: ReportIndexV2,
+  reports: ScanReportV2[],
   generatedAt: string,
 ) {
-  const preferred = new Map<string, ReportIndexEntry>();
+  const preferred = new Map<string, ReportIndexEntryV2>();
   for (const entry of [
     ...existing.reports,
     ...reports.map((report) => indexEntry(report)),
@@ -125,11 +146,12 @@ function preferredIndex(
       entry.scanner_policy_version,
     ].join(":");
     const current = preferred.get(key);
-    if (current === undefined || preference(entry, current) > 0)
+    if (current === undefined || preference(entry, current) > 0) {
       preferred.set(key, entry);
+    }
   }
-  return ReportIndexSchema.parse({
-    schema_version: 1,
+  return ReportIndexV2Schema.parse({
+    schema_version: 2,
     generated_at: generatedAt,
     reports: [...preferred.values()].sort((left, right) =>
       [
@@ -151,7 +173,7 @@ function preferredIndex(
 
 function completedState(
   input: OperationsState,
-  reports: ScanReport[],
+  reports: ScanReportV2[],
   generatedAt: string,
 ) {
   let state = OperationsStateSchema.parse(input);
@@ -216,17 +238,19 @@ export async function publishCandidates({
   generatedAt,
 }: PublishCandidatesInput) {
   const root = resolve(rootInput);
-  const reports = candidates.map((candidate) => sanitizeReport(candidate));
+  const reports = candidates.map((candidate) => sanitizeReportV2(candidate));
   const relativePaths = reports.map((report) => reportPath(report));
-  if (new Set(relativePaths).size !== relativePaths.length)
+  if (new Set(relativePaths).size !== relativePaths.length) {
     throw new Error("Duplicate immutable report path in publication batch.");
+  }
 
   const destinations = relativePaths.map((path) =>
     join(root, ...path.split("/")),
   );
   for (const destination of destinations) {
-    if (await exists(destination))
+    if (await exists(destination)) {
       throw new Error(`Immutable report path already exists: ${destination}`);
+    }
   }
 
   const indexPath = join(root, "reports", "index.json");
@@ -236,14 +260,34 @@ export async function publishCandidates({
   const state = completedState(stateInput, reports, generatedAt);
   const indexContents = `${JSON.stringify(index, null, 2)}\n`;
   const stateContents = serializeOperationsState(state);
+  const repositoryIds = [
+    ...new Set(reports.map(({ repository_id }) => repository_id)),
+  ];
+  const histories = repositoryIds.map((repositoryId) => {
+    const entries = index.reports.filter(
+      ({ repository_id }) => repository_id === repositoryId,
+    );
+    const relative = historyPath(entries[0]!);
+    return {
+      path: join(root, ...relative.split("/"), "index.html"),
+      contents: renderHistoryHtml(entries),
+    };
+  });
 
   await mkdir(root, { recursive: true });
   const stagingRoot = await mkdtemp(join(root, ".tavernkeeper-publish-"));
   const moved: string[] = [];
   const originalIndex = await readOptional(indexPath);
   const originalState = await readOptional(statePath);
+  const originalHistories = await Promise.all(
+    histories.map(async (history) => ({
+      path: history.path,
+      contents: await readOptional(history.path),
+    })),
+  );
   let indexReplaced = false;
   let stateReplaced = false;
+  const replacedHistories: string[] = [];
   try {
     for (const [position, report] of reports.entries()) {
       const staged = join(stagingRoot, ...relativePaths[position]!.split("/"));
@@ -254,19 +298,16 @@ export async function publishCandidates({
       );
       await writeFile(join(staged, "index.html"), renderReportHtml(report));
     }
-    await mkdir(join(stagingRoot, "reports"), { recursive: true });
-    await mkdir(join(stagingRoot, "operations"), { recursive: true });
-    await writeFile(join(stagingRoot, "reports", "index.json"), indexContents);
-    await writeFile(
-      join(stagingRoot, "operations", "state.json"),
-      stateContents,
-    );
 
     for (const [position, destination] of destinations.entries()) {
       await mkdir(dirname(destination), { recursive: true });
       const staged = join(stagingRoot, ...relativePaths[position]!.split("/"));
       await rename(staged, destination);
       moved.push(destination);
+    }
+    for (const history of histories) {
+      await atomicReplace(history.path, history.contents);
+      replacedHistories.push(history.path);
     }
     await atomicReplace(statePath, stateContents);
     stateReplaced = true;
@@ -275,6 +316,10 @@ export async function publishCandidates({
   } catch (error) {
     if (indexReplaced) await restore(indexPath, originalIndex);
     if (stateReplaced) await restore(statePath, originalState);
+    for (const path of replacedHistories) {
+      const original = originalHistories.find((item) => item.path === path)!;
+      await restore(path, original.contents);
+    }
     await Promise.all(
       moved.map((destination) =>
         rm(destination, { recursive: true, force: true }),
