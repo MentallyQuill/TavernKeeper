@@ -10,11 +10,6 @@ import {
   type Inventory,
   type InventorySpec,
 } from "../inventory/inventory-handler.js";
-import {
-  reviewEvidence,
-  type ModelReviewOutcome,
-  type ReviewEvidenceSpec,
-} from "../model/minimax-review.js";
 import { ProcessCommandRunner } from "../process/command-runner.js";
 import {
   runExternalTools,
@@ -37,6 +32,27 @@ export interface ScanRepositorySpec {
   };
 }
 
+export interface ModelReviewOutcome {
+  status: "completed" | "disabled" | "failed" | "skipped";
+  provider: string | null;
+  model: string | null;
+  findings: Finding[];
+}
+
+export interface ReviewEvidenceSpec {
+  enabled: boolean;
+  apiKey: string | null;
+  baseUrl: string;
+  model: string;
+  mode: ScanMode;
+  files: Inventory["files"];
+  deterministicFindings: Finding[];
+  maxFiles: number;
+  maxCharsPerFile: number;
+  maxInputChars: number;
+  maxOutputTokens: number;
+}
+
 export interface ScanDependencies {
   inventory(spec: InventorySpec): Promise<Result<Inventory>>;
   staticScan(files: Inventory["files"]): Finding[];
@@ -49,7 +65,11 @@ const defaultDependencies: ScanDependencies = {
   staticScan: scanStaticRules,
   externalScan: (root) =>
     runExternalTools({ root, runner: new ProcessCommandRunner() }),
-  review: reviewEvidence,
+  review: async () =>
+    err(
+      "MISSING_CONFIGURATION",
+      "The transitional review path is disabled; configured chunk review is required.",
+    ),
 };
 
 export async function scanRepository(
@@ -93,7 +113,7 @@ export async function scanRepository(
     ? modelResult.value
     : {
         status: "failed",
-        provider: spec.model.enabled ? "minimax" : null,
+        provider: null,
         model: spec.model.enabled ? spec.model.model : null,
         findings: [],
       };

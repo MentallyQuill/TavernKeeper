@@ -48,8 +48,8 @@ describe("scan orchestration", () => {
         model: {
           enabled: false,
           apiKey: null,
-          baseUrl: "https://api.minimax.io/v1",
-          model: "MiniMax-M3",
+          baseUrl: "https://provider.example/v1/chat/completions",
+          model: "vendor/model-test",
         },
       },
       {
@@ -93,8 +93,8 @@ describe("scan orchestration", () => {
         model: {
           enabled: true,
           apiKey: "test-key",
-          baseUrl: "https://api.minimax.io/v1",
-          model: "MiniMax-M3",
+          baseUrl: "https://provider.example/v1/chat/completions",
+          model: "vendor/model-test",
         },
       },
       {
@@ -112,8 +112,8 @@ describe("scan orchestration", () => {
           ok: true,
           value: {
             status: "completed",
-            provider: "minimax",
-            model: "MiniMax-M3",
+            provider: "provider.example",
+            model: "vendor/model-test",
             findings: [],
           },
         }),
