@@ -94,6 +94,7 @@ export const OperationsStateSchema = z
   .strictObject({
     schema_version: z.literal(1),
     updated_at: z.iso.datetime(),
+    coverage_started_at: z.iso.datetime().nullable(),
     pause: PauseSchema.nullable(),
     circuit_breaker: CircuitBreakerSchema.nullable(),
     retries: z.array(RetryEntrySchema),
@@ -143,6 +144,7 @@ export function initialOperationsState(now: string): OperationsState {
   return OperationsStateSchema.parse({
     schema_version: 1,
     updated_at: now,
+    coverage_started_at: null,
     pause: null,
     circuit_breaker: null,
     retries: [],
@@ -205,6 +207,7 @@ export function resumeSystem(state: OperationsState, at: string) {
   return OperationsStateSchema.parse({
     ...state,
     updated_at: at,
+    coverage_started_at: state.coverage_started_at ?? at,
     pause: null,
     circuit_breaker: null,
   });

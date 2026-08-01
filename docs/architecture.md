@@ -18,6 +18,7 @@ Tavernary target manifest (repository ID + exact SHA)
   -> exact checkout, full inventory, required scanners
   -> redacted analyzer, challenger, and arbiter review
   -> deterministic evidence validation and result derivation
+  -> authenticated encrypted candidate handoff
   -> serialized validation and immutable publication
   -> verified TavernKeeper Pages report index
   -> input-free Actions wake
@@ -34,7 +35,7 @@ Inventory establishes portable path safety and byte/file coverage before expensi
 
 Every applicable deterministic scanner must complete. Every eligible selected source path must appear in the chunk plan. Every chunk and required analyzer, challenger, and arbiter call must complete model review. Deterministic validation must prove every cited path, line range, content mapping, fingerprint, and scanned SHA. The exact target SHA is rechecked immediately before model use. A quota, token, provider, tool, malformed-output, coverage, evidence, schema, redaction, or publication failure yields no candidate.
 
-Reports are addressed by provider, immutable GitHub repository ID, exact SHA, scanner-policy version, mode, and report version. A serialized publisher prevalidates the whole batch, writes report JSON and script-free HTML to immutable paths, updates the preferred index, and rolls back partial writes on failure.
+Reports are addressed by provider, immutable GitHub repository ID, exact SHA, scanner-policy version, mode, and report version. Matrix jobs encrypt sanitized outcomes before the one-day artifact handoff; plaintext target content, model traffic, and scan handoffs are never uploaded. A serialized publisher decrypts in ephemeral storage, prevalidates the whole batch, writes report JSON and script-free HTML plus repository history to immutable paths, updates the preferred V2 index, and rolls back partial writes on failure.
 
 Every direct write to `main` uses the dedicated Publisher App. Checkout credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and Publisher authentication failure stops the mutation with no fallback. TavernKeeper's main ruleset requires a pull request and the `check` CI status for ordinary actors, blocks deletion and non-fast-forward updates, and grants the only direct-write bypass to the Publisher App Integration actor.
 

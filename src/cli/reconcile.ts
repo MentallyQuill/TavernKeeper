@@ -4,7 +4,7 @@ import {
   isDirectExecution,
   runJsonCli,
 } from "./io.js";
-import { ReportIndexSchema } from "../contracts/reports.js";
+import { parseReportIndex } from "../contracts/reports.js";
 import { parseTargetManifest } from "../contracts/targets.js";
 import { parseOperationsState } from "../operations/state.js";
 import { planBatch } from "../queue/backlog.js";
@@ -29,28 +29,12 @@ export function buildReconcileMatrix({
   scannerPolicyVersion: string;
 }) {
   const manifest = parseTargetManifest(manifestInput);
-  const index = ReportIndexSchema.parse(indexInput);
+  const index = parseReportIndex(indexInput);
   const state = parseOperationsState(stateInput);
-  if (manifest.schema_version === 1) {
+  if (manifest.schema_version === 1 || index.schema_version === 1) {
     return { include: [], remaining: 0, blocked: false };
   }
-  const plan = planBatch(
-    {
-      schema_version: 1,
-      generated_at: manifest.generated_at,
-      repositories: manifest.repositories.map(
-        ({
-          project_kinds: _projectKinds,
-          catalog_priority: _priority,
-          ...target
-        }) => target,
-      ),
-    },
-    index,
-    state,
-    now,
-    scannerPolicyVersion,
-  );
+  const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
   const targetMetadata = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );

@@ -1,0 +1,228 @@
+name: Scan and publish
+
+on:
+  workflow_call:
+    inputs:
+      requests_json:
+        type: string
+        required: true
+      remaining:
+        type: string
+        required: false
+        default: "0"
+      continue_backlog:
+        type: boolean
+        required: false
+        default: false
+permissions:
+  contents: read
+  issues: write
+  pages: write
+  id-token: write
+  actions: write
+
+jobs:
+  scan:
+    if: ${{ fromJSON(inputs.requests_json)[0] != null }}
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: true
+      max-parallel: 2
+      matrix:
+        request: ${{ fromJSON(inputs.requests_json) }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install Go for pinned scanner tooling
+        uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16
+        with:
+          go-version: 1.26.5
+          cache: false
+      - name: Install dependencies and pinned scanners
+        run: npm ci && npm run scanners:install && npm run scanners:verify
+      - name: Restore sanitized model cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: ${{ runner.temp }}/tavernkeeper-model-cache
+          key: model-cache-${{ hashFiles('config/scanner-policy.v1.json') }}-${{ github.run_id }}-${{ matrix.request.repository_id }}
+          restore-keys: |
+            model-cache-${{ hashFiles('config/scanner-policy.v1.json') }}-
+      - name: Prepare exact target without provider credentials
+        id: prepare
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent prepare-target
+      - name: Review with configured model
+        id: review
+        if: steps.prepare.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
+          TAVERNKEEPER_MODEL_CACHE: ${{ runner.temp }}/tavernkeeper-model-cache
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent review-target -- review.json
+      - name: Finalize complete review without provider credentials
+        id: finalize
+        if: steps.review.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent finalize-target -- review.json candidate.json
+      - name: Record secret-free phase transition
+        id: transition
+        if: always()
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
+        shell: bash
+        run: |
+          npm run --silent transition-result -- candidate.json review.json transition.json phase-error.json
+          echo "system_failure=$(jq -r '.status == "failure" and .scope == "system"' transition.json)" >> "$GITHUB_OUTPUT"
+      - name: Encrypt sanitized outcome
+        if: always()
+        env:
+          TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
+        run: npm run --silent artifact-transport -- encrypt outcome.enc candidate.json transition.json
+      - name: Remove plaintext handoff files
+        if: always()
+        shell: bash
+        run: rm -f candidate.json transition.json review.json phase-error.json
+      - name: Upload encrypted scan outcome
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: scan-${{ matrix.request.repository_id }}
+          path: outcome.enc
+          if-no-files-found: error
+          retention-days: 1
+      - name: Stop pending repositories after a system failure
+        if: ${{ steps.transition.outputs.system_failure == 'true' }}
+        run: exit 1
+
+  publish:
+    needs: scan
+    if: ${{ always() && needs.scan.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
+    permissions:
+      contents: read
+      issues: write
+    outputs:
+      source_sha: ${{ steps.commit.outputs.source_sha }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Download encrypted outcomes
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          pattern: scan-*
+          path: encrypted-artifacts
+      - name: Decrypt sanitized outcomes
+        env:
+          TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
+        shell: bash
+        run: |
+          position=0
+          while IFS= read -r -d '' artifact; do
+            npm run --silent artifact-transport -- decrypt "$artifact" "artifacts/scan-$position"
+            position=$((position + 1))
+          done < <(find encrypted-artifacts -type f -name outcome.enc -print0)
+          test "$position" -gt 0
+      - name: Publish serialized batch
+        run: npm run --silent publish -- artifacts
+      - name: Notify staff only after retry exhaustion
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          if [[ "$(npm run --silent exhausted | jq 'length')" -gt 0 ]]; then
+            gh label create scanner-operations --color B60205 --description "TavernKeeper operational incidents" --force
+          fi
+          npm run --silent exhausted | jq -c '.[]' | while read -r failure; do
+            fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
+            code="$(jq -r '.error_code' <<< "$failure")"
+            scope="$(jq -r '.scope' <<< "$failure")"
+            repository_id="$(jq -r '.repository_id' <<< "$failure")"
+            target="$(jq -r '.target_sha' <<< "$failure")"
+            existing="$(gh issue list --state all --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            if [[ -z "$existing" ]]; then
+              gh issue create \
+                --label scanner-operations \
+                --title "[scanner-operations] $scope failure exhausted" \
+                --body "TavernKeeper exhausted its three delayed retries.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nScope: \`$scope\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nNo external repository owner was contacted and no degraded report was published."
+            fi
+          done
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
+      - name: Commit reports and state
+        id: commit
+        env:
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+        shell: bash
+        run: |
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add reports operations/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(reports): publish completed scans"
+            git push origin HEAD:main
+          fi
+          echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: publish
+    if: ${{ needs.publish.result == 'success' }}
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      source_sha: ${{ needs.publish.outputs.source_sha }}
+    secrets: inherit
+
+  continue:
+    needs: deploy
+    if: ${{ needs.deploy.result == 'success' && inputs.continue_backlog && inputs.remaining != '0' }}
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - name: Continue remaining backlog without inputs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run reconcile.yml --ref main

@@ -1,5 +1,8 @@
-import { ReportIndexSchema } from "../contracts/reports.js";
-import { TargetManifestSchema } from "../contracts/targets.js";
+import { parseReportIndex } from "../contracts/reports.js";
+import {
+  parseTargetManifest,
+  requireTargetManifestV2,
+} from "../contracts/targets.js";
 import {
   fetchFixedJson,
   isDirectExecution,
@@ -18,11 +21,16 @@ async function main() {
   );
   const [manifest, index] = await Promise.all([
     fetchFixedJson(TARGET_MANIFEST_URL).then((value) =>
-      TargetManifestSchema.parse(value),
+      requireTargetManifestV2(parseTargetManifest(value)),
     ),
-    fetchFixedJson(REPORT_INDEX_URL).then((value) =>
-      ReportIndexSchema.parse(value),
-    ),
+    fetchFixedJson(REPORT_INDEX_URL).then((value) => {
+      const index = parseReportIndex(value);
+      if (index.schema_version !== 2)
+        throw new Error(
+          "TavernKeeper report index version 2 is not published.",
+        );
+      return index;
+    }),
   ]);
   const target = manifest.repositories.find(
     ({ repository_id }) => repository_id === request.repository_id,

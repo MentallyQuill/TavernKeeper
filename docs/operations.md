@@ -4,11 +4,14 @@ All privileged workflows run from trusted TavernKeeper code. Keep `main` protect
 
 ## Runtime configuration
 
-Configure these repository Actions secrets for the configured-model transport. Workflow policy permits them only on the `Review with configured model` step, and both workflows that can reach that step are protected by an approved scan environment:
+Configure these Actions secrets in the unattended `tavernkeeper-scanner` environment. Workflow policy permits provider credentials only on the shared workflow step named `Review with configured model`:
 
 - `TAVERNKEEPER_API_ENDPOINT`: the complete HTTPS OpenAI-compatible Chat Completions endpoint
 - `TAVERNKEEPER_API_KEY`: provider credential
 - `TAVERNKEEPER_MODEL`: provider model identifier
+- `TAVERNKEEPER_ARTIFACT_KEY`: canonical base64 encoding of exactly 32 random bytes, used only for the authenticated matrix-to-publisher handoff
+
+The shared workflow encrypts the sanitized candidate/transition envelope with AES-256-GCM before artifact upload, deletes the plaintext handoff files, retains the ciphertext artifact for one day, and decrypts it only in the serialized publisher job. Generate this value from a cryptographically secure random source. Never reuse the model key or an App key.
 
 Configure `TAVERNARY_WAKE_APP_ID` and `TAVERNARY_WAKE_APP_PRIVATE_KEY` only in TavernKeeper. The GitHub App must be installed only on Tavernary with Actions write and metadata read. It receives no contents write access.
 
@@ -31,13 +34,15 @@ Generate a replacement private key from the App settings before revoking the act
 
 ## Normal reconciliation
 
-`reconcile.yml` runs every six hours and accepts input-free workflow and repository dispatches. It derives work from Tavernary's live target manifest minus TavernKeeper's preferred current reports. It selects at most five repositories and runs at most two scan jobs concurrently. If work remains after a verified publication/deployment, it dispatches another input-free batch.
+`reconcile.yml` runs every six hours and accepts input-free workflow and repository dispatches. It derives work from Tavernary's live V2 target manifest minus TavernKeeper's V2 preferred current reports. It selects at most five repositories and calls `scan-and-publish.yml`, which runs at most two scan jobs concurrently. Standard, retry, targeted, deep, and policy-campaign scans all converge on this automatic publication path. If work remains after a verified publication/deployment, it dispatches another input-free batch.
+
+On the first staff resume, TavernKeeper records the immutable `coverage_started_at` timestamp. Ordinary work uses three lanes: current Top 30, submissions first cataloged on or after that timestamp, and older projects. New and old lanes sort by `first_cataloged_at`; due retries return to their target's source lane. Thirty-day age boosts prevent a lower lane from starving without changing its lane identity.
 
 The queue is derived, not separately mutable. A target that advances before it starts is coalesced to the newest manifest SHA. Once exact-SHA acquisition begins, TavernKeeper completes and publishes that immutable SHA even if the catalog advances; Tavernary then presents a clean older report as pending an updated scan.
 
 ## Pause and recovery
 
-The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT`. Use `staff-operations.yml` in the protected staff environment to pause, resume, or request a retry. Never edit state concurrently with a publication workflow.
+The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT` and has no coverage-start timestamp. Use `staff-operations.yml` in the protected staff environment to pause, resume, or request a retry. The first resume records `coverage_started_at`; later pause/resume cycles preserve it. Never edit state concurrently with a publication workflow.
 
 System/provider failures stop ordinary scanning and engage the circuit breaker. No degraded report is published. The first failure is retried after one hour, again after two hours, and again after three hours, measured from the initial failure. No staff or owner notification is sent for intermediate failures. After the third retry also fails, TavernKeeper creates or updates one deduplicated `scanner-operations` Issue for staff and remains stopped until staff correct the cause and explicitly resume.
 
@@ -45,12 +50,15 @@ Repository-specific failures delay only that target. External project owners rec
 
 ## Staff workflows
 
+- `targeted-scan.yml`: accepts only a repository-ID routing hint from the immutable Tavernary wake-App actor, refetches the public V2 manifest, and derives a standard scan request. Humans begin this flow only through Tavernary's staff-only exact-GitHub-URL action.
 - `deep-scan.yml`: rescan every eligible first-party text file for one repository ID.
 - `policy-rescan.yml`: schedule a staff-initiated campaign under a new policy.
 - `staff-operations.yml`: pause, resume, or manually retry a target.
 - `deploy-pages.yml`: deploy only an exact commit proven to be on `main`; manual runs require staff protection.
 
 Public Issues and Issue comments do not trigger these workflows. A false-positive appeal supplies only an immutable report identity, finding fingerprint, and maintainer evidence. It cannot trigger work or change an individual report. If the evidence exposes a scanner defect, staff change global versioned policy through ordinary code review and TavernKeeper automatically rescans affected targets.
+
+No complete production candidate waits for staff review, environment approval, dismissal, or recoloring. Schema, coverage, evidence, sanitizer, or provider incompleteness publishes nothing and enters the classified retry path instead.
 
 ## Release checks
 

@@ -5,6 +5,8 @@ import { describe, expect, test } from "vitest";
 import {
   initialOperationsState,
   parseOperationsState,
+  pauseSystem,
+  resumeSystem,
   serializeOperationsState,
 } from "../src/operations/state.js";
 import { recordFailure } from "../src/operations/retry.js";
@@ -21,11 +23,29 @@ describe("secret-free operational state", () => {
     );
 
     expect(state).toMatchObject({
+      coverage_started_at: null,
       pause: { kind: "staff", reason_code: "INITIAL_ROLLOUT" },
       circuit_breaker: null,
       retries: [],
       active_scans: [],
     });
+  });
+
+  test("records coverage start once on first resume and never moves it", () => {
+    const created = "2026-07-31T12:00:00.000Z";
+    const firstResume = "2026-08-01T12:00:00.000Z";
+    const secondResume = "2026-08-02T12:00:00.000Z";
+    const started = resumeSystem(initialOperationsState(created), firstResume);
+    const paused = pauseSystem(started, {
+      kind: "staff",
+      reasonCode: "STAFF_PAUSE",
+      at: "2026-08-01T13:00:00.000Z",
+    });
+
+    expect(started.coverage_started_at).toBe(firstResume);
+    expect(resumeSystem(paused, secondResume).coverage_started_at).toBe(
+      firstResume,
+    );
   });
 
   test("rejects retry identities whose source ID does not match repository ID", () => {

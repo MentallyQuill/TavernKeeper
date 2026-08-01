@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
+import { buildTargetedMatrix } from "../src/cli/targeted-scan.js";
 import { initialOperationsState } from "../src/operations/state.js";
 
 const now = "2026-07-31T18:00:00.000Z";
@@ -34,7 +35,7 @@ describe("JSON-only orchestration CLIs", () => {
           target(index + 1),
         ),
       },
-      index: { schema_version: 1, generated_at: now, reports: [] },
+      index: { schema_version: 2, generated_at: now, reports: [] },
       state: initialOperationsState(now),
       now,
       scannerPolicyVersion: "1",
@@ -49,6 +50,73 @@ describe("JSON-only orchestration CLIs", () => {
       supersedes_report_id: null,
       reason: "new",
     });
+  });
+
+  test("targeted scans derive a standard request from repository ID and live V2 data", () => {
+    const targetValue = target(42);
+    const matrix = buildTargetedMatrix({
+      manifest: {
+        schema_version: 2,
+        generated_at: now,
+        repositories: [targetValue],
+      },
+      index: { schema_version: 2, generated_at: now, reports: [] },
+      state: initialOperationsState(now),
+      repositoryId: 42,
+      scannerPolicyVersion: "1",
+    });
+
+    expect(matrix).toMatchObject({ coalesced: false });
+    expect(matrix.include).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        repository: "owner/repo-42",
+        target_sha: targetValue.target_sha,
+        reason: "staff",
+        mode: "standard",
+        report_version: 1,
+      }),
+    ]);
+  });
+
+  test("targeted scans coalesce an identical active repository and SHA", () => {
+    const targetValue = target(42);
+    const matrix = buildTargetedMatrix({
+      manifest: {
+        schema_version: 2,
+        generated_at: now,
+        repositories: [targetValue],
+      },
+      index: { schema_version: 2, generated_at: now, reports: [] },
+      state: {
+        ...initialOperationsState(now),
+        active_scans: [
+          {
+            source_id: targetValue.source_id,
+            repository_id: 42,
+            target_sha: targetValue.target_sha,
+            started_at: now,
+            run_id: "already-running",
+          },
+        ],
+      },
+      repositoryId: 42,
+      scannerPolicyVersion: "1",
+    });
+
+    expect(matrix).toEqual({ include: [], coalesced: true });
+  });
+
+  test("targeted scans reject IDs absent from the public V2 manifest", () => {
+    expect(() =>
+      buildTargetedMatrix({
+        manifest: { schema_version: 2, generated_at: now, repositories: [] },
+        index: { schema_version: 2, generated_at: now, reports: [] },
+        state: initialOperationsState(now),
+        repositoryId: 42,
+        scannerPolicyVersion: "1",
+      }),
+    ).toThrow(/not in Tavernary's V2 manifest/iu);
   });
 
   test("waits without selecting work from a frozen V1 target manifest", () => {

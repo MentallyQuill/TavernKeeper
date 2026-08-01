@@ -1,4 +1,4 @@
-name: Staff deep scan
+name: Tavernary targeted scan
 
 on:
   workflow_dispatch:
@@ -21,8 +21,8 @@ permissions:
 
 jobs:
   resolve:
+    if: ${{ github.actor_id == vars.TAVERNARY_WAKE_APP_BOT_ID }}
     runs-on: ubuntu-latest
-    environment: tavernkeeper-staff
     permissions:
       contents: read
     outputs:
@@ -40,17 +40,19 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Resolve protected deep-scan request from Tavernary manifest
+      - name: Resolve repository ID from the public Tavernary V2 manifest
         id: request
         env:
-          TAVERNKEEPER_STAFF_SCAN: '{"repository_id":${{ inputs.repository_id }},"mode":"deep"}'
+          TAVERNKEEPER_TARGETED_SCAN: '{"repository_id":${{ inputs.repository_id }}}'
+          TAVERNARY_TARGET_MANIFEST: https://tavernary.org/security/tavernkeeper-targets.json
         shell: bash
         run: |
-          request="$(npm run --silent deep-scan)"
-          echo "requests_json=$(jq -cn --argjson request "$request" '[$request]')" >> "$GITHUB_OUTPUT"
+          resolved="$(npm run --silent targeted-scan)"
+          echo "requests_json=$(jq -c '.include' <<< "$resolved")" >> "$GITHUB_OUTPUT"
 
   scan:
     needs: resolve
+    if: ${{ needs.resolve.result == 'success' && fromJSON(needs.resolve.outputs.requests_json)[0] != null }}
     uses: ./.github/workflows/scan-and-publish.yml
     with:
       requests_json: ${{ needs.resolve.outputs.requests_json }}

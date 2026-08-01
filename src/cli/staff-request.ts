@@ -7,8 +7,16 @@ export const StaffScanRequestSchema = z.strictObject({
   mode: z.literal("deep"),
 });
 
+export const TargetedScanHintSchema = z.strictObject({
+  repository_id: z.number().int().positive(),
+});
+
 export function validateStaffScanRequest(input: unknown) {
   return StaffScanRequestSchema.parse(input);
+}
+
+export function validateTargetedScanHint(input: unknown) {
+  return TargetedScanHintSchema.parse(input);
 }
 
 export const ScanRequestSchema = TargetV2Schema.extend({
