@@ -38,6 +38,7 @@ import {
 } from "../model/openai-compatible-client.js";
 import type { ModelRelationship } from "../model/synthesis.js";
 import type { CommandRunner } from "../process/command-runner.js";
+import { reportIdentity } from "../publish/report-path.js";
 import {
   runApplicableScanners,
   type ApplicableScannerSpec,
@@ -369,26 +370,6 @@ function validateModelCoverage({
     );
 }
 
-function reportId(input: Omit<ScanReport, "report_id">) {
-  return createHash("sha256")
-    .update(
-      JSON.stringify({
-        schema_version: input.schema_version,
-        scanner_version: input.scanner_version,
-        scanner_policy_version: input.scanner_policy_version,
-        prompt_policy_version: input.prompt_policy_version,
-        source_id: input.source_id,
-        repository_id: input.repository_id,
-        target_sha: input.target_sha,
-        completed_at: input.completed_at,
-        mode: input.mode,
-        report_version: input.report_version,
-        supersedes_report_id: input.supersedes_report_id,
-      }),
-    )
-    .digest("hex");
-}
-
 function buildReport({
   spec,
   inventory,
@@ -472,7 +453,7 @@ function buildReport({
   };
   return ScanReportSchema.parse({
     ...withoutId,
-    report_id: reportId(withoutId),
+    report_id: reportIdentity(withoutId),
   });
 }
 

@@ -30,6 +30,17 @@ const RepositoryPathSchema = z
     "Finding path must be a normalized repository-relative path.",
   );
 const CategorySchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/u);
+const RuleReferenceUrlSchema = z.url().refine((value) => {
+  const url = new URL(value);
+  return (
+    url.origin === "https://mentallyquill.github.io" &&
+    url.username === "" &&
+    url.password === "" &&
+    url.search === "" &&
+    url.hash === "" &&
+    /^\/TavernKeeper\/rules\/[a-z0-9][a-z0-9-]{0,119}\/$/u.test(url.pathname)
+  );
+}, "Finding reference must identify one canonical TavernKeeper rule page.");
 
 export const ScanModeSchema = z.enum(["standard", "deep"]);
 export const ConfidenceSchema = z.enum(["high", "medium", "low"]);
@@ -57,10 +68,7 @@ export const FindingSchema = z
     title: z.string().min(1).max(200),
     explanation: z.string().min(1).max(1_000),
     remediation: z.string().min(1).max(1_000).optional(),
-    reference_url: z
-      .url()
-      .startsWith("https://mentallyquill.github.io/TavernKeeper/rules/")
-      .optional(),
+    reference_url: RuleReferenceUrlSchema.optional(),
     fingerprint: ReportIdSchema,
     disposition: DispositionSchema,
   })
