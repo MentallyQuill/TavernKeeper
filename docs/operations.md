@@ -1,0 +1,56 @@
+# TavernKeeper Operations
+
+All privileged workflows run from trusted TavernKeeper code. Keep `main` protected, use the `tavernkeeper-scanner` environment for unattended scans, and require TavernKeeper staff approval on `tavernkeeper-staff`.
+
+## Runtime configuration
+
+Configure these environment secrets for both approved scan environments:
+
+- `TAVERNKEEPER_API_ENDPOINT`: the complete HTTPS OpenAI-compatible Chat Completions endpoint
+- `TAVERNKEEPER_API_KEY`: provider credential
+- `TAVERNKEEPER_MODEL`: provider model identifier
+
+Configure `TAVERNARY_WAKE_APP_ID` and `TAVERNARY_WAKE_APP_PRIVATE_KEY` only in TavernKeeper. The GitHub App must be installed only on Tavernary with Actions write and metadata read. It receives no contents write access.
+
+Do not put secret values in workflow inputs, repository files, Issues, logs, reports, or shell history. Workflows pass model secrets only to the step named `Review with configured model`.
+
+## Normal reconciliation
+
+`reconcile.yml` runs every six hours and accepts input-free workflow and repository dispatches. It derives work from Tavernary's live target manifest minus TavernKeeper's preferred current reports. It selects at most five repositories and runs at most two scan jobs concurrently. If work remains after a verified publication/deployment, it dispatches another input-free batch.
+
+The queue is derived, not separately mutable. A target that advances before it starts is coalesced to the newest manifest SHA. TavernKeeper refetches the manifest before provider use and abandons obsolete work.
+
+## Pause and recovery
+
+The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT`. Use `staff-operations.yml` in the protected staff environment to pause, resume, or request an approved retry. Never edit state concurrently with a publication workflow.
+
+System/provider failures stop ordinary scanning and engage the circuit breaker. No degraded report is published. The first failure is retried after one hour, again after two hours, and again after three hours, measured from the initial failure. No staff or owner notification is sent for intermediate failures. After the third retry also fails, TavernKeeper creates or updates one deduplicated `scanner-operations` Issue for staff and remains stopped until staff correct the cause and explicitly resume.
+
+Repository-specific failures delay only that target. External project owners receive no operational-failure notification.
+
+## Staff workflows
+
+- `deep-scan.yml`: rescan every eligible first-party text file for one repository ID.
+- `policy-rescan.yml`: schedule a staff-approved campaign under a new policy.
+- `adjudicate.yml`: create a superseding immutable report version for a reviewed finding disposition.
+- `staff-operations.yml`: pause, resume, or manually retry an approved target.
+- `deploy-pages.yml`: deploy only an exact commit proven to be on `main`; manual runs require staff protection.
+
+Public Issues and Issue comments do not trigger these workflows. A false-positive appeal supplies only an immutable report identity and finding fingerprint; staff adjudication never deletes or mutates the original report.
+
+## Release checks
+
+Before deploying scanner or workflow changes, run:
+
+```text
+npm run check
+npm run test:e2e
+npm run build
+actionlint .github/workflows/*.yml
+```
+
+Confirm the hostile fixture marker does not exist, fixture credentials do not appear in cache/report/site output, the public report index digest equals the deployed source digest, and Tavernary imports only matching repository IDs and SHAs.
+
+`npm run test:e2e` is an in-process hostile-data safety and publication gate, not a real-tool or live-provider certification. Its fixtures run real inventory, classification, static rules, redaction, chunking, and publication while deterministically replacing Git history, external scanner adapters, exact-HEAD verification, and model transport. Unit and contract tests cover external scanner adapters and model transport. The release and live-canary gates are the real digest-pinned tools, the configured provider, and an exact validated checkout SHA; do not represent the fixture suite as having run any of them.
+
+For the first live rollout, keep normal operations paused and scan only the explicitly approved Wandlight and Recursion targets. Do not broaden the live batch until both reports, Pages publication, Tavernary import, and inline scan-result presentation have been inspected.

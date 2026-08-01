@@ -1,0 +1,296 @@
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
+
+import { parse } from "yaml";
+
+const root = process.cwd();
+const workflowRoot = join(root, ".github", "workflows");
+const allowedTriggers = {
+  "adjudicate.yml": ["workflow_dispatch"],
+  "ci.yml": ["pull_request", "push"],
+  "deep-scan.yml": ["workflow_dispatch"],
+  "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
+  "policy-rescan.yml": ["workflow_dispatch"],
+  "reconcile.yml": [
+    "repository_dispatch",
+    "schedule",
+    "workflow_call",
+    "workflow_dispatch",
+  ],
+  "retry.yml": ["schedule"],
+  "staff-operations.yml": ["workflow_dispatch"],
+};
+const protectedManualWorkflows = new Set([
+  "adjudicate.yml",
+  "deep-scan.yml",
+  "policy-rescan.yml",
+  "staff-operations.yml",
+]);
+const modelSecretPattern =
+  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
+const modelSecretNames = new Set([
+  "TAVERNKEEPER_API_ENDPOINT",
+  "TAVERNKEEPER_API_KEY",
+  "TAVERNKEEPER_MODEL",
+]);
+const reviewedPermissionProfiles = {
+  "adjudicate.yml": {
+    workflow: { contents: "write", pages: "write", "id-token": "write" },
+    jobs: { adjudicate: { contents: "write" }, deploy: undefined },
+  },
+  "ci.yml": {
+    workflow: { contents: "read" },
+    jobs: { check: undefined },
+  },
+  "deep-scan.yml": {
+    workflow: {
+      contents: "write",
+      issues: "write",
+      pages: "write",
+      "id-token": "write",
+    },
+    jobs: {
+      scan: { contents: "write", issues: "write" },
+      deploy: undefined,
+    },
+  },
+  "deploy-pages.yml": {
+    workflow: { contents: "read", pages: "write", "id-token": "write" },
+    jobs: { "authorize-manual": {}, deploy: undefined },
+  },
+  "policy-rescan.yml": {
+    workflow: { contents: "write" },
+    jobs: { schedule: undefined },
+  },
+  "reconcile.yml": {
+    workflow: {
+      contents: "read",
+      pages: "write",
+      "id-token": "write",
+      actions: "write",
+    },
+    jobs: {
+      plan: { contents: "read" },
+      scan: { contents: "read" },
+      publish: { contents: "write", issues: "write" },
+      deploy: undefined,
+      continue: { actions: "write" },
+    },
+  },
+  "retry.yml": {
+    workflow: {
+      contents: "read",
+      pages: "write",
+      "id-token": "write",
+      actions: "write",
+    },
+    jobs: { reconcile: undefined },
+  },
+  "staff-operations.yml": {
+    workflow: { contents: "write", actions: "write" },
+    jobs: { operate: undefined },
+  },
+};
+const sensitiveInputPattern = /clone_url|endpoint|model|token|budget|command/iu;
+const failures = [];
+
+function fail(file, message) {
+  failures.push(`${file}: ${message}`);
+}
+
+function walk(value, visit, path = []) {
+  visit(value, path);
+  if (Array.isArray(value)) {
+    value.forEach((child, index) => walk(child, visit, [...path, index]));
+    return;
+  }
+  if (value === null || typeof value !== "object") return;
+  for (const [key, child] of Object.entries(value))
+    walk(child, visit, [...path, key]);
+}
+
+function checkTriggers(file, workflow) {
+  const expected = allowedTriggers[file];
+  if (expected === undefined) {
+    fail(file, "workflow is not present in the reviewed trigger allowlist");
+    return;
+  }
+  const actual = Object.keys(workflow.on ?? {}).sort();
+  if (JSON.stringify(actual) !== JSON.stringify([...expected].sort()))
+    fail(
+      file,
+      `trigger set changed (expected ${expected.join(", ")}; received ${actual.join(", ")})`,
+    );
+  const dispatchInputs = workflow.on?.workflow_dispatch?.inputs ?? {};
+  for (const name of Object.keys(dispatchInputs))
+    if (sensitiveInputPattern.test(name))
+      fail(
+        file,
+        `manual input ${name} may bypass the trusted target/model contract`,
+      );
+  if (
+    protectedManualWorkflows.has(file) &&
+    !JSON.stringify(workflow.jobs).includes("tavernkeeper-staff")
+  )
+    fail(
+      file,
+      "staff-only manual workflow lacks tavernkeeper-staff protection",
+    );
+}
+
+function normalizedPermissions(value) {
+  if (value === undefined) return undefined;
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return value;
+  return Object.fromEntries(
+    Object.entries(value).sort(([left], [right]) => left.localeCompare(right)),
+  );
+}
+
+function samePermissions(left, right) {
+  return (
+    JSON.stringify(normalizedPermissions(left)) ===
+    JSON.stringify(normalizedPermissions(right))
+  );
+}
+
+function checkPermissions(file, workflow) {
+  const expected = reviewedPermissionProfiles[file];
+  if (expected === undefined) return;
+  if (!samePermissions(workflow.permissions, expected.workflow))
+    fail(file, "root permissions changed from the reviewed profile");
+
+  const jobs = workflow.jobs ?? {};
+  const expectedNames = Object.keys(expected.jobs).sort();
+  const actualNames = Object.keys(jobs).sort();
+  if (JSON.stringify(actualNames) !== JSON.stringify(expectedNames)) {
+    fail(file, "job set changed from the reviewed permission profile");
+    return;
+  }
+  for (const jobName of expectedNames)
+    if (!samePermissions(jobs[jobName]?.permissions, expected.jobs[jobName]))
+      fail(file, `${jobName} permissions changed from the reviewed profile`);
+}
+
+function checkActionPins(file, workflow) {
+  walk(workflow, (value, path) => {
+    if (path.at(-1) !== "uses" || typeof value !== "string") return;
+    if (value.startsWith("./")) return;
+    if (!/@[0-9a-f]{40}$/u.test(value))
+      fail(
+        file,
+        `external action is not pinned to a full commit SHA: ${value}`,
+      );
+  });
+}
+
+function checkParallelism(file, workflow) {
+  walk(workflow, (value, path) => {
+    if (path.at(-1) !== "max-parallel") return;
+    if (!Number.isInteger(value) || value < 1 || value > 2)
+      fail(
+        file,
+        `max-parallel must be an integer from 1 through 2, not ${String(value)}`,
+      );
+  });
+  if (
+    file === "reconcile.yml" &&
+    workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2
+  )
+    fail(file, "scan matrix must retain max-parallel: 2");
+}
+
+function modelSecretLocations(value, path = [], locations = []) {
+  if (typeof value === "string") {
+    if (modelSecretPattern.test(value)) locations.push({ path, value });
+    return locations;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      modelSecretLocations(child, [...path, index], locations),
+    );
+    return locations;
+  }
+  if (value === null || typeof value !== "object") return locations;
+  for (const [key, child] of Object.entries(value)) {
+    const childPath = [...path, key];
+    if (modelSecretPattern.test(key)) {
+      locations.push({ path: childPath, value: child });
+      continue;
+    }
+    modelSecretLocations(child, childPath, locations);
+  }
+  return locations;
+}
+
+function isAllowedModelSecretLocation(workflow, location) {
+  const path = location.path;
+  if (
+    path.length !== 6 ||
+    path[0] !== "jobs" ||
+    path[2] !== "steps" ||
+    !Number.isInteger(path[3]) ||
+    path[4] !== "env" ||
+    typeof path[5] !== "string" ||
+    !modelSecretNames.has(path[5])
+  )
+    return false;
+  const step = workflow.jobs?.[path[1]]?.steps?.[path[3]];
+  if (step?.name !== "Review with configured model") return false;
+  return (
+    typeof location.value === "string" &&
+    new RegExp(`^\\$\\{\\{\\s*secrets\\.${path[5]}\\s*\\}\\}$`, "u").test(
+      location.value,
+    )
+  );
+}
+
+function checkModelSecretPlacement(file, workflow) {
+  for (const location of modelSecretLocations(workflow))
+    if (!isAllowedModelSecretLocation(workflow, location))
+      fail(file, "model secret appears outside the review-step env");
+}
+
+const names = (await readdir(workflowRoot))
+  .filter((name) => /\.ya?ml$/u.test(name))
+  .sort();
+for (const file of names) {
+  let workflow;
+  try {
+    workflow = parse(await readFile(join(workflowRoot, file), "utf8"));
+  } catch (error) {
+    fail(
+      file,
+      `could not parse workflow: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    continue;
+  }
+  checkTriggers(file, workflow);
+  checkPermissions(file, workflow);
+  checkActionPins(file, workflow);
+  checkParallelism(file, workflow);
+  checkModelSecretPlacement(file, workflow);
+}
+
+const policy = JSON.parse(
+  await readFile(join(root, "config", "scanner-policy.v1.json"), "utf8"),
+);
+if (policy.queue?.batchSize !== 5)
+  fail(
+    "config/scanner-policy.v1.json",
+    "queue batchSize must remain exactly 5",
+  );
+if (policy.queue?.maxParallel !== 2)
+  fail(
+    "config/scanner-policy.v1.json",
+    "queue maxParallel must remain exactly 2",
+  );
+
+if (failures.length > 0) {
+  for (const failure of failures) process.stderr.write(`${failure}\n`);
+  process.exitCode = 1;
+} else {
+  process.stdout.write(
+    `Workflow policy passed for ${names.length} workflows.\n`,
+  );
+}
