@@ -7,6 +7,10 @@ const VersionSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u);
 const ModelIdentifierSchema = z
   .string()
   .regex(/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/u);
+const HttpsOriginSchema = z.url().refine((value) => {
+  const url = new URL(value);
+  return url.protocol === "https:" && url.origin === value;
+}, "Model endpoint origin must be a canonical HTTPS origin.");
 const ReportIdSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const RepositorySchema = z.string().regex(/^[^/\s]+\/[^/\s]+$/u);
 const RepositoryPathSchema = z
@@ -97,15 +101,20 @@ export const ToolCoverageSchema = z.strictObject({
   status: z.enum(["completed", "not-applicable"]),
 });
 
+const FileByteTotalsSchema = z.strictObject({
+  files: NonNegativeIntegerSchema,
+  bytes: NonNegativeIntegerSchema,
+});
+
 const ExcludedCountsSchema = z.strictObject({
-  dependency_lockfiles: NonNegativeIntegerSchema,
-  vendored_dependencies: NonNegativeIntegerSchema,
-  generated_bundles: NonNegativeIntegerSchema,
-  minified_files: NonNegativeIntegerSchema,
-  binaries: NonNegativeIntegerSchema,
-  archives: NonNegativeIntegerSchema,
-  oversized_files: NonNegativeIntegerSchema,
-  unsafe_entries: NonNegativeIntegerSchema,
+  dependency_lockfiles: FileByteTotalsSchema,
+  vendored_dependencies: FileByteTotalsSchema,
+  generated_bundles: FileByteTotalsSchema,
+  minified_files: FileByteTotalsSchema,
+  binaries: FileByteTotalsSchema,
+  archives: FileByteTotalsSchema,
+  oversized_files: FileByteTotalsSchema,
+  unsafe_entries: FileByteTotalsSchema,
 });
 
 const InventoryCoverageSchema = z.strictObject({
@@ -119,12 +128,15 @@ const InventoryCoverageSchema = z.strictObject({
 const ModelCoverageSchema = z
   .strictObject({
     status: z.literal("completed"),
+    endpoint_origin: HttpsOriginSchema,
     provider: VersionSchema,
     model: ModelIdentifierSchema,
     input_chunks: NonNegativeIntegerSchema,
     completed_chunks: NonNegativeIntegerSchema,
     input_tokens: NonNegativeIntegerSchema,
     output_tokens: NonNegativeIntegerSchema,
+    cache_read_tokens: NonNegativeIntegerSchema,
+    reasoning_tokens: NonNegativeIntegerSchema,
     total_tokens: NonNegativeIntegerSchema,
   })
   .refine((coverage) => coverage.completed_chunks === coverage.input_chunks, {
@@ -176,10 +188,7 @@ const FindingCountsSchema = z.strictObject({
     ),
 });
 
-function findingCountsMatch(
-  findings: Finding[],
-  counts: z.infer<typeof FindingCountsSchema>,
-): boolean {
+export function buildFindingCounts(findings: Finding[]) {
   const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
   const confidence = { high: 0, medium: 0, low: 0 };
   const disposition = { active: 0, dismissed: 0 };
@@ -194,23 +203,24 @@ function findingCountsMatch(
     if (deriveResult([finding]) === "yellow") actionable += 1;
   }
 
+  return FindingCountsSchema.parse({
+    total: findings.length,
+    actionable,
+    severity,
+    confidence,
+    disposition,
+    categories: Object.entries(categories)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([category, count]) => ({ category, count })),
+  });
+}
+
+function findingCountsMatch(
+  findings: Finding[],
+  counts: z.infer<typeof FindingCountsSchema>,
+): boolean {
   return (
-    counts.total === findings.length &&
-    counts.actionable === actionable &&
-    Object.entries(severity).every(
-      ([key, value]) =>
-        counts.severity[key as keyof typeof counts.severity] === value,
-    ) &&
-    Object.entries(confidence).every(
-      ([key, value]) =>
-        counts.confidence[key as keyof typeof counts.confidence] === value,
-    ) &&
-    Object.entries(disposition).every(
-      ([key, value]) =>
-        counts.disposition[key as keyof typeof counts.disposition] === value,
-    ) &&
-    counts.categories.length === Object.keys(categories).length &&
-    counts.categories.every((item) => categories[item.category] === item.count)
+    JSON.stringify(buildFindingCounts(findings)) === JSON.stringify(counts)
   );
 }
 

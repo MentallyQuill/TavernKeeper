@@ -11,6 +11,7 @@ import { modelChunkCacheKey, type ModelChunkCache } from "./chunk-cache.js";
 import {
   ModelRequestError,
   requestStructuredCompletion,
+  validateModelEndpoint,
   type ModelUsage,
   type RequestStructuredCompletion,
   type StructuredCompletionResult,
@@ -109,29 +110,7 @@ export interface ConfiguredModelReviewSpec {
 }
 
 function configuredOrigin(endpoint: string) {
-  let url: URL;
-  try {
-    url = new URL(endpoint);
-  } catch {
-    throw new ModelRequestError(
-      "MODEL_CONFIGURATION",
-      "system",
-      "Configured model endpoint is not a valid URL.",
-    );
-  }
-  if (
-    url.protocol !== "https:" ||
-    url.username !== "" ||
-    url.password !== "" ||
-    url.search !== "" ||
-    url.hash !== "" ||
-    url.hostname === ""
-  )
-    throw new ModelRequestError(
-      "MODEL_CONFIGURATION",
-      "system",
-      "Configured model endpoint violates the HTTPS boundary.",
-    );
+  const url = validateModelEndpoint(endpoint);
   return { origin: url.origin, provider: url.hostname };
 }
 

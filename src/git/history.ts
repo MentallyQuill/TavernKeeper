@@ -93,6 +93,7 @@ export async function planHistory(
     }
     const count = await readHistoryCount(repositoryRoot, revision, runner);
     if (!count.ok) return count;
+    if (count.value === 0) continue;
     return ok({
       baseSha: previousSha,
       historyCommits: count.value,

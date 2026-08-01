@@ -124,7 +124,7 @@ function privateIp(address: string) {
   );
 }
 
-function validateEndpoint(endpoint: string) {
+export function validateModelEndpoint(endpoint: string) {
   let url: URL;
   try {
     url = new URL(endpoint);
@@ -214,7 +214,7 @@ function usageFromResponse(
 export async function requestStructuredCompletion(
   request: StructuredCompletionRequest,
 ): Promise<StructuredCompletionResult> {
-  const endpoint = validateEndpoint(request.endpoint);
+  const endpoint = validateModelEndpoint(request.endpoint);
   if (
     request.apiKey.trim() === "" ||
     request.model.trim() === "" ||

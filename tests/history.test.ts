@@ -113,4 +113,46 @@ describe("bounded history planning", () => {
       },
     });
   });
+
+  test("uses current bounded history when the newest report already targets HEAD", async () => {
+    const runner: CommandRunner = {
+      async run(_command, args) {
+        if (args.includes("merge-base"))
+          return {
+            ok: true,
+            value: { exitCode: 0, stdout: "", stderr: "" },
+          };
+        if (args.includes("diff"))
+          return {
+            ok: true,
+            value: { exitCode: 0, stdout: "", stderr: "" },
+          };
+        if (args.includes(`${newestPrevious}..HEAD`))
+          return {
+            ok: true,
+            value: { exitCode: 0, stdout: "0\n", stderr: "" },
+          };
+        if (args.includes("log"))
+          return {
+            ok: true,
+            value: { exitCode: 0, stdout: "README.md\0", stderr: "" },
+          };
+        return {
+          ok: true,
+          value: { exitCode: 0, stdout: "5\n", stderr: "" },
+        };
+      },
+    };
+
+    const result = await planHistory("C:/repository", [newestPrevious], runner);
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        baseSha: null,
+        historyCommits: 5,
+        changedPaths: ["README.md"],
+      },
+    });
+  });
 });

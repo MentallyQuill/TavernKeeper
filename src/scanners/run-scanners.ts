@@ -1,4 +1,5 @@
 import type { ScannerPins, ScannerPolicy } from "../config/policy.js";
+import type { Finding } from "../contracts/reports.js";
 import type { InventoryClassification } from "../inventory/classify.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { runGitleaks, type GitleaksHistory } from "./gitleaks.js";
@@ -26,6 +27,7 @@ export interface ApplicableScannerSpec {
   history: GitleaksHistory;
   classification: InventoryClassification;
   structuralFiles: StaticSourceFile[];
+  structuralFindings?: Finding[];
   runner: CommandRunner;
   policy: ScannerPolicy;
   pins: ScannerVersionPins;
@@ -98,7 +100,8 @@ export async function runApplicableScanners(
       name: "tavernkeeper-static",
       version: spec.policy.version,
       status: "completed",
-      findings: adapters.staticScan(spec.structuralFiles),
+      findings:
+        spec.structuralFindings ?? adapters.staticScan(spec.structuralFiles),
     },
   ];
   runs.push(

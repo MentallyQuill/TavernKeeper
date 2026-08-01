@@ -55,14 +55,14 @@ const validReport = {
       eligible_text_files: 2,
       eligible_text_bytes: 100,
       excluded: {
-        dependency_lockfiles: 0,
-        vendored_dependencies: 0,
-        generated_bundles: 0,
-        minified_files: 0,
-        binaries: 1,
-        archives: 0,
-        oversized_files: 0,
-        unsafe_entries: 0,
+        dependency_lockfiles: { files: 0, bytes: 0 },
+        vendored_dependencies: { files: 0, bytes: 0 },
+        generated_bundles: { files: 0, bytes: 0 },
+        minified_files: { files: 0, bytes: 0 },
+        binaries: { files: 1, bytes: 20 },
+        archives: { files: 0, bytes: 0 },
+        oversized_files: { files: 0, bytes: 0 },
+        unsafe_entries: { files: 0, bytes: 0 },
       },
     },
     tools: [
@@ -76,12 +76,15 @@ const validReport = {
     ],
     model: {
       status: "completed",
+      endpoint_origin: "https://provider.example",
       provider: "provider.example",
       model: "vendor/model-test",
       input_chunks: 2,
       completed_chunks: 2,
       input_tokens: 1000,
       output_tokens: 100,
+      cache_read_tokens: 100,
+      reasoning_tokens: 50,
       total_tokens: 1100,
     },
   },
@@ -301,6 +304,45 @@ describe("public contracts", () => {
       ScanReportSchema.safeParse({
         ...validReport,
         finding_counts: { ...validReport.finding_counts, total: 0 },
+      }).success,
+    ).toBe(false);
+  });
+
+  test("rejects exclusion coverage that omits byte totals", () => {
+    const numericExclusions = Object.fromEntries(
+      Object.entries(validReport.coverage.inventory.excluded).map(
+        ([category, totals]) => [
+          category,
+          typeof totals === "number" ? totals : totals.files,
+        ],
+      ),
+    );
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        coverage: {
+          ...validReport.coverage,
+          inventory: {
+            ...validReport.coverage.inventory,
+            excluded: numericExclusions,
+          },
+        },
+      }).success,
+    ).toBe(false);
+  });
+
+  test("requires model endpoint origin and complete usage categories", () => {
+    const incompleteModel = { ...validReport.coverage.model } as Record<
+      string,
+      unknown
+    >;
+    delete incompleteModel.endpoint_origin;
+    delete incompleteModel.cache_read_tokens;
+    delete incompleteModel.reasoning_tokens;
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        coverage: { ...validReport.coverage, model: incompleteModel },
       }).success,
     ).toBe(false);
   });

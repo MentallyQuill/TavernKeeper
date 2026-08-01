@@ -92,6 +92,15 @@
     "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "report_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "nonnegative_integer": { "type": "integer", "minimum": 0 },
+    "file_byte_totals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["files", "bytes"],
+      "properties": {
+        "files": { "$ref": "#/definitions/nonnegative_integer" },
+        "bytes": { "$ref": "#/definitions/nonnegative_integer" }
+      }
+    },
     "tool": {
       "type": "object",
       "additionalProperties": false,
@@ -116,16 +125,16 @@
         "unsafe_entries"
       ],
       "properties": {
-        "dependency_lockfiles": { "$ref": "#/definitions/nonnegative_integer" },
+        "dependency_lockfiles": { "$ref": "#/definitions/file_byte_totals" },
         "vendored_dependencies": {
-          "$ref": "#/definitions/nonnegative_integer"
+          "$ref": "#/definitions/file_byte_totals"
         },
-        "generated_bundles": { "$ref": "#/definitions/nonnegative_integer" },
-        "minified_files": { "$ref": "#/definitions/nonnegative_integer" },
-        "binaries": { "$ref": "#/definitions/nonnegative_integer" },
-        "archives": { "$ref": "#/definitions/nonnegative_integer" },
-        "oversized_files": { "$ref": "#/definitions/nonnegative_integer" },
-        "unsafe_entries": { "$ref": "#/definitions/nonnegative_integer" }
+        "generated_bundles": { "$ref": "#/definitions/file_byte_totals" },
+        "minified_files": { "$ref": "#/definitions/file_byte_totals" },
+        "binaries": { "$ref": "#/definitions/file_byte_totals" },
+        "archives": { "$ref": "#/definitions/file_byte_totals" },
+        "oversized_files": { "$ref": "#/definitions/file_byte_totals" },
+        "unsafe_entries": { "$ref": "#/definitions/file_byte_totals" }
       }
     },
     "inventory": {
@@ -151,22 +160,32 @@
       "additionalProperties": false,
       "required": [
         "status",
+        "endpoint_origin",
         "provider",
         "model",
         "input_chunks",
         "completed_chunks",
         "input_tokens",
         "output_tokens",
+        "cache_read_tokens",
+        "reasoning_tokens",
         "total_tokens"
       ],
       "properties": {
         "status": { "const": "completed" },
+        "endpoint_origin": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^https://[^/?#]+$"
+        },
         "provider": { "$ref": "#/definitions/version" },
         "model": { "$ref": "#/definitions/model_identifier" },
         "input_chunks": { "$ref": "#/definitions/nonnegative_integer" },
         "completed_chunks": { "$ref": "#/definitions/nonnegative_integer" },
         "input_tokens": { "$ref": "#/definitions/nonnegative_integer" },
         "output_tokens": { "$ref": "#/definitions/nonnegative_integer" },
+        "cache_read_tokens": { "$ref": "#/definitions/nonnegative_integer" },
+        "reasoning_tokens": { "$ref": "#/definitions/nonnegative_integer" },
         "total_tokens": { "$ref": "#/definitions/nonnegative_integer" }
       }
     },

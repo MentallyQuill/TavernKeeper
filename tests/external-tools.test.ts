@@ -3,6 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import type { InventoryClassification } from "../src/inventory/classify.js";
 import { runApplicableScanners } from "../src/scanners/run-scanners.js";
 import { ScannerError, type ScannerRun } from "../src/scanners/types.js";
+import { normalizeFinding } from "../src/scanners/types.js";
 import type { CommandRunner } from "../src/process/command-runner.js";
 
 const completed = (name: string): ScannerRun => ({
@@ -139,5 +140,39 @@ describe("scanner coordinator", () => {
     expect(adapters.osv).not.toHaveBeenCalled();
     expect(adapters.zizmor).not.toHaveBeenCalled();
     expect(adapters.malcontent).not.toHaveBeenCalled();
+  });
+
+  test("uses precomputed structural findings without retaining source files", async () => {
+    const structuralFinding = normalizeFinding({
+      origin: "tavernkeeper",
+      ruleId: "unicode-bidi-control",
+      category: "obfuscation",
+      severity: "medium",
+      confidence: "medium",
+      path: "src/index.ts",
+      lineStart: 1,
+      lineEnd: 1,
+      evidenceSha: null,
+      title: "Bidirectional control",
+      explanation: "A bidirectional control requires review.",
+    });
+    const adapters = {
+      staticScan: vi.fn(() => {
+        throw new Error("Source-retaining path must not run.");
+      }),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => completed("opengrep")),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    const runs = await runApplicableScanners(
+      { ...baseSpec, structuralFindings: [structuralFinding] },
+      adapters,
+    );
+
+    expect(runs[0]?.findings).toEqual([structuralFinding]);
+    expect(adapters.staticScan).not.toHaveBeenCalled();
   });
 });
