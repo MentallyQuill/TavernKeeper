@@ -1,0 +1,34 @@
+rules:
+  - id: tavernkeeper.encoded-payload.javascript-decode-to-execution
+    message: Decoded or encoded content reaches a dynamic JavaScript execution API.
+    severity: ERROR
+    languages: [javascript, typescript]
+    metadata:
+      tavernkeeper_category: obfuscation
+      tavernkeeper_severity: high
+      tavernkeeper_confidence: high
+      tavernkeeper_title: Encoded payload reaches dynamic execution
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: atob(...)
+          - pattern: Buffer.from(..., "base64")
+          - pattern: Buffer.from(..., 'base64')
+    pattern-sinks:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: new Function(...)
+          - pattern: Function(...)
+          - pattern: $VM.runInNewContext(...)
+          - pattern: $VM.runInThisContext(...)
+
+  - id: tavernkeeper.encoded-payload.powershell-command
+    message: PowerShell is asked to execute an encoded command payload.
+    severity: ERROR
+    languages: [generic]
+    metadata:
+      tavernkeeper_category: obfuscation
+      tavernkeeper_severity: high
+      tavernkeeper_confidence: high
+      tavernkeeper_title: Encoded PowerShell command
+    pattern-regex: '(?i)(powershell|pwsh)(\.exe)?[^\n]{0,200}\s-(enc|encodedcommand)\s+[A-Za-z0-9+/=]{16,}'

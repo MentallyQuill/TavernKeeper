@@ -1,0 +1,49 @@
+rules:
+  - id: tavernkeeper.dynamic-execution.javascript-eval
+    message: Runtime-generated JavaScript is executed dynamically.
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      tavernkeeper_category: dynamic-execution
+      tavernkeeper_severity: medium
+      tavernkeeper_confidence: high
+      tavernkeeper_title: Dynamic JavaScript execution
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: new Function(...)
+          - pattern: Function(...)
+          - pattern: $VM.runInNewContext(...)
+          - pattern: $VM.runInThisContext(...)
+
+  - id: tavernkeeper.dynamic-execution.node-shell
+    message: A Node.js process API executes a command or enables a shell.
+    severity: WARNING
+    languages: [javascript, typescript]
+    metadata:
+      tavernkeeper_category: dynamic-execution
+      tavernkeeper_severity: medium
+      tavernkeeper_confidence: medium
+      tavernkeeper_title: Node process execution
+    patterns:
+      - pattern-either:
+          - pattern: $CP.exec(...)
+          - pattern: $CP.execSync(...)
+          - pattern: "$CP.spawn($CMD, $ARGS, {shell: true, ...})"
+          - pattern: "$CP.spawnSync($CMD, $ARGS, {shell: true, ...})"
+
+  - id: tavernkeeper.dynamic-execution.python-eval-or-shell
+    message: Python executes generated code or a shell command.
+    severity: WARNING
+    languages: [python]
+    metadata:
+      tavernkeeper_category: dynamic-execution
+      tavernkeeper_severity: medium
+      tavernkeeper_confidence: high
+      tavernkeeper_title: Dynamic Python execution
+    patterns:
+      - pattern-either:
+          - pattern: eval(...)
+          - pattern: exec(...)
+          - pattern: subprocess.$METHOD(..., shell=True, ...)
+          - pattern: os.system(...)

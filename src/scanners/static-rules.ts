@@ -1,7 +1,6 @@
-import { createHash } from "node:crypto";
-
 import type { Confidence, Finding, Severity } from "../contracts/reports.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
+import { normalizeFinding } from "./types.js";
 
 type SourceCandidate = InventoryFile & { content?: string | null };
 
@@ -34,27 +33,19 @@ function finding(input: {
   title: string;
   explanation: string;
 }): Finding {
-  const fingerprintSource = [
-    input.ruleId,
-    input.path,
-    input.line ?? 0,
-    input.title,
-  ].join(":");
-  return {
+  return normalizeFinding({
     origin: "tavernkeeper",
-    rule_id: input.ruleId,
+    ruleId: input.ruleId,
     category: input.category,
     severity: input.severity,
     confidence: input.confidence,
     path: input.path,
-    line_start: input.line,
-    line_end: input.line,
-    evidence_sha: null,
+    lineStart: input.line,
+    lineEnd: input.line,
+    evidenceSha: null,
     title: input.title,
     explanation: redact(input.explanation),
-    fingerprint: createHash("sha256").update(fingerprintSource).digest("hex"),
-    disposition: "active",
-  };
+  });
 }
 
 function lineNumber(content: string, index: number) {
@@ -111,7 +102,7 @@ function scanInstallHooks(file: SourceCandidate): Finding[] {
           path: file.path,
           line: 1,
           title: "Install hook performs a network-capable command",
-          explanation: `${hook}: ${command}`,
+          explanation: `${hook} contains a network-capable installation command; the command was removed.`,
         }),
       ];
     });

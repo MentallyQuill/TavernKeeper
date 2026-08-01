@@ -1,0 +1,33 @@
+rules:
+  - id: tavernkeeper.download-and-execute.shell-pipeline
+    message: A download command is connected directly to an interpreter or shell.
+    severity: ERROR
+    languages: [generic]
+    metadata:
+      tavernkeeper_category: download-and-execute
+      tavernkeeper_severity: high
+      tavernkeeper_confidence: high
+      tavernkeeper_title: Downloaded content executes immediately
+    pattern-regex: '(?i)(curl|wget|invoke-webrequest|iwr)[^\n]{0,500}(\||;|&&)[^\n]{0,120}(sh|bash|zsh|pwsh|powershell|python|node)(\s|$)'
+
+  - id: tavernkeeper.install-hook.network-capable-command
+    message: A package installation hook invokes a network-capable command.
+    severity: ERROR
+    languages: [generic]
+    metadata:
+      tavernkeeper_category: install-hook
+      tavernkeeper_severity: high
+      tavernkeeper_confidence: medium
+      tavernkeeper_title: Network-capable package installation hook
+    pattern-regex: '(?i)"(preinstall|install|postinstall)"\s*:\s*"[^"\n]{0,500}(curl|wget|invoke-webrequest|iwr|certutil|https?://)'
+
+  - id: tavernkeeper.persistence.startup-modification
+    message: Code modifies a common user or system startup location.
+    severity: WARNING
+    languages: [generic]
+    metadata:
+      tavernkeeper_category: persistence
+      tavernkeeper_severity: medium
+      tavernkeeper_confidence: medium
+      tavernkeeper_title: Startup persistence modification
+    pattern-regex: '(?i)(currentversion\\run|startup\\|launchagents|launchdaemons|autostart|crontab|\.bashrc|\.zshrc|\.profile|systemctl\s+enable|schtasks\s+/create)'
