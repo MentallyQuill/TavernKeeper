@@ -23,6 +23,8 @@ function file(path: string): InventoryFile {
   };
 }
 
+const repositoryRoot = join(tmpdir(), "tavernkeeper-scan-repository");
+
 class JsonRunner implements CommandRunner {
   calls: Array<{ command: string; args: string[]; options: CommandOptions }> =
     [];
@@ -52,7 +54,7 @@ describe("conditional scanner adapters", () => {
         results: [
           {
             source: {
-              path: "C:/scan/repository/package-lock.json",
+              path: join(repositoryRoot, "package-lock.json"),
               type: "lockfile",
             },
             packages: [
@@ -79,7 +81,7 @@ describe("conditional scanner adapters", () => {
       join(tmpdir(), "tavernkeeper-osv-test-"),
     );
     const run = await runOsv({
-      root: "C:/scan/repository",
+      root: repositoryRoot,
       inputs: [file("package-lock.json")],
       runner,
       executable: "C:/trusted/osv-scanner",
@@ -95,7 +97,7 @@ describe("conditional scanner adapters", () => {
       "--verbosity=error",
       "--no-resolve",
       expect.stringMatching(/^--config=/u),
-      "--lockfile=C:\\scan\\repository\\package-lock.json",
+      `--lockfile=${join(repositoryRoot, "package-lock.json")}`,
     ]);
     expect(runner.calls[0]?.args).not.toContain("--recursive");
     const configPath = runner.calls[0]?.args
@@ -126,7 +128,7 @@ describe("conditional scanner adapters", () => {
     const runner = new JsonRunner("{}");
     await expect(
       runOsv({
-        root: "C:/scan/repository",
+        root: repositoryRoot,
         inputs: [],
         runner,
         version: "2.4.0",
@@ -148,7 +150,7 @@ describe("conditional scanner adapters", () => {
 
     await expect(
       runOsv({
-        root: "C:/scan/repository",
+        root: repositoryRoot,
         inputs: [file("package-lock.json")],
         runner,
         version: "2.4.0",
@@ -200,7 +202,7 @@ describe("conditional scanner adapters", () => {
       join(tmpdir(), "tavernkeeper-zizmor-test-"),
     );
     const run = await runZizmor({
-      root: "C:/scan/repository",
+      root: repositoryRoot,
       inputs: [file(".github/workflows/scan.yml")],
       runner,
       executable: "C:/trusted/zizmor",
@@ -218,7 +220,7 @@ describe("conditional scanner adapters", () => {
       "--persona=regular",
       "--cache-dir",
       expect.stringMatching(/zizmor-cache$/u),
-      "C:\\scan\\repository\\.github\\workflows\\scan.yml",
+      join(repositoryRoot, ".github", "workflows", "scan.yml"),
     ]);
     expect(run).toMatchObject({
       name: "zizmor",
@@ -244,7 +246,7 @@ describe("conditional scanner adapters", () => {
     const runner = new JsonRunner("[]");
     await expect(
       runZizmor({
-        root: "C:/scan/repository",
+        root: repositoryRoot,
         inputs: [],
         runner,
         version: "1.28.0",
@@ -283,7 +285,7 @@ describe("conditional scanner adapters", () => {
       }),
     );
     const run = await runMalcontent({
-      root: "C:/scan/repository",
+      root: repositoryRoot,
       inputs: [file("bin/helper.exe")],
       runner,
       executable: "C:/trusted/malcontent",
@@ -299,7 +301,7 @@ describe("conditional scanner adapters", () => {
       "--max-image-size=1073741824",
       "--min-risk=high",
       "--jobs=2",
-      "C:\\scan\\repository\\bin\\helper.exe",
+      join(repositoryRoot, "bin", "helper.exe"),
     ]);
     expect(runner.calls[0]?.args).not.toContain("--oci-auth");
     expect(
@@ -329,7 +331,7 @@ describe("conditional scanner adapters", () => {
     const runner = new JsonRunner("{}");
     await expect(
       runMalcontent({
-        root: "C:/scan/repository",
+        root: repositoryRoot,
         inputs: [],
         runner,
         version: "1.25.7",
@@ -347,7 +349,7 @@ describe("conditional scanner adapters", () => {
 
     await expect(
       runMalcontent({
-        root: "C:/scan/repository",
+        root: repositoryRoot,
         inputs: [file("bin/helper.exe")],
         runner,
         version: "1.25.7",
