@@ -4,11 +4,21 @@ import { Ajv } from "ajv";
 import { describe, expect, test } from "vitest";
 
 import {
+  deriveV2Result,
   deriveResult,
+  parseReportIndex,
   ReportIndexSchema,
+  ReportIndexV2Schema,
   ScanReportSchema,
+  ScanReportV2Schema,
 } from "../src/contracts/reports.js";
-import { TargetManifestSchema } from "../src/contracts/targets.js";
+import {
+  parseTargetManifest,
+  requireTargetManifestV2,
+  TargetManifestSchema,
+  TargetManifestV2Schema,
+} from "../src/contracts/targets.js";
+import { buildContractSchemas } from "../scripts/generate-contract-schemas.js";
 
 const fullSha = "a".repeat(40);
 const validFinding = {
@@ -125,8 +135,173 @@ const validIndexEntry = {
   },
   report_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${fullSha}/1/standard/1/`,
 };
+const validFindingV2 = {
+  ...validFinding,
+  disposition: "confirmed",
+  automated_review: {
+    analyzer_policy: "analyzer-v1",
+    challenger_policy: "challenger-v1",
+    arbiter_policy: "arbiter-v1",
+  },
+};
+const validReportV2 = {
+  ...validReport,
+  schema_version: 2,
+  result: "red",
+  coverage: {
+    ...validReport.coverage,
+    model: {
+      ...validReport.coverage.model,
+      roles: {
+        analyzer: { required: 2, completed: 2 },
+        challenger: { required: 1, completed: 1 },
+        arbiter: { required: 1, completed: 1 },
+      },
+    },
+    evidence_validation: { status: "completed", validated_findings: 1 },
+  },
+  finding_counts: {
+    ...validReport.finding_counts,
+    disposition: { confirmed: 1, not_supported: 0, inconclusive: 0 },
+  },
+  findings: [validFindingV2],
+};
+const validIndexEntryV2 = {
+  ...validIndexEntry,
+  result: validReportV2.result,
+  finding_counts: validReportV2.finding_counts,
+  history_url:
+    "https://mentallyquill.github.io/TavernKeeper/reports/github/42/history/",
+};
 
 describe("public contracts", () => {
+  test("derives red only from confirmed review-level findings", () => {
+    expect(
+      deriveV2Result([
+        {
+          severity: "medium",
+          confidence: "medium",
+          disposition: "confirmed",
+        },
+      ]),
+    ).toBe("red");
+    expect(
+      deriveV2Result([
+        { severity: "low", confidence: "high", disposition: "confirmed" },
+        {
+          severity: "critical",
+          confidence: "high",
+          disposition: "not-supported",
+        },
+      ]),
+    ).toBe("teal");
+  });
+
+  test("accepts only automated V2 report results and dispositions", () => {
+    expect(ScanReportV2Schema.safeParse(validReportV2).success).toBe(true);
+    expect(
+      ScanReportV2Schema.safeParse({ ...validReportV2, result: "yellow" })
+        .success,
+    ).toBe(false);
+    expect(
+      ScanReportV2Schema.safeParse({
+        ...validReportV2,
+        findings: [{ ...validFindingV2, disposition: "active" }],
+      }).success,
+    ).toBe(false);
+  });
+
+  test("requires immutable repository history URLs in V2 indexes", () => {
+    const index = {
+      schema_version: 2,
+      generated_at: "2026-07-31T12:10:00.000Z",
+      reports: [validIndexEntryV2],
+    };
+    expect(ReportIndexV2Schema.safeParse(index).success).toBe(true);
+    const { history_url: _historyUrl, ...withoutHistory } = validIndexEntryV2;
+    expect(
+      ReportIndexV2Schema.safeParse({ ...index, reports: [withoutHistory] })
+        .success,
+    ).toBe(false);
+  });
+
+  test("parses only frozen V1 or strict V2 report indexes", () => {
+    const legacy = {
+      schema_version: 1,
+      generated_at: "2026-07-31T12:10:00.000Z",
+      reports: [],
+    };
+    const current = {
+      schema_version: 2,
+      generated_at: "2026-07-31T12:10:00.000Z",
+      reports: [validIndexEntryV2],
+    };
+
+    expect(parseReportIndex(legacy).schema_version).toBe(1);
+    expect(parseReportIndex(current).schema_version).toBe(2);
+    expect(() => parseReportIndex({ ...current, schema_version: 3 })).toThrow();
+  });
+
+  test("accepts strict V2 target metadata", () => {
+    const manifest = {
+      schema_version: 2,
+      generated_at: "2026-07-31T12:00:00.000Z",
+      repositories: [
+        {
+          source_id: "github-42",
+          provider: "github",
+          repository_id: 42,
+          repository: "owner/repo",
+          target_sha: fullSha,
+          canonical_url: "https://github.com/owner/repo",
+          project_kinds: ["extension", "preset"],
+          catalog_priority: {
+            top_30: false,
+            first_cataloged_at: "2026-07-01T00:00:00.000Z",
+          },
+        },
+      ],
+    };
+
+    expect(TargetManifestV2Schema.safeParse(manifest).success).toBe(true);
+  });
+
+  test("waits for V2 without inventing migration metadata", () => {
+    const legacy = {
+      schema_version: 1,
+      generated_at: "2026-07-31T12:00:00.000Z",
+      repositories: [],
+    };
+    const parsed = parseTargetManifest(legacy);
+
+    expect(parsed).toEqual(legacy);
+    expect(() => requireTargetManifestV2(parsed)).toThrow(/version 2/u);
+  });
+
+  test("rejects unsorted V2 project kinds", () => {
+    const target = {
+      source_id: "github-42",
+      provider: "github",
+      repository_id: 42,
+      repository: "owner/repo",
+      target_sha: fullSha,
+      canonical_url: "https://github.com/owner/repo",
+      project_kinds: ["preset", "extension"],
+      catalog_priority: {
+        top_30: false,
+        first_cataloged_at: "2026-07-01T00:00:00.000Z",
+      },
+    };
+
+    expect(
+      TargetManifestV2Schema.safeParse({
+        schema_version: 2,
+        generated_at: "2026-07-31T12:00:00.000Z",
+        repositories: [target],
+      }).success,
+    ).toBe(false);
+  });
+
   test("derives yellow only from active review-level findings", () => {
     expect(
       deriveResult([
@@ -453,5 +628,63 @@ describe("public contracts", () => {
     schemas.forEach((schema, index) => {
       expect(ajv.validate(schema, fixtures[index])).toBe(true);
     });
+  });
+
+  test("ships strict V2 JSON Schemas with shared valid fixtures", async () => {
+    const names = ["targets", "report", "index"] as const;
+    const fixtures = await Promise.all(
+      names.map(async (name) =>
+        JSON.parse(
+          await readFile(
+            new URL(
+              `./fixtures/contracts/${name}.v2.valid.json`,
+              import.meta.url,
+            ),
+            "utf8",
+          ),
+        ),
+      ),
+    );
+    const schemas = await Promise.all(
+      ["tavernary-targets.v2", "scan-report.v2", "report-index.v2"].map(
+        async (name) =>
+          JSON.parse(
+            await readFile(
+              new URL(`../schemas/${name}.schema.json`, import.meta.url),
+              "utf8",
+            ),
+          ) as Record<string, unknown>,
+      ),
+    );
+    const ajv = new Ajv({
+      allErrors: true,
+      allowUnionTypes: true,
+      formats: { "date-time": true, uri: true },
+      strict: true,
+    });
+
+    expect(TargetManifestV2Schema.parse(fixtures[0])).toEqual(fixtures[0]);
+    expect(ScanReportV2Schema.parse(fixtures[1])).toEqual(fixtures[1]);
+    expect(ReportIndexV2Schema.parse(fixtures[2])).toEqual(fixtures[2]);
+    schemas.forEach((schema, index) => {
+      expect(schema.$schema).toBe("http://json-schema.org/draft-07/schema#");
+      expect(schema.additionalProperties).toBe(false);
+      expect(ajv.validate(schema, fixtures[index])).toBe(true);
+    });
+  });
+
+  test("keeps tracked V2 JSON Schemas byte-equivalent to the Zod contracts", async () => {
+    const generated = buildContractSchemas();
+
+    await Promise.all(
+      generated.map(async ({ file, document }) => {
+        expect(
+          await readFile(
+            new URL(`../schemas/${file}`, import.meta.url),
+            "utf8",
+          ),
+        ).toBe(`${JSON.stringify(document, null, 2)}\n`);
+      }),
+    );
   });
 });
