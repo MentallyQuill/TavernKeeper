@@ -93,6 +93,35 @@ git add operations/state.json
 git commit -m "chore(ops): apply staff queue operation"
 git push origin HEAD:main`,
 };
+const reviewedContinuationDispatches = {
+  "policy-rescan.yml": {
+    job: "schedule",
+    step: {
+      name: "Dispatch reconcile",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: "gh workflow run reconcile.yml --ref main",
+    },
+  },
+  "reconcile.yml": {
+    job: "continue",
+    needs: ["plan", "deploy"],
+    if: "${{ needs.deploy.result == 'success' && needs.plan.outputs.remaining != '0' }}",
+    step: {
+      name: "Continue remaining backlog without inputs",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: "gh workflow run reconcile.yml --ref main",
+    },
+  },
+  "staff-operations.yml": {
+    job: "operate",
+    step: {
+      name: "Dispatch reconcile",
+      if: "${{ inputs.operation != 'pause' }}",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: "gh workflow run reconcile.yml --ref main",
+    },
+  },
+};
 const reviewedPermissionProfiles = {
   "adjudicate.yml": {
     workflow: { contents: "read", pages: "write", "id-token": "write" },
@@ -330,7 +359,7 @@ function publisherSecretLocations(value, path = [], locations = []) {
 
 function publisherTokenLocations(value, path = [], locations = []) {
   if (typeof value === "string") {
-    if (value === publisherToken) locations.push(path);
+    if (value.includes(publisherToken)) locations.push(path);
     return locations;
   }
   if (Array.isArray(value)) {
@@ -343,6 +372,32 @@ function publisherTokenLocations(value, path = [], locations = []) {
   for (const [key, child] of Object.entries(value))
     publisherTokenLocations(child, [...path, key], locations);
   return locations;
+}
+
+function checkContinuationDispatch(file, workflow) {
+  const contract = reviewedContinuationDispatches[file];
+  if (contract === undefined) return;
+  const job = workflow.jobs?.[contract.job];
+  const dispatches = Object.entries(workflow.jobs ?? {}).flatMap(
+    ([jobName, candidate]) =>
+      (Array.isArray(candidate?.steps) ? candidate.steps : [])
+        .filter(
+          (step) =>
+            typeof step?.run === "string" &&
+            step.run.includes("gh workflow run"),
+        )
+        .map((step) => ({ jobName, step })),
+  );
+  if (
+    job === undefined ||
+    (contract.needs !== undefined &&
+      JSON.stringify(job.needs) !== JSON.stringify(contract.needs)) ||
+    (contract.if !== undefined && job.if !== contract.if) ||
+    dispatches.length !== 1 ||
+    dispatches[0]?.jobName !== contract.job ||
+    JSON.stringify(dispatches[0]?.step) !== JSON.stringify(contract.step)
+  )
+    fail(file, "continuation dispatch changed from the reviewed contract");
 }
 
 function checkPublisherBoundary(file, workflow) {
@@ -497,6 +552,7 @@ for (const file of names) {
   checkParallelism(file, workflow);
   checkModelSecretPlacement(file, workflow);
   checkPublisherBoundary(file, workflow);
+  checkContinuationDispatch(file, workflow);
 }
 
 const policy = JSON.parse(

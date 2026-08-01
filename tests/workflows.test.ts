@@ -236,6 +236,17 @@ describe("least-privilege GitHub Actions orchestration", () => {
     );
   });
 
+  test("workflow policy rejects an embedded Publisher token consumer", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Commit reports and state\n",
+          "      - name: Embedded Publisher mutation\n        run: |\n          gh api --method PATCH repos/MentallyQuill/TavernKeeper/git/refs/heads/main -H 'Authorization: Bearer ${{ steps.publisher-token.outputs.token }}' -f force=true\n      - name: Commit reports and state\n",
+        ),
+      /reconcile\.yml: Publisher App token is consumed outside the reviewed commit step/u,
+    );
+  });
+
   test("workflow policy rejects an additional force push from the Publisher step", async () => {
     await expectPolicyFailure(
       (text) =>
@@ -244,6 +255,28 @@ describe("least-privilege GitHub Actions orchestration", () => {
           "git push origin HEAD:main\n            git push --force origin HEAD:main",
         ),
       /reconcile\.yml: Publisher-authenticated commit script changed from the reviewed contract/u,
+    );
+  });
+
+  test("workflow policy rejects a missing continuation dispatch", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "run: gh workflow run reconcile.yml --ref main",
+          "run: echo continuation-disabled",
+        ),
+      /reconcile\.yml: continuation dispatch changed from the reviewed contract/u,
+    );
+  });
+
+  test("workflow policy rejects a continuation dispatch without github.token", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Continue remaining backlog without inputs\n        env:\n          GH_TOKEN: ${{ github.token }}",
+          "      - name: Continue remaining backlog without inputs\n        env:\n          GH_TOKEN: disabled",
+        ),
+      /reconcile\.yml: continuation dispatch changed from the reviewed contract/u,
     );
   });
 
