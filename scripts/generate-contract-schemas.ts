@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { z, type ZodType } from "zod";
+import { format } from "prettier";
 
 import {
   ReportIndexV2Schema,
@@ -54,13 +55,15 @@ export function buildContractSchemas() {
   });
 }
 
+export function serializeContractSchema(document: object) {
+  return format(JSON.stringify(document), { parser: "json" });
+}
+
 export async function writeContractSchemas() {
   await Promise.all(
     buildContractSchemas().map(({ file, document }) =>
-      writeFile(
-        resolve(root, "schemas", file),
-        `${JSON.stringify(document, null, 2)}\n`,
-        "utf8",
+      serializeContractSchema(document).then((serialized) =>
+        writeFile(resolve(root, "schemas", file), serialized, "utf8"),
       ),
     ),
   );

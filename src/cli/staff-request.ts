@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { TargetSchema } from "../contracts/targets.js";
+import { TargetV2Schema } from "../contracts/targets.js";
 
 export const StaffScanRequestSchema = z.strictObject({
   repository_id: z.number().int().positive(),
@@ -11,7 +11,7 @@ export function validateStaffScanRequest(input: unknown) {
   return StaffScanRequestSchema.parse(input);
 }
 
-export const ScanRequestSchema = TargetSchema.extend({
+export const ScanRequestSchema = TargetV2Schema.extend({
   reason: z.enum(["new", "changed", "retry", "policy", "staff"]),
   mode: z.enum(["standard", "deep"]),
   report_version: z.number().int().positive(),

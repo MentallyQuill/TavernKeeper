@@ -362,7 +362,7 @@ function findingCountsMatch(
   );
 }
 
-function buildFindingCountsV2(findings: FindingV2[]) {
+export function buildFindingCountsV2(findings: FindingV2[]) {
   const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
   const confidence = { high: 0, medium: 0, low: 0 };
   const disposition = { confirmed: 0, not_supported: 0, inconclusive: 0 };

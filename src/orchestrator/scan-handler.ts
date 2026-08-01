@@ -1,13 +1,11 @@
 import { createHash } from "node:crypto";
 
 import {
-  buildFindingCounts,
-  deriveResult,
   FindingSchema,
-  ScanReportSchema,
+  ScanReportV2Schema,
   type Finding,
   type ScanMode,
-  type ScanReport,
+  type ScanReportV2,
 } from "../contracts/reports.js";
 import { TargetSchema, type Target } from "../contracts/targets.js";
 import type { ScannerPolicy } from "../config/policy.js";
@@ -32,11 +30,12 @@ import {
 } from "../model/corpus.js";
 import { ModelCacheError } from "../model/chunk-cache.js";
 import { reviewWithConfiguredModel } from "../model/model-review.js";
+import { buildAutomatedReportFindings } from "../model/report-builder.js";
 import {
   ModelRequestError,
   validateModelEndpoint,
 } from "../model/openai-compatible-client.js";
-import type { ModelRelationship } from "../model/synthesis.js";
+import type { ModelRelationship } from "../model/role-contracts.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { reportIdentity } from "../publish/report-path.js";
 import {
@@ -54,6 +53,7 @@ import {
 
 export interface ScanRepositorySpec {
   target: Target;
+  projectKinds: readonly ("extension" | "frontend" | "preset")[];
   root: string;
   previousReportShas: string[];
   completedAt: string;
@@ -97,7 +97,7 @@ export interface ScanDependencies {
 }
 
 export interface SanitizedCandidate {
-  report: ScanReport;
+  report: ScanReportV2;
 }
 
 export interface ScanFailure {
@@ -390,15 +390,13 @@ function buildReport({
   chunks: ModelChunk[];
   model: Awaited<ReturnType<typeof reviewWithConfiguredModel>>;
 }) {
-  const findings = [...model.findings].sort((left, right) =>
-    left.fingerprint.localeCompare(right.fingerprint),
-  );
+  const automated = buildAutomatedReportFindings(model.findings);
   const eligibleTextBytes = classification.modelEligible.reduce(
     (total, file) => total + file.bytes,
     0,
   );
-  const withoutId: Omit<ScanReport, "report_id"> = {
-    schema_version: 1,
+  const withoutId: Omit<ScanReportV2, "report_id"> = {
+    schema_version: 2,
     report_version: spec.reportVersion,
     supersedes_report_id: spec.supersedesReportId,
     scanner_version: spec.scannerVersion,
@@ -448,13 +446,15 @@ function buildReport({
         cache_read_tokens: model.usage.cacheReadTokens,
         reasoning_tokens: model.usage.reasoningTokens,
         total_tokens: model.usage.inputTokens + model.usage.outputTokens,
+        roles: model.roleCompletion,
       },
+      evidence_validation: automated.evidenceValidation,
     },
-    result: deriveResult(findings),
-    finding_counts: buildFindingCounts(findings),
-    findings,
+    result: automated.result,
+    finding_counts: automated.findingCounts,
+    findings: automated.findings,
   };
-  return ScanReportSchema.parse({
+  return ScanReportV2Schema.parse({
     ...withoutId,
     report_id: reportIdentity(withoutId),
   });
@@ -485,6 +485,7 @@ export async function scanRepository(
     }
     if (
       !target.success ||
+      spec.projectKinds.length === 0 ||
       spec.scannerPolicyVersion !== spec.policy.version ||
       spec.model.identifier.trim() === "" ||
       spec.model.apiKey === null ||
@@ -598,13 +599,15 @@ export async function scanRepository(
       endpoint: spec.model.endpoint,
       apiKey: spec.model.apiKey,
       model: spec.model.identifier,
+      targetSha: target.data.target_sha,
+      projectKinds: spec.projectKinds,
       chunks,
       deterministicFindings,
       relationships: spec.relationships ?? [],
       promptPolicyVersion: spec.promptPolicyVersion,
       scannerPolicyVersion: spec.scannerPolicyVersion,
-      maxOutputTokensPerChunk: spec.policy.model.maxOutputTokensPerChunk,
-      maxSynthesisOutputTokens: spec.policy.model.maxSynthesisOutputTokens,
+      rolePolicies: spec.policy.model.rolePolicies,
+      maxOutputTokensPerRole: spec.policy.model.maxOutputTokensPerRole,
       cache: spec.model.cache,
     });
     validateModelCoverage({

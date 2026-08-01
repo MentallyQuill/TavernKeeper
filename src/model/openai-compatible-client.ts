@@ -42,12 +42,13 @@ export type ModelRequestErrorCode =
   | "MODEL_AUTHENTICATION"
   | "MODEL_QUOTA"
   | "MODEL_PROVIDER"
-  | "MODEL_INVALID_RESPONSE";
+  | "MODEL_INVALID_RESPONSE"
+  | "MODEL_EVIDENCE_INVALID";
 
 export class ModelRequestError extends Error {
   constructor(
     readonly code: ModelRequestErrorCode,
-    readonly scope: "system",
+    readonly scope: "repository" | "system",
     message: string,
   ) {
     super(message);

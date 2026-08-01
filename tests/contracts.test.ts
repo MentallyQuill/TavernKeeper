@@ -18,7 +18,10 @@ import {
   TargetManifestSchema,
   TargetManifestV2Schema,
 } from "../src/contracts/targets.js";
-import { buildContractSchemas } from "../scripts/generate-contract-schemas.js";
+import {
+  buildContractSchemas,
+  serializeContractSchema,
+} from "../scripts/generate-contract-schemas.js";
 
 const fullSha = "a".repeat(40);
 const validFinding = {
@@ -683,7 +686,7 @@ describe("public contracts", () => {
             new URL(`../schemas/${file}`, import.meta.url),
             "utf8",
           ),
-        ).toBe(`${JSON.stringify(document, null, 2)}\n`);
+        ).toBe(await serializeContractSchema(document));
       }),
     );
   });

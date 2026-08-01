@@ -5,7 +5,7 @@ import {
   runJsonCli,
 } from "./io.js";
 import { ReportIndexSchema } from "../contracts/reports.js";
-import { TargetManifestSchema } from "../contracts/targets.js";
+import { parseTargetManifest } from "../contracts/targets.js";
 import { parseOperationsState } from "../operations/state.js";
 import { planBatch } from "../queue/backlog.js";
 import { ScanRequestSchema } from "./staff-request.js";
@@ -28,10 +28,32 @@ export function buildReconcileMatrix({
   now: string;
   scannerPolicyVersion: string;
 }) {
-  const manifest = TargetManifestSchema.parse(manifestInput);
+  const manifest = parseTargetManifest(manifestInput);
   const index = ReportIndexSchema.parse(indexInput);
   const state = parseOperationsState(stateInput);
-  const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
+  if (manifest.schema_version === 1) {
+    return { include: [], remaining: 0, blocked: false };
+  }
+  const plan = planBatch(
+    {
+      schema_version: 1,
+      generated_at: manifest.generated_at,
+      repositories: manifest.repositories.map(
+        ({
+          project_kinds: _projectKinds,
+          catalog_priority: _priority,
+          ...target
+        }) => target,
+      ),
+    },
+    index,
+    state,
+    now,
+    scannerPolicyVersion,
+  );
+  const targetMetadata = new Map(
+    manifest.repositories.map((target) => [target.repository_id, target]),
+  );
   const include = plan.targets.map(({ target, reason }) => {
     const repositoryReports = index.reports.filter(
       ({ repository_id }) => repository_id === target.repository_id,
@@ -40,7 +62,7 @@ export function buildReconcileMatrix({
       ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
     ].slice(0, 20);
     return ScanRequestSchema.parse({
-      ...target,
+      ...targetMetadata.get(target.repository_id),
       reason,
       mode: "standard",
       report_version: 1,

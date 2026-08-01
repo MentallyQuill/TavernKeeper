@@ -165,8 +165,29 @@ async function fixtureScan(
         endpointOrigin: new URL(endpoint).origin,
         provider: new URL(endpoint).hostname,
         model,
-        findings: deterministicFindings,
+        findings: deterministicFindings.map(
+          ({
+            disposition: _disposition,
+            adjudication: _adjudication,
+            ...finding
+          }) => ({
+            ...finding,
+            disposition: "confirmed" as const,
+            automated_review: {
+              analyzer_policy: "analyzer-v1",
+              challenger_policy: "challenger-v1",
+              arbiter_policy: "arbiter-v1",
+            },
+          }),
+        ),
         completedChunkIds: chunks.map(({ id }) => id),
+        roleCompletion: {
+          analyzer: { required: chunks.length, completed: chunks.length },
+          challenger: { required: chunks.length, completed: chunks.length },
+          arbiter: { required: chunks.length, completed: chunks.length },
+        },
+        cacheHits: 0,
+        cacheMisses: chunks.length * 3,
         usage: {
           inputTokens: chunks.length * 100,
           outputTokens: chunks.length * 10,
@@ -177,6 +198,7 @@ async function fixtureScan(
     },
   };
   const spec: ScanRepositorySpec = {
+    projectKinds: ["extension"],
     target: {
       source_id: "github-42",
       provider: "github",
@@ -214,7 +236,7 @@ async function fixtureScan(
 }
 
 describe("in-process hostile-data safety and publication gate", () => {
-  test("completes a benign repository as green with full model coverage", async () => {
+  test("completes a benign repository as teal with full model coverage", async () => {
     const { result, submittedSource } = await fixtureScan("benign-small", {
       mode: "deep",
     });
@@ -223,7 +245,7 @@ describe("in-process hostile-data safety and publication gate", () => {
       ok: true,
       value: {
         report: {
-          result: "green",
+          result: "teal",
           finding_counts: { total: 0, actionable: 0 },
         },
       },
@@ -236,20 +258,20 @@ describe("in-process hostile-data safety and publication gate", () => {
     expect(submittedSource.join("\n")).toContain("Welcome");
   });
 
-  test("reports credential exfiltration signals as yellow", async () => {
+  test("reports credential exfiltration signals as red", async () => {
     const { result, submittedSource } = await fixtureScan("malicious-signals", {
       mode: "deep",
     });
 
     expect(result, JSON.stringify(result)).toMatchObject({
       ok: true,
-      value: { report: { result: "yellow" } },
+      value: { report: { result: "red" } },
     });
     expect(result.ok ? result.value.report.findings : []).toContainEqual(
       expect.objectContaining({
         rule_id: "credential-exfiltration",
         category: "credential-theft",
-        disposition: "active",
+        disposition: "confirmed",
       }),
     );
     expect(submittedSource.join("\n")).toContain("collector.invalid");
@@ -266,7 +288,7 @@ describe("in-process hostile-data safety and publication gate", () => {
     expect(await doesNotExist(marker)).toBe(true);
     expect(result.ok, JSON.stringify(result)).toBe(true);
     if (!result.ok) throw new Error("Expected hostile fixture scan candidate.");
-    expect(result.value.report.result).toBe("yellow");
+    expect(result.value.report.result).toBe("red");
     expect(
       result.value.report.findings.map(({ rule_id }) => rule_id),
     ).toContain("network-install-hook");

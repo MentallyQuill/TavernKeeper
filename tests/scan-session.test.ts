@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
 
 import { loadScannerPolicy } from "../src/config/policy.js";
-import { ScanReportSchema } from "../src/contracts/reports.js";
+import { ScanReportV2Schema } from "../src/contracts/reports.js";
 import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
 import { chunkCorpus } from "../src/model/chunker.js";
 import {
@@ -49,7 +49,7 @@ async function preparedSession() {
   );
   await writeFile(join(root, "chunks", "000000.json"), JSON.stringify(chunk));
   const base = {
-    schema_version: 1 as const,
+    schema_version: 2 as const,
     target: {
       source_id: "github-42",
       provider: "github" as const,
@@ -58,6 +58,7 @@ async function preparedSession() {
       target_sha: targetSha,
       canonical_url: "https://github.com/owner/repo",
     },
+    project_kinds: ["extension"] as const,
     prepared_at: "2026-07-31T15:00:00.000Z",
     scanner_version: "1.0.0",
     scanner_policy_version: "1",
@@ -138,13 +139,38 @@ async function preparedSession() {
 }
 
 function completionDouble(calls: string[]) {
-  return async (request: { schemaName: string }) => {
+  return async (request: { schemaName: string; userContent: string }) => {
     calls.push(request.schemaName);
+    const input = JSON.parse(request.userContent) as any;
+    const payload = request.schemaName.endsWith("analyzer")
+      ? {
+          assessments: input.deterministic_findings.map((finding: any) => ({
+            fingerprint: finding.fingerprint,
+            evidence: finding.evidence,
+            assessment: "concerning",
+            rationale: "The deterministic signal requires review.",
+          })),
+          discoveries: [],
+        }
+      : request.schemaName.endsWith("challenger")
+        ? {
+            challenges: input.claims.map((claim: any) => ({
+              fingerprint: claim.fingerprint,
+              evidence: claim.evidence,
+              position: "supports",
+              rationale: "The deterministic evidence is specific.",
+            })),
+          }
+        : {
+            decisions: input.claims.map((claim: any) => ({
+              fingerprint: claim.fingerprint,
+              evidence: claim.evidence,
+              disposition: "confirmed",
+              rationale: "The evidence supports the finding.",
+            })),
+          };
     return {
-      content:
-        request.schemaName === "tavernkeeper_chunk_findings"
-          ? '{"findings":[]}'
-          : '{"annotations":[]}',
+      content: JSON.stringify(payload),
       usage: {
         inputTokens: 10,
         outputTokens: 2,
@@ -170,9 +196,18 @@ describe("ephemeral split scan session", () => {
     const review = await reviewPreparedSession({
       sessionRoot: root,
       manifest: {
-        schema_version: 1,
+        schema_version: 2,
         generated_at: "2026-07-31T15:30:00.000Z",
-        repositories: [prepared.target],
+        repositories: [
+          {
+            ...prepared.target,
+            project_kinds: ["extension"],
+            catalog_priority: {
+              top_30: false,
+              first_cataloged_at: "2026-07-01T00:00:00.000Z",
+            },
+          },
+        ],
       },
       endpoint: "https://provider.example/v1/chat/completions",
       apiKey: "test-key",
@@ -184,8 +219,9 @@ describe("ephemeral split scan session", () => {
     });
 
     expect(calls).toEqual([
-      "tavernkeeper_chunk_findings",
-      "tavernkeeper_synthesis",
+      "tavernkeeper_analyzer",
+      "tavernkeeper_challenger",
+      "tavernkeeper_arbiter",
     ]);
     expect(JSON.stringify(review)).not.toMatch(/segments|content|test-key/iu);
     const output = join(root, "..", `candidate-${Date.now()}.json`);
@@ -199,7 +235,7 @@ describe("ephemeral split scan session", () => {
     expect(finalized.status).toBe("completed");
     expect(
       finalized.status === "completed" &&
-        ScanReportSchema.safeParse(finalized.candidate.report).success,
+        ScanReportV2Schema.safeParse(finalized.candidate.report).success,
     ).toBe(true);
     await expect(readFile(join(root, "prepared.json"))).rejects.toMatchObject({
       code: "ENOENT",
@@ -207,7 +243,7 @@ describe("ephemeral split scan session", () => {
     await rm(output, { force: true });
   });
 
-  test("spends no model tokens when Tavernary has already advanced the target", async () => {
+  test("finishes the exact prepared SHA when Tavernary has already advanced", async () => {
     const { root, prepared } = await preparedSession();
     const calls: string[] = [];
     const policy = await loadScannerPolicy(
@@ -219,9 +255,19 @@ describe("ephemeral split scan session", () => {
     const review = await reviewPreparedSession({
       sessionRoot: root,
       manifest: {
-        schema_version: 1,
+        schema_version: 2,
         generated_at: "2026-07-31T15:30:00.000Z",
-        repositories: [{ ...prepared.target, target_sha: "c".repeat(40) }],
+        repositories: [
+          {
+            ...prepared.target,
+            target_sha: "c".repeat(40),
+            project_kinds: ["extension"],
+            catalog_priority: {
+              top_30: false,
+              first_cataloged_at: "2026-07-01T00:00:00.000Z",
+            },
+          },
+        ],
       },
       endpoint: "https://provider.example/v1/chat/completions",
       apiKey: "test-key",
@@ -232,10 +278,11 @@ describe("ephemeral split scan session", () => {
       verifyHead: async () => ({ ok: true, value: targetSha }),
     });
 
-    expect(review).toMatchObject({
-      status: "obsolete",
-      session_id: prepared.session_id,
-    });
-    expect(calls).toEqual([]);
+    expect(review).toMatchObject({ status: "completed" });
+    expect(calls).toEqual([
+      "tavernkeeper_analyzer",
+      "tavernkeeper_challenger",
+      "tavernkeeper_arbiter",
+    ]);
   });
 });

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
 import { loadScannerPolicy } from "../config/policy.js";
-import { TargetManifestSchema } from "../contracts/targets.js";
+import { TargetManifestV2Schema } from "../contracts/targets.js";
 import { verifyExactHead } from "../git/checkout.js";
 import { FileModelChunkCache } from "../model/chunk-cache.js";
 import { reviewPreparedSession } from "../orchestrator/session.js";
@@ -29,7 +29,7 @@ async function main() {
   const policy = await loadScannerPolicy(
     join(repositoryRoot, "config", "scanner-policy.v1.json"),
   );
-  const manifest = TargetManifestSchema.parse(
+  const manifest = TargetManifestV2Schema.parse(
     await fetchFixedJson(TARGET_MANIFEST_URL),
   );
   const runner = new ProcessCommandRunner();

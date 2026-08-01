@@ -16,6 +16,11 @@ function target(repositoryId: number) {
     repository: `owner/repo-${repositoryId}`,
     target_sha: repositoryId.toString(16).padStart(40, "0"),
     canonical_url: `https://github.com/owner/repo-${repositoryId}`,
+    project_kinds: ["extension"] as const,
+    catalog_priority: {
+      top_30: false,
+      first_cataloged_at: "2026-07-01T00:00:00.000Z",
+    },
   };
 }
 
@@ -23,7 +28,7 @@ describe("JSON-only orchestration CLIs", () => {
   test("reconcile emits no more than five self-contained scan requests", () => {
     const matrix = buildReconcileMatrix({
       manifest: {
-        schema_version: 1,
+        schema_version: 2,
         generated_at: now,
         repositories: Array.from({ length: 8 }, (_, index) =>
           target(index + 1),
@@ -44,6 +49,18 @@ describe("JSON-only orchestration CLIs", () => {
       supersedes_report_id: null,
       reason: "new",
     });
+  });
+
+  test("waits without selecting work from a frozen V1 target manifest", () => {
+    expect(
+      buildReconcileMatrix({
+        manifest: { schema_version: 1, generated_at: now, repositories: [] },
+        index: { schema_version: 1, generated_at: now, reports: [] },
+        state: initialOperationsState(now),
+        now,
+        scannerPolicyVersion: "1",
+      }),
+    ).toMatchObject({ include: [], remaining: 0 });
   });
 
   test("staff scan requests accept repository identity and reject spend/config injection", () => {
