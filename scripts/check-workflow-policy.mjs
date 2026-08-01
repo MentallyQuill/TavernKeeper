@@ -6,7 +6,6 @@ import { parse } from "yaml";
 const root = process.cwd();
 const workflowRoot = join(root, ".github", "workflows");
 const allowedTriggers = {
-  "adjudicate.yml": ["workflow_dispatch"],
   "ci.yml": ["pull_request", "push"],
   "deep-scan.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
@@ -21,7 +20,6 @@ const allowedTriggers = {
   "staff-operations.yml": ["workflow_dispatch"],
 };
 const protectedManualWorkflows = new Set([
-  "adjudicate.yml",
   "deep-scan.yml",
   "policy-rescan.yml",
   "staff-operations.yml",
@@ -39,10 +37,6 @@ const publisherToken = "${{ steps.publisher-token.outputs.token }}";
 const publisherSecretPattern =
   /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
 const mutationJobs = {
-  "adjudicate.yml": {
-    job: "adjudicate",
-    environment: "tavernkeeper-staff",
-  },
   "deep-scan.yml": { job: "scan", environment: "tavernkeeper-staff" },
   "policy-rescan.yml": {
     job: "schedule",
@@ -55,13 +49,6 @@ const mutationJobs = {
   },
 };
 const reviewedPublisherRuns = {
-  "adjudicate.yml": `gh auth setup-git
-git config user.name "TavernKeeper"
-git config user.email "tavernkeeper@users.noreply.github.com"
-git add reports operations/state.json rules/dismissals.json
-git commit -m "chore(reports): publish staff adjudication"
-git push origin HEAD:main
-echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
   "deep-scan.yml": `gh auth setup-git
 git config user.name "TavernKeeper"
 git config user.email "tavernkeeper@users.noreply.github.com"
@@ -123,10 +110,6 @@ const reviewedContinuationDispatches = {
   },
 };
 const reviewedPermissionProfiles = {
-  "adjudicate.yml": {
-    workflow: { contents: "read", pages: "write", "id-token": "write" },
-    jobs: { adjudicate: { contents: "read" }, deploy: undefined },
-  },
   "ci.yml": {
     workflow: { contents: "read" },
     jobs: { check: undefined },

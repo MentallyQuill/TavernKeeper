@@ -2,7 +2,6 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, test } from "vitest";
 
-import { adjudicateFinding } from "../src/adjudication/adjudicate.js";
 import { reportIdentity } from "../src/publish/report-path.js";
 import { renderReportHtml } from "../src/publish/render-report.js";
 
@@ -49,26 +48,5 @@ describe("static report rendering", () => {
       "https://mentallyquill.github.io/TavernKeeper/rules/credential-exfiltration/",
       "https://tavernary.org/",
     ]);
-  });
-
-  test("renders staff disposition and rationale for an adjudicated finding", async () => {
-    const report = await reportWithHostileText();
-    const adjudicated = adjudicateFinding({
-      report,
-      fingerprint: (report.findings as Array<{ fingerprint: string }>)[0]!
-        .fingerprint,
-      decision: "dismiss",
-      rationale: "Reviewed as test-only behavior.",
-      actor: "MentallyQuill",
-      completedAt: "2026-07-31T16:00:00.000Z",
-      reusable: false,
-    });
-
-    const html = renderReportHtml(adjudicated);
-
-    expect(html).toContain("Staff disposition");
-    expect(html).toContain("dismissed");
-    expect(html).toContain("Reviewed as test-only behavior.");
-    expect(html).toContain("MentallyQuill");
   });
 });

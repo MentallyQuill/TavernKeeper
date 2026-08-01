@@ -54,15 +54,6 @@ function renderFindings(report: ScanReport) {
         <p><strong>Location:</strong> <code>${escapeHtml(location)}</code></p>
         <p>${escapeHtml(finding.explanation)}</p>
         ${finding.remediation === undefined ? "" : `<p><strong>Remediation:</strong> ${escapeHtml(finding.remediation)}</p>`}
-        ${
-          finding.adjudication === undefined
-            ? ""
-            : `<div class="adjudication">
-          <p><strong>Staff disposition:</strong> ${escapeHtml(finding.disposition)} by ${escapeHtml(finding.adjudication.actor)} at ${escapeHtml(finding.adjudication.completed_at)}</p>
-          <p><strong>Rationale:</strong> ${escapeHtml(finding.adjudication.rationale)}</p>
-          <p><strong>Reusable rule:</strong> ${finding.adjudication.reusable ? "yes" : "no"}</p>
-        </div>`
-        }
         ${finding.reference_url === undefined ? "" : `<p>${link(finding.reference_url, "TavernKeeper rule documentation")}</p>`}
       </article>`;
     })

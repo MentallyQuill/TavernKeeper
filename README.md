@@ -2,7 +2,7 @@
 
 TavernKeeper performs advisory, exact-commit security scans for public GitHub repositories listed by [Tavernary](https://tavernary.org). It combines deterministic security tools with a required, configurable OpenAI-compatible model review, then publishes immutable, sanitized reports through GitHub Pages.
 
-TavernKeeper does **not** certify that software is safe. A green result means only that every required stage completed for the named commit and the current policy found no active medium-or-higher issue at medium-or-higher confidence. A yellow result means the completed scan found something that warrants review. In Tavernary, gray means there is no complete report for the current commit.
+TavernKeeper does **not** certify that software is safe. A teal result means only that every required deterministic scanner plus analyzer, challenger, and arbiter call completed for the named commit without a confirmed review-level concern. A red result means the completed scan confirmed at least one review-level concern. Tavernary derives orange, gray, and unsupported presentation states locally.
 
 ## Safety boundary
 
@@ -12,13 +12,13 @@ Target repositories are treated as hostile data:
 - It never installs target dependencies or runs target scripts, builds, tests, hooks, Actions, macros, containers, or executables.
 - It inventories without following links and rejects unsafe or ambiguous paths.
 - Required deterministic coverage cannot be silently skipped.
-- Model review must cover every selected chunk and final synthesis must preserve deterministic evidence.
+- Analyzer, challenger, and arbiter review must cover every selected chunk and preserve deterministic evidence identity.
 - Any incomplete scanner, model, quota, token, validation, or publication operation produces no report.
 - Published JSON and HTML contain normalized findings and coverage totals, not source excerpts, raw payloads, credentials, or local paths.
 
 ## Operation
 
-Tavernary owns the exact-SHA target manifest and the mapping from GitHub repositories to cards. TavernKeeper owns scan policy, backlog/retry state, immutable reports, adjudication, and its Pages site. Input-free GitHub App wake-ups reduce latency in both directions; scheduled reconciliation repairs missed wake-ups.
+Tavernary owns the exact-SHA target manifest and the mapping from GitHub repositories to cards. TavernKeeper owns scan policy, backlog/retry state, immutable automated reports, and its Pages site. Input-free GitHub App wake-ups reduce latency in both directions; scheduled reconciliation repairs missed wake-ups.
 
 Three single-repository GitHub Apps keep authority separate. Each bridge App can dispatch Actions only in its one destination repository. The dedicated `TavernKeeper Publisher` App is installed only on TavernKeeper and can write repository contents but cannot dispatch Actions. Protected mutation jobs create short-lived Publisher installation tokens; TavernKeeper's workflow-local token remains contents-read.
 

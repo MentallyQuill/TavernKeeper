@@ -33,7 +33,7 @@ Generate a replacement private key from the App settings before revoking the act
 
 `reconcile.yml` runs every six hours and accepts input-free workflow and repository dispatches. It derives work from Tavernary's live target manifest minus TavernKeeper's preferred current reports. It selects at most five repositories and runs at most two scan jobs concurrently. If work remains after a verified publication/deployment, it dispatches another input-free batch.
 
-The queue is derived, not separately mutable. A target that advances before it starts is coalesced to the newest manifest SHA. TavernKeeper refetches the manifest before provider use and abandons obsolete work.
+The queue is derived, not separately mutable. A target that advances before it starts is coalesced to the newest manifest SHA. Once exact-SHA acquisition begins, TavernKeeper completes and publishes that immutable SHA even if the catalog advances; Tavernary then presents a clean older report as pending an updated scan.
 
 ## Pause and recovery
 

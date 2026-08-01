@@ -23,7 +23,6 @@ const publisherAction =
 const mutationJobs = {
   "reconcile.yml": "publish",
   "deep-scan.yml": "scan",
-  "adjudicate.yml": "adjudicate",
   "policy-rescan.yml": "schedule",
   "staff-operations.yml": "operate",
 } as const;
@@ -290,12 +289,12 @@ describe("least-privilege GitHub Actions orchestration", () => {
     });
   });
 
-  test("staff scan and adjudication workflows have only protected manual triggers", async () => {
-    for (const name of [
-      "deep-scan.yml",
-      "policy-rescan.yml",
-      "adjudicate.yml",
-    ]) {
+  test("staff scan workflows have only protected manual triggers", async () => {
+    const workflowNames = await readdir(
+      new URL("../.github/workflows/", import.meta.url),
+    );
+    expect(workflowNames).not.toContain("adjudicate.yml");
+    for (const name of ["deep-scan.yml", "policy-rescan.yml"]) {
       const value = await workflow(name);
       expect(Object.keys(value.on)).toEqual(["workflow_dispatch"]);
       expect(JSON.stringify(value.jobs)).toMatch(/tavernkeeper-staff/u);
