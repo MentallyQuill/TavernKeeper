@@ -1,88 +1,143 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
-import { FindingSchema } from "../src/contracts/reports.js";
-import { runExternalTools } from "../src/scanners/external-tools.js";
-import type {
-  CommandExecutionResult,
-  CommandOptions,
-  CommandRunner,
-} from "../src/process/command-runner.js";
+import type { InventoryClassification } from "../src/inventory/classify.js";
+import { runApplicableScanners } from "../src/scanners/run-scanners.js";
+import { ScannerError, type ScannerRun } from "../src/scanners/types.js";
+import type { CommandRunner } from "../src/process/command-runner.js";
 
-class MixedRunner implements CommandRunner {
-  calls: Array<{ command: string; args: string[] }> = [];
+const completed = (name: string): ScannerRun => ({
+  name,
+  version: "1.0.0",
+  status: "completed",
+  findings: [],
+});
+const notApplicable = (name: string): ScannerRun => ({
+  name,
+  version: "1.0.0",
+  status: "not-applicable",
+  findings: [],
+});
 
-  async run(
-    command: string,
-    args: string[],
-    _options: CommandOptions,
-  ): Promise<CommandExecutionResult> {
-    this.calls.push({ command, args });
-    if (command === "opengrep") {
-      return {
-        ok: false,
-        error: {
-          code: "SPAWN_FAILED",
-          message: "Command could not be started.",
-        },
-      };
-    }
-    if (command === "gitleaks") {
-      return {
-        ok: true,
-        value: {
-          exitCode: 1,
-          stdout: JSON.stringify([
-            {
-              RuleID: "generic-api-key",
-              Description: "Generic API key",
-              File: "src/index.ts",
-              StartLine: 4,
-            },
-          ]),
-          stderr: "",
-        },
-      };
-    }
-    return {
-      ok: true,
-      value: { exitCode: 0, stdout: "[]", stderr: "" },
-    };
-  }
+function classification(
+  applicability: InventoryClassification["applicability"],
+): InventoryClassification {
+  return {
+    modelEligible: [],
+    applicability,
+    scannerInputs: { osv: [], zizmor: [], malcontent: [] },
+    excluded: {
+      dependency_lockfiles: { files: 0, bytes: 0 },
+      vendored_dependencies: { files: 0, bytes: 0 },
+      generated_bundles: { files: 0, bytes: 0 },
+      minified_files: { files: 0, bytes: 0 },
+      binaries: { files: 0, bytes: 0 },
+      archives: { files: 0, bytes: 0 },
+      oversized_files: { files: 0, bytes: 0 },
+      unsafe_entries: { files: 0, bytes: 0 },
+    },
+  };
 }
 
-describe("external scanner adapters", () => {
-  test("uses argument arrays and reports missing tools as unavailable", async () => {
-    const runner = new MixedRunner();
-    const runs = await runExternalTools({ root: "C:/scan/repository", runner });
+const runner = {} as CommandRunner;
+const baseSpec = {
+  root: "C:/scan/repository",
+  history: {
+    baseSha: null,
+    targetSha: "a".repeat(40),
+    commits: 1,
+  },
+  classification: classification({
+    osv: false,
+    zizmor: false,
+    malcontent: false,
+  }),
+  structuralFiles: [],
+  runner,
+  policy: {
+    version: "1" as const,
+    queue: { batchSize: 5 as const, maxParallel: 2 as const },
+    history: { maxCommits: 20 as const },
+    inventory: {
+      maxFiles: 500_000 as const,
+      maxTotalBytes: 5_368_709_120 as const,
+      maxFileBytes: 268_435_456 as const,
+      maxArchiveDepth: 4 as const,
+      maxExpandedArchiveBytes: 1_073_741_824 as const,
+      maxCompressionRatio: 200 as const,
+    },
+    commands: {
+      timeoutMs: 2_700_000 as const,
+      maxOutputBytes: 104_857_600 as const,
+    },
+    model: {
+      protocol: "openai-compatible-chat-completions" as const,
+      chunkBytes: 524_288 as const,
+      chunkOverlapBytes: 8_192 as const,
+      maxOutputTokensPerChunk: 8_192 as const,
+      maxSynthesisOutputTokens: 8_192 as const,
+    },
+    retry: { hoursFromInitialFailure: [1, 2, 3] as [1, 2, 3] },
+  },
+  pins: {
+    gitleaks: { version: "8.30.1" as const },
+    opengrep: { version: "1.26.0" as const },
+    osvScanner: { version: "2.4.0" as const },
+    zizmor: { version: "1.28.0" as const },
+    malcontent: { version: "1.25.7" as const },
+  },
+  rulesRoot: "C:/trusted/rules/opengrep",
+};
 
-    expect(runs.find(({ name }) => name === "opengrep")).toEqual({
-      name: "opengrep",
-      status: "unavailable",
-      version: null,
-      detail: "Executable not found.",
-      findings: [],
+describe("scanner coordinator", () => {
+  test("always runs structural, Gitleaks, and OpenGrep and records conditional absence", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => completed("opengrep")),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    const runs = await runApplicableScanners(baseSpec, adapters);
+
+    expect(runs.map(({ name, status }) => [name, status])).toEqual([
+      ["tavernkeeper-static", "completed"],
+      ["gitleaks", "completed"],
+      ["opengrep", "completed"],
+      ["osv-scanner", "not-applicable"],
+      ["zizmor", "not-applicable"],
+      ["malcontent", "not-applicable"],
+    ]);
+    expect(adapters.staticScan).toHaveBeenCalledOnce();
+    expect(adapters.gitleaks).toHaveBeenCalledOnce();
+    expect(adapters.opengrep).toHaveBeenCalledOnce();
+  });
+
+  test("propagates required scanner failures instead of returning partial coverage", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => {
+        throw new ScannerError(
+          "SCANNER_UNAVAILABLE",
+          "system",
+          "OpenGrep could not be started.",
+        );
+      }),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    await expect(
+      runApplicableScanners(baseSpec, adapters),
+    ).rejects.toMatchObject({
+      code: "SCANNER_UNAVAILABLE",
+      scope: "system",
     });
-    expect(runner.calls).toContainEqual({
-      command: "gitleaks",
-      args: expect.arrayContaining([
-        "dir",
-        "--no-banner",
-        "--redact=100",
-        "C:/scan/repository",
-      ]),
-    });
-    expect(runner.calls).toContainEqual({
-      command: "osv-scanner",
-      args: ["scan", "source", "--format", "json", "-r", "C:/scan/repository"],
-    });
-    expect(runner.calls).toContainEqual({
-      command: "zizmor",
-      args: ["--format=json-v1", "--no-progress", "C:/scan/repository"],
-    });
-    const findings = runs.flatMap((run) => run.findings);
-    expect(findings).toHaveLength(1);
-    expect(
-      findings.every((finding) => FindingSchema.safeParse(finding).success),
-    ).toBe(true);
+    expect(adapters.osv).not.toHaveBeenCalled();
+    expect(adapters.zizmor).not.toHaveBeenCalled();
+    expect(adapters.malcontent).not.toHaveBeenCalled();
   });
 });

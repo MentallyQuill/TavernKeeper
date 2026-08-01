@@ -2,7 +2,7 @@ import type { Confidence, Finding, Severity } from "../contracts/reports.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
 import { normalizeFinding } from "./types.js";
 
-type SourceCandidate = InventoryFile & { content?: string | null };
+export type StaticSourceFile = InventoryFile & { content?: string | null };
 
 const secretPatterns = [
   /\bgh[pousr]_[A-Za-z0-9_]{20,}\b/gu,
@@ -52,7 +52,7 @@ function lineNumber(content: string, index: number) {
   return content.slice(0, Math.max(0, index)).split("\n").length;
 }
 
-function scanCredentialExfiltration(file: SourceCandidate): Finding[] {
+function scanCredentialExfiltration(file: StaticSourceFile): Finding[] {
   const content = file.content ?? "";
   const credentialSource =
     /process\.env|localStorage|document\.cookie|authorization|api[_-]?key|token/iu.test(
@@ -78,7 +78,7 @@ function scanCredentialExfiltration(file: SourceCandidate): Finding[] {
   ];
 }
 
-function scanInstallHooks(file: SourceCandidate): Finding[] {
+function scanInstallHooks(file: StaticSourceFile): Finding[] {
   if (file.path !== "package.json" || !file.content) return [];
   try {
     const parsed = JSON.parse(file.content) as {
@@ -111,7 +111,7 @@ function scanInstallHooks(file: SourceCandidate): Finding[] {
   }
 }
 
-function scanBidiControls(file: SourceCandidate): Finding[] {
+function scanBidiControls(file: StaticSourceFile): Finding[] {
   if (!file.content) return [];
   const match = /[\u202a-\u202e\u2066-\u2069]/u.exec(file.content);
   if (!match) return [];
@@ -130,7 +130,7 @@ function scanBidiControls(file: SourceCandidate): Finding[] {
   ];
 }
 
-export function scanStaticRules(files: SourceCandidate[]): Finding[] {
+export function scanStaticRules(files: StaticSourceFile[]): Finding[] {
   return files
     .flatMap((file) => [
       ...scanCredentialExfiltration(file),
