@@ -4,6 +4,9 @@ import { FullShaSchema } from "./targets.js";
 
 const NonNegativeIntegerSchema = z.number().int().nonnegative();
 const VersionSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u);
+const ModelIdentifierSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/u);
 const ReportIdSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const RepositorySchema = z.string().regex(/^[^/\s]+\/[^/\s]+$/u);
 const RepositoryPathSchema = z
@@ -116,8 +119,8 @@ const InventoryCoverageSchema = z.strictObject({
 const ModelCoverageSchema = z
   .strictObject({
     status: z.literal("completed"),
-    provider: z.literal("minimax"),
-    model: VersionSchema,
+    provider: VersionSchema,
+    model: ModelIdentifierSchema,
     input_chunks: NonNegativeIntegerSchema,
     completed_chunks: NonNegativeIntegerSchema,
     input_tokens: NonNegativeIntegerSchema,

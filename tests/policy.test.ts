@@ -14,7 +14,9 @@ describe("versioned scanner policy", () => {
     expect(policy.version).toBe("1");
     expect(policy.queue).toEqual({ batchSize: 5, maxParallel: 2 });
     expect(policy.history.maxCommits).toBe(20);
-    expect(policy.model.id).toBe("MiniMax-M3");
+    expect(policy.model.protocol).toBe("openai-compatible-chat-completions");
+    expect(policy.model).not.toHaveProperty("provider");
+    expect(policy.model).not.toHaveProperty("id");
     expect("aggregateRepositoryTokenCap" in policy.model).toBe(false);
   });
 

@@ -22,8 +22,7 @@ export const ScannerPolicySchema = z.strictObject({
     maxOutputBytes: z.literal(104_857_600),
   }),
   model: z.strictObject({
-    provider: z.literal("minimax"),
-    id: z.literal("MiniMax-M3"),
+    protocol: z.literal("openai-compatible-chat-completions"),
     chunkBytes: z.literal(524_288),
     chunkOverlapBytes: z.literal(8_192),
     maxOutputTokensPerChunk: z.literal(8_192),

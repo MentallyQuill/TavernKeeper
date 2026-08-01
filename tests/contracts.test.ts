@@ -243,6 +243,50 @@ describe("public contracts", () => {
     ).toBe(false);
   });
 
+  test("records the configured OpenAI-compatible model without pinning a vendor", () => {
+    expect(
+      ScanReportSchema.safeParse({
+        ...validReport,
+        coverage: {
+          ...validReport.coverage,
+          model: {
+            ...validReport.coverage.model,
+            provider: "openai-compatible",
+            model: "deepseek/deepseek-v4-flash",
+          },
+        },
+      }).success,
+    ).toBe(true);
+  });
+
+  test("ships a report JSON Schema that accepts configured model identifiers", async () => {
+    const schema = JSON.parse(
+      await readFile(
+        new URL("../schemas/scan-report.v1.schema.json", import.meta.url),
+        "utf8",
+      ),
+    ) as Record<string, unknown>;
+    const ajv = new Ajv({
+      allErrors: true,
+      allowUnionTypes: true,
+      formats: { "date-time": true, uri: true },
+      strict: true,
+    });
+    const configuredReport = {
+      ...validReport,
+      coverage: {
+        ...validReport.coverage,
+        model: {
+          ...validReport.coverage.model,
+          provider: "nano-gpt",
+          model: "deepseek/deepseek-v4-flash",
+        },
+      },
+    };
+
+    expect(ajv.validate(schema, configuredReport)).toBe(true);
+  });
+
   test("rejects unknown report fields and inconsistent finding totals", () => {
     expect(
       ScanReportSchema.safeParse({ ...validReport, current: true }).success,
