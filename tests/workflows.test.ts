@@ -185,6 +185,10 @@ describe("least-privilege GitHub Actions orchestration", () => {
 
   test("the Publisher App token has one reviewed consumer", async () => {
     const value = await workflow("scan-and-publish.yml");
+    const source = await readFile(
+      new URL("../.github/workflows/scan-and-publish.yml", import.meta.url),
+      "utf8",
+    );
     const steps = value.jobs.publish.steps as Workflow[];
     const tokenSteps = steps.filter((step) =>
       JSON.stringify(step).match(
@@ -212,6 +216,7 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(consumers).toHaveLength(1);
     expect(consumers[0]!.run).toContain("git push origin HEAD:main");
     expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
+    expect(source).not.toMatch(/X-GitHub-Stateless-S2S-Token|\bghs_/iu);
   });
 
   test("workflow policy rejects model secrets outside the review step", async () => {
