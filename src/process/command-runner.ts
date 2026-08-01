@@ -40,6 +40,7 @@ export class ProcessCommandRunner implements CommandRunner {
     return new Promise((resolve) => {
       const child = spawn(command, args, {
         cwd: options.cwd,
+        detached: process.platform !== "win32",
         env: options.environment,
         shell: options.shell,
         stdio: ["ignore", "pipe", "pipe"],
@@ -49,16 +50,27 @@ export class ProcessCommandRunner implements CommandRunner {
       let stderr = Buffer.alloc(0);
       let outputExceeded = false;
       let timedOut = false;
+      const terminateProcessTree = () => {
+        if (process.platform !== "win32" && child.pid !== undefined) {
+          try {
+            process.kill(-child.pid, "SIGKILL");
+            return;
+          } catch {
+            // Fall back to the direct child if its process group is gone.
+          }
+        }
+        child.kill("SIGKILL");
+      };
       const timer = setTimeout(() => {
         timedOut = true;
-        child.kill("SIGKILL");
+        terminateProcessTree();
       }, options.timeoutMs);
 
       const append = (current: Buffer, chunk: Buffer) => {
         const combined = Buffer.concat([current, chunk]);
         if (combined.length > options.maxOutputBytes) {
           outputExceeded = true;
-          child.kill("SIGKILL");
+          terminateProcessTree();
           return combined.subarray(0, options.maxOutputBytes);
         }
         return combined;
