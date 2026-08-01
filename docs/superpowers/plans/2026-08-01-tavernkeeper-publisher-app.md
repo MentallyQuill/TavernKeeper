@@ -35,7 +35,7 @@
 
 **Interfaces:**
 
-- Produces: six bridge secrets, four environment-scoped Publisher secrets, three single-repository installations, and the numeric Publisher App ID needed by Task 4.
+- Produces: four source-side bridge secrets, four environment-scoped Publisher secret copies, three single-repository installations, and the numeric Publisher App ID needed by Task 4.
 
 - [ ] **Step 1: Create the Tavernary-to-TavernKeeper wake App**
 
@@ -44,7 +44,7 @@ Create `Tavernary Wake TavernKeeper` under the MentallyQuill account with webhoo
 - [ ] **Step 2: Store its source-side credentials without printing the key**
 
 ```powershell
-$wakeAppId = gh api apps/tavernary-wake-tavernkeeper --jq '.id'
+$wakeAppId = '4457487'
 gh secret set TAVERNKEEPER_WAKE_APP_ID --repo MentallyQuill/Tavernary --body $wakeAppId
 $wakeKeyFiles = @(Get-ChildItem -LiteralPath 'C:\Users\Keptin\Downloads' -Filter 'tavernary-wake-tavernkeeper.*.private-key.pem')
 if ($wakeKeyFiles.Count -ne 1) { throw "Expected exactly one Tavernary wake private key download." }
@@ -59,7 +59,7 @@ Verify `gh secret list --repo MentallyQuill/Tavernary` names the two secrets, th
 Create `TavernKeeper Wake Tavernary` with webhook disabled, account-only installation, Actions read/write, and mandatory metadata read. Install it with `Only select repositories: Tavernary`. Store its source-side credentials without printing the key:
 
 ```powershell
-$returnWakeAppId = gh api apps/tavernkeeper-wake-tavernary --jq '.id'
+$returnWakeAppId = '4457552'
 gh secret set TAVERNARY_WAKE_APP_ID --repo MentallyQuill/TavernKeeper --body $returnWakeAppId
 $returnWakeKeyFiles = @(Get-ChildItem -LiteralPath 'C:\Users\Keptin\Downloads' -Filter 'tavernkeeper-wake-tavernary.*.private-key.pem')
 if ($returnWakeKeyFiles.Count -ne 1) { throw "Expected exactly one TavernKeeper wake private key download." }
@@ -74,7 +74,7 @@ Verify `gh secret list --repo MentallyQuill/TavernKeeper` names both wake secret
 Create `TavernKeeper Publisher` with webhook disabled, account-only installation, Contents read/write, mandatory metadata read, and no Actions permission. Install it with `Only select repositories: TavernKeeper`. Store both values in both environments:
 
 ```powershell
-$publisherAppId = gh api apps/tavernkeeper-publisher --jq '.id'
+$publisherAppId = '4457566'
 gh secret set TAVERNKEEPER_PUBLISHER_APP_ID --repo MentallyQuill/TavernKeeper --env tavernkeeper-scanner --body $publisherAppId
 gh secret set TAVERNKEEPER_PUBLISHER_APP_ID --repo MentallyQuill/TavernKeeper --env tavernkeeper-staff --body $publisherAppId
 $publisherKeyFiles = @(Get-ChildItem -LiteralPath 'C:\Users\Keptin\Downloads' -Filter 'tavernkeeper-publisher.*.private-key.pem')
@@ -277,7 +277,7 @@ Resolve the Publisher App integration ID from GitHub and construct this exact bo
 }
 ```
 
-In PowerShell, assign `$publisherAppId = [int](gh api apps/tavernkeeper-publisher --jq '.id')`, construct the shown object with `$publisherAppId` as the numeric `actor_id`, serialize it with `ConvertTo-Json -Depth 10 -Compress`, and pipe it to `gh api --method POST repos/MentallyQuill/TavernKeeper/rulesets --input -`. Verify the response has `enforcement: active`, only one bypass actor of type `Integration`, `~DEFAULT_BRANCH`, and the four exact rules.
+In PowerShell, assign `$publisherAppId = [int]4457566`, construct the shown object with `$publisherAppId` as the numeric `actor_id`, serialize it with `ConvertTo-Json -Depth 10 -Compress`, and pipe it to `gh api --method POST repos/MentallyQuill/TavernKeeper/rulesets --input -`. Verify the response has `enforcement: active`, only one bypass actor of type `Integration`, `~DEFAULT_BRANCH`, and the four exact rules.
 
 - [ ] **Step 5: Prove ordinary direct pushes are blocked**
 
