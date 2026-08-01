@@ -18,6 +18,15 @@ import { describe, expect, test } from "vitest";
 type Workflow = Record<string, any>;
 const execFile = promisify(execFileCallback);
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
+const publisherAction =
+  "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
+const mutationJobs = {
+  "reconcile.yml": "publish",
+  "deep-scan.yml": "scan",
+  "adjudicate.yml": "adjudicate",
+  "policy-rescan.yml": "schedule",
+  "staff-operations.yml": "operate",
+} as const;
 const workflowPolicyScript = fileURLToPath(
   new URL("../scripts/check-workflow-policy.mjs", import.meta.url),
 );
@@ -72,7 +81,7 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(value.on.workflow_call).toBeNull();
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
     expect(value.jobs.scan.permissions.contents).toBe("read");
-    expect(value.jobs.publish.permissions.contents).toBe("write");
+    expect(value.jobs.publish.permissions.contents).toBe("read");
     expect(JSON.stringify(value.on)).not.toMatch(
       /issue_comment|issues|pull_request_target/iu,
     );
@@ -99,6 +108,68 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(secretSteps[0].name).toBe("Review with configured model");
   });
 
+  test("mutation jobs use only a protected Publisher App token for direct pushes", async () => {
+    for (const [name, jobName] of Object.entries(mutationJobs)) {
+      const value = await workflow(name);
+      const job = value.jobs[jobName];
+      const effectivePermissions = {
+        ...value.permissions,
+        ...job.permissions,
+      };
+
+      expect(effectivePermissions.contents, `${name} contents`).toBe("read");
+      expect(job.environment, `${name} environment`).toMatch(
+        /^tavernkeeper-(?:scanner|staff)$/u,
+      );
+
+      const publisherSteps = job.steps.filter((step: Workflow) =>
+        JSON.stringify(step).match(
+          /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)/u,
+        ),
+      );
+      expect(publisherSteps, `${name} Publisher secret steps`).toHaveLength(1);
+      expect(publisherSteps[0]).toMatchObject({
+        name: "Create TavernKeeper Publisher token",
+        id: "publisher-token",
+        uses: publisherAction,
+        with: {
+          "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
+          "private-key":
+            "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
+          owner: "MentallyQuill",
+          repositories: "TavernKeeper",
+          "permission-contents": "write",
+        },
+      });
+
+      const checkoutSteps = job.steps.filter(
+        (step: Workflow) =>
+          typeof step.uses === "string" &&
+          step.uses.startsWith("actions/checkout@"),
+      );
+      expect(checkoutSteps.length, `${name} checkout count`).toBeGreaterThan(0);
+      expect(
+        checkoutSteps.every(
+          (step: Workflow) => step.with?.["persist-credentials"] === false,
+        ),
+        `${name} checkout credentials`,
+      ).toBe(true);
+
+      const pushSteps = job.steps.filter(
+        (step: Workflow) =>
+          typeof step.run === "string" &&
+          step.run.includes("git push origin HEAD:main"),
+      );
+      expect(pushSteps, `${name} push steps`).toHaveLength(1);
+      expect(pushSteps[0].env?.GH_TOKEN, `${name} push token`).toBe(
+        "${{ steps.publisher-token.outputs.token }}",
+      );
+      expect(pushSteps[0].run, `${name} Git authentication`).toMatch(
+        /gh auth setup-git/u,
+      );
+    }
+  });
+
   test("workflow policy rejects a reviewed write scope when it moves to another job", async () => {
     await expectPolicyFailure(
       (text) =>
@@ -118,6 +189,17 @@ describe("least-privilege GitHub Actions orchestration", () => {
           "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
         ),
       /reconcile\.yml: model secret appears outside the review-step env/u,
+    );
+  });
+
+  test("workflow policy rejects a direct push authenticated by github.token", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "GH_TOKEN: ${{ steps.publisher-token.outputs.token }}",
+          "GH_TOKEN: ${{ github.token }}",
+        ),
+      /reconcile\.yml: direct push does not use the Publisher App token/u,
     );
   });
 

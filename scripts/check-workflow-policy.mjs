@@ -33,10 +33,31 @@ const modelSecretNames = new Set([
   "TAVERNKEEPER_API_KEY",
   "TAVERNKEEPER_MODEL",
 ]);
+const publisherAction =
+  "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
+const publisherToken = "${{ steps.publisher-token.outputs.token }}";
+const publisherSecretPattern =
+  /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
+const mutationJobs = {
+  "adjudicate.yml": {
+    job: "adjudicate",
+    environment: "tavernkeeper-staff",
+  },
+  "deep-scan.yml": { job: "scan", environment: "tavernkeeper-staff" },
+  "policy-rescan.yml": {
+    job: "schedule",
+    environment: "tavernkeeper-staff",
+  },
+  "reconcile.yml": { job: "publish", environment: "tavernkeeper-scanner" },
+  "staff-operations.yml": {
+    job: "operate",
+    environment: "tavernkeeper-staff",
+  },
+};
 const reviewedPermissionProfiles = {
   "adjudicate.yml": {
-    workflow: { contents: "write", pages: "write", "id-token": "write" },
-    jobs: { adjudicate: { contents: "write" }, deploy: undefined },
+    workflow: { contents: "read", pages: "write", "id-token": "write" },
+    jobs: { adjudicate: { contents: "read" }, deploy: undefined },
   },
   "ci.yml": {
     workflow: { contents: "read" },
@@ -44,13 +65,13 @@ const reviewedPermissionProfiles = {
   },
   "deep-scan.yml": {
     workflow: {
-      contents: "write",
+      contents: "read",
       issues: "write",
       pages: "write",
       "id-token": "write",
     },
     jobs: {
-      scan: { contents: "write", issues: "write" },
+      scan: { contents: "read", issues: "write" },
       deploy: undefined,
     },
   },
@@ -59,8 +80,8 @@ const reviewedPermissionProfiles = {
     jobs: { "authorize-manual": {}, deploy: undefined },
   },
   "policy-rescan.yml": {
-    workflow: { contents: "write" },
-    jobs: { schedule: undefined },
+    workflow: { contents: "read", actions: "write" },
+    jobs: { schedule: { contents: "read", actions: "write" } },
   },
   "reconcile.yml": {
     workflow: {
@@ -72,7 +93,7 @@ const reviewedPermissionProfiles = {
     jobs: {
       plan: { contents: "read" },
       scan: { contents: "read" },
-      publish: { contents: "write", issues: "write" },
+      publish: { contents: "read", issues: "write" },
       deploy: undefined,
       continue: { actions: "write" },
     },
@@ -87,8 +108,8 @@ const reviewedPermissionProfiles = {
     jobs: { reconcile: undefined },
   },
   "staff-operations.yml": {
-    workflow: { contents: "write", actions: "write" },
-    jobs: { operate: undefined },
+    workflow: { contents: "read", actions: "write" },
+    jobs: { operate: { contents: "read", actions: "write" } },
   },
 };
 const sensitiveInputPattern = /clone_url|endpoint|model|token|budget|command/iu;
@@ -251,6 +272,76 @@ function checkModelSecretPlacement(file, workflow) {
       fail(file, "model secret appears outside the review-step env");
 }
 
+function checkPublisherBoundary(file, workflow) {
+  const mutation = mutationJobs[file];
+  const publisherSecretText = JSON.stringify(workflow).match(
+    publisherSecretPattern,
+  );
+  if (mutation === undefined) {
+    if (publisherSecretText)
+      fail(file, "Publisher App secret appears outside a mutation workflow");
+    return;
+  }
+
+  const job = workflow.jobs?.[mutation.job];
+  if (job === undefined) {
+    fail(file, `missing reviewed mutation job ${mutation.job}`);
+    return;
+  }
+  if (job.environment !== mutation.environment)
+    fail(
+      file,
+      `${mutation.job} must use protected environment ${mutation.environment}`,
+    );
+
+  const steps = Array.isArray(job.steps) ? job.steps : [];
+  const secretSteps = steps.filter((step) =>
+    JSON.stringify(step).match(publisherSecretPattern),
+  );
+  if (secretSteps.length !== 1)
+    fail(file, "Publisher App secrets must appear in exactly one token step");
+
+  const tokenStep = steps.find((step) => step?.id === "publisher-token");
+  const expectedWith = {
+    "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
+    "private-key":
+      "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
+    owner: "MentallyQuill",
+    repositories: "TavernKeeper",
+    "permission-contents": "write",
+  };
+  if (
+    tokenStep?.name !== "Create TavernKeeper Publisher token" ||
+    tokenStep?.uses !== publisherAction ||
+    JSON.stringify(tokenStep?.with) !== JSON.stringify(expectedWith)
+  )
+    fail(file, "Publisher App token step changed from the reviewed contract");
+
+  const checkouts = steps.filter(
+    (step) =>
+      typeof step?.uses === "string" && step.uses.startsWith("actions/checkout@"),
+  );
+  if (
+    checkouts.length === 0 ||
+    checkouts.some((step) => step?.with?.["persist-credentials"] !== false)
+  )
+    fail(file, "mutation checkout must disable persisted credentials");
+
+  const pushSteps = steps.filter(
+    (step) =>
+      typeof step?.run === "string" &&
+      step.run.includes("git push origin HEAD:main"),
+  );
+  if (pushSteps.length !== 1)
+    fail(file, "mutation job must contain exactly one reviewed direct push step");
+  for (const step of pushSteps) {
+    if (step?.env?.GH_TOKEN !== publisherToken)
+      fail(file, "direct push does not use the Publisher App token");
+    if (!step.run.includes("gh auth setup-git"))
+      fail(file, "direct push does not configure Git authentication");
+  }
+}
+
 const names = (await readdir(workflowRoot))
   .filter((name) => /\.ya?ml$/u.test(name))
   .sort();
@@ -270,6 +361,7 @@ for (const file of names) {
   checkActionPins(file, workflow);
   checkParallelism(file, workflow);
   checkModelSecretPlacement(file, workflow);
+  checkPublisherBoundary(file, workflow);
 }
 
 const policy = JSON.parse(

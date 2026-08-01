@@ -18,7 +18,7 @@ on:
         required: false
 
 permissions:
-  contents: write
+  contents: read
   actions: write
 
 concurrency:
@@ -29,6 +29,9 @@ jobs:
   operate:
     runs-on: ubuntu-latest
     environment: tavernkeeper-staff
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -56,9 +59,18 @@ jobs:
             request='{"operation":"resume"}'
           fi
           TAVERNKEEPER_OPERATION="$request" npm run --silent retry
-      - name: Commit operational state and reconcile
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
+      - name: Commit operational state
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
         run: |
           gh auth setup-git
           git config user.name "TavernKeeper"
@@ -66,6 +78,8 @@ jobs:
           git add operations/state.json
           git commit -m "chore(ops): apply staff queue operation"
           git push origin HEAD:main
-          if [[ "${{ inputs.operation }}" != "pause" ]]; then
-            gh workflow run reconcile.yml --ref main
-          fi
+      - name: Dispatch reconcile
+        if: ${{ inputs.operation != 'pause' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run reconcile.yml --ref main
