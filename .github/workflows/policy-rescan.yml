@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  actions: write
 
 concurrency:
   group: tavernkeeper-global-scan
@@ -14,6 +15,9 @@ jobs:
   schedule:
     runs-on: ubuntu-latest
     environment: tavernkeeper-staff
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -29,9 +33,18 @@ jobs:
         run: npm ci
       - name: Create reviewed policy campaign
         run: npm run --silent policy-rescan
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
       - name: Commit campaign state
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
         run: |
           gh auth setup-git
           git config user.name "TavernKeeper"
@@ -39,4 +52,7 @@ jobs:
           git add operations/state.json
           git commit -m "chore(scans): schedule policy campaign"
           git push origin HEAD:main
-          gh workflow run reconcile.yml --ref main
+      - name: Dispatch reconcile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run reconcile.yml --ref main

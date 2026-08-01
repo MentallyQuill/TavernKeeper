@@ -33,10 +33,99 @@ const modelSecretNames = new Set([
   "TAVERNKEEPER_API_KEY",
   "TAVERNKEEPER_MODEL",
 ]);
+const publisherAction =
+  "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
+const publisherToken = "${{ steps.publisher-token.outputs.token }}";
+const publisherSecretPattern =
+  /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
+const mutationJobs = {
+  "adjudicate.yml": {
+    job: "adjudicate",
+    environment: "tavernkeeper-staff",
+  },
+  "deep-scan.yml": { job: "scan", environment: "tavernkeeper-staff" },
+  "policy-rescan.yml": {
+    job: "schedule",
+    environment: "tavernkeeper-staff",
+  },
+  "reconcile.yml": { job: "publish", environment: "tavernkeeper-scanner" },
+  "staff-operations.yml": {
+    job: "operate",
+    environment: "tavernkeeper-staff",
+  },
+};
+const reviewedPublisherRuns = {
+  "adjudicate.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add reports operations/state.json rules/dismissals.json
+git commit -m "chore(reports): publish staff adjudication"
+git push origin HEAD:main
+echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
+  "deep-scan.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add reports operations/state.json
+if ! git diff --cached --quiet; then
+  git commit -m "chore(reports): publish staff deep scan"
+  git push origin HEAD:main
+fi
+echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
+  "policy-rescan.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add operations/state.json
+git commit -m "chore(scans): schedule policy campaign"
+git push origin HEAD:main`,
+  "reconcile.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add reports operations/state.json
+if ! git diff --cached --quiet; then
+  git commit -m "chore(reports): publish completed scans"
+  git push origin HEAD:main
+fi
+echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
+  "staff-operations.yml": `gh auth setup-git
+git config user.name "TavernKeeper"
+git config user.email "tavernkeeper@users.noreply.github.com"
+git add operations/state.json
+git commit -m "chore(ops): apply staff queue operation"
+git push origin HEAD:main`,
+};
+const reviewedContinuationDispatches = {
+  "policy-rescan.yml": {
+    job: "schedule",
+    step: {
+      name: "Dispatch reconcile",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: "gh workflow run reconcile.yml --ref main",
+    },
+  },
+  "reconcile.yml": {
+    job: "continue",
+    needs: ["plan", "deploy"],
+    if: "${{ needs.deploy.result == 'success' && needs.plan.outputs.remaining != '0' }}",
+    step: {
+      name: "Continue remaining backlog without inputs",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: "gh workflow run reconcile.yml --ref main",
+    },
+  },
+  "staff-operations.yml": {
+    job: "operate",
+    step: {
+      name: "Dispatch reconcile",
+      if: "${{ inputs.operation != 'pause' }}",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: "gh workflow run reconcile.yml --ref main",
+    },
+  },
+};
 const reviewedPermissionProfiles = {
   "adjudicate.yml": {
-    workflow: { contents: "write", pages: "write", "id-token": "write" },
-    jobs: { adjudicate: { contents: "write" }, deploy: undefined },
+    workflow: { contents: "read", pages: "write", "id-token": "write" },
+    jobs: { adjudicate: { contents: "read" }, deploy: undefined },
   },
   "ci.yml": {
     workflow: { contents: "read" },
@@ -44,13 +133,13 @@ const reviewedPermissionProfiles = {
   },
   "deep-scan.yml": {
     workflow: {
-      contents: "write",
+      contents: "read",
       issues: "write",
       pages: "write",
       "id-token": "write",
     },
     jobs: {
-      scan: { contents: "write", issues: "write" },
+      scan: { contents: "read", issues: "write" },
       deploy: undefined,
     },
   },
@@ -59,8 +148,8 @@ const reviewedPermissionProfiles = {
     jobs: { "authorize-manual": {}, deploy: undefined },
   },
   "policy-rescan.yml": {
-    workflow: { contents: "write" },
-    jobs: { schedule: undefined },
+    workflow: { contents: "read", actions: "write" },
+    jobs: { schedule: { contents: "read", actions: "write" } },
   },
   "reconcile.yml": {
     workflow: {
@@ -72,7 +161,7 @@ const reviewedPermissionProfiles = {
     jobs: {
       plan: { contents: "read" },
       scan: { contents: "read" },
-      publish: { contents: "write", issues: "write" },
+      publish: { contents: "read", issues: "write" },
       deploy: undefined,
       continue: { actions: "write" },
     },
@@ -87,8 +176,8 @@ const reviewedPermissionProfiles = {
     jobs: { reconcile: undefined },
   },
   "staff-operations.yml": {
-    workflow: { contents: "write", actions: "write" },
-    jobs: { operate: undefined },
+    workflow: { contents: "read", actions: "write" },
+    jobs: { operate: { contents: "read", actions: "write" } },
   },
 };
 const sensitiveInputPattern = /clone_url|endpoint|model|token|budget|command/iu;
@@ -251,6 +340,198 @@ function checkModelSecretPlacement(file, workflow) {
       fail(file, "model secret appears outside the review-step env");
 }
 
+function publisherSecretLocations(value, path = [], locations = []) {
+  if (typeof value === "string") {
+    if (publisherSecretPattern.test(value)) locations.push({ path, value });
+    return locations;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      publisherSecretLocations(child, [...path, index], locations),
+    );
+    return locations;
+  }
+  if (value === null || typeof value !== "object") return locations;
+  for (const [key, child] of Object.entries(value))
+    publisherSecretLocations(child, [...path, key], locations);
+  return locations;
+}
+
+function publisherTokenLocations(value, path = [], locations = []) {
+  if (typeof value === "string") {
+    if (value.includes(publisherToken)) locations.push(path);
+    return locations;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((child, index) =>
+      publisherTokenLocations(child, [...path, index], locations),
+    );
+    return locations;
+  }
+  if (value === null || typeof value !== "object") return locations;
+  for (const [key, child] of Object.entries(value))
+    publisherTokenLocations(child, [...path, key], locations);
+  return locations;
+}
+
+function checkContinuationDispatch(file, workflow) {
+  const contract = reviewedContinuationDispatches[file];
+  if (contract === undefined) return;
+  const job = workflow.jobs?.[contract.job];
+  const dispatches = Object.entries(workflow.jobs ?? {}).flatMap(
+    ([jobName, candidate]) =>
+      (Array.isArray(candidate?.steps) ? candidate.steps : [])
+        .filter(
+          (step) =>
+            typeof step?.run === "string" &&
+            step.run.includes("gh workflow run"),
+        )
+        .map((step) => ({ jobName, step })),
+  );
+  if (
+    job === undefined ||
+    (contract.needs !== undefined &&
+      JSON.stringify(job.needs) !== JSON.stringify(contract.needs)) ||
+    (contract.if !== undefined && job.if !== contract.if) ||
+    dispatches.length !== 1 ||
+    dispatches[0]?.jobName !== contract.job ||
+    JSON.stringify(dispatches[0]?.step) !== JSON.stringify(contract.step)
+  )
+    fail(file, "continuation dispatch changed from the reviewed contract");
+}
+
+function checkPublisherBoundary(file, workflow) {
+  const mutation = mutationJobs[file];
+  const secretLocations = publisherSecretLocations(workflow);
+  if (mutation === undefined) {
+    if (secretLocations.length > 0)
+      fail(file, "Publisher App secret appears outside a mutation workflow");
+    return;
+  }
+
+  const job = workflow.jobs?.[mutation.job];
+  if (job === undefined) {
+    fail(file, `missing reviewed mutation job ${mutation.job}`);
+    return;
+  }
+  if (job.environment !== mutation.environment)
+    fail(
+      file,
+      `${mutation.job} must use protected environment ${mutation.environment}`,
+    );
+
+  const steps = Array.isArray(job.steps) ? job.steps : [];
+  const secretSteps = steps.filter((step) =>
+    JSON.stringify(step).match(publisherSecretPattern),
+  );
+  if (secretSteps.length !== 1)
+    fail(file, "Publisher App secrets must appear in exactly one token step");
+
+  const tokenStep = steps.find((step) => step?.id === "publisher-token");
+  const tokenStepIndex = steps.indexOf(tokenStep);
+  const expectedWith = {
+    "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
+    "private-key": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
+    owner: "MentallyQuill",
+    repositories: "TavernKeeper",
+    "permission-contents": "write",
+  };
+  if (
+    tokenStep?.name !== "Create TavernKeeper Publisher token" ||
+    tokenStep?.uses !== publisherAction ||
+    JSON.stringify(tokenStep?.with) !== JSON.stringify(expectedWith)
+  )
+    fail(file, "Publisher App token step changed from the reviewed contract");
+
+  const expectedSecretLocations = new Map([
+    [
+      JSON.stringify([
+        "jobs",
+        mutation.job,
+        "steps",
+        tokenStepIndex,
+        "with",
+        "app-id",
+      ]),
+      expectedWith["app-id"],
+    ],
+    [
+      JSON.stringify([
+        "jobs",
+        mutation.job,
+        "steps",
+        tokenStepIndex,
+        "with",
+        "private-key",
+      ]),
+      expectedWith["private-key"],
+    ],
+  ]);
+  if (
+    secretLocations.length !== expectedSecretLocations.size ||
+    secretLocations.some(
+      (location) =>
+        expectedSecretLocations.get(JSON.stringify(location.path)) !==
+        location.value,
+    )
+  )
+    fail(file, "Publisher App secret appears outside the reviewed token step");
+
+  const checkouts = steps.filter(
+    (step) =>
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/checkout@"),
+  );
+  if (
+    checkouts.length === 0 ||
+    checkouts.some((step) => step?.with?.["persist-credentials"] !== false)
+  )
+    fail(file, "mutation checkout must disable persisted credentials");
+
+  const pushSteps = steps.filter(
+    (step) =>
+      typeof step?.run === "string" &&
+      step.run.includes("git push origin HEAD:main"),
+  );
+  if (pushSteps.length !== 1)
+    fail(
+      file,
+      "mutation job must contain exactly one reviewed direct push step",
+    );
+  const pushStep = pushSteps[0];
+  const pushStepIndex = steps.indexOf(pushStep);
+  const expectedTokenLocation = JSON.stringify([
+    "jobs",
+    mutation.job,
+    "steps",
+    pushStepIndex,
+    "env",
+    "GH_TOKEN",
+  ]);
+  const tokenLocations = publisherTokenLocations(workflow);
+  if (
+    tokenLocations.length !== 1 ||
+    JSON.stringify(tokenLocations[0]) !== expectedTokenLocation
+  )
+    fail(
+      file,
+      "Publisher App token is consumed outside the reviewed commit step",
+    );
+  if (pushStep?.run?.trim() !== reviewedPublisherRuns[file])
+    fail(
+      file,
+      "Publisher-authenticated commit script changed from the reviewed contract",
+    );
+  for (const step of pushSteps) {
+    if (step?.env?.GH_TOKEN !== publisherToken)
+      fail(file, "direct push does not use the Publisher App token");
+    if (!step.run.includes("gh auth setup-git"))
+      fail(file, "direct push does not configure Git authentication");
+    if (step.run.includes("gh workflow run"))
+      fail(file, "direct push step also dispatches Actions");
+  }
+}
+
 const names = (await readdir(workflowRoot))
   .filter((name) => /\.ya?ml$/u.test(name))
   .sort();
@@ -270,6 +551,8 @@ for (const file of names) {
   checkActionPins(file, workflow);
   checkParallelism(file, workflow);
   checkModelSecretPlacement(file, workflow);
+  checkPublisherBoundary(file, workflow);
+  checkContinuationDispatch(file, workflow);
 }
 
 const policy = JSON.parse(

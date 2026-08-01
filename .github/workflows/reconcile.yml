@@ -136,8 +136,9 @@ jobs:
     needs: [plan, scan]
     if: ${{ always() && needs.plan.result == 'success' && needs.scan.result != 'skipped' }}
     runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
     permissions:
-      contents: write
+      contents: read
       issues: write
     outputs:
       source_sha: ${{ steps.commit.outputs.source_sha }}
@@ -146,6 +147,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
+          persist-credentials: false
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -183,10 +185,22 @@ jobs:
                 --body "TavernKeeper exhausted its three delayed retries.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nScope: \`$scope\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nNo external repository owner was contacted and no degraded report was published."
             fi
           done
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
       - name: Commit reports and state
         id: commit
+        env:
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
         shell: bash
         run: |
+          gh auth setup-git
           git config user.name "TavernKeeper"
           git config user.email "tavernkeeper@users.noreply.github.com"
           git add reports operations/state.json

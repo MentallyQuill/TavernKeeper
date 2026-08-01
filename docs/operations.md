@@ -4,7 +4,7 @@ All privileged workflows run from trusted TavernKeeper code. Keep `main` protect
 
 ## Runtime configuration
 
-Configure these environment secrets for both approved scan environments:
+Configure these repository Actions secrets for the configured-model transport. Workflow policy permits them only on the `Review with configured model` step, and both workflows that can reach that step are protected by an approved scan environment:
 
 - `TAVERNKEEPER_API_ENDPOINT`: the complete HTTPS OpenAI-compatible Chat Completions endpoint
 - `TAVERNKEEPER_API_KEY`: provider credential
@@ -12,7 +12,22 @@ Configure these environment secrets for both approved scan environments:
 
 Configure `TAVERNARY_WAKE_APP_ID` and `TAVERNARY_WAKE_APP_PRIVATE_KEY` only in TavernKeeper. The GitHub App must be installed only on Tavernary with Actions write and metadata read. It receives no contents write access.
 
+Tavernary stores `TAVERNKEEPER_WAKE_APP_ID` and `TAVERNKEEPER_WAKE_APP_PRIVATE_KEY`; they are not TavernKeeper secrets. That App is installed only on TavernKeeper with Actions write and metadata read.
+
+Configure these environment secrets separately in both `tavernkeeper-scanner` and `tavernkeeper-staff`:
+
+- `TAVERNKEEPER_PUBLISHER_APP_ID`
+- `TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY`
+
+`TavernKeeper Publisher` must be installed only on TavernKeeper with contents read/write and mandatory metadata read. It receives no Actions permission. Mutation jobs mint a short-lived token scoped explicitly to `MentallyQuill/TavernKeeper`, disable persisted checkout credentials, and fail if App authentication or the push fails. Never add the Publisher credentials as repository-level secrets and never add a `GITHUB_TOKEN` contents-write fallback.
+
+Protect `main` with the active ruleset `Protect main; allow TavernKeeper Publisher`. The ruleset targets only the default branch, requires pull requests and the GitHub Actions `check` status for ordinary actors, blocks deletion and non-fast-forward updates, and grants an always bypass only to the Publisher App Integration actor.
+
 Do not put secret values in workflow inputs, repository files, Issues, logs, reports, or shell history. Workflows pass model secrets only to the step named `Review with configured model`.
+
+## GitHub App key rotation
+
+Generate a replacement private key from the App settings before revoking the active key. For a wake App, update both source-repository secret values, prove an input-free destination dispatch, then revoke the old key. For the Publisher App, update the ID and private key in both protected environments, prove one protected operational-state publication, then revoke the old key. Resolve every downloaded PEM to the expected Downloads directory, remove it immediately after GitHub secret storage, and verify only secret names in logs.
 
 ## Normal reconciliation
 
