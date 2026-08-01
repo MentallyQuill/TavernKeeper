@@ -8,6 +8,8 @@ Tavernary is authoritative for catalog eligibility, GitHub repository identity, 
 
 The wake-up event in either direction contains no target, scan mode, budget, clone URL, model, or report URL. It only asks the destination to reconcile its own public input. Each side also reconciles on a six-hour schedule.
 
+The two wake Apps are Actions-only bridges installed on one destination repository apiece. A third App, `TavernKeeper Publisher`, is installed only on TavernKeeper with contents write and mandatory metadata read. It cannot wake Tavernary or continue a scan batch. Mutation jobs obtain a short-lived Publisher token from the protected `tavernkeeper-scanner` or `tavernkeeper-staff` environment; any local continuation dispatch is a separate Actions-only step using the repository-local token.
+
 ```text
 Tavernary target manifest (repository ID + exact SHA)
   -> input-free Actions wake or scheduled reconciliation
@@ -32,6 +34,8 @@ Inventory establishes portable path safety and byte/file coverage before expensi
 Every applicable deterministic scanner must complete. Every eligible selected source path must appear in the chunk plan. Every chunk must complete model review. Final synthesis must preserve deterministic evidence. The exact target SHA is rechecked immediately before model use. A quota, token, provider, tool, malformed-output, coverage, schema, redaction, or publication failure yields no candidate.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA, scanner-policy version, mode, and report version. A serialized publisher prevalidates the whole batch, writes report JSON and script-free HTML to immutable paths, updates the preferred index, and rolls back partial writes on failure.
+
+Every direct write to `main` uses the dedicated Publisher App. Checkout credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and Publisher authentication failure stops the mutation with no fallback. TavernKeeper's main ruleset requires a pull request and the `check` CI status for ordinary actors, blocks deletion and non-fast-forward updates, and grants the only direct-write bypass to the Publisher App Integration actor.
 
 ## Public states
 

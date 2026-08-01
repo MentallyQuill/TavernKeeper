@@ -304,8 +304,7 @@ function checkPublisherBoundary(file, workflow) {
   const tokenStep = steps.find((step) => step?.id === "publisher-token");
   const expectedWith = {
     "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
-    "private-key":
-      "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
+    "private-key": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
     owner: "MentallyQuill",
     repositories: "TavernKeeper",
     "permission-contents": "write",
@@ -319,7 +318,8 @@ function checkPublisherBoundary(file, workflow) {
 
   const checkouts = steps.filter(
     (step) =>
-      typeof step?.uses === "string" && step.uses.startsWith("actions/checkout@"),
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/checkout@"),
   );
   if (
     checkouts.length === 0 ||
@@ -333,7 +333,10 @@ function checkPublisherBoundary(file, workflow) {
       step.run.includes("git push origin HEAD:main"),
   );
   if (pushSteps.length !== 1)
-    fail(file, "mutation job must contain exactly one reviewed direct push step");
+    fail(
+      file,
+      "mutation job must contain exactly one reviewed direct push step",
+    );
   for (const step of pushSteps) {
     if (step?.env?.GH_TOKEN !== publisherToken)
       fail(file, "direct push does not use the Publisher App token");

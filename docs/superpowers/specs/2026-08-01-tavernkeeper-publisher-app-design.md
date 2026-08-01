@@ -21,13 +21,13 @@ Each mutation job creates a short-lived installation token with the pinned `acti
 
 The App token is used by exactly these mutation jobs:
 
-| Workflow | Job | Mutation |
-| --- | --- | --- |
-| `reconcile.yml` | `publish` | reports and `operations/state.json` |
-| `deep-scan.yml` | `scan` | staff deep-scan report and state |
-| `adjudicate.yml` | `adjudicate` | superseding report, state, dismissal rules |
-| `policy-rescan.yml` | `schedule` | policy campaign state |
-| `staff-operations.yml` | `operate` | pause, resume, and retry state |
+| Workflow               | Job          | Mutation                                   |
+| ---------------------- | ------------ | ------------------------------------------ |
+| `reconcile.yml`        | `publish`    | reports and `operations/state.json`        |
+| `deep-scan.yml`        | `scan`       | staff deep-scan report and state           |
+| `adjudicate.yml`       | `adjudicate` | superseding report, state, dismissal rules |
+| `policy-rescan.yml`    | `schedule`   | policy campaign state                      |
+| `staff-operations.yml` | `operate`    | pause, resume, and retry state             |
 
 Publisher authentication is fail-closed. A missing secret, invalid key, missing installation, token failure, rejected push, or ruleset rejection fails the job. No workflow falls back to `GITHUB_TOKEN` for a contents write and no degraded report is published.
 
@@ -74,4 +74,3 @@ Repository tests and `scripts/check-workflow-policy.mjs` enforce the boundary:
 4. Create and verify the active ruleset with only the Publisher App bypass.
 5. Resume scanning and run the approved Wandlight canary, then Recursion.
 6. Verify report publication, Tavernary wake/import, exact-SHA summaries, and live cards before clearing the initial rollout pause.
-

@@ -34,6 +34,7 @@
 ### Task 1: Create and constrain the three GitHub Apps
 
 **Interfaces:**
+
 - Produces: six bridge secrets, four environment-scoped Publisher secrets, three single-repository installations, and the numeric Publisher App ID needed by Task 4.
 
 - [ ] **Step 1: Create the Tavernary-to-TavernKeeper wake App**
@@ -88,10 +89,12 @@ Verify the environment secret names using `gh api repos/MentallyQuill/TavernKeep
 ### Task 2: Enforce Publisher authentication in workflow policy
 
 **Files:**
+
 - Modify: `tests/workflows.test.ts`
 - Modify: `scripts/check-workflow-policy.mjs`
 
 **Interfaces:**
+
 - Consumes: token step ID `publisher-token` and secret names from Task 1.
 - Produces: a policy that rejects untrusted contents-write permissions, misplaced Publisher secrets, persisted checkout credentials, and direct pushes without the Publisher token.
 
@@ -127,6 +130,7 @@ git commit -m "test: require Publisher App writes"
 ### Task 3: Migrate all five mutation workflows
 
 **Files:**
+
 - Modify: `.github/workflows/reconcile.yml`
 - Modify: `.github/workflows/deep-scan.yml`
 - Modify: `.github/workflows/adjudicate.yml`
@@ -135,6 +139,7 @@ git commit -m "test: require Publisher App writes"
 - Test: `tests/workflows.test.ts`
 
 **Interfaces:**
+
 - Consumes: Publisher environment secrets and policy contract from Tasks 1-2.
 - Produces: five fail-closed protected workflows using a short-lived Publisher token for direct pushes.
 
@@ -147,15 +152,15 @@ Set root and mutation-job `contents` permissions to `read`. Preserve `issues: wr
 Use this exact step before each commit step:
 
 ```yaml
-      - name: Create TavernKeeper Publisher token
-        id: publisher-token
-        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
-        with:
-          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
-          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
-          owner: MentallyQuill
-          repositories: TavernKeeper
-          permission-contents: write
+- name: Create TavernKeeper Publisher token
+  id: publisher-token
+  uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+  with:
+    app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+    private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+    owner: MentallyQuill
+    repositories: TavernKeeper
+    permission-contents: write
 ```
 
 Add `environment: tavernkeeper-scanner` to `reconcile.yml`'s `publish` job; retain `tavernkeeper-staff` on all manual mutation jobs.
@@ -165,8 +170,8 @@ Add `environment: tavernkeeper-scanner` to `reconcile.yml`'s `publish` job; reta
 Set `persist-credentials: false` on every mutation-job checkout. Set each commit step environment to:
 
 ```yaml
-        env:
-          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+env:
+  GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
 ```
 
 Run `gh auth setup-git` immediately before Git configuration and retain ordinary `git push origin HEAD:main` without force flags.
@@ -193,6 +198,7 @@ git commit -m "feat: publish with scoped GitHub App"
 ### Task 4: Document, publish, and protect main
 
 **Files:**
+
 - Modify: `README.md`
 - Modify: `docs/architecture.md`
 - Modify: `docs/operations.md`
@@ -200,6 +206,7 @@ git commit -m "feat: publish with scoped GitHub App"
 - Create: `docs/superpowers/plans/2026-08-01-tavernkeeper-publisher-app.md`
 
 **Interfaces:**
+
 - Consumes: verified workflows from Task 3 and numeric Publisher App ID from Task 1.
 - Produces: deployed Publisher workflow and active main-branch protection.
 
@@ -232,13 +239,40 @@ Resolve the Publisher App integration ID from GitHub and construct this exact bo
   "name": "Protect main; allow TavernKeeper Publisher",
   "target": "branch",
   "enforcement": "active",
-  "bypass_actors": [{"actor_id": "$publisherAppId", "actor_type": "Integration", "bypass_mode": "always"}],
-  "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
+  "bypass_actors": [
+    {
+      "actor_id": "$publisherAppId",
+      "actor_type": "Integration",
+      "bypass_mode": "always"
+    }
+  ],
+  "conditions": {
+    "ref_name": { "include": ["~DEFAULT_BRANCH"], "exclude": [] }
+  },
   "rules": [
-    {"type": "deletion"},
-    {"type": "non_fast_forward"},
-    {"type": "pull_request", "parameters": {"allowed_merge_methods": ["merge", "squash", "rebase"], "dismiss_stale_reviews_on_push": false, "require_code_owner_review": false, "require_last_push_approval": false, "required_approving_review_count": 0, "required_review_thread_resolution": false}},
-    {"type": "required_status_checks", "parameters": {"do_not_enforce_on_create": false, "required_status_checks": [{"context": "check", "integration_id": 15368}], "strict_required_status_checks_policy": true}}
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "allowed_merge_methods": ["merge", "squash", "rebase"],
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": false
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "do_not_enforce_on_create": false,
+        "required_status_checks": [
+          { "context": "check", "integration_id": 15368 }
+        ],
+        "strict_required_status_checks_policy": true
+      }
+    }
   ]
 }
 ```
@@ -252,6 +286,7 @@ From a clean, disposable test branch based on `main`, create a documentation-onl
 ### Task 5: Run canary scans and prove the complete handshake
 
 **Interfaces:**
+
 - Consumes: protected Publisher path, both wake Apps, live Tavernary target manifest.
 - Produces: verified Wandlight and Recursion exact-SHA reports, live TavernKeeper Pages entries, and live Tavernary card summaries.
 
