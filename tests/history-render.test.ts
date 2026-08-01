@@ -27,6 +27,7 @@ describe("repository scan history rendering", () => {
       finding_counts: {
         total: 0,
         actionable: 0,
+        actionable_severity: { critical: 0, high: 0, medium: 0 },
         severity: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
         confidence: { high: 0, medium: 0, low: 0 },
         disposition: { confirmed: 0, not_supported: 0, inconclusive: 0 },

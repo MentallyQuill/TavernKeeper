@@ -4,6 +4,7 @@ import { Ajv } from "ajv";
 import { describe, expect, test } from "vitest";
 
 import {
+  buildFindingCountsV2,
   deriveV2Result,
   deriveResult,
   parseReportIndex,
@@ -165,6 +166,7 @@ const validReportV2 = {
   },
   finding_counts: {
     ...validReport.finding_counts,
+    actionable_severity: { critical: 0, high: 1, medium: 0 },
     disposition: { confirmed: 1, not_supported: 0, inconclusive: 0 },
   },
   findings: [validFindingV2],
@@ -198,6 +200,35 @@ describe("public contracts", () => {
         },
       ]),
     ).toBe("teal");
+  });
+
+  test("publishes actionable severity separately from all finding severities", () => {
+    expect(
+      buildFindingCountsV2([
+        {
+          ...validFindingV2,
+          severity: "critical",
+          confidence: "high",
+          disposition: "not-supported",
+        },
+        {
+          ...validFindingV2,
+          severity: "high",
+          confidence: "medium",
+          disposition: "confirmed",
+        },
+        {
+          ...validFindingV2,
+          severity: "low",
+          confidence: "high",
+          disposition: "confirmed",
+        },
+      ]),
+    ).toMatchObject({
+      actionable: 1,
+      severity: { critical: 1, high: 1, medium: 0, low: 1, info: 0 },
+      actionable_severity: { critical: 0, high: 1, medium: 0 },
+    });
   });
 
   test("accepts only automated V2 report results and dispositions", () => {

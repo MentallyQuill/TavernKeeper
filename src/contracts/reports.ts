@@ -319,6 +319,11 @@ const FindingCountsSchema = z.strictObject({
 const FindingCountsV2Schema = FindingCountsSchema.omit({
   disposition: true,
 }).extend({
+  actionable_severity: z.strictObject({
+    critical: NonNegativeIntegerSchema,
+    high: NonNegativeIntegerSchema,
+    medium: NonNegativeIntegerSchema,
+  }),
   disposition: z.strictObject({
     confirmed: NonNegativeIntegerSchema,
     not_supported: NonNegativeIntegerSchema,
@@ -364,6 +369,7 @@ function findingCountsMatch(
 
 export function buildFindingCountsV2(findings: FindingV2[]) {
   const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+  const actionableSeverity = { critical: 0, high: 0, medium: 0 };
   const confidence = { high: 0, medium: 0, low: 0 };
   const disposition = { confirmed: 0, not_supported: 0, inconclusive: 0 };
   const categories: Record<string, number> = {};
@@ -378,12 +384,22 @@ export function buildFindingCountsV2(findings: FindingV2[]) {
         : finding.disposition
     ] += 1;
     categories[finding.category] = (categories[finding.category] ?? 0) + 1;
-    if (deriveV2Result([finding]) === "red") actionable += 1;
+    if (deriveV2Result([finding]) === "red") {
+      actionable += 1;
+      if (
+        finding.severity === "critical" ||
+        finding.severity === "high" ||
+        finding.severity === "medium"
+      ) {
+        actionableSeverity[finding.severity] += 1;
+      }
+    }
   }
 
   return FindingCountsV2Schema.parse({
     total: findings.length,
     actionable,
+    actionable_severity: actionableSeverity,
     severity,
     confidence,
     disposition,
