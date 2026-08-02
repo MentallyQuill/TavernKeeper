@@ -26,4 +26,25 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({ code: "CLI_FAILED", scope: "system" });
   });
+
+  test("retains only allowlisted model response diagnostics", () => {
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "system",
+        diagnostic: "output_limit",
+      }),
+    ).toEqual({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "output_limit",
+    });
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "system",
+        diagnostic: "provider output that must never be logged",
+      }),
+    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
+  });
 });

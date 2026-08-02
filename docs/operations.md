@@ -50,7 +50,7 @@ Repository-specific failures delay only that target. External project owners rec
 
 ## Staff workflows
 
-- `provider-check.yml`: after protected staff authorization, sends one minimal status-only request through the configured production Bearer path. It tries `x-api-key` only after a 401 or 403 to diagnose an authentication-header mismatch. It logs no provider response body and cannot scan repositories, mutate operational state, publish reports, or wake Tavernary.
+- `provider-check.yml`: after protected staff authorization, sends a one-token status request through the configured production Bearer path, then validates a fixed repository-free request against the production analyzer JSON Schema and response parser. It tries `x-api-key` only after a 401 or 403 on the status request. Logs contain only a pass record or an allowlisted response-stage diagnostic; endpoint, model output, reasoning, and provider bodies are never logged. The action cannot scan repositories, mutate operational state, publish reports, or wake Tavernary.
 - `targeted-scan.yml`: accepts only a repository-ID routing hint from the immutable Tavernary wake-App actor, refetches the public V2 manifest, and derives a standard scan request. Humans begin this flow only through Tavernary's staff-only exact-GitHub-URL action.
 - `deep-scan.yml`: rescan every eligible first-party text file for one repository ID.
 - `policy-rescan.yml`: schedule a staff-initiated campaign under a new policy.

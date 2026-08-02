@@ -226,6 +226,7 @@ describe("automated model roles", () => {
     ).rejects.toMatchObject({
       code: "MODEL_INVALID_RESPONSE",
       scope: "repository",
+      diagnostic: "role_schema_analyzer",
     });
     expect(provider).toHaveBeenCalledTimes(1);
   });

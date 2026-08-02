@@ -8,7 +8,12 @@ import {
 } from "./role-contracts.js";
 
 function invalid(message: string): never {
-  throw new ModelRequestError("MODEL_INVALID_RESPONSE", "repository", message);
+  throw new ModelRequestError(
+    "MODEL_INVALID_RESPONSE",
+    "repository",
+    message,
+    "role_schema_challenger",
+  );
 }
 
 export const challengerSystemPrompt =

@@ -222,6 +222,79 @@ describe("OpenAI-compatible client", () => {
     });
   });
 
+  test("classifies an exhausted thinking response before its missing final content", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(
+          JSON.stringify({
+            id: "chatcmpl-exhausted",
+            choices: [
+              {
+                message: {
+                  content: null,
+                  reasoning: "omitted from diagnostics",
+                },
+                finish_reason: "length",
+              },
+            ],
+            usage: {
+              prompt_tokens: 10,
+              completion_tokens: 8_192,
+              reasoning_tokens: 8_192,
+            },
+          }),
+          { status: 200 },
+        ),
+    );
+
+    await expect(
+      requestStructuredCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        systemContent: "System",
+        userContent: "User",
+        maxOutputTokens: 8_192,
+        schemaName: "test_schema",
+        jsonSchema: { type: "object" },
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "system",
+      diagnostic: "output_limit",
+    });
+  });
+
+  test("classifies malformed provider JSON without exposing response content", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response("provider output that must never be logged", {
+          status: 200,
+        }),
+    );
+
+    await expect(
+      requestStructuredCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        systemContent: "System",
+        userContent: "User",
+        maxOutputTokens: 8_192,
+        schemaName: "test_schema",
+        jsonSchema: { type: "object" },
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "system",
+      diagnostic: "response_json",
+    });
+  });
+
   test("rejects private endpoints and redirects", async () => {
     await expect(
       requestStructuredCompletion({

@@ -1,8 +1,8 @@
-# Model Provider Connectivity Check Design
+# Model Provider Compatibility Check Design
 
 ## Goal
 
-Give TavernKeeper staff a fast, provider-agnostic way to prove the currently configured OpenAI-compatible endpoint, API key, model, and production Bearer authentication path before spending time on a repository scan.
+Give TavernKeeper staff a fast, provider-agnostic way to prove the currently configured OpenAI-compatible endpoint, API key, model, production Bearer authentication path, and TavernKeeper analyzer structured-output contract before spending time on a repository scan.
 
 ## Non-goals
 
@@ -25,7 +25,11 @@ The workflow policy allowlist must recognize this exact trigger, job set, permis
 
 ## Probe behavior
 
-The probe validates the endpoint with TavernKeeper's existing public-HTTPS and DNS boundary, trims the API key, and sends a minimal non-streaming Chat Completions request using the configured model. The request asks for a one-token response and does not request structured output.
+The probe validates the endpoint with TavernKeeper's existing public-HTTPS and DNS boundary, trims the API key, and performs two non-streaming Chat Completions requests using the configured model.
+
+The first request asks for a one-token response without structured output. It proves status and authentication while retaining the alternate-header diagnostic below.
+
+After Bearer succeeds, the second request uses the same `json_schema`, strictness, response envelope, usage accounting, 8,192-token per-role allowance, and analyzer payload parser as a production scan. Its fixed prompt contains no repository URL, source, finding, or report data and asks for empty analyzer collections. This distinguishes a mere HTTP success from actual production-protocol compatibility.
 
 The production-compatible attempt uses:
 
@@ -41,12 +45,12 @@ HTTP 402 or 429 maps to `MODEL_QUOTA`. Redirects, DNS/network failures, and othe
 
 ## Output and secret safety
 
-The probe never reads, parses, or logs the provider response body. It never prints the endpoint, key, model, request body, response headers, or response body. Success emits only a small JSON record identifying `passed` and `bearer`; failure uses TavernKeeper's existing sanitized JSON CLI error record.
+The first response body is never read. The structured response is read only inside the same bounded production parser and is never printed or persisted. The probe never prints the endpoint, key, model, request body, response headers, response body, assistant content, or reasoning content. Success emits only a small JSON record identifying `passed`, `bearer`, and `structuredOutput: passed`; failure uses TavernKeeper's sanitized JSON CLI error record.
 
-The response body is cancelled after status classification. GitHub Actions logs and summaries therefore contain only the safe status classification.
+Malformed structured responses may add one allowlisted shape/stage diagnostic such as `output_limit`, `response_content`, `response_usage`, or `role_schema_analyzer`. Arbitrary provider text cannot enter that field. GitHub Actions logs and summaries therefore contain only safe classifications.
 
 ## Testing and release
 
-Unit tests cover Bearer success, alternate-header-only success, rejected credentials, quota responses, provider responses, key trimming, and the no-response-body contract. Workflow contract tests and the policy checker cover permissions, environments, trigger authority, and provider-secret placement.
+Unit tests cover Bearer success, alternate-header-only success, rejected credentials, quota responses, provider responses, key trimming, the status-response no-body contract, production analyzer compatibility, output exhaustion, malformed JSON, and diagnostic allowlisting. Workflow contract tests and the policy checker cover permissions, environments, trigger authority, and provider-secret placement.
 
 Before merging, run the focused tests and the complete `npm run check` gate. After merge, staff approves and runs the action once. Only a Bearer pass permits the paused Wandlight rollout test to continue.

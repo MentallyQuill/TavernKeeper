@@ -280,6 +280,7 @@ async function requestRole({
       "MODEL_INVALID_RESPONSE",
       "repository",
       `The ${role} returned malformed structured output.`,
+      `role_schema_${role}`,
     );
   }
   return {

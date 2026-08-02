@@ -15,7 +15,17 @@
 - Provider secrets may appear only on the `Check configured model provider` step.
 - Bearer success is the only passing result; `x-api-key` is attempted only after Bearer receives HTTP 401 or 403.
 - The provider response body, headers, endpoint, API key, model, and request body must never be logged.
-- The check sends at most one output token per provider request.
+- The status request sends at most one output token; the repository-free structured request uses the same 8,192-token ceiling as a production role so it can reveal thinking-output exhaustion.
+
+## Post-rollout compatibility amendment
+
+The initial one-token check proved the rotated credential and Bearer header, but the first Wandlight scan then failed with `MODEL_INVALID_RESPONSE` during model review. The configured beta thinking model can use a distinct reasoning/final-output shape, so the permanent check must also exercise TavernKeeper's actual analyzer JSON Schema contract before another repository retry.
+
+- [x] Add failing tests for output exhaustion, malformed JSON, analyzer-contract incompatibility, and diagnostic allowlisting.
+- [x] Split provider-envelope validation into safe, content-free response-stage diagnostics.
+- [x] Add a fixed, repository-free analyzer compatibility request after the one-token Bearer proof.
+- [x] Reuse the production analyzer schema, strict structured-output request, response parser, usage accounting, and 8,192-token per-role allowance.
+- [ ] Run the full local gate, publish through PR review, run the protected compatibility action, and use its safe result to decide the Wandlight retry.
 
 ---
 
