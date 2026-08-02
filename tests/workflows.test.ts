@@ -378,18 +378,51 @@ describe("least-privilege GitHub Actions orchestration", () => {
           "      - name: Finalize complete review without provider credentials\n",
           "      - name: Review with configured model\n        run: npm run --silent review-target -- duplicate.json\n      - name: Finalize complete review without provider credentials\n",
         ),
-      /must contain exactly one configured-model review step/u,
+      /must contain exactly one approved model-review phase/u,
     );
   });
 
-  test("workflow policy rejects second-model secrets", async () => {
+  test("workflow policy rejects a second model phase in another job", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "    steps:\n      - name: Check out trusted TavernKeeper main\n",
+          "    steps:\n      - name: Review with configured model\n        run: npm run --silent review-target -- alternate.json\n      - name: Check out trusted TavernKeeper main\n",
+        ),
+      /model-review phase appears outside the approved scan job step/u,
+    );
+  });
+
+  test("workflow policy rejects a renamed extra model step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Finalize complete review without provider credentials\n",
+          "      - name: Alternate provider review\n        run: npm run --silent review-target -- alternate.json\n      - name: Finalize complete review without provider credentials\n",
+        ),
+      /must contain exactly one approved model-review phase/u,
+    );
+  });
+
+  test("workflow policy rejects unapproved backup provider secrets", async () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
           "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
-          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_LUNA_KEY: ${{ secrets.TAVERNKEEPER_LUNA_KEY }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_BACKUP_API_KEY: ${{ secrets.TAVERNKEEPER_BACKUP_API_KEY }}\n",
         ),
-      /second-model secret is forbidden/u,
+      /unapproved workflow secret TAVERNKEEPER_BACKUP_API_KEY/u,
+    );
+  });
+
+  test("workflow policy rejects bracket-referenced alternate provider secrets", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_ALTERNATE_KEY: ${{ secrets['TAVERNKEEPER_ALTERNATE_KEY'] }}\n",
+        ),
+      /unapproved workflow secret TAVERNKEEPER_ALTERNATE_KEY/u,
     );
   });
 

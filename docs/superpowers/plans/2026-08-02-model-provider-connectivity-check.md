@@ -1,5 +1,7 @@
 # Model Provider Connectivity Check Implementation Plan
 
+> **Historical and superseded:** This completed plan records the removed analyzer/per-role provider contract. TavernKeeper now performs private text chunk review followed by one strict JSON repository synthesis. See the current [architecture summary](../../architecture.md#trust-and-execution-boundaries) and [operator contract](../../operations.md#runtime-configuration).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add and run a staff-protected, non-mutating action that proves TavernKeeper's configured provider works with the production Bearer authentication path.

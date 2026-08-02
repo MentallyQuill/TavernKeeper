@@ -129,17 +129,33 @@ const mutationJobs = {
     environment: "tavernkeeper-staff",
   },
 };
-const modelSecretPattern =
-  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
-const secondModelSecretPattern = /TAVERNKEEPER_(?:LUNA|SECOND_MODEL)\w*/iu;
+const modelProviderSecretNames = new Set([
+  "TAVERNKEEPER_API_ENDPOINT",
+  "TAVERNKEEPER_API_KEY",
+  "TAVERNKEEPER_MODEL",
+]);
+const approvedWorkflowSecretNames = new Set([
+  ...modelProviderSecretNames,
+  "TAVERNKEEPER_ARTIFACT_KEY",
+  "TAVERNKEEPER_PUBLISHER_APP_ID",
+  "TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY",
+  "TAVERNARY_WAKE_APP_ID",
+  "TAVERNARY_WAKE_APP_PRIVATE_KEY",
+]);
 const publisherSecretPattern =
   /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
 const sensitiveInputPattern =
   /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
-const modelSecretSteps = {
-  "provider-check.yml": new Set(["Check configured model provider"]),
-  "scan-and-publish.yml": new Set(["Review with configured model"]),
+const modelProviderSecretSteps = {
+  "provider-check.yml": {
+    job: "check",
+    step: "Check configured model provider",
+  },
+  "scan-and-publish.yml": {
+    job: "scan",
+    step: "Review with configured model",
+  },
 };
 
 function fail(file, message) {
@@ -167,6 +183,18 @@ function locationsMatching(value, pattern) {
       locations.push({ path, value: candidate });
   });
   return locations;
+}
+
+function workflowSecretReferences(workflow) {
+  const references = [];
+  walk(workflow, (candidate, path) => {
+    if (typeof candidate !== "string") return;
+    for (const match of candidate.matchAll(/secrets\.([A-Z0-9_]+)/gu))
+      references.push({ name: match[1], path });
+    for (const match of candidate.matchAll(/secrets\[['"]([A-Z0-9_]+)['"]\]/gu))
+      references.push({ name: match[1], path });
+  });
+  return references;
 }
 
 function normalized(value) {
@@ -233,21 +261,26 @@ function checkPins(file, workflow) {
 }
 
 function checkSecretPlacement(file, workflow) {
-  if (locationsMatching(workflow, secondModelSecretPattern).length > 0)
-    fail(file, "second-model secret is forbidden");
-
-  for (const location of locationsMatching(workflow, modelSecretPattern)) {
-    const joined = location.path.join(".");
-    const declaration = joined.startsWith("on.workflow_call.secrets.");
-    const stepIndex = location.path[3];
+  const references = workflowSecretReferences(workflow);
+  for (const { name, path } of references) {
+    if (!approvedWorkflowSecretNames.has(name)) {
+      fail(file, `unapproved workflow secret ${name}`);
+      continue;
+    }
+    if (!modelProviderSecretNames.has(name)) continue;
+    const approved = modelProviderSecretSteps[file];
+    const stepIndex = path[3];
     const step = Number.isInteger(stepIndex)
-      ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
+      ? workflow.jobs?.[path[1]]?.steps?.[stepIndex]
       : undefined;
     const reviewedProviderStep =
-      joined.includes(".steps.") &&
-      joined.includes(".env.") &&
-      modelSecretSteps[file]?.has(step?.name);
-    if (!declaration && !reviewedProviderStep)
+      path[0] === "jobs" &&
+      path[1] === approved?.job &&
+      path[2] === "steps" &&
+      path[4] === "env" &&
+      path[5] === name &&
+      step?.name === approved?.step;
+    if (!reviewedProviderStep)
       fail(file, "model secret appears outside a reviewed provider step");
   }
 
@@ -272,11 +305,28 @@ function checkSecretPlacement(file, workflow) {
 
 function checkModelReviewPhase(file, workflow) {
   if (file !== "scan-and-publish.yml") return;
-  const reviewSteps = (workflow.jobs?.scan?.steps ?? []).filter(
-    (step) => step?.name === "Review with configured model",
+  const phases = [];
+  for (const [jobName, job] of Object.entries(workflow.jobs ?? {}))
+    for (const step of job?.steps ?? [])
+      if (
+        step?.name === "Review with configured model" ||
+        String(step?.run ?? "").includes("review-target") ||
+        workflowSecretReferences(step).some(({ name }) =>
+          modelProviderSecretNames.has(name),
+        )
+      )
+        phases.push({ jobName, step });
+
+  if (phases.some(({ jobName }) => jobName !== "scan"))
+    fail(file, "model-review phase appears outside the approved scan job step");
+  const approved = phases.filter(
+    ({ jobName, step }) =>
+      jobName === "scan" &&
+      step?.name === "Review with configured model" &&
+      step?.run === "npm run --silent review-target -- review.json",
   );
-  if (reviewSteps.length !== 1)
-    fail(file, "must contain exactly one configured-model review step");
+  if (phases.length !== 1 || approved.length !== 1)
+    fail(file, "must contain exactly one approved model-review phase");
 }
 
 function checkEncryptedHandoff(file, workflow) {
