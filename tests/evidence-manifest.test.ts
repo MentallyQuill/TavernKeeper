@@ -91,6 +91,31 @@ describe("evidence manifest", () => {
     });
   });
 
+  test("orders distinct scanner records with the same fingerprint deterministically", () => {
+    const alternateFinding = { ...finding, title: "Zulu unsafe call" };
+    const originalFinding = { ...finding, title: "Alpha unsafe call" };
+    const chunks = [chunk("chunk-a", "src/a.ts", 1, 4, "1".repeat(64))];
+
+    const manifest = buildEvidenceManifest(
+      chunks,
+      [alternateFinding, originalFinding],
+      targetSha,
+    );
+    const reversed = buildEvidenceManifest(
+      chunks,
+      [originalFinding, alternateFinding],
+      targetSha,
+    );
+
+    expect(manifest).toEqual(reversed);
+    expect(
+      manifest.scannerSignals.map(({ id, title }) => ({ id, title })),
+    ).toEqual([
+      { id: "tool-000001", title: "Alpha unsafe call" },
+      { id: "tool-000002", title: "Zulu unsafe call" },
+    ]);
+  });
+
   test("projects chunk source without exposing its inventory hash", () => {
     const manifest = buildEvidenceManifest(
       [chunk("chunk-a", "src/a.ts", 1, 4, "1".repeat(64))],

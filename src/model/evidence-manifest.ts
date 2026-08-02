@@ -52,8 +52,38 @@ function compareFinding(left: Finding, right: Finding) {
       (right.line_start ?? Number.MAX_SAFE_INTEGER) ||
     (left.line_end ?? Number.MAX_SAFE_INTEGER) -
       (right.line_end ?? Number.MAX_SAFE_INTEGER) ||
-    compareText(left.fingerprint, right.fingerprint)
+    compareText(left.fingerprint, right.fingerprint) ||
+    compareText(findingIdentity(left), findingIdentity(right))
   );
+}
+
+function findingIdentity(finding: Finding) {
+  return JSON.stringify([
+    finding.origin,
+    finding.rule_id,
+    finding.category,
+    finding.severity,
+    finding.confidence,
+    finding.path,
+    finding.line_start,
+    finding.line_end,
+    finding.evidence_sha,
+    finding.title,
+    finding.explanation,
+    finding.remediation ?? null,
+    finding.reference_url ?? null,
+    finding.fingerprint,
+    finding.disposition,
+    finding.adjudication === undefined
+      ? null
+      : [
+          finding.adjudication.decision,
+          finding.adjudication.rationale,
+          finding.adjudication.actor,
+          finding.adjudication.completed_at,
+          finding.adjudication.reusable,
+        ],
+  ]);
 }
 
 export function buildEvidenceManifest(

@@ -17,9 +17,11 @@ function comparePath(left: string, right: string) {
   return left === right ? 0 : left < right ? -1 : 1;
 }
 
-export function selectModelCorpus<
-  T extends { classification: InventoryClassification },
->({ classification }: T): InventoryFile[] {
+export function selectModelCorpus({
+  classification,
+}: {
+  classification: InventoryClassification;
+}): InventoryFile[] {
   return classification.modelEligible.toSorted((left, right) =>
     comparePath(left.path, right.path),
   );

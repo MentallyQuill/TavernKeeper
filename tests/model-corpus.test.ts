@@ -3,7 +3,7 @@ import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, expectTypeOf, test } from "vitest";
 
 import type { InventoryClassification } from "../src/inventory/classify.js";
 import type { InventoryFile } from "../src/inventory/inventory-handler.js";
@@ -43,14 +43,39 @@ function compareExpectedPath(left: InventoryFile, right: InventoryFile) {
 }
 
 describe("model corpus selection", () => {
-  test("standard mode includes every eligible first-party text file", () => {
-    expect(selectModelCorpus({ classification })).toEqual(
-      classification.modelEligible.toSorted(compareExpectedPath),
-    );
+  test("accepts exactly the inventory classification input", () => {
+    expectTypeOf(selectModelCorpus)
+      .parameter(0)
+      .toEqualTypeOf<{ classification: InventoryClassification }>();
+    if (false) {
+      // @ts-expect-error legacy scan context is not part of corpus selection
+      // prettier-ignore
+      selectModelCorpus({ classification, mode: "standard", changedPaths: ["a.ts"], findingPaths: ["b.ts"] });
+    }
   });
 
-  test("deep mode includes every eligible first-party text file without aggregate caps", () => {
-    expect(selectModelCorpus({ classification })).toEqual(
+  test("selects the same complete corpus across distinct scan contexts", () => {
+    const standardContext = {
+      mode: "standard",
+      classification,
+      changedPaths: ["b.ts", "not-eligible.bin"],
+      findingPaths: ["a.ts"],
+    };
+    const deepContext = {
+      mode: "deep",
+      classification,
+      changedPaths: [],
+      findingPaths: [],
+    };
+    const standardSelected = selectModelCorpus({
+      classification: standardContext.classification,
+    });
+    const deepSelected = selectModelCorpus({
+      classification: deepContext.classification,
+    });
+
+    expect(standardSelected).toEqual(deepSelected);
+    expect(standardSelected).toEqual(
       classification.modelEligible.toSorted(compareExpectedPath),
     );
   });
