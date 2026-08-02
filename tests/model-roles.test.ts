@@ -228,7 +228,147 @@ describe("automated model roles", () => {
       scope: "repository",
       diagnostic: "role_schema_analyzer",
     });
-    expect(provider).toHaveBeenCalledTimes(1);
+    expect(provider).toHaveBeenCalledTimes(3);
+  });
+
+  test("retries invalid analyzer output and reuses only validated role results", async () => {
+    const cache = new InMemoryModelChunkCache();
+    let analyzerAttempts = 0;
+    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
+      const input = JSON.parse(request.userContent) as any;
+      let payload;
+      if (request.schemaName.endsWith("analyzer")) {
+        analyzerAttempts += 1;
+        payload =
+          analyzerAttempts < 3
+            ? { assessments: [], discoveries: [] }
+            : {
+                assessments: input.deterministic_findings.map(
+                  (finding: any) => ({
+                    fingerprint: finding.fingerprint,
+                    evidence: finding.evidence,
+                    assessment: "not-supported",
+                    rationale: "The signal is not supported.",
+                  }),
+                ),
+                discoveries: [],
+              };
+      } else if (request.schemaName.endsWith("challenger")) {
+        payload = {
+          challenges: input.claims.map((claim: any) => ({
+            fingerprint: claim.fingerprint,
+            evidence: claim.evidence,
+            position: "supports",
+            rationale: "The assessment is grounded.",
+          })),
+        };
+      } else {
+        payload = {
+          decisions: input.claims.map((claim: any) => ({
+            fingerprint: claim.fingerprint,
+            evidence: claim.evidence,
+            disposition: "not-supported",
+            rationale: "The evidence is benign.",
+          })),
+        };
+      }
+      return {
+        completionId: `completion-${provider.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify(payload),
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      };
+    });
+
+    const repaired = await reviewWithConfiguredModel({
+      ...spec(provider),
+      cache,
+    });
+
+    expect(analyzerAttempts).toBe(3);
+    expect(provider).toHaveBeenCalledTimes(5);
+    expect(repaired.findings).toMatchObject([{ disposition: "not-supported" }]);
+    const reusedProvider = vi.fn();
+    await reviewWithConfiguredModel({
+      ...spec(reusedProvider),
+      cache,
+    });
+    expect(reusedProvider).not.toHaveBeenCalled();
+  });
+
+  test("retries review-level inconclusive arbiter output without caching the dead end", async () => {
+    const cache = new InMemoryModelChunkCache();
+    let arbiterAttempts = 0;
+    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
+      const input = JSON.parse(request.userContent) as any;
+      const payload = request.schemaName.endsWith("analyzer")
+        ? {
+            assessments: input.deterministic_findings.map((finding: any) => ({
+              fingerprint: finding.fingerprint,
+              evidence: finding.evidence,
+              assessment: "concerning",
+              rationale: "The deterministic signal requires review.",
+            })),
+            discoveries: [],
+          }
+        : request.schemaName.endsWith("challenger")
+          ? {
+              challenges: input.claims.map((claim: any) => ({
+                fingerprint: claim.fingerprint,
+                evidence: claim.evidence,
+                position: "disputes",
+                rationale: "The evidence is ambiguous.",
+              })),
+            }
+          : {
+              decisions: input.claims.map((claim: any) => {
+                arbiterAttempts += 1;
+                return {
+                  fingerprint: claim.fingerprint,
+                  evidence: claim.evidence,
+                  disposition:
+                    arbiterAttempts < 3 ? "inconclusive" : "not-supported",
+                  rationale:
+                    arbiterAttempts < 3
+                      ? "The claim requires another bounded review."
+                      : "The submitted evidence does not support the claim.",
+                };
+              }),
+            };
+      return {
+        completionId: `completion-${provider.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify(payload),
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      };
+    });
+
+    const repaired = await reviewWithConfiguredModel({
+      ...spec(provider),
+      cache,
+    });
+
+    expect(arbiterAttempts).toBe(3);
+    expect(provider).toHaveBeenCalledTimes(5);
+    expect(repaired.findings).toMatchObject([{ disposition: "not-supported" }]);
+    const reusedProvider = vi.fn();
+    await reviewWithConfiguredModel({
+      ...spec(reusedProvider),
+      cache,
+    });
+    expect(reusedProvider).not.toHaveBeenCalled();
   });
 
   test("identifies review-level inconclusive findings without exposing model content", async () => {
