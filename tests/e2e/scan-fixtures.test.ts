@@ -16,6 +16,7 @@ import { inventoryRepository } from "../../src/inventory/inventory-handler.js";
 import { InMemoryModelChunkCache } from "../../src/model/chunk-cache.js";
 import { chunkCorpus } from "../../src/model/chunker.js";
 import { loadModelCorpus } from "../../src/model/corpus.js";
+import { buildEvidenceManifest } from "../../src/model/evidence-manifest.js";
 import { initialOperationsState } from "../../src/operations/state.js";
 import {
   scanRepository,
@@ -155,36 +156,64 @@ async function fixtureScan(
     loadCorpus: loadModelCorpus,
     chunk: chunkCorpus,
     verifyHead: async () => ({ ok: true, value: targetSha }),
-    review: async ({ endpoint, model, chunks, deterministicFindings }) => {
+    review: async ({
+      endpoint,
+      model,
+      chunks,
+      deterministicFindings,
+      targetSha,
+    }) => {
       submittedSource.push(
         ...chunks.flatMap(({ segments }) =>
           segments.map(({ content }) => content),
         ),
       );
+      const manifest = buildEvidenceManifest(
+        chunks,
+        deterministicFindings,
+        targetSha,
+      );
+      const concerns = manifest.scannerSignals.map((signal) => ({
+        id: signal.fingerprint,
+        fingerprint: signal.fingerprint,
+        title: signal.title,
+        category: signal.category,
+        severity: signal.severity,
+        confidence: signal.confidence,
+        explanation: signal.explanation,
+        evidence_ids: [signal.id],
+        evidence: [
+          {
+            evidenceId: signal.id,
+            kind: "tool" as const,
+            path: signal.path,
+            lineStart: signal.line_start,
+            lineEnd: signal.line_end,
+            targetSha,
+            origin: signal.origin,
+            ruleId: signal.rule_id,
+          },
+        ],
+      }));
       return {
         endpointOrigin: new URL(endpoint).origin,
         provider: new URL(endpoint).hostname,
         model,
-        findings: deterministicFindings.map(
-          ({
-            disposition: _disposition,
-            adjudication: _adjudication,
-            ...finding
-          }) => ({
-            ...finding,
-            disposition: "confirmed" as const,
-            automated_review: {
-              analyzer_policy: "analyzer-v1",
-              challenger_policy: "challenger-v1",
-              arbiter_policy: "arbiter-v1",
-            },
-          }),
-        ),
+        synthesis: {
+          assessment:
+            concerns.length === 0
+              ? ("no_concerning_evidence" as const)
+              : ("concerning" as const),
+          recap:
+            concerns.length === 0
+              ? "The complete eligible source corpus was reviewed and no review-level concern was identified."
+              : "The complete eligible source corpus was reviewed and review-level concerns were identified.",
+          concerns,
+        },
         completedChunkIds: chunks.map(({ id }) => id),
-        roleCompletion: {
-          analyzer: { required: chunks.length, completed: chunks.length },
-          challenger: { required: chunks.length, completed: chunks.length },
-          arbiter: { required: chunks.length, completed: chunks.length },
+        stageCompletion: {
+          chunkReview: { required: chunks.length, completed: chunks.length },
+          synthesis: { required: 1 as const, completed: 1 as const },
         },
         cacheHits: 0,
         cacheMisses: chunks.length * 3,
@@ -267,11 +296,14 @@ describe("in-process hostile-data safety and publication gate", () => {
       ok: true,
       value: { report: { result: "red" } },
     });
-    expect(result.ok ? result.value.report.findings : []).toContainEqual(
+    expect(
+      result.ok
+        ? result.value.report.tool_results.flatMap(({ signals }) => signals)
+        : [],
+    ).toContainEqual(
       expect.objectContaining({
         rule_id: "credential-exfiltration",
         category: "credential-theft",
-        disposition: "confirmed",
       }),
     );
     expect(submittedSource.join("\n")).toContain("collector.invalid");
@@ -290,7 +322,9 @@ describe("in-process hostile-data safety and publication gate", () => {
     if (!result.ok) throw new Error("Expected hostile fixture scan candidate.");
     expect(result.value.report.result).toBe("red");
     expect(
-      result.value.report.findings.map(({ rule_id }) => rule_id),
+      result.value.report.tool_results
+        .flatMap(({ signals }) => signals)
+        .map(({ rule_id }) => rule_id),
     ).toContain("network-install-hook");
 
     const submitted = submittedSource.join("\n");

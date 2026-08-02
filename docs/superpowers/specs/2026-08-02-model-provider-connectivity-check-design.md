@@ -1,5 +1,7 @@
 # Model Provider Compatibility Check Design
 
+> **Historical and superseded:** This document records the removed analyzer/per-role provider contract. TavernKeeper now performs private text chunk review followed by one strict JSON repository synthesis. See the current [architecture summary](../../architecture.md#trust-and-execution-boundaries) and [operator contract](../../operations.md#runtime-configuration).
+
 ## Goal
 
 Give TavernKeeper staff a fast, provider-agnostic way to prove the currently configured OpenAI-compatible endpoint, API key, model, production Bearer authentication path, and TavernKeeper analyzer structured-output contract before spending time on a repository scan.

@@ -1,11 +1,12 @@
 import { createHash } from "node:crypto";
 
 import {
+  buildModelConcernCounts,
+  deriveV3Result,
   FindingSchema,
-  ScanReportV2Schema,
   type Finding,
   type ScanMode,
-  type ScanReportV2,
+  type ScanReportV3,
 } from "../contracts/reports.js";
 import { TargetSchema, type Target } from "../contracts/targets.js";
 import type { ScannerPolicy } from "../config/policy.js";
@@ -29,15 +30,16 @@ import {
   type ModelCorpusFile,
 } from "../model/corpus.js";
 import { ModelCacheError } from "../model/chunk-cache.js";
-import { reviewWithConfiguredModel } from "../model/model-review.js";
-import { buildAutomatedReportFindings } from "../model/report-builder.js";
+import { reviewRepositoryWithConfiguredModel } from "../model/model-review.js";
 import {
   ModelRequestError,
   validateModelEndpoint,
 } from "../model/openai-compatible-client.js";
-import type { ModelRelationship } from "../model/role-contracts.js";
+import type { ValidatedRepositorySynthesis } from "../model/repository-synthesis.js";
+import { buildEvidenceManifest } from "../model/evidence-manifest.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { reportIdentity } from "../publish/report-path.js";
+import { sanitizeReportV3 } from "../publish/sanitize.js";
 import {
   runApplicableScanners,
   type ApplicableScannerSpec,
@@ -67,7 +69,6 @@ export interface ScanRepositorySpec {
   pins: ScannerVersionPins;
   rulesRoot: string;
   runner: CommandRunner;
-  relationships?: ModelRelationship[];
   executables?: Partial<ScannerExecutables>;
   temporaryRoot?: string;
   model: {
@@ -93,11 +94,11 @@ export interface ScanDependencies {
     policy: Parameters<typeof chunkCorpus>[1],
   ): ModelChunk[];
   verifyHead: typeof verifyExactHead;
-  review: typeof reviewWithConfiguredModel;
+  review: typeof reviewRepositoryWithConfiguredModel;
 }
 
 export interface SanitizedCandidate {
-  report: ScanReportV2;
+  report: ScanReportV3;
 }
 
 export interface ScanFailure {
@@ -132,7 +133,7 @@ const defaultDependencies: ScanDependencies = {
   loadCorpus: loadModelCorpus,
   chunk: chunkCorpus,
   verifyHead: verifyExactHead,
-  review: reviewWithConfiguredModel,
+  review: reviewRepositoryWithConfiguredModel,
 };
 
 const scannerOrder = [
@@ -334,14 +335,12 @@ export function validateChunkCoverage(
 
 function validateModelCoverage({
   chunks,
-  deterministicFindings,
   model,
   endpoint,
   identifier,
 }: {
   chunks: ModelChunk[];
-  deterministicFindings: Finding[];
-  model: Awaited<ReturnType<typeof reviewWithConfiguredModel>>;
+  model: Awaited<ReturnType<typeof reviewRepositoryWithConfiguredModel>>;
   endpoint: string;
   identifier: string;
 }) {
@@ -358,19 +357,159 @@ function validateModelCoverage({
       "system",
       "Configured model coverage identity is incomplete.",
     );
-  const finalFingerprints = new Set(
-    model.findings.map(({ fingerprint }) => fingerprint),
-  );
   if (
-    deterministicFindings.some(
-      ({ fingerprint }) => !finalFingerprints.has(fingerprint),
-    )
+    model.stageCompletion.chunkReview.required !== chunks.length ||
+    model.stageCompletion.chunkReview.completed !== chunks.length ||
+    model.stageCompletion.synthesis.required !== 1 ||
+    model.stageCompletion.synthesis.completed !== 1
   )
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Final synthesis removed deterministic evidence.",
+      "Configured model stage completion is incomplete.",
     );
+}
+
+function projectV3ReportSections(
+  tools: Array<{
+    name: string;
+    version: string;
+    status: "completed" | "not-applicable";
+  }>,
+  chunks: readonly ModelChunk[],
+  deterministicFindings: readonly Finding[],
+  synthesis: ValidatedRepositorySynthesis,
+  targetSha: string,
+) {
+  const normalizedOrigin = (origin: string) =>
+    origin === "tavernkeeper" ? "tavernkeeper-static" : origin;
+  const manifest = buildEvidenceManifest(
+    chunks,
+    deterministicFindings,
+    targetSha,
+  );
+  const coveredTools = new Set(tools.map(({ name }) => name));
+  if (
+    manifest.scannerSignals.some(
+      ({ origin }) => !coveredTools.has(normalizedOrigin(origin)),
+    )
+  )
+    throw new Error("Deterministic signal origin is missing tool coverage.");
+  const tool_results = tools.map((tool) => ({
+    ...tool,
+    signals: manifest.scannerSignals
+      .filter(({ origin }) => normalizedOrigin(origin) === tool.name)
+      .map(
+        ({
+          id,
+          rule_id,
+          category,
+          severity,
+          confidence,
+          title,
+          path,
+          line_start,
+          line_end,
+        }) => ({
+          evidence_id: id,
+          rule_id,
+          category,
+          severity,
+          confidence,
+          title,
+          path,
+          line_start,
+          line_end,
+        }),
+      ),
+  }));
+  const model_review = {
+    assessment: synthesis.assessment,
+    recap: synthesis.recap,
+    concerns: synthesis.concerns.map((concern) => ({
+      id: concern.id,
+      category: concern.category,
+      severity: concern.severity,
+      confidence: concern.confidence,
+      title: concern.title,
+      explanation: concern.explanation,
+      evidence: concern.evidence.map((evidence) => ({
+        evidence_id: evidence.evidenceId,
+        kind: evidence.kind,
+        path: evidence.path,
+        line_start: evidence.lineStart,
+        line_end: evidence.lineEnd,
+        target_sha: evidence.targetSha,
+      })),
+    })),
+  };
+  return { tool_results, model_review };
+}
+
+type V3IdentityBody = Pick<
+  ScanReportV3,
+  | "report_version"
+  | "supersedes_report_id"
+  | "scanner_version"
+  | "scanner_policy_version"
+  | "prompt_policy_version"
+  | "source_id"
+  | "provider"
+  | "repository_id"
+  | "repository"
+  | "canonical_url"
+  | "target_sha"
+  | "completed_at"
+  | "mode"
+>;
+
+export function assembleAndSanitizeReportV3({
+  identity,
+  history,
+  inventory,
+  tools,
+  model,
+  chunks,
+  deterministicFindings,
+  synthesis,
+}: {
+  identity: V3IdentityBody;
+  history: ScanReportV3["history"];
+  inventory: ScanReportV3["coverage"]["inventory"];
+  tools: ScanReportV3["coverage"]["tools"];
+  model: ScanReportV3["coverage"]["model"];
+  chunks: readonly ModelChunk[];
+  deterministicFindings: readonly Finding[];
+  synthesis: ValidatedRepositorySynthesis;
+}) {
+  const sections = projectV3ReportSections(
+    tools,
+    chunks,
+    deterministicFindings,
+    synthesis,
+    identity.target_sha,
+  );
+  const withoutId: Omit<ScanReportV3, "report_id"> = {
+    schema_version: 3,
+    ...identity,
+    history,
+    coverage: {
+      inventory,
+      tools,
+      model,
+      evidence_validation: {
+        status: "completed",
+        validated_findings: sections.model_review.concerns.length,
+      },
+    },
+    result: deriveV3Result(sections.model_review),
+    finding_counts: buildModelConcernCounts(sections.model_review.concerns),
+    ...sections,
+  };
+  return sanitizeReportV3({
+    ...withoutId,
+    report_id: reportIdentity(withoutId),
+  });
 }
 
 function buildReport({
@@ -388,75 +527,69 @@ function buildReport({
   history: Awaited<ReturnType<typeof planHistory>> & { ok: true };
   scannerRuns: ScannerRun[];
   chunks: ModelChunk[];
-  model: Awaited<ReturnType<typeof reviewWithConfiguredModel>>;
+  model: Awaited<ReturnType<typeof reviewRepositoryWithConfiguredModel>>;
 }) {
-  const automated = buildAutomatedReportFindings(model.findings);
+  const tools = [
+    {
+      name: "inventory",
+      version: spec.scannerVersion,
+      status: "completed" as const,
+    },
+    ...scannerRuns.map(({ name, version, status }) => ({
+      name,
+      version,
+      status,
+    })),
+  ];
+  const deterministicFindings = scannerRuns.flatMap(({ findings }) => findings);
   const eligibleTextBytes = classification.modelEligible.reduce(
     (total, file) => total + file.bytes,
     0,
   );
-  const withoutId: Omit<ScanReportV2, "report_id"> = {
-    schema_version: 2,
-    report_version: spec.reportVersion,
-    supersedes_report_id: spec.supersedesReportId,
-    scanner_version: spec.scannerVersion,
-    scanner_policy_version: spec.scannerPolicyVersion,
-    prompt_policy_version: spec.promptPolicyVersion,
-    source_id: spec.target.source_id,
-    provider: "github",
-    repository_id: spec.target.repository_id,
-    repository: spec.target.repository,
-    canonical_url: spec.target.canonical_url,
-    target_sha: spec.target.target_sha,
-    completed_at: spec.completedAt,
-    mode: spec.mode,
+  return assembleAndSanitizeReportV3({
+    identity: {
+      report_version: spec.reportVersion,
+      supersedes_report_id: spec.supersedesReportId,
+      scanner_version: spec.scannerVersion,
+      scanner_policy_version: spec.scannerPolicyVersion,
+      prompt_policy_version: spec.promptPolicyVersion,
+      source_id: spec.target.source_id,
+      provider: "github",
+      repository_id: spec.target.repository_id,
+      repository: spec.target.repository,
+      canonical_url: spec.target.canonical_url,
+      target_sha: spec.target.target_sha,
+      completed_at: spec.completedAt,
+      mode: spec.mode,
+    },
     history: {
       base_sha: history.value.baseSha,
       commits: history.value.historyCommits,
     },
-    coverage: {
-      inventory: {
-        files: inventory.totals.files,
-        bytes: inventory.totals.bytes,
-        eligible_text_files: classification.modelEligible.length,
-        eligible_text_bytes: eligibleTextBytes,
-        excluded: classification.excluded,
-      },
-      tools: [
-        {
-          name: "inventory",
-          version: spec.scannerVersion,
-          status: "completed",
-        },
-        ...scannerRuns.map(({ name, version, status }) => ({
-          name,
-          version,
-          status,
-        })),
-      ],
-      model: {
-        status: "completed",
-        endpoint_origin: model.endpointOrigin,
-        provider: model.provider,
-        model: model.model,
-        input_chunks: chunks.length,
-        completed_chunks: model.completedChunkIds.length,
-        input_tokens: model.usage.inputTokens,
-        output_tokens: model.usage.outputTokens,
-        cache_read_tokens: model.usage.cacheReadTokens,
-        reasoning_tokens: model.usage.reasoningTokens,
-        total_tokens: model.usage.inputTokens + model.usage.outputTokens,
-        roles: model.roleCompletion,
-      },
-      evidence_validation: automated.evidenceValidation,
+    inventory: {
+      files: inventory.totals.files,
+      bytes: inventory.totals.bytes,
+      eligible_text_files: classification.modelEligible.length,
+      eligible_text_bytes: eligibleTextBytes,
+      excluded: classification.excluded,
     },
-    result: automated.result,
-    finding_counts: automated.findingCounts,
-    findings: automated.findings,
-  };
-  return ScanReportV2Schema.parse({
-    ...withoutId,
-    report_id: reportIdentity(withoutId),
+    tools,
+    model: {
+      status: "completed",
+      endpoint_origin: model.endpointOrigin,
+      provider: model.provider,
+      model: model.model,
+      input_chunks: chunks.length,
+      completed_chunks: model.completedChunkIds.length,
+      input_tokens: model.usage.inputTokens,
+      output_tokens: model.usage.outputTokens,
+      cache_read_tokens: model.usage.cacheReadTokens,
+      reasoning_tokens: model.usage.reasoningTokens,
+      total_tokens: model.usage.inputTokens + model.usage.outputTokens,
+    },
+    chunks,
+    deterministicFindings,
+    synthesis: model.synthesis,
   });
 }
 
@@ -568,12 +701,7 @@ export async function scanRepository(
       ({ findings }) => findings,
     );
 
-    const selected = selectModelCorpus({
-      mode: spec.mode,
-      classification,
-      changedPaths: history.value.changedPaths,
-      findingPaths: deterministicFindings.map(({ path }) => path),
-    });
+    const selected = selectModelCorpus({ classification });
     const corpus = await dependencies.loadCorpus(spec.root, selected);
     const chunks = dependencies.chunk(corpus, {
       chunkBytes: spec.policy.model.chunkBytes,
@@ -603,16 +731,23 @@ export async function scanRepository(
       projectKinds: spec.projectKinds,
       chunks,
       deterministicFindings,
-      relationships: spec.relationships ?? [],
+      tools: [
+        { name: "inventory", status: "completed" as const },
+        ...orderedScannerRuns.map(({ name, status }) => ({ name, status })),
+      ],
       promptPolicyVersion: spec.promptPolicyVersion,
       scannerPolicyVersion: spec.scannerPolicyVersion,
-      rolePolicies: spec.policy.model.rolePolicies,
-      maxOutputTokensPerRole: spec.policy.model.maxOutputTokensPerRole,
+      chunkReviewPolicy: spec.policy.model.chunkReviewPolicy,
+      synthesisPolicy: spec.policy.model.synthesisPolicy,
+      maxOutputTokensPerChunkReview:
+        spec.policy.model.maxOutputTokensPerChunkReview,
+      maxChunkReviewCharacters: spec.policy.model.maxChunkReviewCharacters,
+      maxOutputTokensForSynthesis:
+        spec.policy.model.maxOutputTokensForSynthesis,
       cache: spec.model.cache,
     });
     validateModelCoverage({
       chunks,
-      deterministicFindings,
       model,
       endpoint: spec.model.endpoint,
       identifier: spec.model.identifier,

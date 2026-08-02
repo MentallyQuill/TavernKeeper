@@ -4,7 +4,10 @@ import { loadScannerPolicy } from "../config/policy.js";
 import { TargetManifestV2Schema } from "../contracts/targets.js";
 import { verifyExactHead } from "../git/checkout.js";
 import { FileModelChunkCache } from "../model/chunk-cache.js";
-import { reviewPreparedSession } from "../orchestrator/session.js";
+import {
+  PreparedSessionSchema,
+  reviewPreparedSession,
+} from "../orchestrator/session.js";
 import { ProcessCommandRunner } from "../process/command-runner.js";
 import {
   fetchFixedJson,
@@ -33,11 +36,13 @@ async function main() {
     await fetchFixedJson(TARGET_MANIFEST_URL),
   );
   const runner = new ProcessCommandRunner();
-  const prepared = JSON.parse(
-    await (
-      await import("node:fs/promises")
-    ).readFile(join(sessionRoot, "prepared.json"), "utf8"),
-  ) as { target: { target_sha: string } };
+  const prepared = PreparedSessionSchema.parse(
+    JSON.parse(
+      await (
+        await import("node:fs/promises")
+      ).readFile(join(sessionRoot, "prepared.json"), "utf8"),
+    ),
+  );
   const review = await reviewPreparedSession({
     sessionRoot,
     manifest,

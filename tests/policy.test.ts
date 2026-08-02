@@ -18,6 +18,16 @@ describe("versioned scanner policy", () => {
     expect(policy.model).not.toHaveProperty("provider");
     expect(policy.model).not.toHaveProperty("id");
     expect("aggregateRepositoryTokenCap" in policy.model).toBe(false);
+    expect(policy.model).toEqual({
+      protocol: "openai-compatible-chat-completions",
+      chunkBytes: 524_288,
+      chunkOverlapBytes: 8_192,
+      maxOutputTokensPerChunkReview: 8_192,
+      maxChunkReviewCharacters: 12_000,
+      maxOutputTokensForSynthesis: 8_192,
+      chunkReviewPolicy: "chunk-review-v2",
+      synthesisPolicy: "repository-synthesis-v2",
+    });
   });
 
   test("loads exact reviewed scanner provenance pins", async () => {

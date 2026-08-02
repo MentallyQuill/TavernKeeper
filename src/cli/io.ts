@@ -78,8 +78,7 @@ export function safeCliErrorRecord(error: unknown): {
     (error.scope === "repository" || error.scope === "system")
       ? error.scope
       : "system";
-  const scope =
-    code === "MODEL_INVALID_RESPONSE" ? "repository" : candidateScope;
+  const scope = candidateScope;
   const candidateComponent =
     error !== null && typeof error === "object" && "component" in error
       ? error.component

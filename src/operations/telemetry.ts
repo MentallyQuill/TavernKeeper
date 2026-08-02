@@ -7,6 +7,8 @@ const UsageSchema = z.strictObject({
   reasoningTokens: z.number().int().nonnegative(),
 });
 
+// Frozen V2 telemetry projection only. The production role chain was removed;
+// current scan/report completion is tracked as chunk review plus synthesis.
 const RoleCompletionSchema = z.strictObject({
   required: z.number().int().nonnegative(),
   completed: z.number().int().nonnegative(),

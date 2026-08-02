@@ -10,7 +10,7 @@ export interface ModelUsage {
   reasoningTokens: number;
 }
 
-export interface StructuredCompletionResult {
+export interface ModelCompletionResult {
   completionId: string;
   endpointOrigin: string;
   provider: string;
@@ -18,19 +18,18 @@ export interface StructuredCompletionResult {
   usage: ModelUsage;
 }
 
-export interface StructuredCompletionRequest {
-  endpoint: string;
-  apiKey: string;
-  model: string;
+export type StructuredCompletionResult = ModelCompletionResult;
+
+interface CompletionRequest extends ProviderConnectivityRequest {
   systemContent: string;
   userContent: string;
   maxOutputTokens: number;
+  maxResponseBytes?: number;
+}
+
+export interface StructuredCompletionRequest extends CompletionRequest {
   schemaName: string;
   jsonSchema: Record<string, unknown>;
-  fetchImpl?: typeof fetch;
-  resolveAddresses?: (hostname: string) => Promise<string[]>;
-  timeoutMs?: number;
-  maxResponseBytes?: number;
 }
 
 export interface ProviderConnectivityRequest {
@@ -40,6 +39,13 @@ export interface ProviderConnectivityRequest {
   fetchImpl?: typeof fetch;
   resolveAddresses?: (hostname: string) => Promise<string[]>;
   timeoutMs?: number;
+}
+
+export interface TextCompletionRequest extends ProviderConnectivityRequest {
+  maxOutputTokens: number;
+  systemContent: string;
+  userContent: string;
+  maxResponseBytes?: number;
 }
 
 export type RequestStructuredCompletion = (
@@ -56,6 +62,10 @@ export type ModelRequestErrorCode =
   | "MODEL_EVIDENCE_INVALID";
 
 export const ModelResponseDiagnostics = [
+  "chunk_review_cache",
+  "chunk_review_empty",
+  "chunk_review_identity",
+  "chunk_review_size",
   "output_limit",
   "response_content",
   "response_envelope",
@@ -64,9 +74,10 @@ export const ModelResponseDiagnostics = [
   "response_usage",
   "review_duplicate_findings",
   "review_inconclusive",
-  "role_schema_analyzer",
-  "role_schema_arbiter",
-  "role_schema_challenger",
+  "synthesis_evidence",
+  "synthesis_identity",
+  "synthesis_inconclusive",
+  "synthesis_schema",
 ] as const;
 export type ModelResponseDiagnostic = (typeof ModelResponseDiagnostics)[number];
 
@@ -77,6 +88,7 @@ export class ModelRequestError extends Error {
     message: string,
     readonly diagnostic?: ModelResponseDiagnostic,
     readonly httpStatus?: number,
+    readonly usage?: ModelUsage,
   ) {
     super(message);
     this.name = "ModelRequestError";
@@ -109,10 +121,15 @@ const ProviderUsageSchema = z.looseObject({
 });
 const ProviderEnvelopeSchema = z.looseObject({
   id: z.unknown(),
+  model: z.unknown().optional(),
   choices: z
     .array(
       z.looseObject({
-        message: z.looseObject({ content: z.unknown() }),
+        message: z.looseObject({
+          content: z.unknown(),
+          function_call: z.unknown().optional(),
+          tool_calls: z.unknown().optional(),
+        }),
         finish_reason: z.unknown().optional(),
       }),
     )
@@ -270,6 +287,16 @@ function usageFromResponse(
   };
 }
 
+function reportedUsage(value: unknown): ModelUsage | undefined {
+  const parsed = ProviderUsageSchema.safeParse(value);
+  if (!parsed.success) return undefined;
+  try {
+    return usageFromResponse(parsed.data);
+  } catch {
+    return undefined;
+  }
+}
+
 export async function checkModelProviderConnectivity(
   request: ProviderConnectivityRequest,
 ) {
@@ -350,9 +377,10 @@ export async function checkModelProviderConnectivity(
   return { status: "passed" as const, authMode: "bearer" as const };
 }
 
-export async function requestStructuredCompletion(
-  request: StructuredCompletionRequest,
-): Promise<StructuredCompletionResult> {
+async function requestCompletion(
+  request: CompletionRequest,
+  responseFormat?: Record<string, unknown>,
+): Promise<ModelCompletionResult> {
   const endpoint = validateModelEndpoint(request.endpoint);
   const apiKey = request.apiKey.trim();
   if (
@@ -360,8 +388,7 @@ export async function requestStructuredCompletion(
     request.model.trim() === "" ||
     request.model.length > 200 ||
     !Number.isInteger(request.maxOutputTokens) ||
-    request.maxOutputTokens < 1 ||
-    !/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/u.test(request.schemaName)
+    request.maxOutputTokens < 1
   )
     throw new ModelRequestError(
       "MODEL_CONFIGURATION",
@@ -389,14 +416,9 @@ export async function requestStructuredCompletion(
         stream: false,
         temperature: 0,
         max_tokens: request.maxOutputTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: request.schemaName,
-            strict: true,
-            schema: request.jsonSchema,
-          },
-        },
+        ...(responseFormat === undefined
+          ? {}
+          : { response_format: responseFormat }),
       }),
     });
   } catch (error) {
@@ -433,6 +455,13 @@ export async function requestStructuredCompletion(
       undefined,
       response.status,
     );
+  if (response.url !== "" && new URL(response.url).origin !== endpoint.origin)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model returned a response from an unexpected origin.",
+      "response_envelope",
+    );
 
   let decoded: unknown;
   try {
@@ -458,7 +487,12 @@ export async function requestStructuredCompletion(
       "system",
       "Configured model returned an invalid response envelope.",
       "response_envelope",
+      undefined,
+      decoded !== null && typeof decoded === "object" && "usage" in decoded
+        ? reportedUsage(decoded.usage)
+        : undefined,
     );
+  const completionUsage = reportedUsage(envelope.data.usage);
   const parsedId = CompletionIdSchema.safeParse(envelope.data.id);
   if (!parsedId.success)
     throw new ModelRequestError(
@@ -466,17 +500,59 @@ export async function requestStructuredCompletion(
       "system",
       "Configured model returned an invalid completion identity.",
       "response_envelope",
+      undefined,
+      completionUsage,
     );
-  const firstChoice = envelope.data.choices[0]!;
   if (
-    firstChoice.finish_reason === "length" ||
-    firstChoice.finish_reason === "max_tokens"
+    envelope.data.model !== undefined &&
+    envelope.data.model !== request.model
   )
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Configured model exhausted its output allowance.",
-      "output_limit",
+      "Configured model returned an unexpected model identity.",
+      "response_envelope",
+      undefined,
+      completionUsage,
+    );
+  const firstChoice = envelope.data.choices[0]!;
+  if (
+    firstChoice.finish_reason !== undefined &&
+    firstChoice.finish_reason !== null &&
+    firstChoice.finish_reason !== "stop"
+  ) {
+    if (
+      firstChoice.finish_reason === "length" ||
+      firstChoice.finish_reason === "max_tokens"
+    )
+      throw new ModelRequestError(
+        "MODEL_INVALID_RESPONSE",
+        "system",
+        "Configured model exhausted its output allowance.",
+        "output_limit",
+        undefined,
+        completionUsage,
+      );
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model returned an unsuccessful finish state.",
+      "response_envelope",
+      undefined,
+      completionUsage,
+    );
+  }
+  if (
+    firstChoice.message.tool_calls !== undefined ||
+    firstChoice.message.function_call !== undefined
+  )
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model returned an unsupported tool call.",
+      "response_envelope",
+      undefined,
+      completionUsage,
     );
   if (
     typeof firstChoice.message.content !== "string" ||
@@ -485,8 +561,10 @@ export async function requestStructuredCompletion(
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Configured model omitted its final structured content.",
+      "Configured model omitted its final completion content.",
       "response_content",
+      undefined,
+      completionUsage,
     );
   const parsedUsage = ProviderUsageSchema.safeParse(envelope.data.usage);
   if (!parsedUsage.success)
@@ -503,4 +581,29 @@ export async function requestStructuredCompletion(
     content: firstChoice.message.content,
     usage: usageFromResponse(parsedUsage.data),
   };
+}
+
+export async function requestTextCompletion(
+  request: TextCompletionRequest,
+): Promise<ModelCompletionResult> {
+  return requestCompletion(request);
+}
+
+export async function requestStructuredCompletion(
+  request: StructuredCompletionRequest,
+): Promise<ModelCompletionResult> {
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$/u.test(request.schemaName))
+    throw new ModelRequestError(
+      "MODEL_CONFIGURATION",
+      "system",
+      "Configured model request is incomplete or invalid.",
+    );
+  return requestCompletion(request, {
+    type: "json_schema",
+    json_schema: {
+      name: request.schemaName,
+      strict: true,
+      schema: request.jsonSchema,
+    },
+  });
 }

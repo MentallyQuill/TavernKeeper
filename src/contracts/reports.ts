@@ -129,6 +129,8 @@ export const FindingSchema = z
       });
   });
 
+// Frozen V2 compatibility projection only. The analyzer/challenger/arbiter
+// production role chain was removed in V3.
 const AutomatedReviewSchema = z.strictObject({
   analyzer_policy: VersionSchema,
   challenger_policy: VersionSchema,
@@ -262,6 +264,8 @@ const ModelCoverageSchema = z
     },
   );
 
+// Frozen V2 compatibility projection only. New V3 reports use chunk-review
+// and synthesis completion instead of the removed production role chain.
 const RoleCompletionSchema = z
   .strictObject({
     required: NonNegativeIntegerSchema,
@@ -572,6 +576,272 @@ export const ScanReportV2Schema = ReportIdentitySchema.extend({
   }
 });
 
+export const ToolSignalSchema = z
+  .strictObject({
+    evidence_id: z.string().regex(/^tool-[0-9]{6}$/u),
+    rule_id: z.string().min(1).max(120),
+    category: CategorySchema,
+    severity: SeveritySchema,
+    confidence: ConfidenceSchema,
+    title: z.string().min(1).max(200),
+    path: RepositoryPathSchema,
+    line_start: z.number().int().positive().nullable(),
+    line_end: z.number().int().positive().nullable(),
+  })
+  .refine(
+    (signal) =>
+      signal.line_start === null
+        ? signal.line_end === null
+        : signal.line_end === null || signal.line_end >= signal.line_start,
+    {
+      path: ["line_end"],
+      message: "Line end must be null or at least line start.",
+    },
+  );
+
+const ModelConcernEvidenceSchema = z
+  .strictObject({
+    evidence_id: z.string().regex(/^(?:source|tool)-[0-9]{6}$/u),
+    kind: z.enum(["source", "tool"]),
+    path: RepositoryPathSchema,
+    line_start: z.number().int().positive().nullable(),
+    line_end: z.number().int().positive().nullable(),
+    target_sha: FullShaSchema,
+  })
+  .superRefine((evidence, context) => {
+    if (!evidence.evidence_id.startsWith(`${evidence.kind}-`))
+      context.addIssue({
+        code: "custom",
+        path: ["kind"],
+        message: "Evidence kind must match its submitted evidence ID.",
+      });
+    if (
+      evidence.line_start === null
+        ? evidence.line_end !== null
+        : evidence.line_end !== null && evidence.line_end < evidence.line_start
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["line_end"],
+        message: "Line end must be null or at least line start.",
+      });
+  });
+
+export const ModelConcernSchema = z.strictObject({
+  id: ReportIdSchema,
+  category: CategorySchema,
+  severity: SeveritySchema,
+  confidence: ConfidenceSchema,
+  title: z.string().min(1).max(200),
+  explanation: z.string().min(1).max(1_000),
+  evidence: z
+    .array(ModelConcernEvidenceSchema)
+    .min(1)
+    .refine(
+      (evidence) =>
+        new Set(evidence.map(({ evidence_id }) => evidence_id)).size ===
+        evidence.length,
+      "Concern evidence IDs must be unique.",
+    ),
+});
+
+export function deriveV3Result(modelReview: {
+  assessment: "no_concerning_evidence" | "concerning";
+  concerns: Array<{ severity: Severity; confidence: Confidence }>;
+}): PublicResultV2 {
+  return modelReview.assessment === "concerning" &&
+    modelReview.concerns.some(
+      ({ severity, confidence }) =>
+        ["critical", "high", "medium"].includes(severity) &&
+        ["high", "medium"].includes(confidence),
+    )
+    ? "red"
+    : "teal";
+}
+
+export function buildModelConcernCounts(
+  concerns: z.infer<typeof ModelConcernSchema>[],
+) {
+  return buildFindingCountsV2(
+    concerns.map((concern) =>
+      FindingV2Schema.parse({
+        origin: "model:repository-review",
+        rule_id: `repository-concern:${concern.id.slice(0, 16)}`,
+        category: concern.category,
+        severity: concern.severity,
+        confidence: concern.confidence,
+        path: concern.evidence[0]!.path,
+        line_start: concern.evidence[0]!.line_start,
+        line_end: concern.evidence[0]!.line_end,
+        evidence_sha: concern.evidence[0]!.target_sha,
+        title: concern.title,
+        explanation: concern.explanation,
+        fingerprint: concern.id,
+        disposition: "confirmed",
+        // V3 publishes the single synthesis above. These names exist only in
+        // the frozen V2 compatibility projection consumed by Tavernary.
+        automated_review: {
+          analyzer_policy: "v3-counts",
+          challenger_policy: "v3-counts",
+          arbiter_policy: "v3-counts",
+        },
+      }),
+    ),
+  );
+}
+
+export const ScanReportV3Schema = ReportIdentitySchema.extend({
+  schema_version: z.literal(3),
+  history: z.strictObject({
+    base_sha: FullShaSchema.nullable(),
+    commits: z.number().int().min(1).max(20),
+  }),
+  coverage: z.strictObject({
+    inventory: InventoryCoverageSchema,
+    tools: z.array(ToolCoverageSchema).min(1),
+    model: ModelCoverageSchema,
+    evidence_validation: z.strictObject({
+      status: z.literal("completed"),
+      validated_findings: NonNegativeIntegerSchema,
+    }),
+  }),
+  result: PublicResultV2Schema,
+  finding_counts: FindingCountsV2Schema,
+  tool_results: z.array(
+    ToolCoverageSchema.extend({ signals: z.array(ToolSignalSchema) }),
+  ),
+  model_review: z.strictObject({
+    assessment: z.enum(["no_concerning_evidence", "concerning"]),
+    recap: z.string().min(1).max(1_000),
+    concerns: z.array(ModelConcernSchema),
+  }),
+}).superRefine((report, context) => {
+  if (report.source_id !== `github-${report.repository_id}`)
+    context.addIssue({
+      code: "custom",
+      path: ["source_id"],
+      message: "Source ID must match repository ID.",
+    });
+  if (report.canonical_url !== `https://github.com/${report.repository}`)
+    context.addIssue({
+      code: "custom",
+      path: ["canonical_url"],
+      message: "Canonical URL must match repository.",
+    });
+  if (report.supersedes_report_id === report.report_id)
+    context.addIssue({
+      code: "custom",
+      path: ["supersedes_report_id"],
+      message: "A report cannot supersede itself.",
+    });
+  if (report.result !== deriveV3Result(report.model_review))
+    context.addIssue({
+      code: "custom",
+      path: ["result"],
+      message:
+        "Result must be derived only from the validated model assessment.",
+    });
+  if (
+    report.model_review.assessment === "no_concerning_evidence" &&
+    report.model_review.concerns.length > 0
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["model_review", "concerns"],
+      message: "A clean assessment cannot contain model concerns.",
+    });
+  if (
+    report.model_review.assessment === "concerning" &&
+    deriveV3Result(report.model_review) !== "red"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["model_review", "concerns"],
+      message: "A concerning assessment requires a review-level model concern.",
+    });
+  if (
+    JSON.stringify(buildModelConcernCounts(report.model_review.concerns)) !==
+    JSON.stringify(report.finding_counts)
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["finding_counts"],
+      message: "Finding totals must count final model concerns only.",
+    });
+  if (
+    report.coverage.evidence_validation.validated_findings !==
+    report.model_review.concerns.length
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["coverage", "evidence_validation", "validated_findings"],
+      message: "Every model concern must pass evidence validation.",
+    });
+  const coverage = new Map(
+    report.coverage.tools.map((tool) => [tool.name, tool]),
+  );
+  const results = new Map(report.tool_results.map((tool) => [tool.name, tool]));
+  if (
+    coverage.size !== report.coverage.tools.length ||
+    results.size !== report.tool_results.length ||
+    coverage.size !== results.size
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["tool_results"],
+      message: "Every covered tool must have exactly one result section.",
+    });
+  for (const [name, tool] of coverage) {
+    const result = results.get(name);
+    if (
+      result === undefined ||
+      result.version !== tool.version ||
+      result.status !== tool.status
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["tool_results"],
+        message: "Tool result version and status must match coverage.",
+      });
+    if (result?.status === "not-applicable" && result.signals.length > 0)
+      context.addIssue({
+        code: "custom",
+        path: ["tool_results"],
+        message: "Not-applicable tools cannot publish signals.",
+      });
+  }
+  const toolEvidence = new Map(
+    report.tool_results.flatMap((tool) =>
+      tool.signals.map(
+        (signal) =>
+          [signal.evidence_id, { ...signal, origin: tool.name }] as const,
+      ),
+    ),
+  );
+  for (const concern of report.model_review.concerns)
+    for (const evidence of concern.evidence) {
+      if (evidence.target_sha !== report.target_sha)
+        context.addIssue({
+          code: "custom",
+          path: ["model_review", "concerns"],
+          message: "Concern evidence must identify the immutable report SHA.",
+        });
+      if (evidence.kind !== "tool") continue;
+      const signal = toolEvidence.get(evidence.evidence_id);
+      if (
+        signal === undefined ||
+        signal.path !== evidence.path ||
+        signal.line_start !== evidence.line_start ||
+        signal.line_end !== evidence.line_end
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["model_review", "concerns"],
+          message: "Tool concern evidence must match a submitted tool signal.",
+        });
+    }
+});
+
 export const ReportIndexEntrySchema = ReportIdentitySchema.omit({
   canonical_url: true,
 })
@@ -745,6 +1015,8 @@ export function parseReportIndex(input: unknown) {
 export type ToolCoverage = z.infer<typeof ToolCoverageSchema>;
 export type ScanReport = z.infer<typeof ScanReportSchema>;
 export type ScanReportV2 = z.infer<typeof ScanReportV2Schema>;
+export type ScanReportV3 = z.infer<typeof ScanReportV3Schema>;
+export type ModelConcern = z.infer<typeof ModelConcernSchema>;
 export type ReportIndex = z.infer<typeof ReportIndexSchema>;
 export type ReportIndexEntry = z.infer<typeof ReportIndexEntrySchema>;
 export type ReportIndexV2 = z.infer<typeof ReportIndexV2Schema>;

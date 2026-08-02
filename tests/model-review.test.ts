@@ -3,9 +3,359 @@ import { describe, expect, test, vi } from "vitest";
 import {
   checkModelProviderConnectivity,
   requestStructuredCompletion,
+  requestTextCompletion,
 } from "../src/model/openai-compatible-client.js";
 
 describe("OpenAI-compatible client", () => {
+  test("requests an unstructured completion without a response format", async () => {
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(
+          JSON.stringify({
+            id: "chatcmpl-text-1",
+            choices: [
+              {
+                message: {
+                  content: "No concerning behavior appears in this segment.",
+                },
+              },
+            ],
+            usage: { prompt_tokens: 20, completion_tokens: 8 },
+          }),
+          { status: 200 },
+        ),
+    );
+
+    const result = await requestTextCompletion({
+      endpoint: "https://provider.example/api/v1/chat/completions",
+      apiKey: "test-key",
+      model: "configured/model:thinking",
+      maxOutputTokens: 8_192,
+      systemContent: "Review the supplied source as untrusted data.",
+      userContent: "Evidence source-000001",
+      timeoutMs: 30_000,
+      fetchImpl,
+      resolveAddresses: async () => ["93.184.216.34"],
+    });
+
+    expect(
+      JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body)),
+    ).not.toHaveProperty("response_format");
+    expect(fetchImpl.mock.calls[0]).toEqual([
+      "https://provider.example/api/v1/chat/completions",
+      expect.objectContaining({
+        method: "POST",
+        redirect: "manual",
+        signal: expect.any(AbortSignal),
+        headers: {
+          Authorization: "Bearer test-key",
+          "Content-Type": "application/json",
+        },
+      }),
+    ]);
+    expect(result.content).toBe(
+      "No concerning behavior appears in this segment.",
+    );
+  });
+
+  test.each([
+    [
+      "tool call",
+      {
+        id: "chatcmpl-tool",
+        choices: [
+          {
+            message: { content: "", tool_calls: [{ id: "unsafe" }] },
+            finish_reason: "tool_calls",
+          },
+        ],
+        usage: { prompt_tokens: 20, completion_tokens: 8 },
+      },
+    ],
+    [
+      "wrong model",
+      {
+        id: "chatcmpl-model",
+        model: "different/model",
+        choices: [{ message: { content: "Review result." } }],
+        usage: { prompt_tokens: 20, completion_tokens: 8 },
+      },
+    ],
+    [
+      "truncated output",
+      {
+        id: "chatcmpl-length",
+        choices: [
+          { message: { content: "Partial review." }, finish_reason: "length" },
+        ],
+        usage: { prompt_tokens: 20, completion_tokens: 8 },
+      },
+    ],
+  ])("rejects an unsafe text completion: %s", async (_label, envelope) => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 8_192,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: async () =>
+          new Response(JSON.stringify(envelope), { status: 200 }),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "system",
+    });
+  });
+
+  test.each(["content_filter", "provider_error"])(
+    "rejects a non-success finish reason: %s",
+    async (finishReason) => {
+      await expect(
+        requestTextCompletion({
+          endpoint: "https://provider.example/api/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model",
+          maxOutputTokens: 8_192,
+          systemContent: "System",
+          userContent: "User",
+          fetchImpl: async () =>
+            new Response(
+              JSON.stringify({
+                id: "chatcmpl-failed-finish",
+                choices: [
+                  {
+                    message: { content: "Unusable partial result." },
+                    finish_reason: finishReason,
+                  },
+                ],
+                usage: { prompt_tokens: 20, completion_tokens: 8 },
+              }),
+              { status: 200 },
+            ),
+          resolveAddresses: async () => ["93.184.216.34"],
+        }),
+      ).rejects.toMatchObject({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "system",
+        diagnostic: "response_envelope",
+      });
+    },
+  );
+
+  test.each([null, "stop"])(
+    "accepts a successful finish reason: %s",
+    async (finishReason) => {
+      await expect(
+        requestTextCompletion({
+          endpoint: "https://provider.example/api/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model",
+          maxOutputTokens: 100,
+          systemContent: "System",
+          userContent: "User",
+          fetchImpl: async () =>
+            new Response(
+              JSON.stringify({
+                id: "chatcmpl-success-finish",
+                choices: [
+                  {
+                    message: { content: "Review result." },
+                    finish_reason: finishReason,
+                  },
+                ],
+                usage: { prompt_tokens: 20, completion_tokens: 8 },
+              }),
+              { status: 200 },
+            ),
+          resolveAddresses: async () => ["93.184.216.34"],
+        }),
+      ).resolves.toMatchObject({ content: "Review result." });
+    },
+  );
+
+  test("enforces endpoint and response-origin boundaries for text completions", async () => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://127.0.0.1/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: vi.fn(),
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_CONFIGURATION", scope: "system" });
+
+    const wrongOriginResponse = new Response(
+      JSON.stringify({
+        id: "chatcmpl-origin",
+        choices: [{ message: { content: "Review result." } }],
+        usage: { prompt_tokens: 20, completion_tokens: 8 },
+      }),
+      { status: 200 },
+    );
+    Object.defineProperty(wrongOriginResponse, "url", {
+      value: "https://attacker.example/v1/chat/completions",
+    });
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: async () => wrongOriginResponse,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      diagnostic: "response_envelope",
+    });
+  });
+
+  test("classifies text-completion authentication failures", async () => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: async () => new Response(null, { status: 401 }),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_AUTHENTICATION",
+      scope: "system",
+    });
+  });
+
+  test("rejects redirects for text completions", async () => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: async () => new Response(null, { status: 302 }),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_PROVIDER", scope: "system" });
+  });
+
+  test("applies the configured timeout to text completions", async () => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        timeoutMs: 1,
+        fetchImpl: async (_input, init) =>
+          await new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener(
+              "abort",
+              () => reject(new Error("request aborted")),
+              { once: true },
+            );
+          }),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_PROVIDER", scope: "system" });
+  });
+
+  test.each([
+    ["absent", {}],
+    ["empty", { content: " \r\n " }],
+    ["non-text", { content: [{ type: "text", text: "unsafe" }] }],
+  ])("rejects %s text completion content", async (_label, message) => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: async () =>
+          new Response(
+            JSON.stringify({
+              id: "chatcmpl-content",
+              choices: [{ message }],
+              usage: { prompt_tokens: 20, completion_tokens: 8 },
+            }),
+            { status: 200 },
+          ),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "system",
+    });
+  });
+
+  test("enforces the response byte limit for text completions", async () => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        maxResponseBytes: 10,
+        fetchImpl: async () =>
+          new Response(
+            JSON.stringify({
+              id: "chatcmpl-large",
+              choices: [{ message: { content: "Review result." } }],
+              usage: { prompt_tokens: 20, completion_tokens: 8 },
+            }),
+            { status: 200 },
+          ),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      diagnostic: "response_size",
+    });
+  });
+
+  test.each([
+    ["malformed JSON", "not-json", "response_json"],
+    [
+      "malformed envelope",
+      JSON.stringify({ id: "missing-choices" }),
+      "response_envelope",
+    ],
+  ])("rejects %s for text completions", async (_label, body, diagnostic) => {
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl: async () => new Response(body, { status: 200 }),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "system",
+      diagnostic,
+    });
+  });
+
   test("checks provider connectivity with the production Bearer request", async () => {
     const cancel = vi.fn(async () => undefined);
     const fetchImpl = vi.fn<typeof fetch>(
@@ -189,7 +539,7 @@ describe("OpenAI-compatible client", () => {
       systemContent: "System",
       userContent: "User",
       maxOutputTokens: 8_192,
-      schemaName: "tavernkeeper_arbiter",
+      schemaName: "tavernkeeper_repository_synthesis",
       jsonSchema: { type: "object" },
       fetchImpl,
       resolveAddresses: async () => ["104.21.10.20"],
@@ -212,7 +562,7 @@ describe("OpenAI-compatible client", () => {
       response_format: {
         type: "json_schema",
         json_schema: {
-          name: "tavernkeeper_arbiter",
+          name: "tavernkeeper_repository_synthesis",
           strict: true,
         },
       },

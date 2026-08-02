@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { ScanReportV2 } from "../src/contracts/reports.js";
+import { readFile } from "node:fs/promises";
 import {
   historyPath,
   historyUrl,
@@ -36,5 +37,25 @@ describe("immutable report identity", () => {
         completed_at: "2030-01-01T00:00:00.000Z",
       } as typeof report),
     ).toBe(reportIdentity(report));
+  });
+
+  test("binds V3 identity to the complete public body except report_id", async () => {
+    const raw = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    const identity = reportIdentity(raw);
+
+    expect(reportIdentity({ ...raw, report_id: "f".repeat(64) })).toBe(
+      identity,
+    );
+    expect(
+      reportIdentity({
+        ...raw,
+        model_review: { ...raw.model_review, recap: "A different recap." },
+      }),
+    ).not.toBe(identity);
   });
 });

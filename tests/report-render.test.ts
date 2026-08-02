@@ -8,23 +8,23 @@ import { renderReportHtml } from "../src/publish/render-report.js";
 async function reportWithHostileText() {
   const raw = JSON.parse(
     await readFile(
-      new URL("./fixtures/contracts/report.v2.valid.json", import.meta.url),
+      new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
       "utf8",
     ),
   ) as Record<string, unknown>;
-  const findings = structuredClone(raw.findings) as Array<
-    Record<string, unknown>
-  >;
-  findings[0] = {
-    ...findings[0],
-    title: '<img src=x onerror="alert(1)"> suspicious markup',
+  const modelReview = structuredClone(raw.model_review) as {
+    concerns: Array<Record<string, unknown>>;
   };
-  const report = { ...raw, findings };
+  modelReview.concerns[0] = {
+    ...modelReview.concerns[0],
+    title: 'Comparison: 2 < 3 & "quoted" > baseline',
+  };
+  const report = { ...raw, model_review: modelReview };
   return { ...report, report_id: reportIdentity(report as never) };
 }
 
 describe("static report rendering", () => {
-  test("escapes hostile values and emits script-free restrictive HTML", async () => {
+  test("escapes accepted special characters and emits script-free restrictive HTML", async () => {
     const html = renderReportHtml(await reportWithHostileText());
 
     expect(html).toContain("Content-Security-Policy");
@@ -32,7 +32,9 @@ describe("static report rendering", () => {
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/<img\b/iu);
     expect(html).not.toMatch(/<[^>]+\sonerror\s*=/iu);
-    expect(html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+    expect(html).toContain(
+      "Comparison: 2 &lt; 3 &amp; &quot;quoted&quot; &gt; baseline",
+    );
     expect(html).toContain("not a safety certification");
   });
 
@@ -45,7 +47,6 @@ describe("static report rendering", () => {
     expect(links).toEqual([
       "https://github.com/owner/repo",
       `https://github.com/owner/repo/commit/${"a".repeat(40)}`,
-      "https://mentallyquill.github.io/TavernKeeper/rules/credential-exfiltration/",
       "https://tavernary.org/",
     ]);
   });

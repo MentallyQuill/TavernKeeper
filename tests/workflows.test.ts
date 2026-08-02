@@ -258,6 +258,10 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(value.jobs.scan.permissions.contents).toBe("read");
     expect(secretSteps).toHaveLength(1);
     expect(secretSteps[0].name).toBe("Review with configured model");
+    expect(JSON.stringify(value.jobs.scan)).toContain(
+      "model-cache-v2-${{ hashFiles('config/scanner-policy.v1.json') }}-",
+    );
+    expect(JSON.stringify(value)).not.toMatch(/LUNA|SECOND_MODEL/iu);
     expect(JSON.stringify(value.jobs.scan.steps)).toMatch(
       /Stop pending repositories after a system failure/u,
     );
@@ -364,6 +368,105 @@ describe("least-privilege GitHub Actions orchestration", () => {
           "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
         ),
       /model secret appears outside a reviewed provider step/u,
+    );
+  });
+
+  test("workflow policy rejects lowercase approved model secrets outside the review step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  scan:\n",
+          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.tavernkeeper_model }}\n",
+        ),
+      /model secret appears outside a reviewed provider step/u,
+    );
+  });
+
+  test("workflow policy rejects mixed-case bracket model secrets outside the review step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  scan:\n",
+          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets[ 'TavernKeeper_Model' ] }}\n",
+        ),
+      /model secret appears outside a reviewed provider step/u,
+    );
+  });
+
+  test("workflow policy rejects dynamic secret-context access", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets[env.PROVIDER_SECRET] }}\n",
+        ),
+      /dynamic secrets context access is not allowed/u,
+    );
+  });
+
+  test("workflow policy requires exactly one configured-model review step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Finalize complete review without provider credentials\n",
+          "      - name: Review with configured model\n        run: npm run --silent review-target -- duplicate.json\n      - name: Finalize complete review without provider credentials\n",
+        ),
+      /must contain exactly one approved model-review phase/u,
+    );
+  });
+
+  test("workflow policy rejects a second model phase in another job", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "    steps:\n      - name: Check out trusted TavernKeeper main\n",
+          "    steps:\n      - name: Review with configured model\n        run: npm run --silent review-target -- alternate.json\n      - name: Check out trusted TavernKeeper main\n",
+        ),
+      /model-review phase appears outside the approved scan job step/u,
+    );
+  });
+
+  test("workflow policy rejects a renamed extra model step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Finalize complete review without provider credentials\n",
+          "      - name: Alternate provider review\n        run: npm run --silent review-target -- alternate.json\n      - name: Finalize complete review without provider credentials\n",
+        ),
+      /must contain exactly one approved model-review phase/u,
+    );
+  });
+
+  test("workflow policy rejects unapproved backup provider secrets", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_BACKUP_API_KEY: ${{ secrets.TAVERNKEEPER_BACKUP_API_KEY }}\n",
+        ),
+      /unapproved workflow secret TAVERNKEEPER_BACKUP_API_KEY/u,
+    );
+  });
+
+  test("workflow policy rejects bracket-referenced alternate provider secrets", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_ALTERNATE_KEY: ${{ secrets['TAVERNKEEPER_ALTERNATE_KEY'] }}\n",
+        ),
+      /unapproved workflow secret TAVERNKEEPER_ALTERNATE_KEY/u,
+    );
+  });
+
+  test("workflow policy rejects declaration-only unapproved provider secrets", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  workflow_call:\n    inputs:\n",
+          "  workflow_call:\n    secrets:\n      TAVERNKEEPER_BACKUP_API_KEY:\n        required: false\n    inputs:\n",
+        ),
+      /unapproved workflow secret TAVERNKEEPER_BACKUP_API_KEY/u,
     );
   });
 

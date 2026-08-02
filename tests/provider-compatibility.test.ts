@@ -23,12 +23,17 @@ function compatibleResponse(content: string) {
 }
 
 describe("model provider compatibility check", () => {
-  test("validates the production analyzer schema after Bearer connectivity", async () => {
+  test("validates text review and strict synthesis after Bearer connectivity", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(null, { status: 200 }))
       .mockResolvedValueOnce(
-        compatibleResponse('{"assessments":[],"discoveries":[]}'),
+        compatibleResponse("No review-level concern appears in this chunk."),
+      )
+      .mockResolvedValueOnce(
+        compatibleResponse(
+          '{"assessment":"no_concerning_evidence","recap":"The compatibility review found no review-level concern.","concerns":[]}',
+        ),
       );
 
     await expect(
@@ -42,12 +47,16 @@ describe("model provider compatibility check", () => {
     ).resolves.toEqual({
       status: "passed",
       authMode: "bearer",
+      textReview: "passed",
       structuredOutput: "passed",
     });
 
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    const textRequest = JSON.parse(String(fetchImpl.mock.calls[1]?.[1]?.body));
+    expect(textRequest).not.toHaveProperty("response_format");
+    expect(textRequest.messages[1].content).toContain("source-000001");
     const structuredRequest = JSON.parse(
-      String(fetchImpl.mock.calls[1]?.[1]?.body),
+      String(fetchImpl.mock.calls[2]?.[1]?.body),
     );
     expect(structuredRequest).toMatchObject({
       model: "configured/model:thinking",
@@ -55,17 +64,20 @@ describe("model provider compatibility check", () => {
       response_format: {
         type: "json_schema",
         json_schema: {
-          name: "tavernkeeper_analyzer_check",
+          name: "tavernkeeper_repository_synthesis",
           strict: true,
         },
       },
     });
   });
 
-  test("classifies analyzer-schema incompatibility without returning model text", async () => {
+  test("classifies synthesis-schema incompatibility without returning model text", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response(null, { status: 200 }))
+      .mockResolvedValueOnce(
+        compatibleResponse("No review-level concern appears in this chunk."),
+      )
       .mockResolvedValueOnce(compatibleResponse("{}"));
 
     await expect(
@@ -78,8 +90,49 @@ describe("model provider compatibility check", () => {
       }),
     ).rejects.toMatchObject({
       code: "MODEL_INVALID_RESPONSE",
-      scope: "system",
-      diagnostic: "role_schema_analyzer",
+      scope: "repository",
+      diagnostic: "synthesis_schema",
+    });
+  });
+
+  test("rejects a concerning conclusion for the benign compatibility fixture", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 200 }))
+      .mockResolvedValueOnce(
+        compatibleResponse("No review-level concern appears in this chunk."),
+      )
+      .mockResolvedValueOnce(
+        compatibleResponse(
+          JSON.stringify({
+            assessment: "concerning",
+            recap: "The compatibility fixture unexpectedly raised a concern.",
+            concerns: [
+              {
+                title: "Unexpected fixture concern",
+                category: "unsafe-execution",
+                severity: "high",
+                confidence: "high",
+                explanation: "The benign fixture was classified as concerning.",
+                evidence_ids: ["source-000001"],
+              },
+            ],
+          }),
+        ),
+      );
+
+    await expect(
+      checkModelProviderCompatibility({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "synthesis_schema",
     });
   });
 });

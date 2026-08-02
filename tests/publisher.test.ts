@@ -4,13 +4,17 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import type { ScanReportV2 } from "../src/contracts/reports.js";
+import type { ScanReportV3 } from "../src/contracts/reports.js";
 import {
   initialOperationsState,
   parseOperationsState,
   serializeOperationsState,
 } from "../src/operations/state.js";
-import { publishCandidates } from "../src/publish/publisher.js";
+import {
+  projectReportToIndexV2,
+  publishCandidates,
+} from "../src/publish/publisher.js";
+import { ReportIndexEntryV2Schema } from "../src/contracts/reports.js";
 import { reportIdentity, reportPath } from "../src/publish/report-path.js";
 
 const roots: string[] = [];
@@ -19,15 +23,28 @@ const generatedAt = "2026-07-31T15:00:00.000Z";
 async function fixtureReport(overrides: Record<string, unknown> = {}) {
   const raw = JSON.parse(
     await readFile(
-      new URL("./fixtures/contracts/report.v2.valid.json", import.meta.url),
+      new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
       "utf8",
     ),
   ) as Record<string, unknown>;
   const report = { ...raw, ...overrides };
+  if (typeof overrides.target_sha === "string") {
+    const modelReview = structuredClone(
+      report.model_review as ScanReportV3["model_review"],
+    );
+    modelReview.concerns = modelReview.concerns.map((concern) => ({
+      ...concern,
+      evidence: concern.evidence.map((evidence) => ({
+        ...evidence,
+        target_sha: overrides.target_sha as string,
+      })),
+    }));
+    report.model_review = modelReview;
+  }
   return {
     ...report,
     report_id: reportIdentity(report as never),
-  } as unknown as ScanReportV2;
+  } as unknown as ScanReportV3;
 }
 
 async function publicationRoot() {
@@ -84,6 +101,10 @@ describe("serialized report publisher", () => {
       "TavernKeeper Scan Report",
     );
     expect(published.index.reports).toHaveLength(1);
+    expect(published.index.schema_version).toBe(2);
+    expect(
+      ReportIndexEntryV2Schema.parse(projectReportToIndexV2(report)),
+    ).toEqual(published.index.reports[0]);
     expect(published.index.reports[0]).toMatchObject({
       report_id: report.report_id,
       report_url: `https://mentallyquill.github.io/TavernKeeper/${reportPath(report)}/`,
@@ -97,6 +118,10 @@ describe("serialized report publisher", () => {
       ),
     ).toContain(report.target_sha);
     expect(published.state.active_scans).toEqual([]);
+    expect(
+      JSON.parse(await readFile(join(root, "reports", "index.json"), "utf8"))
+        .schema_version,
+    ).toBe(2);
     expect(
       JSON.parse(
         await readFile(join(root, "operations", "state.json"), "utf8"),
@@ -169,14 +194,12 @@ describe("serialized report publisher", () => {
     const root = await publicationRoot();
     const valid = await fixtureReport();
     const unsafeBase = await fixtureReport({ mode: "deep" });
-    const findings = structuredClone(unsafeBase.findings) as Array<
-      Record<string, unknown>
-    >;
-    findings[0] = {
-      ...findings[0],
+    const modelReview = structuredClone(unsafeBase.model_review);
+    modelReview.concerns[0] = {
+      ...modelReview.concerns[0]!,
       explanation: "Leaked ghp_abcdefghijklmnopqrstuvwxyz1234567890AB",
     };
-    const unsafe = { ...unsafeBase, findings };
+    const unsafe = { ...unsafeBase, model_review: modelReview };
 
     await expect(
       publishCandidates({

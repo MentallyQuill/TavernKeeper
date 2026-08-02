@@ -16,7 +16,8 @@ Tavernary target manifest (repository ID + exact SHA)
   -> TavernKeeper derives at most 5 pending targets
   -> at most 2 disposable scan jobs run concurrently
   -> exact checkout, full inventory, required scanners
-  -> redacted analyzer, challenger, and arbiter review
+  -> redacted private text review for every eligible chunk
+  -> one strict JSON repository synthesis
   -> deterministic evidence validation and result derivation
   -> authenticated encrypted candidate handoff
   -> serialized validation and immutable publication
@@ -29,11 +30,15 @@ Tavernary target manifest (repository ID + exact SHA)
 
 Repository content is untrusted data. Checkout URLs are derived from the validated GitHub repository name; arbitrary clone URLs are not accepted. Git hooks, credential helpers, LFS smudging, submodules, recursive clones, local protocols, and interactive prompts are disabled. Target dependencies, scripts, actions, builds, tests, containers, and executables are never run. The trusted Malcontent scanner runs in its official linux-amd64 image pinned by immutable digest, with networking disabled, a read-only root filesystem, all capabilities dropped, no-new-privileges, and only the target checkout mounted read-only.
 
-Inventory establishes portable path safety and byte/file coverage before expensive work. Deterministic tools receive TavernKeeper-owned rules and configuration. Raw target data stays in disposable runner storage. Model credentials are injected only into the configured-model review step. The provider endpoint and model identifier are runtime configuration, so the pipeline is model-agnostic.
+Inventory establishes portable path safety and byte/file coverage before expensive work. Deterministic tools receive TavernKeeper-owned rules and configuration. Raw target data stays in disposable runner storage. Model credentials are injected only into the one configured-model review step. The initial production configuration uses NanoGPT with `deepseek/deepseek-v4-flash-0731:thinking`; the endpoint and model identifier remain runtime configuration rather than architecture.
+
+The configured model reviews the complete eligible current-tree corpus, split into deterministic byte-bounded text chunks with stable evidence IDs. Each chunk returns bounded private prose. After every chunk and scanner completes, one repository synthesis receives the complete set of validated chunk recaps, observations, and sanitized tool results and must return the strict assessment JSON contract. The former multi-role review chain has been removed; tool findings remain independently visible and are never disposed of by model prose.
+
+Successful private cache entries contain only a validated chunk result or final synthesis plus content-addressed identity metadata and usage/completion metadata. Cache keys bind the endpoint origin, model identifier, policy versions, prompt/stage digest, and input digests. Raw source chunks, prompts, credentials, and raw provider responses never enter the cache or a public report.
 
 ## Atomic reporting
 
-Every applicable deterministic scanner must complete. Every eligible selected source path must appear in the chunk plan. Every chunk and required analyzer, challenger, and arbiter call must complete model review. Deterministic validation must prove every cited path, line range, content mapping, fingerprint, and scanned SHA. The exact target SHA is rechecked immediately before model use. A quota, token, provider, tool, malformed-output, coverage, evidence, schema, redaction, or publication failure yields no candidate.
+Every applicable deterministic scanner must complete. Every eligible selected source path must appear in the chunk plan. Every private chunk review and the one repository synthesis must complete. Deterministic validation must prove every cited path, line range, content mapping, fingerprint, and scanned SHA. The exact target SHA is rechecked immediately before model use. A quota, token, provider, tool, malformed-output, coverage, evidence, schema, redaction, or publication failure yields no candidate.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA, scanner-policy version, mode, and report version. Matrix jobs encrypt sanitized outcomes before the one-day artifact handoff; plaintext target content, model traffic, and scan handoffs are never uploaded. A serialized publisher decrypts in ephemeral storage, prevalidates the whole batch, writes report JSON and script-free HTML plus repository history to immutable paths, updates the preferred V2 index, and rolls back partial writes on failure.
 
