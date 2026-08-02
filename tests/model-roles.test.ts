@@ -1,569 +1,479 @@
+import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+
 import { describe, expect, test, vi } from "vitest";
 
-import type { Finding } from "../src/contracts/reports.js";
 import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
+import { chunkReviewUserContent } from "../src/model/chunk-review.js";
 import type { ModelChunk } from "../src/model/chunker.js";
-import type { StructuredCompletionRequest } from "../src/model/openai-compatible-client.js";
-import { reviewWithConfiguredModel } from "../src/model/model-review.js";
+import { buildEvidenceManifest } from "../src/model/evidence-manifest.js";
+import {
+  reviewRepositoryWithConfiguredModel,
+  type ConfiguredModelReviewSpec,
+} from "../src/model/model-review.js";
+import { ModelRequestError } from "../src/model/openai-compatible-client.js";
+import { normalizeFinding } from "../src/scanners/types.js";
 
 const targetSha = "a".repeat(40);
-const content = "const endpoint = 'https://example.test';\n";
-const chunk: ModelChunk = {
-  id: "b".repeat(64),
-  bytes: Buffer.byteLength(content),
-  content_hashes: ["c".repeat(64)],
-  segments: [
-    {
-      path: "src/index.ts",
-      line_start: 1,
-      line_end: 1,
-      content,
-      bytes: Buffer.byteLength(content),
-      overlap_bytes: 0,
-      content_hash: "c".repeat(64),
-      source_sha256: "d".repeat(64),
-    },
-  ],
-};
-const deterministicFinding: Finding = {
-  origin: "opengrep",
-  rule_id: "credential-exfiltration",
-  category: "credential-theft",
-  severity: "high",
-  confidence: "high",
-  path: "src/index.ts",
-  line_start: 1,
-  line_end: 1,
-  evidence_sha: null,
-  title: "Credential access followed by a network request",
-  explanation: "A deterministic rule matched this data flow.",
-  fingerprint: "e".repeat(64),
-  disposition: "active",
+const zeroUsage = {
+  inputTokens: 1,
+  outputTokens: 2,
+  cacheReadTokens: 3,
+  reasoningTokens: 4,
 };
 
-function spec(
-  requestCompletion: (request: StructuredCompletionRequest) => Promise<any>,
-) {
+function chunk(id: string, path: string, content: string): ModelChunk {
   return {
-    endpoint: "https://provider.example/v1/chat/completions",
-    apiKey: "test-api-key",
-    model: "vendor/model-test",
-    targetSha,
-    projectKinds: ["extension"] as const,
-    chunks: [chunk],
-    deterministicFindings: [deterministicFinding],
-    relationships: [],
-    promptPolicyVersion: "2",
-    scannerPolicyVersion: "1",
-    rolePolicies: {
-      analyzer: "analyzer-v1",
-      challenger: "challenger-v1",
-      arbiter: "arbiter-v1",
-    },
-    maxOutputTokensPerRole: 8_192,
-    cache: new InMemoryModelChunkCache(),
-    requestCompletion,
+    id,
+    bytes: Buffer.byteLength(content),
+    content_hashes: [id],
+    segments: [
+      {
+        path,
+        line_start: 1,
+        line_end: 1,
+        content,
+        bytes: Buffer.byteLength(content),
+        overlap_bytes: 0,
+        content_hash: id,
+        source_sha256: "f".repeat(64),
+      },
+    ],
   };
 }
 
-describe("automated model roles", () => {
-  test("runs analyzer, challenger, and arbiter with isolated bounded inputs", async () => {
-    const calls: StructuredCompletionRequest[] = [];
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      calls.push(request);
-      const input = JSON.parse(request.userContent) as any;
-      const payload = request.schemaName.endsWith("analyzer")
-        ? {
-            assessments: input.deterministic_findings.map((finding: any) => ({
-              fingerprint: finding.fingerprint,
-              evidence: finding.evidence,
-              assessment: "concerning",
-              rationale:
-                "The deterministic signal warrants adversarial review.",
-            })),
-            discoveries: [],
-          }
-        : request.schemaName.endsWith("challenger")
-          ? {
-              challenges: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                position: "disputes",
-                rationale: "The cited line is only a constant declaration.",
-              })),
-            }
-          : {
-              decisions: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                disposition: "not-supported",
-                rationale: "The evidence does not support malicious behavior.",
-              })),
-            };
-      return {
-        completionId: `completion-${calls.length}`,
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 100,
-          outputTokens: 20,
-          cacheReadTokens: 10,
-          reasoningTokens: 5,
-        },
-      };
+const chunks = [
+  chunk("1".repeat(64), "src/alpha.ts", "alphaUniqueCall();\n"),
+  chunk("2".repeat(64), "src/beta.ts", "betaUniqueCall();\n"),
+];
+const finding = normalizeFinding({
+  origin: "opengrep",
+  ruleId: "unsafe-call",
+  category: "unsafe-execution",
+  severity: "high",
+  confidence: "high",
+  path: "src/alpha.ts",
+  lineStart: 1,
+  lineEnd: 1,
+  evidenceSha: null,
+  title: "Unsafe call",
+  explanation: "An unsafe call was detected.",
+});
+
+function completion(content: string, id: string) {
+  return {
+    completionId: id,
+    endpointOrigin: "https://provider.example",
+    provider: "provider.example",
+    content,
+    usage: zeroUsage,
+  };
+}
+
+function cleanSynthesis() {
+  return JSON.stringify({
+    assessment: "no_concerning_evidence",
+    recap: "The completed review found no review-level concern.",
+    concerns: [],
+  });
+}
+
+function configuredSpec(overrides: Partial<ConfiguredModelReviewSpec> = {}) {
+  const evidenceManifest = buildEvidenceManifest(chunks, [finding], targetSha);
+  return {
+    endpoint: "https://provider.example/v1/chat/completions",
+    apiKey: "test-api-key",
+    model: "vendor/model:thinking",
+    targetSha,
+    projectKinds: ["extension"] as const,
+    chunks,
+    deterministicFindings: [finding],
+    evidenceManifest,
+    tools: [{ name: "opengrep", status: "completed" as const }],
+    promptPolicyVersion: "repository-review-v2",
+    scannerPolicyVersion: "1",
+    chunkReviewPolicy: "chunk-review-v2",
+    synthesisPolicy: "repository-synthesis-v2",
+    maxOutputTokensPerChunkReview: 8_192,
+    maxChunkReviewCharacters: 12_000,
+    maxOutputTokensForSynthesis: 8_192,
+    cache: new InMemoryModelChunkCache(),
+    requestTextCompletion: vi.fn(async (_request) =>
+      completion("No review-level concern appears in this chunk.", "text-1"),
+    ),
+    requestStructuredCompletion: vi.fn(async (_request) =>
+      completion(cleanSynthesis(), "synthesis-1"),
+    ),
+    ...overrides,
+  } satisfies ConfiguredModelReviewSpec;
+}
+
+async function expectInvalid(
+  spec: ConfiguredModelReviewSpec,
+  diagnostic: string,
+) {
+  let error: unknown;
+  try {
+    await reviewRepositoryWithConfiguredModel(spec);
+  } catch (candidate) {
+    error = candidate;
+  }
+  expect(error).toBeInstanceOf(ModelRequestError);
+  expect(error).toMatchObject({
+    code: "MODEL_INVALID_RESPONSE",
+    scope: "repository",
+    diagnostic,
+  });
+  expect(String((error as Error).message)).not.toContain("test-api-key");
+}
+
+describe("configured repository review", () => {
+  test("reviews each chunk as text before one structured synthesis", async () => {
+    const calls: Array<{ kind: string; system: string; user: string }> = [];
+    const spec = configuredSpec({
+      requestTextCompletion: vi.fn(async (request) => {
+        calls.push({
+          kind: "text",
+          system: request.systemContent,
+          user: request.userContent,
+        });
+        return completion("Bounded private recap.", `text-${calls.length}`);
+      }),
+      requestStructuredCompletion: vi.fn(async (request) => {
+        calls.push({
+          kind: "structured",
+          system: request.systemContent,
+          user: request.userContent,
+        });
+        return completion(cleanSynthesis(), "synthesis-1");
+      }),
     });
 
-    const result = await reviewWithConfiguredModel(spec(provider));
+    const result = await reviewRepositoryWithConfiguredModel(spec);
 
-    expect(calls.map(({ schemaName }) => schemaName)).toEqual([
-      "tavernkeeper_analyzer",
-      "tavernkeeper_challenger",
-      "tavernkeeper_arbiter",
+    expect(calls.map(({ kind }) => kind)).toEqual([
+      "text",
+      "text",
+      "structured",
     ]);
-    expect(result.findings).toMatchObject([
-      {
-        fingerprint: deterministicFinding.fingerprint,
-        disposition: "not-supported",
-        automated_review: {
-          analyzer_policy: "analyzer-v1",
-          challenger_policy: "challenger-v1",
-          arbiter_policy: "arbiter-v1",
-        },
-      },
-    ]);
-    expect(result.roleCompletion).toEqual({
-      analyzer: { required: 1, completed: 1 },
-      challenger: { required: 1, completed: 1 },
-      arbiter: { required: 1, completed: 1 },
+    expect(result.stageCompletion).toEqual({
+      chunkReview: { required: 2, completed: 2 },
+      synthesis: { required: 1, completed: 1 },
     });
+    expect(result.completedChunkIds).toEqual(chunks.map(({ id }) => id));
+    expect(result.synthesis.assessment).toBe("no_concerning_evidence");
     expect(result.usage).toEqual({
-      inputTokens: 300,
-      outputTokens: 60,
-      cacheReadTokens: 30,
-      reasoningTokens: 15,
+      inputTokens: 3,
+      outputTokens: 6,
+      cacheReadTokens: 9,
+      reasoningTokens: 12,
     });
-    expect(
-      calls.every((call) => !call.userContent.includes("test-api-key")),
-    ).toBe(true);
-    expect(
-      calls.slice(1).every((call) => !call.userContent.includes(content)),
-    ).toBe(true);
+    expect(result).toMatchObject({
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      model: "vendor/model:thinking",
+      cacheHits: 0,
+      cacheMisses: 3,
+    });
+
+    const [alpha, beta, synthesis] = calls;
+    expect(alpha?.user).toContain("alphaUniqueCall");
+    expect(alpha?.user).not.toContain("betaUniqueCall");
+    expect(alpha?.user).toContain("tool-000001");
+    expect(beta?.user).toContain("betaUniqueCall");
+    expect(beta?.user).not.toContain("alphaUniqueCall");
+    expect(beta?.user).not.toContain("tool-000001");
+    for (const call of [alpha, beta]) {
+      expect(call?.user).toContain(targetSha);
+      expect(call?.user).toContain("extension");
+      expect(call?.system).toMatch(/repository text.*data.*not instructions/iu);
+      expect(call?.system).toMatch(/extension.*browser.*credential/iu);
+    }
+    expect(synthesis?.user).not.toContain("alphaUniqueCall");
+    expect(synthesis?.user).not.toContain("betaUniqueCall");
   });
 
-  test("uses the preset threat policy without changing deterministic coverage", async () => {
-    const systems: string[] = [];
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      systems.push(request.systemContent);
-      const input = JSON.parse(request.userContent) as any;
-      const payload = request.schemaName.endsWith("analyzer")
-        ? {
-            assessments: input.deterministic_findings.map((finding: any) => ({
-              fingerprint: finding.fingerprint,
-              evidence: finding.evidence,
-              assessment: "not-supported",
-              rationale: "No malicious behavior is supported.",
-            })),
-            discoveries: [],
-          }
-        : request.schemaName.endsWith("challenger")
-          ? {
-              challenges: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                position: "supports",
-                rationale: "The not-supported assessment is well grounded.",
-              })),
-            }
-          : {
-              decisions: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                disposition: "not-supported",
-                rationale: "The evidence is benign.",
-              })),
-            };
-      return {
-        completionId: "completion-1",
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
-      };
-    });
+  test.each([
+    ["empty", "   ", "chunk_review_empty"],
+    ["oversized", "x".repeat(12_001), "chunk_review_size"],
+  ])("rejects %s chunk prose", async (_label, content, diagnostic) => {
+    const requestTextCompletion = vi.fn(async () =>
+      completion(content, "text-invalid"),
+    );
+    await expectInvalid(configuredSpec({ requestTextCompletion }), diagnostic);
+    expect(requestTextCompletion).toHaveBeenCalledTimes(3);
+  });
 
-    await reviewWithConfiguredModel({
-      ...spec(provider),
-      projectKinds: ["preset"],
-    });
+  test("revalidates a cached chunk recap against the configured ceiling", async () => {
+    const oneChunk = [chunks[0]!];
+    const evidenceManifest = buildEvidenceManifest(
+      oneChunk,
+      [finding],
+      targetSha,
+    );
+    const base = configuredSpec({ chunks: oneChunk, evidenceManifest });
+    const inputDigest = createHash("sha256")
+      .update(
+        chunkReviewUserContent({
+          targetSha: base.targetSha,
+          projectKinds: base.projectKinds,
+          chunkId: chunks[0]!.id,
+          evidenceManifest: base.evidenceManifest!,
+        }),
+      )
+      .digest("hex");
+    const cache = {
+      load: vi.fn(async () => ({
+        stage: "chunk-review" as const,
+        inputDigest,
+        completionId: "cached-1",
+        result: { recap: "x".repeat(12_001) },
+        usage: zeroUsage,
+      })),
+      save: vi.fn(),
+    };
 
-    expect(systems[0]).toMatch(
-      /endpoints.*headers.*request bodies.*prompt manipulation.*regex.*obfuscation.*external downloads.*bundled executables/iu,
+    await expectInvalid(
+      configuredSpec({ chunks: oneChunk, evidenceManifest, cache }),
+      "chunk_review_cache",
     );
   });
 
-  test("fails closed when the analyzer omits deterministic evidence", async () => {
-    const provider = vi.fn(async () => ({
-      completionId: "completion-1",
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-      content: JSON.stringify({ assessments: [], discoveries: [] }),
-      usage: {
-        inputTokens: 1,
-        outputTokens: 1,
-        cacheReadTokens: 0,
-        reasoningTokens: 0,
-      },
-    }));
-
-    await expect(
-      reviewWithConfiguredModel(spec(provider)),
-    ).rejects.toMatchObject({
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
-      diagnostic: "role_schema_analyzer",
-    });
-    expect(provider).toHaveBeenCalledTimes(3);
-  });
-
-  test("retries invalid analyzer output and reuses only validated role results", async () => {
-    const cache = new InMemoryModelChunkCache();
-    let analyzerAttempts = 0;
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      const input = JSON.parse(request.userContent) as any;
-      let payload;
-      if (request.schemaName.endsWith("analyzer")) {
-        analyzerAttempts += 1;
-        payload =
-          analyzerAttempts < 3
-            ? { assessments: [], discoveries: [] }
-            : {
-                assessments: input.deterministic_findings.map(
-                  (finding: any) => ({
-                    fingerprint: finding.fingerprint,
-                    evidence: finding.evidence,
-                    assessment: "not-supported",
-                    rationale: "The signal is not supported.",
-                  }),
-                ),
-                discoveries: [],
-              };
-      } else if (request.schemaName.endsWith("challenger")) {
-        payload = {
-          challenges: input.claims.map((claim: any) => ({
-            fingerprint: claim.fingerprint,
-            evidence: claim.evidence,
-            position: "supports",
-            rationale: "The assessment is grounded.",
-          })),
-        };
-      } else {
-        payload = {
-          decisions: input.claims.map((claim: any) => ({
-            fingerprint: claim.fingerprint,
-            evidence: claim.evidence,
-            disposition: "not-supported",
-            rationale: "The evidence is benign.",
-          })),
-        };
-      }
-      return {
-        completionId: `completion-${provider.mock.calls.length}`,
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
-      };
-    });
-
-    const repaired = await reviewWithConfiguredModel({
-      ...spec(provider),
-      cache,
-    });
-
-    expect(analyzerAttempts).toBe(3);
-    expect(provider).toHaveBeenCalledTimes(5);
-    expect(repaired.findings).toMatchObject([{ disposition: "not-supported" }]);
-    const reusedProvider = vi.fn();
-    await reviewWithConfiguredModel({
-      ...spec(reusedProvider),
-      cache,
-    });
-    expect(reusedProvider).not.toHaveBeenCalled();
-  });
-
-  test("retries review-level inconclusive arbiter output without caching the dead end", async () => {
-    const cache = new InMemoryModelChunkCache();
-    let arbiterAttempts = 0;
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      const input = JSON.parse(request.userContent) as any;
-      const payload = request.schemaName.endsWith("analyzer")
-        ? {
-            assessments: input.deterministic_findings.map((finding: any) => ({
-              fingerprint: finding.fingerprint,
-              evidence: finding.evidence,
-              assessment: "concerning",
-              rationale: "The deterministic signal requires review.",
-            })),
-            discoveries: [],
-          }
-        : request.schemaName.endsWith("challenger")
-          ? {
-              challenges: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                position: "disputes",
-                rationale: "The evidence is ambiguous.",
-              })),
-            }
-          : {
-              decisions: input.claims.map((claim: any) => {
-                arbiterAttempts += 1;
-                return {
-                  fingerprint: claim.fingerprint,
-                  evidence: claim.evidence,
-                  disposition:
-                    arbiterAttempts < 3 ? "inconclusive" : "not-supported",
-                  rationale:
-                    arbiterAttempts < 3
-                      ? "The claim requires another bounded review."
-                      : "The submitted evidence does not support the claim.",
-                };
-              }),
-            };
-      return {
-        completionId: `completion-${provider.mock.calls.length}`,
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
-      };
-    });
-
-    const repaired = await reviewWithConfiguredModel({
-      ...spec(provider),
-      cache,
-    });
-
-    expect(arbiterAttempts).toBe(3);
-    expect(provider).toHaveBeenCalledTimes(5);
-    expect(repaired.findings).toMatchObject([{ disposition: "not-supported" }]);
-    const reusedProvider = vi.fn();
-    await reviewWithConfiguredModel({
-      ...spec(reusedProvider),
-      cache,
-    });
-    expect(reusedProvider).not.toHaveBeenCalled();
-  });
-
-  test("identifies review-level inconclusive findings without exposing model content", async () => {
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      const input = JSON.parse(request.userContent) as any;
-      const payload = request.schemaName.endsWith("analyzer")
-        ? {
-            assessments: input.deterministic_findings.map((finding: any) => ({
-              fingerprint: finding.fingerprint,
-              evidence: finding.evidence,
-              assessment: "concerning",
-              rationale: "The deterministic signal requires review.",
-            })),
-            discoveries: [],
-          }
-        : request.schemaName.endsWith("challenger")
-          ? {
-              challenges: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                position: "disputes",
-                rationale: "The evidence is ambiguous.",
-              })),
-            }
-          : {
-              decisions: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                disposition: "inconclusive",
-                rationale: "The available evidence cannot resolve the claim.",
-              })),
-            };
-      return {
-        completionId: `completion-${provider.mock.calls.length}`,
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
-      };
-    });
-
-    await expect(
-      reviewWithConfiguredModel(spec(provider)),
-    ).rejects.toMatchObject({
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
-      diagnostic: "review_inconclusive",
-    });
-  });
-
-  test("identifies duplicate final findings without exposing model content", async () => {
-    const secondChunk: ModelChunk = {
-      ...chunk,
-      id: "f".repeat(64),
-    };
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      const input = JSON.parse(request.userContent) as any;
-      const payload = request.schemaName.endsWith("analyzer")
-        ? {
-            assessments: [],
-            discoveries: [
-              {
-                rule_id: "duplicate-discovery",
-                category: "credential-theft",
-                severity: "high",
-                confidence: "high",
-                title: "Repeated normalized discovery",
-                explanation: "The same normalized finding appears twice.",
-                remediation: null,
-                evidence: {
-                  path: input.segments[0].path,
-                  line_start: input.segments[0].line_start,
-                  line_end: input.segments[0].line_end,
-                  segment_id: input.segments[0].segment_id,
-                  content_digest: input.segments[0].content_digest,
-                  target_sha: input.target_sha,
-                },
-                assessment: "not-supported",
-                rationale: "The discovery is not supported.",
-              },
-            ],
-          }
-        : request.schemaName.endsWith("challenger")
-          ? {
-              challenges: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                position: "supports",
-                rationale: "The assessment is grounded.",
-              })),
-            }
-          : {
-              decisions: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                disposition: "not-supported",
-                rationale: "The evidence is benign.",
-              })),
-            };
-      return {
-        completionId: `completion-${provider.mock.calls.length}`,
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
-      };
-    });
-
-    await expect(
-      reviewWithConfiguredModel({
-        ...spec(provider),
-        chunks: [chunk, secondChunk],
-        deterministicFindings: [],
+  test.each([
+    ["malformed JSON", "not json", "synthesis_schema"],
+    [
+      "concerning without a review-level concern",
+      JSON.stringify({
+        assessment: "concerning",
+        recap: "Concern.",
+        concerns: [],
       }),
-    ).rejects.toMatchObject({
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
-      diagnostic: "review_duplicate_findings",
-    });
+      "synthesis_schema",
+    ],
+    [
+      "clean with a concern",
+      JSON.stringify({
+        assessment: "no_concerning_evidence",
+        recap: "Contradictory review.",
+        concerns: [
+          {
+            title: "Concern",
+            category: "unsafe-execution",
+            severity: "high",
+            confidence: "high",
+            explanation: "A review-level concern was identified.",
+            evidence_ids: ["source-000001"],
+          },
+        ],
+      }),
+      "synthesis_schema",
+    ],
+    [
+      "unknown evidence",
+      JSON.stringify({
+        assessment: "concerning",
+        recap: "A review-level concern was identified.",
+        concerns: [
+          {
+            title: "Concern",
+            category: "unsafe-execution",
+            severity: "high",
+            confidence: "high",
+            explanation: "The concern is grounded in submitted evidence.",
+            evidence_ids: ["source-999999"],
+          },
+        ],
+      }),
+      "synthesis_evidence",
+    ],
+    [
+      "duplicated evidence",
+      JSON.stringify({
+        assessment: "concerning",
+        recap: "A review-level concern was identified.",
+        concerns: [
+          {
+            title: "Concern",
+            category: "unsafe-execution",
+            severity: "high",
+            confidence: "high",
+            explanation: "The concern is grounded in submitted evidence.",
+            evidence_ids: ["source-000001", "source-000001"],
+          },
+        ],
+      }),
+      "synthesis_evidence",
+    ],
+    [
+      "inconclusive assessment",
+      JSON.stringify({
+        assessment: "inconclusive",
+        recap: "Unknown.",
+        concerns: [],
+      }),
+      "synthesis_inconclusive",
+    ],
+  ])("rejects %s synthesis", async (_label, content, diagnostic) => {
+    await expectInvalid(
+      configuredSpec({
+        requestStructuredCompletion: vi.fn(async () =>
+          completion(content, "synthesis-invalid"),
+        ),
+      }),
+      diagnostic,
+    );
   });
 
-  test("resumes from sanitized role cache without repeating provider calls", async () => {
-    const cache = new InMemoryModelChunkCache();
-    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
-      const input = JSON.parse(request.userContent) as any;
-      const payload = request.schemaName.endsWith("analyzer")
-        ? {
-            assessments: input.deterministic_findings.map((finding: any) => ({
-              fingerprint: finding.fingerprint,
-              evidence: finding.evidence,
-              assessment: "not-supported",
-              rationale:
-                "The signal is not supported by the submitted context.",
-            })),
-            discoveries: [],
-          }
-        : request.schemaName.endsWith("challenger")
-          ? {
-              challenges: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                position: "supports",
-                rationale: "The analyzer assessment is grounded.",
-              })),
-            }
-          : {
-              decisions: input.claims.map((claim: any) => ({
-                fingerprint: claim.fingerprint,
-                evidence: claim.evidence,
-                disposition: "not-supported",
-                rationale: "The evidence is not concerning.",
-              })),
-            };
-      return {
-        completionId: `completion-${provider.mock.calls.length}`,
-        endpointOrigin: "https://provider.example",
-        provider: "provider.example",
-        content: JSON.stringify(payload),
-        usage: {
-          inputTokens: 10,
-          outputTokens: 2,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
+  test("assigns stable concern identities without exposing internal scanner fingerprints", async () => {
+    const concerning = JSON.stringify({
+      assessment: "concerning",
+      recap: "The reviewed behavior creates a review-level execution concern.",
+      concerns: [
+        {
+          title: "Untrusted execution path",
+          category: "unsafe-execution",
+          severity: "high",
+          confidence: "high",
+          explanation:
+            "Submitted source and tool evidence support the concern.",
+          evidence_ids: ["source-000001", "tool-000001"],
         },
-      };
+      ],
     });
 
-    await reviewWithConfiguredModel({ ...spec(provider), cache });
-    const secondProvider = vi.fn();
-    const resumed = await reviewWithConfiguredModel({
-      ...spec(secondProvider),
-      cache,
+    const result = await reviewRepositoryWithConfiguredModel(
+      configuredSpec({
+        requestStructuredCompletion: vi.fn(async () =>
+          completion(concerning, "synthesis-concerning"),
+        ),
+      }),
+    );
+
+    expect(result.synthesis.concerns[0]).toMatchObject({
+      id: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      evidence_ids: ["source-000001", "tool-000001"],
+      evidence: [
+        { evidenceId: "source-000001", kind: "source", targetSha },
+        {
+          evidenceId: "tool-000001",
+          kind: "tool",
+          targetSha,
+          origin: "opengrep",
+          ruleId: "unsafe-call",
+        },
+      ],
+    });
+    expect(result.synthesis.concerns[0]?.evidence).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ scannerFingerprint: expect.any(String) }),
+      ]),
+    );
+  });
+
+  test.each([
+    "Token: ghp_abcdefghijklmnopqrstuvwxyz123456",
+    "The code uses const stolenCredential = accountToken;",
+    "See https://untrusted.example/details for the result.",
+    "This repository is verified safe for installation.",
+  ])("rejects unsafe public synthesis prose", async (recap) => {
+    await expectInvalid(
+      configuredSpec({
+        requestStructuredCompletion: vi.fn(async () =>
+          completion(
+            JSON.stringify({
+              assessment: "no_concerning_evidence",
+              recap,
+              concerns: [],
+            }),
+            "synthesis-unsafe",
+          ),
+        ),
+      }),
+      "synthesis_schema",
+    );
+  });
+
+  test("rejects mismatched provider identity without retrying system failures", async () => {
+    const requestTextCompletion = vi.fn(async () => ({
+      ...completion("Bounded private recap.", "wrong-origin"),
+      endpointOrigin: "https://other.example",
+    }));
+    await expectInvalid(
+      configuredSpec({ requestTextCompletion }),
+      "chunk_review_identity",
+    );
+    expect(requestTextCompletion).toHaveBeenCalledTimes(3);
+
+    const authentication = vi.fn(async () => {
+      throw new ModelRequestError(
+        "MODEL_AUTHENTICATION",
+        "system",
+        "Authentication failed.",
+      );
+    });
+    await expect(
+      reviewRepositoryWithConfiguredModel(
+        configuredSpec({ requestTextCompletion: authentication }),
+      ),
+    ).rejects.toMatchObject({ code: "MODEL_AUTHENTICATION", scope: "system" });
+    expect(authentication).toHaveBeenCalledTimes(1);
+  });
+
+  test("retries only synthesis and reuses validated cached chunk reviews", async () => {
+    const cache = new InMemoryModelChunkCache();
+    const requestTextCompletion = vi.fn(async () =>
+      completion("Bounded private recap.", "text-valid"),
+    );
+    let attempts = 0;
+    const requestStructuredCompletion = vi.fn(async () => {
+      attempts += 1;
+      return completion(
+        attempts < 3 ? "not json" : cleanSynthesis(),
+        `synthesis-${attempts}`,
+      );
     });
 
-    expect(provider).toHaveBeenCalledTimes(3);
-    expect(secondProvider).not.toHaveBeenCalled();
-    expect(resumed).toMatchObject({
-      cacheHits: 3,
-      cacheMisses: 0,
-      usage: {
-        inputTokens: 0,
-        outputTokens: 0,
-        cacheReadTokens: 0,
-        reasoningTokens: 0,
-      },
-    });
+    const result = await reviewRepositoryWithConfiguredModel(
+      configuredSpec({
+        cache,
+        requestTextCompletion,
+        requestStructuredCompletion,
+      }),
+    );
+
+    expect(requestTextCompletion).toHaveBeenCalledTimes(2);
+    expect(requestStructuredCompletion).toHaveBeenCalledTimes(3);
+    expect(result).toMatchObject({ cacheHits: 4, cacheMisses: 3 });
+
+    const unusedText = vi.fn();
+    const unusedStructured = vi.fn();
+    const resumed = await reviewRepositoryWithConfiguredModel(
+      configuredSpec({
+        cache,
+        requestTextCompletion: unusedText,
+        requestStructuredCompletion: unusedStructured,
+      }),
+    );
+    expect(unusedText).not.toHaveBeenCalled();
+    expect(unusedStructured).not.toHaveBeenCalled();
+    expect(resumed).toMatchObject({ cacheHits: 3, cacheMisses: 0 });
+  });
+
+  test("fails closed when configured chunks and evidence manifest diverge", async () => {
+    await expectInvalid(
+      configuredSpec({ chunks: chunks.slice(0, 1) }),
+      "synthesis_evidence",
+    );
+  });
+
+  test("has no legacy role pipeline imports", async () => {
+    const source = await readFile(
+      new URL("../src/model/model-review.ts", import.meta.url),
+      "utf8",
+    );
+    expect(source).not.toMatch(
+      /(?:analyzer|challenger|arbiter|role-policy|automated-disposition|role-schema)/iu,
+    );
   });
 });

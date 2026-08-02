@@ -1,98 +1,97 @@
-import { createHash } from "node:crypto";
-
-import type { Finding, FindingV2 } from "../contracts/reports.js";
+import type { Finding } from "../contracts/reports.js";
 import { FullShaSchema } from "../contracts/targets.js";
-import {
-  analyzerSystemPrompt,
-  analyzerUserContent,
-  deterministicEvidenceDigest,
-  parseAnalyzerResult,
-  type DeterministicEvidence,
-} from "./analyzer.js";
-import {
-  arbiterSystemPrompt,
-  arbiterUserContent,
-  parseArbiterResult,
-} from "./arbiter.js";
-import {
-  challengerSystemPrompt,
-  challengerUserContent,
-  parseChallengerResult,
-} from "./challenger.js";
+import { reviewChunk, type CompletedChunkReview } from "./chunk-review.js";
+import type { ModelChunkCache } from "./chunk-cache.js";
 import type { ModelChunk } from "./chunker.js";
-import { modelChunkCacheKey, type ModelChunkCache } from "./chunk-cache.js";
 import {
-  automatedReviewMetadata,
-  validateArbiterDecision,
-  type EvidenceMap,
-} from "./evidence-validator.js";
+  buildEvidenceManifest,
+  type EvidenceManifest,
+} from "./evidence-manifest.js";
 import {
   ModelRequestError,
   requestStructuredCompletion,
+  requestTextCompletion,
   validateModelEndpoint,
   type ModelUsage,
-  type RequestStructuredCompletion,
-  type StructuredCompletionResult,
 } from "./openai-compatible-client.js";
 import {
-  roleJsonSchemas,
-  sanitizeRolePayload,
-  type ModelRole,
-  type ModelRelationship,
-  type RolePolicies,
-} from "./role-contracts.js";
+  synthesizeRepository,
+  type ValidatedRepositorySynthesis,
+} from "./repository-synthesis.js";
+
+type ProjectKind = "extension" | "frontend" | "preset";
+type ToolState = { name: string; status: "completed" | "not-applicable" };
 
 export interface ConfiguredModelReviewSpec {
   endpoint: string;
   apiKey: string | null;
   model: string;
   targetSha: string;
-  projectKinds: readonly ("extension" | "frontend" | "preset")[];
+  projectKinds: readonly ProjectKind[];
   chunks: ModelChunk[];
   deterministicFindings: Finding[];
-  relationships: ModelRelationship[];
+  evidenceManifest?: EvidenceManifest;
+  tools?: ToolState[];
   promptPolicyVersion: string;
   scannerPolicyVersion: string;
-  rolePolicies: RolePolicies;
-  maxOutputTokensPerRole: number;
+  chunkReviewPolicy?: string;
+  synthesisPolicy?: string;
+  maxOutputTokensPerChunkReview?: number;
+  maxChunkReviewCharacters?: number;
+  maxOutputTokensForSynthesis?: number;
   cache: ModelChunkCache;
-  requestCompletion?: RequestStructuredCompletion;
+  requestTextCompletion?: typeof requestTextCompletion;
+  requestStructuredCompletion?: typeof requestStructuredCompletion;
+  /** Temporary input compatibility for Task 4 callers. Ignored. */
+  relationships?: unknown[];
+  /** Temporary input compatibility for Task 4 callers. Ignored. */
+  rolePolicies?: Record<string, string>;
+  /** Temporary input compatibility for Task 4 callers. */
+  maxOutputTokensPerRole?: number;
+  /** Temporary input compatibility for Task 4 callers. Ignored. */
+  requestCompletion?: typeof requestStructuredCompletion;
 }
 
-interface AnalysisUnit {
-  chunk: ModelChunk;
-  deterministic: DeterministicEvidence[];
+export interface CompletedModelReview {
+  endpointOrigin: string;
+  provider: string;
+  model: string;
+  completedChunkIds: string[];
+  synthesis: ValidatedRepositorySynthesis;
+  stageCompletion: {
+    chunkReview: { required: number; completed: number };
+    synthesis: { required: 1; completed: 1 };
+  };
+  usage: ModelUsage;
+  cacheHits: number;
+  cacheMisses: number;
 }
 
-function configuredOrigin(endpoint: string) {
-  const url = validateModelEndpoint(endpoint);
-  return { origin: url.origin, provider: url.hostname };
+interface ValidatedConfiguration {
+  endpointOrigin: string;
+  provider: string;
+  apiKey: string;
+  evidenceManifest: EvidenceManifest;
+  tools: ToolState[];
+  chunkReviewPolicy: string;
+  synthesisPolicy: string;
+  maxOutputTokensPerChunkReview: number;
+  maxChunkReviewCharacters: number;
+  maxOutputTokensForSynthesis: number;
 }
 
-function validateSpec(spec: ConfiguredModelReviewSpec) {
-  const endpoint = configuredOrigin(spec.endpoint);
-  const policies = Object.values(spec.rolePolicies);
-  if (
-    spec.apiKey === null ||
-    spec.apiKey.trim() === "" ||
-    spec.model.trim() === "" ||
-    !FullShaSchema.safeParse(spec.targetSha).success ||
-    spec.projectKinds.length === 0 ||
-    spec.promptPolicyVersion.trim() === "" ||
-    spec.scannerPolicyVersion.trim() === "" ||
-    policies.some((policy) => policy.trim() === "") ||
-    !Number.isInteger(spec.maxOutputTokensPerRole) ||
-    spec.maxOutputTokensPerRole < 1 ||
-    new Set(spec.chunks.map(({ id }) => id)).size !== spec.chunks.length
-  ) {
-    throw new ModelRequestError(
-      "MODEL_CONFIGURATION",
-      "system",
-      "Configured model review is incomplete or invalid.",
-    );
-  }
-  return { ...endpoint, apiKey: spec.apiKey };
+interface CacheCounts {
+  hits: number;
+  misses: number;
 }
+
+const zeroUsage: ModelUsage = {
+  inputTokens: 0,
+  outputTokens: 0,
+  cacheReadTokens: 0,
+  reasoningTokens: 0,
+};
+const ImmediateAttempts = 3;
 
 export function addModelUsage(left: ModelUsage, right: ModelUsage): ModelUsage {
   return {
@@ -103,364 +102,188 @@ export function addModelUsage(left: ModelUsage, right: ModelUsage): ModelUsage {
   };
 }
 
-function zeroUsage(): ModelUsage {
-  return {
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheReadTokens: 0,
-    reasoningTokens: 0,
-  };
+function positiveInteger(value: unknown): value is number {
+  return Number.isInteger(value) && Number(value) > 0;
 }
 
-function assertExpectedProvider(
-  completion: Pick<StructuredCompletionResult, "endpointOrigin" | "provider">,
-  expectedOrigin: string,
-  expectedProvider: string,
-) {
+function repositoryEvidenceError() {
+  return new ModelRequestError(
+    "MODEL_INVALID_RESPONSE",
+    "repository",
+    "Configured repository evidence does not match the requested review.",
+    "synthesis_evidence" as never,
+  );
+}
+
+function validateSpec(spec: ConfiguredModelReviewSpec): ValidatedConfiguration {
+  const endpoint = validateModelEndpoint(spec.endpoint);
+  const maximumOutput = spec.maxOutputTokensPerRole;
+  const maxOutputTokensPerChunkReview =
+    spec.maxOutputTokensPerChunkReview ?? maximumOutput;
+  const maxOutputTokensForSynthesis =
+    spec.maxOutputTokensForSynthesis ?? maximumOutput;
+  const maxChunkReviewCharacters =
+    spec.maxChunkReviewCharacters ?? maximumOutput;
   if (
-    completion.endpointOrigin !== expectedOrigin ||
-    completion.provider !== expectedProvider
-  ) {
+    spec.apiKey === null ||
+    spec.apiKey.trim() === "" ||
+    spec.model.trim() === "" ||
+    !FullShaSchema.safeParse(spec.targetSha).success ||
+    spec.projectKinds.length === 0 ||
+    new Set(spec.projectKinds).size !== spec.projectKinds.length ||
+    spec.promptPolicyVersion.trim() === "" ||
+    spec.scannerPolicyVersion.trim() === "" ||
+    !positiveInteger(maxOutputTokensPerChunkReview) ||
+    !positiveInteger(maxChunkReviewCharacters) ||
+    !positiveInteger(maxOutputTokensForSynthesis) ||
+    new Set(spec.chunks.map(({ id }) => id)).size !== spec.chunks.length
+  )
     throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
+      "MODEL_CONFIGURATION",
       "system",
-      "Configured model response reported an unexpected endpoint identity.",
+      "Configured model review is incomplete or invalid.",
     );
-  }
-}
 
-function evidenceWithinChunk(
-  finding: Finding,
-  chunk: ModelChunk,
-  targetSha: string,
-): DeterministicEvidence | null {
-  const segment = chunk.segments.find((candidate) => {
-    if (candidate.path !== finding.path) return false;
-    if (finding.line_start === null) return finding.line_end === null;
-    const end = finding.line_end ?? finding.line_start;
-    return (
-      finding.line_start >= candidate.line_start && end <= candidate.line_end
+  const canonicalManifest = buildEvidenceManifest(
+    spec.chunks,
+    spec.deterministicFindings,
+    spec.targetSha,
+  );
+  const evidenceManifest = spec.evidenceManifest ?? canonicalManifest;
+  if (JSON.stringify(evidenceManifest) !== JSON.stringify(canonicalManifest))
+    throw repositoryEvidenceError();
+  const tools =
+    spec.tools ??
+    [...new Set(spec.deterministicFindings.map(({ origin }) => origin))].map(
+      (name) => ({ name, status: "completed" as const }),
     );
-  });
-  if (segment === undefined) return null;
-  return {
-    finding,
-    evidence: {
-      path: finding.path,
-      line_start: finding.line_start,
-      line_end: finding.line_end,
-      segment_id: chunk.id,
-      content_digest: segment.content_hash,
-      target_sha: targetSha,
-    },
-  };
-}
-
-function syntheticChunk(targetSha: string): ModelChunk {
-  return {
-    id: createHash("sha256")
-      .update(JSON.stringify({ target_sha: targetSha, kind: "evidence-only" }))
-      .digest("hex"),
-    bytes: 0,
-    content_hashes: [],
-    segments: [],
-  };
-}
-
-function analysisUnits(spec: ConfiguredModelReviewSpec): AnalysisUnit[] {
-  const chunks =
-    spec.chunks.length === 0 ? [syntheticChunk(spec.targetSha)] : spec.chunks;
-  const units = chunks.map((chunk) => ({
-    chunk,
-    deterministic: [] as DeterministicEvidence[],
-  }));
-  for (const finding of spec.deterministicFindings) {
-    let assigned = false;
-    for (const unit of units) {
-      const evidence = evidenceWithinChunk(finding, unit.chunk, spec.targetSha);
-      if (evidence !== null) {
-        unit.deterministic.push(evidence);
-        assigned = true;
-        break;
-      }
-    }
-    if (!assigned) {
-      units[0]!.deterministic.push({
-        finding,
-        evidence: {
-          path: finding.path,
-          line_start: finding.line_start,
-          line_end: finding.line_end,
-          segment_id: null,
-          content_digest: deterministicEvidenceDigest(finding),
-          target_sha: spec.targetSha,
-        },
-      });
-    }
-  }
-  return units;
-}
-
-function relationshipsForUnit(
-  relationships: readonly ModelRelationship[],
-  chunk: ModelChunk,
-) {
-  const paths = new Set(chunk.segments.map(({ path }) => path));
-  return relationships
-    .filter(({ from, to }) => paths.has(from) || paths.has(to))
-    .slice(0, 100_000);
-}
-
-async function requestRole({
-  role,
-  systemContent,
-  userContent,
-  spec,
-  requestCompletion,
-  segments,
-}: {
-  role: ModelRole;
-  systemContent: string;
-  userContent: string;
-  spec: ConfiguredModelReviewSpec;
-  requestCompletion: RequestStructuredCompletion;
-  segments: ModelChunk["segments"];
-}) {
-  const inputDigest = createHash("sha256").update(userContent).digest("hex");
-  const rolePromptDigest = createHash("sha256")
-    .update(systemContent)
-    .digest("hex");
-  const key = modelChunkCacheKey({
-    role,
-    rolePromptDigest,
-    endpointOrigin: new URL(spec.endpoint).origin,
-    modelIdentifier: spec.model,
-    promptPolicyVersion: spec.promptPolicyVersion,
-    scannerPolicyVersion: spec.scannerPolicyVersion,
-    inputDigest,
-  });
-  const cached = await spec.cache.load(key);
-  if (cached !== null) {
-    if (
-      cached.role !== role ||
-      cached.inputDigest !== inputDigest ||
-      cached.payload.role !== role
-    ) {
-      throw new ModelRequestError(
-        "MODEL_INVALID_RESPONSE",
-        "system",
-        "Model cache role identity does not match.",
-      );
-    }
-    return {
-      content: JSON.stringify(cached.payload.result),
-      completionId: cached.completionId,
-      endpointOrigin: new URL(spec.endpoint).origin,
-      provider: new URL(spec.endpoint).hostname,
-      usage: zeroUsage(),
-      cached: true,
-      commit: async () => {},
-    };
-  }
-  const completion = await requestCompletion({
-    endpoint: spec.endpoint,
-    apiKey: spec.apiKey ?? "",
-    model: spec.model,
-    maxOutputTokens: spec.maxOutputTokensPerRole,
-    schemaName: `tavernkeeper_${role}`,
-    jsonSchema: roleJsonSchemas[role],
-    systemContent,
-    userContent,
-  });
-  let payload;
-  try {
-    payload = sanitizeRolePayload(role, completion.content, segments);
-  } catch {
+  if (
+    new Set(tools.map(({ name }) => name)).size !== tools.length ||
+    tools.some(
+      ({ name, status }) =>
+        !/^[a-z0-9][a-z0-9-]{0,79}$/u.test(name) ||
+        !["completed", "not-applicable"].includes(status),
+    )
+  )
     throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
-      "repository",
-      `The ${role} returned malformed structured output.`,
-      `role_schema_${role}`,
+      "MODEL_CONFIGURATION",
+      "system",
+      "Configured model review is incomplete or invalid.",
     );
-  }
   return {
-    ...completion,
-    content: JSON.stringify(payload.result),
-    cached: false,
-    commit: () =>
-      spec.cache.save(key, {
-        role,
-        inputDigest,
-        completionId: completion.completionId,
-        payload,
-        usage: completion.usage,
-      }),
+    endpointOrigin: endpoint.origin,
+    provider: endpoint.hostname,
+    apiKey: spec.apiKey,
+    evidenceManifest,
+    tools,
+    chunkReviewPolicy:
+      spec.chunkReviewPolicy ?? `chunk-review:${spec.promptPolicyVersion}`,
+    synthesisPolicy:
+      spec.synthesisPolicy ??
+      `repository-synthesis:${spec.promptPolicyVersion}`,
+    maxOutputTokensPerChunkReview,
+    maxChunkReviewCharacters,
+    maxOutputTokensForSynthesis,
   };
 }
 
-const ModelReviewAttempts = 3;
-
-async function reviewWithConfiguredModelOnce(spec: ConfiguredModelReviewSpec) {
-  const configured = validateSpec(spec);
-  const requestCompletion =
-    spec.requestCompletion ?? requestStructuredCompletion;
-  let usage = zeroUsage();
-  const findings: FindingV2[] = [];
-  const units = analysisUnits(spec);
-  const roleCompletion = {
-    analyzer: { required: units.length, completed: 0 },
-    challenger: { required: units.length, completed: 0 },
-    arbiter: { required: units.length, completed: 0 },
-  };
-  let cacheHits = 0;
-  let cacheMisses = 0;
-  const pendingArbiterCommits: Array<() => Promise<void>> = [];
-
-  for (const unit of units) {
-    const analyzer = await requestRole({
-      role: "analyzer",
-      systemContent: analyzerSystemPrompt(spec.projectKinds),
-      userContent: analyzerUserContent({
-        chunk: unit.chunk,
-        deterministic: unit.deterministic,
-        relationships: relationshipsForUnit(spec.relationships, unit.chunk),
-        targetSha: spec.targetSha,
-      }),
-      spec,
-      requestCompletion,
-      segments: unit.chunk.segments,
-    });
-    assertExpectedProvider(analyzer, configured.origin, configured.provider);
-    const claims = parseAnalyzerResult({
-      content: analyzer.content,
-      chunk: unit.chunk,
-      deterministic: unit.deterministic,
+async function completeOnce(
+  spec: ConfiguredModelReviewSpec,
+  configured: ValidatedConfiguration,
+  cacheCounts: CacheCounts,
+): Promise<CompletedModelReview> {
+  let usage = zeroUsage;
+  const completedChunkReviews: CompletedChunkReview[] = [];
+  for (const chunk of spec.chunks) {
+    const completed = await reviewChunk({
+      endpoint: spec.endpoint,
+      apiKey: configured.apiKey,
+      model: spec.model,
+      endpointOrigin: configured.endpointOrigin,
       provider: configured.provider,
       targetSha: spec.targetSha,
+      projectKinds: spec.projectKinds,
+      chunk,
+      evidenceManifest: configured.evidenceManifest,
+      promptPolicyVersion: spec.promptPolicyVersion,
+      scannerPolicyVersion: spec.scannerPolicyVersion,
+      chunkReviewPolicy: configured.chunkReviewPolicy,
+      maxOutputTokens: configured.maxOutputTokensPerChunkReview,
+      maxCharacters: configured.maxChunkReviewCharacters,
+      cache: spec.cache,
+      ...(spec.requestTextCompletion === undefined
+        ? {}
+        : { requestCompletion: spec.requestTextCompletion }),
     });
-    await analyzer.commit();
-    if (analyzer.cached) cacheHits += 1;
-    else cacheMisses += 1;
-    roleCompletion.analyzer.completed += 1;
-    usage = addModelUsage(usage, analyzer.usage);
-
-    const challenger = await requestRole({
-      role: "challenger",
-      systemContent: challengerSystemPrompt,
-      userContent: challengerUserContent(claims),
-      spec,
-      requestCompletion,
-      segments: unit.chunk.segments,
-    });
-    assertExpectedProvider(challenger, configured.origin, configured.provider);
-    const challenges = parseChallengerResult({
-      content: challenger.content,
-      claims,
-      segments: unit.chunk.segments,
-    });
-    await challenger.commit();
-    if (challenger.cached) cacheHits += 1;
-    else cacheMisses += 1;
-    roleCompletion.challenger.completed += 1;
-    usage = addModelUsage(usage, challenger.usage);
-
-    const arbiter = await requestRole({
-      role: "arbiter",
-      systemContent: arbiterSystemPrompt,
-      userContent: arbiterUserContent(claims, challenges),
-      spec,
-      requestCompletion,
-      segments: unit.chunk.segments,
-    });
-    assertExpectedProvider(arbiter, configured.origin, configured.provider);
-    const decisions = parseArbiterResult({
-      content: arbiter.content,
-      claims,
-      segments: unit.chunk.segments,
-    });
-    pendingArbiterCommits.push(arbiter.commit);
-    if (arbiter.cached) cacheHits += 1;
-    else cacheMisses += 1;
-    roleCompletion.arbiter.completed += 1;
-    usage = addModelUsage(usage, arbiter.usage);
-
-    const evidenceMap: EvidenceMap = new Map(
-      claims.map((claim) => [
-        claim.finding.fingerprint,
-        {
-          finding: claim.finding,
-          evidence: claim.evidence,
-          automatedReview: automatedReviewMetadata(spec.rolePolicies),
-        },
-      ]),
-    );
-    findings.push(
-      ...decisions.map((decision) =>
-        validateArbiterDecision(decision, evidenceMap, spec.targetSha),
-      ),
-    );
+    completedChunkReviews.push(completed);
+    usage = addModelUsage(usage, completed.usage);
+    if (completed.cached) cacheCounts.hits += 1;
+    else cacheCounts.misses += 1;
   }
 
-  if (
-    findings.some(
-      (finding) =>
-        finding.disposition === "inconclusive" &&
-        ["critical", "high", "medium"].includes(finding.severity) &&
-        ["high", "medium"].includes(finding.confidence),
-    )
-  ) {
-    throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
-      "repository",
-      "A review-level model claim remained inconclusive.",
-      "review_inconclusive",
-    );
-  }
-  const fingerprints = findings.map(({ fingerprint }) => fingerprint);
-  if (new Set(fingerprints).size !== fingerprints.length) {
-    throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
-      "repository",
-      "Automated review returned duplicate findings.",
-      "review_duplicate_findings",
-    );
-  }
-
-  for (const commit of pendingArbiterCommits) {
-    await commit();
-  }
+  const structuredRequest =
+    spec.requestStructuredCompletion ?? spec.requestCompletion;
+  const completedSynthesis = await synthesizeRepository({
+    endpoint: spec.endpoint,
+    apiKey: configured.apiKey,
+    model: spec.model,
+    endpointOrigin: configured.endpointOrigin,
+    provider: configured.provider,
+    targetSha: spec.targetSha,
+    projectKinds: spec.projectKinds,
+    expectedChunkIds: spec.chunks.map(({ id }) => id),
+    completedChunkReviews,
+    evidenceManifest: configured.evidenceManifest,
+    tools: configured.tools,
+    promptPolicyVersion: spec.promptPolicyVersion,
+    scannerPolicyVersion: spec.scannerPolicyVersion,
+    synthesisPolicy: configured.synthesisPolicy,
+    maxOutputTokens: configured.maxOutputTokensForSynthesis,
+    cache: spec.cache,
+    ...(structuredRequest === undefined
+      ? {}
+      : { requestCompletion: structuredRequest }),
+  });
+  usage = addModelUsage(usage, completedSynthesis.usage);
+  if (completedSynthesis.cached) cacheCounts.hits += 1;
+  else cacheCounts.misses += 1;
 
   return {
-    endpointOrigin: configured.origin,
+    endpointOrigin: configured.endpointOrigin,
     provider: configured.provider,
     model: spec.model,
-    findings: findings.sort((left, right) =>
-      left.fingerprint.localeCompare(right.fingerprint),
-    ),
-    completedChunkIds: spec.chunks.map(({ id }) => id),
-    roleCompletion,
+    completedChunkIds: completedChunkReviews.map(({ chunkId }) => chunkId),
+    synthesis: completedSynthesis.synthesis,
+    stageCompletion: {
+      chunkReview: {
+        required: spec.chunks.length,
+        completed: completedChunkReviews.length,
+      },
+      synthesis: { required: 1, completed: 1 },
+    },
     usage,
-    cacheHits,
-    cacheMisses,
+    cacheHits: cacheCounts.hits,
+    cacheMisses: cacheCounts.misses,
   };
 }
 
-export async function reviewWithConfiguredModel(
+export async function reviewRepositoryWithConfiguredModel(
   spec: ConfiguredModelReviewSpec,
-) {
-  for (let attempt = 1; attempt <= ModelReviewAttempts; attempt += 1) {
+): Promise<CompletedModelReview> {
+  const configured = validateSpec(spec);
+  const cacheCounts = { hits: 0, misses: 0 };
+  for (let attempt = 1; attempt <= ImmediateAttempts; attempt += 1) {
     try {
-      return await reviewWithConfiguredModelOnce(spec);
+      return await completeOnce(spec, configured, cacheCounts);
     } catch (error) {
       const retryable =
         error instanceof ModelRequestError &&
         error.code === "MODEL_INVALID_RESPONSE" &&
         error.scope === "repository";
-      if (!retryable || attempt === ModelReviewAttempts) {
-        throw error;
-      }
+      if (!retryable || attempt === ImmediateAttempts) throw error;
     }
   }
-
-  throw new Error("Model review retry loop ended unexpectedly.");
+  throw new Error("Configured model review retry loop ended unexpectedly.");
 }
+
+export const reviewWithConfiguredModel = reviewRepositoryWithConfiguredModel;
