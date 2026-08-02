@@ -13,12 +13,11 @@ import { z } from "zod";
 
 import type { ScannerPins, ScannerPolicy } from "../config/policy.js";
 import {
-  buildFindingCountsV2,
-  deriveV2Result,
+  buildModelConcernCounts,
+  deriveV3Result,
   FindingSchema,
-  FindingV2Schema,
   ScanModeSchema,
-  ScanReportV2Schema,
+  ScanReportV3Schema,
   ToolCoverageSchema,
 } from "../contracts/reports.js";
 import {
@@ -41,13 +40,10 @@ import {
   validateModelEndpoint,
   type RequestStructuredCompletion,
 } from "../model/openai-compatible-client.js";
-import {
-  validateRepositorySynthesis,
-  type ValidatedRepositorySynthesis,
-} from "../model/repository-synthesis.js";
+import { validateRepositorySynthesis } from "../model/repository-synthesis.js";
 import { RepositorySynthesisSchema } from "../model/review-contracts.js";
 import { reportIdentity } from "../publish/report-path.js";
-import { sanitizeReportV2 } from "../publish/sanitize.js";
+import { sanitizeReportV3 } from "../publish/sanitize.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import {
   runApplicableScanners,
@@ -57,6 +53,7 @@ import {
   canonicalScannerRuns,
   classificationIsConsistent,
   inventoryIsConsistent,
+  projectV3ReportSections,
   scanStructuralFiles,
   validateChunkCoverage,
   validateScannerRuns,
@@ -687,35 +684,6 @@ export async function reviewPreparedSession({
   });
 }
 
-function projectSynthesisFindings(
-  synthesis: ValidatedRepositorySynthesis,
-  promptPolicyVersion: string,
-): z.infer<typeof FindingV2Schema>[] {
-  return synthesis.concerns.map((concern) => {
-    const evidence = concern.evidence[0]!;
-    return FindingV2Schema.parse({
-      origin: "model:repository-review",
-      rule_id: `repository-concern:${concern.id.slice(0, 16)}`,
-      category: concern.category,
-      severity: concern.severity,
-      confidence: concern.confidence,
-      path: evidence.path,
-      line_start: evidence.lineStart,
-      line_end: evidence.lineEnd,
-      evidence_sha: evidence.targetSha,
-      title: concern.title,
-      explanation: concern.explanation,
-      fingerprint: concern.fingerprint,
-      disposition: "confirmed",
-      automated_review: {
-        analyzer_policy: promptPolicyVersion,
-        challenger_policy: promptPolicyVersion,
-        arbiter_policy: promptPolicyVersion,
-      },
-    });
-  });
-}
-
 function safeSessionRoot(sessionRoot: string) {
   const root = resolve(sessionRoot);
   if (!basename(root).startsWith("tavernkeeper-session-"))
@@ -752,7 +720,7 @@ export async function finalizePreparedSession({
   | { status: "obsolete" }
   | {
       status: "completed";
-      candidate: { report: z.infer<typeof ScanReportV2Schema> };
+      candidate: { report: z.infer<typeof ScanReportV3Schema> };
     }
 > {
   const sessionRoot = safeSessionRoot(sessionRootInput);
@@ -794,12 +762,15 @@ export async function finalizePreparedSession({
         prepared.target.target_sha,
       ),
     ).validated;
-    const findings = projectSynthesisFindings(
+    const sections = projectV3ReportSections(
+      prepared.tools,
+      chunks,
+      prepared.deterministic_findings,
       validatedSynthesis,
-      prepared.prompt_policy_version,
+      prepared.target.target_sha,
     );
     const reportWithoutIdentity = {
-      schema_version: 2 as const,
+      schema_version: 3 as const,
       report_version: prepared.report_version,
       supersedes_report_id: prepared.supersedes_report_id,
       scanner_version: prepared.scanner_version,
@@ -829,22 +800,17 @@ export async function finalizePreparedSession({
           cache_read_tokens: review.usage.cacheReadTokens,
           reasoning_tokens: review.usage.reasoningTokens,
           total_tokens: review.usage.inputTokens + review.usage.outputTokens,
-          roles: {
-            analyzer: review.stage_completion.chunk_review,
-            challenger: review.stage_completion.synthesis,
-            arbiter: review.stage_completion.synthesis,
-          },
         },
         evidence_validation: {
           status: "completed" as const,
-          validated_findings: findings.length,
+          validated_findings: sections.model_review.concerns.length,
         },
       },
-      result: deriveV2Result(findings),
-      finding_counts: buildFindingCountsV2(findings),
-      findings,
+      result: deriveV3Result(sections.model_review),
+      finding_counts: buildModelConcernCounts(sections.model_review.concerns),
+      ...sections,
     };
-    const report = sanitizeReportV2({
+    const report = sanitizeReportV3({
       ...reportWithoutIdentity,
       report_id: reportIdentity(reportWithoutIdentity),
     });

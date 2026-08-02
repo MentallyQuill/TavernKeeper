@@ -29,7 +29,29 @@ function identityFields(report: ReportIdentityInput) {
   });
 }
 
+function canonicalValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalValue);
+  if (value !== null && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, item]) => [key, canonicalValue(item)]),
+    );
+  return value;
+}
+
 export function reportIdentity(report: ReportIdentityInput) {
+  if (
+    "schema_version" in report &&
+    (report as ReportIdentityInput & { schema_version?: unknown })
+      .schema_version === 3
+  ) {
+    const body = { ...(report as unknown as Record<string, unknown>) };
+    delete body.report_id;
+    return createHash("sha256")
+      .update(JSON.stringify(canonicalValue(body)))
+      .digest("hex");
+  }
   return createHash("sha256")
     .update(JSON.stringify(identityFields(report)))
     .digest("hex");

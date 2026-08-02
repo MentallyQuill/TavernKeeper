@@ -24,6 +24,38 @@ describe("Pages site allowlist", () => {
       ),
     );
     await writeFile(join(root, "reports", "index.json"), "{}\n");
+    await mkdir(
+      join(root, "reports", "github", "42", "sha", "1", "standard", "1"),
+      { recursive: true },
+    );
+    await writeFile(
+      join(
+        root,
+        "reports",
+        "github",
+        "42",
+        "sha",
+        "1",
+        "standard",
+        "1",
+        "report.json",
+      ),
+      '{"schema_version":3}\n',
+    );
+    await writeFile(
+      join(
+        root,
+        "reports",
+        "github",
+        "42",
+        "sha",
+        "1",
+        "standard",
+        "1",
+        "index.html",
+      ),
+      "<!doctype html>\n",
+    );
     await writeFile(join(root, "schemas", "report.json"), "{}\n");
     await writeFile(join(root, "docs", "rules", "rule.md"), "# Rule\n");
     await writeFile(join(root, "src", "secret.ts"), "scanner source\n");
@@ -36,6 +68,8 @@ describe("Pages site allowlist", () => {
     expect(result.files).toEqual([
       ".nojekyll",
       "index.html",
+      "reports/github/42/sha/1/standard/1/index.html",
+      "reports/github/42/sha/1/standard/1/report.json",
       "reports/index.json",
       "rules/rule.md",
       "schemas/report.json",

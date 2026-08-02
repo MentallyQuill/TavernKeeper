@@ -1,8 +1,10 @@
 import {
   ScanReportSchema,
   ScanReportV2Schema,
+  ScanReportV3Schema,
   type ScanReport,
   type ScanReportV2,
+  type ScanReportV3,
 } from "../contracts/reports.js";
 import { reportIdentity } from "./report-path.js";
 
@@ -57,6 +59,10 @@ function isFindingNarrativePath(path: string[]) {
     "findings.*.explanation",
     "findings.*.remediation",
     "findings.*.adjudication.rationale",
+    "tool_results.*.signals.*.title",
+    "model_review.recap",
+    "model_review.concerns.*.title",
+    "model_review.concerns.*.explanation",
   ].includes(normalized.join("."));
 }
 
@@ -115,6 +121,16 @@ export function sanitizeReportV2(input: unknown): ScanReportV2 {
   if (report.report_id !== reportIdentity(report)) {
     reject("report identity does not match immutable fields.");
   }
+  inspectValue(report);
+  return report;
+}
+
+export function sanitizeReportV3(input: unknown): ScanReportV3 {
+  const parsed = ScanReportV3Schema.safeParse(input);
+  if (!parsed.success) reject("schema or derived V3 fields are invalid.");
+  const report = parsed.data;
+  if (report.report_id !== reportIdentity(report))
+    reject("report identity does not match immutable fields.");
   inspectValue(report);
   return report;
 }

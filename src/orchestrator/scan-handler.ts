@@ -1,14 +1,13 @@
 import { createHash } from "node:crypto";
 
 import {
-  buildFindingCountsV2,
-  deriveV2Result,
+  buildModelConcernCounts,
+  deriveV3Result,
   FindingSchema,
-  FindingV2Schema,
-  ScanReportV2Schema,
+  ScanReportV3Schema,
   type Finding,
   type ScanMode,
-  type ScanReportV2,
+  type ScanReportV3,
 } from "../contracts/reports.js";
 import { TargetSchema, type Target } from "../contracts/targets.js";
 import type { ScannerPolicy } from "../config/policy.js";
@@ -38,6 +37,7 @@ import {
   validateModelEndpoint,
 } from "../model/openai-compatible-client.js";
 import type { ValidatedRepositorySynthesis } from "../model/repository-synthesis.js";
+import { buildEvidenceManifest } from "../model/evidence-manifest.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { reportIdentity } from "../publish/report-path.js";
 import {
@@ -98,7 +98,7 @@ export interface ScanDependencies {
 }
 
 export interface SanitizedCandidate {
-  report: ScanReportV2;
+  report: ScanReportV3;
 }
 
 export interface ScanFailure {
@@ -370,33 +370,80 @@ function validateModelCoverage({
     );
 }
 
-function projectSynthesisFindings(
+export function projectV3ReportSections(
+  tools: Array<{
+    name: string;
+    version: string;
+    status: "completed" | "not-applicable";
+  }>,
+  chunks: readonly ModelChunk[],
+  deterministicFindings: readonly Finding[],
   synthesis: ValidatedRepositorySynthesis,
-  promptPolicyVersion: string,
+  targetSha: string,
 ) {
-  return synthesis.concerns.map((concern) => {
-    const evidence = concern.evidence[0]!;
-    return FindingV2Schema.parse({
-      origin: "model:repository-review",
-      rule_id: `repository-concern:${concern.id.slice(0, 16)}`,
+  const normalizedOrigin = (origin: string) =>
+    origin === "tavernkeeper" ? "tavernkeeper-static" : origin;
+  const manifest = buildEvidenceManifest(
+    chunks,
+    deterministicFindings,
+    targetSha,
+  );
+  const coveredTools = new Set(tools.map(({ name }) => name));
+  if (
+    manifest.scannerSignals.some(
+      ({ origin }) => !coveredTools.has(normalizedOrigin(origin)),
+    )
+  )
+    throw new Error("Deterministic signal origin is missing tool coverage.");
+  const tool_results = tools.map((tool) => ({
+    ...tool,
+    signals: manifest.scannerSignals
+      .filter(({ origin }) => normalizedOrigin(origin) === tool.name)
+      .map(
+        ({
+          id,
+          rule_id,
+          category,
+          severity,
+          confidence,
+          title,
+          path,
+          line_start,
+          line_end,
+        }) => ({
+          evidence_id: id,
+          rule_id,
+          category,
+          severity,
+          confidence,
+          title,
+          path,
+          line_start,
+          line_end,
+        }),
+      ),
+  }));
+  const model_review = {
+    assessment: synthesis.assessment,
+    recap: synthesis.recap,
+    concerns: synthesis.concerns.map((concern) => ({
+      id: concern.id,
       category: concern.category,
       severity: concern.severity,
       confidence: concern.confidence,
-      path: evidence.path,
-      line_start: evidence.lineStart,
-      line_end: evidence.lineEnd,
-      evidence_sha: evidence.targetSha,
       title: concern.title,
       explanation: concern.explanation,
-      fingerprint: concern.fingerprint,
-      disposition: "confirmed",
-      automated_review: {
-        analyzer_policy: promptPolicyVersion,
-        challenger_policy: promptPolicyVersion,
-        arbiter_policy: promptPolicyVersion,
-      },
-    });
-  });
+      evidence: concern.evidence.map((evidence) => ({
+        evidence_id: evidence.evidenceId,
+        kind: evidence.kind,
+        path: evidence.path,
+        line_start: evidence.lineStart,
+        line_end: evidence.lineEnd,
+        target_sha: evidence.targetSha,
+      })),
+    })),
+  };
+  return { tool_results, model_review };
 }
 
 function buildReport({
@@ -416,16 +463,32 @@ function buildReport({
   chunks: ModelChunk[];
   model: Awaited<ReturnType<typeof reviewRepositoryWithConfiguredModel>>;
 }) {
-  const findings = projectSynthesisFindings(
+  const tools = [
+    {
+      name: "inventory",
+      version: spec.scannerVersion,
+      status: "completed" as const,
+    },
+    ...scannerRuns.map(({ name, version, status }) => ({
+      name,
+      version,
+      status,
+    })),
+  ];
+  const deterministicFindings = scannerRuns.flatMap(({ findings }) => findings);
+  const sections = projectV3ReportSections(
+    tools,
+    chunks,
+    deterministicFindings,
     model.synthesis,
-    spec.promptPolicyVersion,
+    spec.target.target_sha,
   );
   const eligibleTextBytes = classification.modelEligible.reduce(
     (total, file) => total + file.bytes,
     0,
   );
-  const withoutId: Omit<ScanReportV2, "report_id"> = {
-    schema_version: 2,
+  const withoutId: Omit<ScanReportV3, "report_id"> = {
+    schema_version: 3,
     report_version: spec.reportVersion,
     supersedes_report_id: spec.supersedesReportId,
     scanner_version: spec.scannerVersion,
@@ -451,18 +514,7 @@ function buildReport({
         eligible_text_bytes: eligibleTextBytes,
         excluded: classification.excluded,
       },
-      tools: [
-        {
-          name: "inventory",
-          version: spec.scannerVersion,
-          status: "completed",
-        },
-        ...scannerRuns.map(({ name, version, status }) => ({
-          name,
-          version,
-          status,
-        })),
-      ],
+      tools,
       model: {
         status: "completed",
         endpoint_origin: model.endpointOrigin,
@@ -475,22 +527,17 @@ function buildReport({
         cache_read_tokens: model.usage.cacheReadTokens,
         reasoning_tokens: model.usage.reasoningTokens,
         total_tokens: model.usage.inputTokens + model.usage.outputTokens,
-        roles: {
-          analyzer: model.stageCompletion.chunkReview,
-          challenger: model.stageCompletion.synthesis,
-          arbiter: model.stageCompletion.synthesis,
-        },
       },
       evidence_validation: {
         status: "completed",
-        validated_findings: findings.length,
+        validated_findings: sections.model_review.concerns.length,
       },
     },
-    result: deriveV2Result(findings),
-    finding_counts: buildFindingCountsV2(findings),
-    findings,
+    result: deriveV3Result(sections.model_review),
+    finding_counts: buildModelConcernCounts(sections.model_review.concerns),
+    ...sections,
   };
-  return ScanReportV2Schema.parse({
+  return ScanReportV3Schema.parse({
     ...withoutId,
     report_id: reportIdentity(withoutId),
   });

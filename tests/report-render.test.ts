@@ -8,18 +8,18 @@ import { renderReportHtml } from "../src/publish/render-report.js";
 async function reportWithHostileText() {
   const raw = JSON.parse(
     await readFile(
-      new URL("./fixtures/contracts/report.v2.valid.json", import.meta.url),
+      new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
       "utf8",
     ),
   ) as Record<string, unknown>;
-  const findings = structuredClone(raw.findings) as Array<
-    Record<string, unknown>
-  >;
-  findings[0] = {
-    ...findings[0],
+  const modelReview = structuredClone(raw.model_review) as {
+    concerns: Array<Record<string, unknown>>;
+  };
+  modelReview.concerns[0] = {
+    ...modelReview.concerns[0],
     title: '<img src=x onerror="alert(1)"> suspicious markup',
   };
-  const report = { ...raw, findings };
+  const report = { ...raw, model_review: modelReview };
   return { ...report, report_id: reportIdentity(report as never) };
 }
 
@@ -45,7 +45,6 @@ describe("static report rendering", () => {
     expect(links).toEqual([
       "https://github.com/owner/repo",
       `https://github.com/owner/repo/commit/${"a".repeat(40)}`,
-      "https://mentallyquill.github.io/TavernKeeper/rules/credential-exfiltration/",
       "https://tavernary.org/",
     ]);
   });

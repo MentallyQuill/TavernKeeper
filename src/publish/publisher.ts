@@ -16,7 +16,7 @@ import {
   ReportIndexV2Schema,
   type ReportIndexEntryV2,
   type ReportIndexV2,
-  type ScanReportV2,
+  type ScanReportV3,
 } from "../contracts/reports.js";
 import {
   OperationsStateSchema,
@@ -32,7 +32,7 @@ import {
   reportPath,
   reportUrl,
 } from "./report-path.js";
-import { sanitizeReportV2 } from "./sanitize.js";
+import { sanitizeReportV3 } from "./sanitize.js";
 
 export interface PublishCandidatesInput {
   root: string;
@@ -86,7 +86,9 @@ async function readExistingIndex(path: string, generatedAt: string) {
   }
 }
 
-function indexEntry(report: ScanReportV2): ReportIndexEntryV2 {
+export function projectReportToIndexV2(
+  report: ScanReportV3,
+): ReportIndexEntryV2 {
   return ReportIndexEntryV2Schema.parse({
     report_id: report.report_id,
     report_version: report.report_version,
@@ -131,13 +133,13 @@ function preference(left: ReportIndexEntryV2, right: ReportIndexEntryV2) {
 
 function preferredIndex(
   existing: ReportIndexV2,
-  reports: ScanReportV2[],
+  reports: ScanReportV3[],
   generatedAt: string,
 ) {
   const preferred = new Map<string, ReportIndexEntryV2>();
   for (const entry of [
     ...existing.reports,
-    ...reports.map((report) => indexEntry(report)),
+    ...reports.map((report) => projectReportToIndexV2(report)),
   ]) {
     const key = [
       entry.provider,
@@ -173,7 +175,7 @@ function preferredIndex(
 
 function completedState(
   input: OperationsState,
-  reports: ScanReportV2[],
+  reports: ScanReportV3[],
   generatedAt: string,
 ) {
   let state = OperationsStateSchema.parse(input);
@@ -229,7 +231,7 @@ export async function publishCandidates({
   generatedAt,
 }: PublishCandidatesInput) {
   const root = resolve(rootInput);
-  const reports = candidates.map((candidate) => sanitizeReportV2(candidate));
+  const reports = candidates.map((candidate) => sanitizeReportV3(candidate));
   const relativePaths = reports.map((report) => reportPath(report));
   if (new Set(relativePaths).size !== relativePaths.length) {
     throw new Error("Duplicate immutable report path in publication batch.");

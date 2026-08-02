@@ -2,9 +2,9 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, test } from "vitest";
 
-import type { ScanReport } from "../src/contracts/reports.js";
+import type { ScanReport, ScanReportV3 } from "../src/contracts/reports.js";
 import { reportIdentity } from "../src/publish/report-path.js";
-import { sanitizeReport } from "../src/publish/sanitize.js";
+import { sanitizeReport, sanitizeReportV3 } from "../src/publish/sanitize.js";
 
 async function validReport() {
   const raw = JSON.parse(
@@ -20,6 +20,44 @@ async function validReport() {
 }
 
 describe("public report sanitizer", () => {
+  test("accepts a complete V3 report with its canonical identity", async () => {
+    const raw = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    ) as Record<string, unknown>;
+    const report = {
+      ...raw,
+      report_id: reportIdentity(raw as never),
+    } as unknown as ScanReportV3;
+
+    expect(sanitizeReportV3(report)).toEqual(report);
+  });
+  test.each([
+    [
+      "model recap",
+      "model_review",
+      "Leaked token ghp_abcdefghijklmnopqrstuvwxyz1234567890AB",
+    ],
+    [
+      "tool signal",
+      "tool_results",
+      String.raw`Read C:\Users\operator\.config\secret`,
+    ],
+  ])("rejects unsafe V3 %s text", async (_label, field, value) => {
+    const raw = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    if (field === "model_review") raw.model_review.recap = value;
+    else raw.tool_results[1].signals[0].title = value;
+    const report = { ...raw, report_id: reportIdentity(raw) };
+
+    expect(() => sanitizeReportV3(report)).toThrow(/public report rejected/iu);
+  });
   test("accepts a complete schema-valid report with its canonical identity", async () => {
     const report = await validReport();
 

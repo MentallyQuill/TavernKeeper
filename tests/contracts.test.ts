@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   buildFindingCountsV2,
+  buildModelConcernCounts,
   deriveV2Result,
   deriveResult,
   parseReportIndex,
@@ -12,6 +13,7 @@ import {
   ReportIndexV2Schema,
   ScanReportSchema,
   ScanReportV2Schema,
+  ScanReportV3Schema,
 } from "../src/contracts/reports.js";
 import {
   parseTargetManifest,
@@ -180,6 +182,71 @@ const validIndexEntryV2 = {
 };
 
 describe("public contracts", () => {
+  test("accepts a strict V3 report with separate tool and model results", async () => {
+    const fixture = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+
+    expect(ScanReportV3Schema.parse(fixture)).toEqual(fixture);
+  });
+
+  test("derives V3 color and counts only from validated model concerns", async () => {
+    const report = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    const clean = {
+      ...report,
+      result: "teal",
+      finding_counts: buildModelConcernCounts([]),
+      coverage: {
+        ...report.coverage,
+        evidence_validation: { status: "completed", validated_findings: 0 },
+      },
+      model_review: {
+        assessment: "no_concerning_evidence",
+        recap:
+          "The complete eligible source corpus was reviewed and no review-level concern was identified.",
+        concerns: [],
+      },
+    };
+
+    expect(
+      ScanReportV3Schema.parse(clean).tool_results[1]!.signals,
+    ).toHaveLength(1);
+    expect(
+      ScanReportV3Schema.safeParse({ ...clean, result: "red" }).success,
+    ).toBe(false);
+    expect(
+      ScanReportV3Schema.safeParse({
+        ...report,
+        finding_counts: buildModelConcernCounts([]),
+      }).success,
+    ).toBe(false);
+  });
+
+  test("requires exact tool coverage and immutable submitted evidence locations", async () => {
+    const report = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    expect(
+      ScanReportV3Schema.safeParse({
+        ...report,
+        tool_results: report.tool_results.slice(1),
+      }).success,
+    ).toBe(false);
+    const changed = structuredClone(report);
+    changed.model_review.concerns[0].evidence[0].path = "src/other.ts";
+    expect(ScanReportV3Schema.safeParse(changed).success).toBe(false);
+  });
   test("derives red only from confirmed review-level findings", () => {
     expect(
       deriveV2Result([
