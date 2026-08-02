@@ -102,9 +102,7 @@ function configuredSpec(overrides: Partial<ConfiguredModelReviewSpec> = {}) {
     scannerPolicyVersion: "1",
     chunkReviewPolicy: "chunk-review-v2",
     synthesisPolicy: "repository-synthesis-v2",
-    maxOutputTokensPerChunkReview: 8_192,
     maxChunkReviewCharacters: 12_000,
-    maxOutputTokensForSynthesis: 8_192,
     cache: new InMemoryModelChunkCache(),
     requestTextCompletion: vi.fn(async (_request) =>
       completion("No review-level concern appears in this chunk.", "text-1"),

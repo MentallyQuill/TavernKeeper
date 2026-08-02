@@ -73,7 +73,7 @@ export interface SynthesizeRepositorySpec {
   promptPolicyVersion: string;
   scannerPolicyVersion: string;
   synthesisPolicy: string;
-  maxOutputTokens: number;
+  maxOutputTokens?: number;
   cache: ModelChunkCache;
   requestCompletion?: typeof requestStructuredCompletion;
   onProviderUsage?: (usage: ModelUsage) => void;
@@ -472,7 +472,9 @@ export async function synthesizeRepository(
       endpoint: spec.endpoint,
       apiKey: spec.apiKey,
       model: spec.model,
-      maxOutputTokens: spec.maxOutputTokens,
+      ...(spec.maxOutputTokens === undefined
+        ? {}
+        : { maxOutputTokens: spec.maxOutputTokens }),
       schemaName: "tavernkeeper_repository_synthesis",
       jsonSchema: repositorySynthesisJsonSchema,
       systemContent,

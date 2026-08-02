@@ -23,7 +23,7 @@ export type StructuredCompletionResult = ModelCompletionResult;
 interface CompletionRequest extends ProviderConnectivityRequest {
   systemContent: string;
   userContent: string;
-  maxOutputTokens: number;
+  maxOutputTokens?: number;
   maxResponseBytes?: number;
 }
 
@@ -42,7 +42,7 @@ export interface ProviderConnectivityRequest {
 }
 
 export interface TextCompletionRequest extends ProviderConnectivityRequest {
-  maxOutputTokens: number;
+  maxOutputTokens?: number;
   systemContent: string;
   userContent: string;
   maxResponseBytes?: number;
@@ -387,8 +387,9 @@ async function requestCompletion(
     apiKey === "" ||
     request.model.trim() === "" ||
     request.model.length > 200 ||
-    !Number.isInteger(request.maxOutputTokens) ||
-    request.maxOutputTokens < 1
+    (request.maxOutputTokens !== undefined &&
+      (!Number.isInteger(request.maxOutputTokens) ||
+        request.maxOutputTokens < 1))
   )
     throw new ModelRequestError(
       "MODEL_CONFIGURATION",
@@ -415,7 +416,9 @@ async function requestCompletion(
         ],
         stream: false,
         temperature: 0,
-        max_tokens: request.maxOutputTokens,
+        ...(request.maxOutputTokens === undefined
+          ? {}
+          : { max_tokens: request.maxOutputTokens }),
         ...(responseFormat === undefined
           ? {}
           : { response_format: responseFormat }),

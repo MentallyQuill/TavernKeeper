@@ -71,9 +71,9 @@ interface ValidatedConfiguration {
   tools: ToolState[];
   chunkReviewPolicy: string;
   synthesisPolicy: string;
-  maxOutputTokensPerChunkReview: number;
+  maxOutputTokensPerChunkReview?: number;
   maxChunkReviewCharacters: number;
-  maxOutputTokensForSynthesis: number;
+  maxOutputTokensForSynthesis?: number;
 }
 
 interface CacheCounts {
@@ -126,9 +126,11 @@ function validateSpec(spec: ConfiguredModelReviewSpec): ValidatedConfiguration {
     new Set(spec.projectKinds).size !== spec.projectKinds.length ||
     spec.promptPolicyVersion.trim() === "" ||
     spec.scannerPolicyVersion.trim() === "" ||
-    !positiveInteger(maxOutputTokensPerChunkReview) ||
+    (maxOutputTokensPerChunkReview !== undefined &&
+      !positiveInteger(maxOutputTokensPerChunkReview)) ||
     !positiveInteger(maxChunkReviewCharacters) ||
-    !positiveInteger(maxOutputTokensForSynthesis) ||
+    (maxOutputTokensForSynthesis !== undefined &&
+      !positiveInteger(maxOutputTokensForSynthesis)) ||
     new Set(spec.chunks.map(({ id }) => id)).size !== spec.chunks.length
   )
     throw new ModelRequestError(
@@ -181,9 +183,13 @@ function validateSpec(spec: ConfiguredModelReviewSpec): ValidatedConfiguration {
     synthesisPolicy:
       spec.synthesisPolicy ??
       `repository-synthesis:${spec.promptPolicyVersion}`,
-    maxOutputTokensPerChunkReview,
     maxChunkReviewCharacters,
-    maxOutputTokensForSynthesis,
+    ...(maxOutputTokensPerChunkReview === undefined
+      ? {}
+      : { maxOutputTokensPerChunkReview }),
+    ...(maxOutputTokensForSynthesis === undefined
+      ? {}
+      : { maxOutputTokensForSynthesis }),
   };
 }
 
@@ -207,7 +213,11 @@ async function completeOnce(
       promptPolicyVersion: spec.promptPolicyVersion,
       scannerPolicyVersion: spec.scannerPolicyVersion,
       chunkReviewPolicy: configured.chunkReviewPolicy,
-      maxOutputTokens: configured.maxOutputTokensPerChunkReview,
+      ...(configured.maxOutputTokensPerChunkReview === undefined
+        ? {}
+        : {
+            maxOutputTokens: configured.maxOutputTokensPerChunkReview,
+          }),
       maxCharacters: configured.maxChunkReviewCharacters,
       cache: spec.cache,
       ...(spec.requestTextCompletion === undefined
@@ -239,7 +249,9 @@ async function completeOnce(
     promptPolicyVersion: spec.promptPolicyVersion,
     scannerPolicyVersion: spec.scannerPolicyVersion,
     synthesisPolicy: configured.synthesisPolicy,
-    maxOutputTokens: configured.maxOutputTokensForSynthesis,
+    ...(configured.maxOutputTokensForSynthesis === undefined
+      ? {}
+      : { maxOutputTokens: configured.maxOutputTokensForSynthesis }),
     cache: spec.cache,
     ...(structuredRequest === undefined
       ? {}

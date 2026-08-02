@@ -17,7 +17,7 @@
 - Provider secrets may appear only on the `Check configured model provider` step.
 - Bearer success is the only passing result; `x-api-key` is attempted only after Bearer receives HTTP 401 or 403.
 - The provider response body, headers, endpoint, API key, model, and request body must never be logged.
-- The status request sends at most one output token; the repository-free structured request uses the same 8,192-token ceiling as a production role so it can reveal thinking-output exhaustion.
+- The status request sends at most one output token; the repository-free structured diagnostic uses a bounded 8,192-token allowance. Production repository review later moved to provider-managed output capacity after live thinking-model exhaustion proved a fixed ceiling unsuitable.
 
 ## Post-rollout compatibility amendment
 
@@ -26,7 +26,7 @@ The initial one-token check proved the rotated credential and Bearer header, but
 - [x] Add failing tests for output exhaustion, malformed JSON, analyzer-contract incompatibility, and diagnostic allowlisting.
 - [x] Split provider-envelope validation into safe, content-free response-stage diagnostics.
 - [x] Add a fixed, repository-free analyzer compatibility request after the one-token Bearer proof.
-- [x] Reuse the production analyzer schema, strict structured-output request, response parser, usage accounting, and 8,192-token per-role allowance.
+- [x] Reuse the production analyzer schema, strict structured-output request, response parser, and usage accounting; retain the diagnostic's bounded 8,192-token allowance independently of production repository output capacity.
 - [x] Run the full local gate, publish through PR review, run the protected compatibility action, and use its safe result to decide the Wandlight retry.
 
 The repository-free check passed for DeepSeek V4 Flash base, while Wandlight's first large analyzer request returned `MODEL_PROVIDER`. Before changing chunking or provider configuration, retain only the integer 400-599 HTTP status in the sanitized CLI diagnostic so the next retry distinguishes request rejection from upstream failure without exposing a response body.

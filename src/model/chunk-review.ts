@@ -38,7 +38,7 @@ export interface ReviewChunkSpec {
   promptPolicyVersion: string;
   scannerPolicyVersion: string;
   chunkReviewPolicy: string;
-  maxOutputTokens: number;
+  maxOutputTokens?: number;
   maxCharacters: number;
   cache: ModelChunkCache;
   requestCompletion?: typeof requestTextCompletion;
@@ -181,7 +181,9 @@ export async function reviewChunk(
       endpoint: spec.endpoint,
       apiKey: spec.apiKey,
       model: spec.model,
-      maxOutputTokens: spec.maxOutputTokens,
+      ...(spec.maxOutputTokens === undefined
+        ? {}
+        : { maxOutputTokens: spec.maxOutputTokens }),
       systemContent,
       userContent,
     });
