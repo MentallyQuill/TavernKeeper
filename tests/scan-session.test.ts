@@ -25,12 +25,21 @@ afterEach(async () => {
   );
 });
 
-async function preparedSession() {
+async function preparedSession({
+  content = "line\n".repeat(12),
+  chunkBytes = 524_288,
+  overlapBytes = 8_192,
+  findingLine = 1,
+}: {
+  content?: string;
+  chunkBytes?: number;
+  overlapBytes?: number;
+  findingLine?: number;
+} = {}) {
   const root = await mkdtemp(join(tmpdir(), "tavernkeeper-session-"));
   roots.push(root);
   await mkdir(join(root, "chunks"));
-  const content = "line\n".repeat(12);
-  const [chunk] = chunkCorpus(
+  const chunks = chunkCorpus(
     [
       {
         path: "src/index.ts",
@@ -41,13 +50,20 @@ async function preparedSession() {
       },
     ],
     {
-      chunkBytes: 524_288,
-      overlapBytes: 8_192,
+      chunkBytes,
+      overlapBytes,
       promptPolicyVersion: "1",
       scannerPolicyVersion: "1",
     },
   );
-  await writeFile(join(root, "chunks", "000000.json"), JSON.stringify(chunk));
+  await Promise.all(
+    chunks.map((chunk, index) =>
+      writeFile(
+        join(root, "chunks", `${index.toString().padStart(6, "0")}.json`),
+        JSON.stringify(chunk),
+      ),
+    ),
+  );
   const base = {
     schema_version: 2 as const,
     target: {
@@ -99,8 +115,8 @@ async function preparedSession() {
         severity: "high" as const,
         confidence: "high" as const,
         path: "src/index.ts",
-        line_start: 1,
-        line_end: 1,
+        line_start: findingLine,
+        line_end: findingLine,
         evidence_sha: null,
         title: "Credential access and network transmission in one file",
         explanation:
@@ -117,15 +133,13 @@ async function preparedSession() {
         sha256: "d".repeat(64),
       },
     ],
-    chunks: [
-      {
-        id: chunk!.id,
-        file: "chunks/000000.json",
-        bytes: chunk!.bytes,
-        content_hashes: chunk!.content_hashes,
-        paths: ["src/index.ts"],
-      },
-    ],
+    chunks: chunks.map((chunk, index) => ({
+      id: chunk.id,
+      file: `chunks/${index.toString().padStart(6, "0")}.json`,
+      bytes: chunk.bytes,
+      content_hashes: chunk.content_hashes,
+      paths: ["src/index.ts"],
+    })),
   };
   const prepared = PreparedSessionSchema.parse({
     ...base,
@@ -135,7 +149,7 @@ async function preparedSession() {
     join(root, "prepared.json"),
     `${JSON.stringify(prepared, null, 2)}\n`,
   );
-  return { root, prepared };
+  return { root, prepared, chunks };
 }
 
 function completionDouble(calls: string[]) {
@@ -185,6 +199,82 @@ function completionDouble(calls: string[]) {
 }
 
 describe("ephemeral split scan session", () => {
+  test("binds a later-file finding to the chunk containing its exact line", async () => {
+    const { root, prepared, chunks } = await preparedSession({
+      content: Array.from(
+        { length: 12 },
+        (_, index) => `line-${String(index + 1).padStart(2, "0")}\n`,
+      ).join(""),
+      chunkBytes: 32,
+      overlapBytes: 0,
+      findingLine: 10,
+    });
+    expect(chunks.length).toBeGreaterThan(1);
+    const containingChunk = chunks.find((chunk) =>
+      chunk.segments.some(
+        (segment) => segment.line_start <= 10 && segment.line_end >= 10,
+      ),
+    );
+    expect(containingChunk).toBeDefined();
+    const observedEvidence: unknown[] = [];
+    const calls: string[] = [];
+    const completion = completionDouble(calls);
+    const policy = await loadScannerPolicy(
+      fileURLToPath(
+        new URL("../config/scanner-policy.v1.json", import.meta.url),
+      ),
+    );
+
+    await reviewPreparedSession({
+      sessionRoot: root,
+      manifest: {
+        schema_version: 2,
+        generated_at: "2026-07-31T15:30:00.000Z",
+        repositories: [
+          {
+            ...prepared.target,
+            project_kinds: ["extension"],
+            catalog_priority: {
+              top_30: false,
+              first_cataloged_at: "2026-07-01T00:00:00.000Z",
+            },
+          },
+        ],
+      },
+      endpoint: "https://provider.example/v1/chat/completions",
+      apiKey: "test-key",
+      model: "vendor/model-test",
+      policy,
+      cache: new InMemoryModelChunkCache(),
+      requestCompletion: (async (request: {
+        schemaName: string;
+        userContent: string;
+      }) => {
+        if (request.schemaName.endsWith("analyzer")) {
+          const input = JSON.parse(request.userContent) as any;
+          observedEvidence.push(
+            ...input.deterministic_findings.map(
+              (finding: any) => finding.evidence,
+            ),
+          );
+        }
+        return completion(request);
+      }) as never,
+      verifyHead: async () => ({ ok: true, value: targetSha }),
+    });
+
+    expect(observedEvidence).toEqual([
+      expect.objectContaining({
+        path: "src/index.ts",
+        line_start: 10,
+        line_end: 10,
+        segment_id: containingChunk!.id,
+        content_digest: containingChunk!.segments[0]!.content_hash,
+        target_sha: targetSha,
+      }),
+    ]);
+  });
+
   test("streams every chunk through model review and finalizes a complete candidate", async () => {
     const { root, prepared } = await preparedSession();
     const calls: string[] = [];

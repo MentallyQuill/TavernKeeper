@@ -202,6 +202,15 @@ export class ScanPhaseError extends Error {
   }
 }
 
+function chunkContainsFinding(chunk: ModelChunk, finding: Finding) {
+  return chunk.segments.some((segment) => {
+    if (segment.path !== finding.path) return false;
+    if (finding.line_start === null) return finding.line_end === null;
+    const end = finding.line_end ?? finding.line_start;
+    return finding.line_start >= segment.line_start && end <= segment.line_end;
+  });
+}
+
 const ModelUsageSchema = z.strictObject({
   inputTokens: NonNegativeIntegerSchema,
   outputTokens: NonNegativeIntegerSchema,
@@ -692,13 +701,19 @@ export async function reviewPreparedSession({
 
   for (let position = 0; position < prepared.chunks.length; position += 1) {
     const chunk = await loadChunk(sessionRoot, prepared, position);
-    const paths = new Set(chunk.segments.map(({ path }) => path));
     const assigned = [...remaining.values()].filter((finding) =>
-      paths.has(finding.path),
+      chunkContainsFinding(chunk, finding),
     );
     assigned.forEach(({ fingerprint }) => remaining.delete(fingerprint));
     await reviewUnit([chunk], assigned);
     completedChunkIds.push(chunk.id);
+  }
+  if ([...remaining.values()].some(({ line_start }) => line_start !== null)) {
+    throw new ScanPhaseError(
+      "MODEL_EVIDENCE_INVALID",
+      "repository",
+      "A line-bounded deterministic finding has no matching model segment.",
+    );
   }
   if (prepared.chunks.length === 0 || remaining.size > 0) {
     await reviewUnit([], [...remaining.values()]);
