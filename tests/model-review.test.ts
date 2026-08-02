@@ -36,7 +36,7 @@ describe("OpenAI-compatible client", () => {
       "https://nano-gpt.com/api/subscription/v1/chat/completions";
     const result = await requestStructuredCompletion({
       endpoint,
-      apiKey: "test-key",
+      apiKey: " \r\ntest-key\n ",
       model: "deepseek/deepseek-v4-flash",
       systemContent: "System",
       userContent: "User",
@@ -49,7 +49,11 @@ describe("OpenAI-compatible client", () => {
 
     expect(fetchImpl).toHaveBeenCalledWith(
       endpoint,
-      expect.objectContaining({ method: "POST", redirect: "manual" }),
+      expect.objectContaining({
+        method: "POST",
+        redirect: "manual",
+        headers: expect.objectContaining({ Authorization: "Bearer test-key" }),
+      }),
     );
     const request = fetchImpl.mock.calls[0]?.[1] as RequestInit;
     expect(JSON.parse(String(request.body))).toMatchObject({

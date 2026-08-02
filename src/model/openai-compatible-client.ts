@@ -216,8 +216,9 @@ export async function requestStructuredCompletion(
   request: StructuredCompletionRequest,
 ): Promise<StructuredCompletionResult> {
   const endpoint = validateModelEndpoint(request.endpoint);
+  const apiKey = request.apiKey.trim();
   if (
-    request.apiKey.trim() === "" ||
+    apiKey === "" ||
     request.model.trim() === "" ||
     request.model.length > 200 ||
     !Number.isInteger(request.maxOutputTokens) ||
@@ -256,7 +257,7 @@ export async function requestStructuredCompletion(
       redirect: "manual",
       signal: AbortSignal.timeout(request.timeoutMs ?? 600_000),
       headers: {
-        Authorization: `Bearer ${request.apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
