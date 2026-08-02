@@ -4,7 +4,6 @@ import {
   buildModelConcernCounts,
   deriveV3Result,
   FindingSchema,
-  ScanReportV3Schema,
   type Finding,
   type ScanMode,
   type ScanReportV3,
@@ -40,6 +39,7 @@ import type { ValidatedRepositorySynthesis } from "../model/repository-synthesis
 import { buildEvidenceManifest } from "../model/evidence-manifest.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { reportIdentity } from "../publish/report-path.js";
+import { sanitizeReportV3 } from "../publish/sanitize.js";
 import {
   runApplicableScanners,
   type ApplicableScannerSpec,
@@ -370,7 +370,7 @@ function validateModelCoverage({
     );
 }
 
-export function projectV3ReportSections(
+function projectV3ReportSections(
   tools: Array<{
     name: string;
     version: string;
@@ -446,6 +446,72 @@ export function projectV3ReportSections(
   return { tool_results, model_review };
 }
 
+type V3IdentityBody = Pick<
+  ScanReportV3,
+  | "report_version"
+  | "supersedes_report_id"
+  | "scanner_version"
+  | "scanner_policy_version"
+  | "prompt_policy_version"
+  | "source_id"
+  | "provider"
+  | "repository_id"
+  | "repository"
+  | "canonical_url"
+  | "target_sha"
+  | "completed_at"
+  | "mode"
+>;
+
+export function assembleAndSanitizeReportV3({
+  identity,
+  history,
+  inventory,
+  tools,
+  model,
+  chunks,
+  deterministicFindings,
+  synthesis,
+}: {
+  identity: V3IdentityBody;
+  history: ScanReportV3["history"];
+  inventory: ScanReportV3["coverage"]["inventory"];
+  tools: ScanReportV3["coverage"]["tools"];
+  model: ScanReportV3["coverage"]["model"];
+  chunks: readonly ModelChunk[];
+  deterministicFindings: readonly Finding[];
+  synthesis: ValidatedRepositorySynthesis;
+}) {
+  const sections = projectV3ReportSections(
+    tools,
+    chunks,
+    deterministicFindings,
+    synthesis,
+    identity.target_sha,
+  );
+  const withoutId: Omit<ScanReportV3, "report_id"> = {
+    schema_version: 3,
+    ...identity,
+    history,
+    coverage: {
+      inventory,
+      tools,
+      model,
+      evidence_validation: {
+        status: "completed",
+        validated_findings: sections.model_review.concerns.length,
+      },
+    },
+    result: deriveV3Result(sections.model_review),
+    finding_counts: buildModelConcernCounts(sections.model_review.concerns),
+    ...sections,
+  };
+  return sanitizeReportV3({
+    ...withoutId,
+    report_id: reportIdentity(withoutId),
+  });
+}
+
 function buildReport({
   spec,
   inventory,
@@ -476,70 +542,54 @@ function buildReport({
     })),
   ];
   const deterministicFindings = scannerRuns.flatMap(({ findings }) => findings);
-  const sections = projectV3ReportSections(
-    tools,
-    chunks,
-    deterministicFindings,
-    model.synthesis,
-    spec.target.target_sha,
-  );
   const eligibleTextBytes = classification.modelEligible.reduce(
     (total, file) => total + file.bytes,
     0,
   );
-  const withoutId: Omit<ScanReportV3, "report_id"> = {
-    schema_version: 3,
-    report_version: spec.reportVersion,
-    supersedes_report_id: spec.supersedesReportId,
-    scanner_version: spec.scannerVersion,
-    scanner_policy_version: spec.scannerPolicyVersion,
-    prompt_policy_version: spec.promptPolicyVersion,
-    source_id: spec.target.source_id,
-    provider: "github",
-    repository_id: spec.target.repository_id,
-    repository: spec.target.repository,
-    canonical_url: spec.target.canonical_url,
-    target_sha: spec.target.target_sha,
-    completed_at: spec.completedAt,
-    mode: spec.mode,
+  return assembleAndSanitizeReportV3({
+    identity: {
+      report_version: spec.reportVersion,
+      supersedes_report_id: spec.supersedesReportId,
+      scanner_version: spec.scannerVersion,
+      scanner_policy_version: spec.scannerPolicyVersion,
+      prompt_policy_version: spec.promptPolicyVersion,
+      source_id: spec.target.source_id,
+      provider: "github",
+      repository_id: spec.target.repository_id,
+      repository: spec.target.repository,
+      canonical_url: spec.target.canonical_url,
+      target_sha: spec.target.target_sha,
+      completed_at: spec.completedAt,
+      mode: spec.mode,
+    },
     history: {
       base_sha: history.value.baseSha,
       commits: history.value.historyCommits,
     },
-    coverage: {
-      inventory: {
-        files: inventory.totals.files,
-        bytes: inventory.totals.bytes,
-        eligible_text_files: classification.modelEligible.length,
-        eligible_text_bytes: eligibleTextBytes,
-        excluded: classification.excluded,
-      },
-      tools,
-      model: {
-        status: "completed",
-        endpoint_origin: model.endpointOrigin,
-        provider: model.provider,
-        model: model.model,
-        input_chunks: chunks.length,
-        completed_chunks: model.completedChunkIds.length,
-        input_tokens: model.usage.inputTokens,
-        output_tokens: model.usage.outputTokens,
-        cache_read_tokens: model.usage.cacheReadTokens,
-        reasoning_tokens: model.usage.reasoningTokens,
-        total_tokens: model.usage.inputTokens + model.usage.outputTokens,
-      },
-      evidence_validation: {
-        status: "completed",
-        validated_findings: sections.model_review.concerns.length,
-      },
+    inventory: {
+      files: inventory.totals.files,
+      bytes: inventory.totals.bytes,
+      eligible_text_files: classification.modelEligible.length,
+      eligible_text_bytes: eligibleTextBytes,
+      excluded: classification.excluded,
     },
-    result: deriveV3Result(sections.model_review),
-    finding_counts: buildModelConcernCounts(sections.model_review.concerns),
-    ...sections,
-  };
-  return ScanReportV3Schema.parse({
-    ...withoutId,
-    report_id: reportIdentity(withoutId),
+    tools,
+    model: {
+      status: "completed",
+      endpoint_origin: model.endpointOrigin,
+      provider: model.provider,
+      model: model.model,
+      input_chunks: chunks.length,
+      completed_chunks: model.completedChunkIds.length,
+      input_tokens: model.usage.inputTokens,
+      output_tokens: model.usage.outputTokens,
+      cache_read_tokens: model.usage.cacheReadTokens,
+      reasoning_tokens: model.usage.reasoningTokens,
+      total_tokens: model.usage.inputTokens + model.usage.outputTokens,
+    },
+    chunks,
+    deterministicFindings,
+    synthesis: model.synthesis,
   });
 }
 

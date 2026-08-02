@@ -58,6 +58,40 @@ describe("public report sanitizer", () => {
 
     expect(() => sanitizeReportV3(report)).toThrow(/public report rejected/iu);
   });
+  test.each([
+    '<img src=x onerror="alert(1)">',
+    "<svg><animate onbegin=alert(1) /></svg>",
+    '<div onclick="steal()">click</div>',
+    "<script>alert(1)</script>",
+  ])("rejects unsafe V3 HTML or event-handler content: %s", async (value) => {
+    const raw = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    raw.model_review.recap = value;
+
+    expect(() =>
+      sanitizeReportV3({ ...raw, report_id: reportIdentity(raw) }),
+    ).toThrow(/public report rejected/iu);
+  });
+
+  test("allows ordinary comparison prose in V3 narratives", async () => {
+    const raw = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+    raw.model_review.recap =
+      "Version 2 is less than version 3, while version 4 is greater than version 3.";
+    const report = { ...raw, report_id: reportIdentity(raw) };
+
+    expect(sanitizeReportV3(report).model_review.recap).toBe(
+      raw.model_review.recap,
+    );
+  });
   test("accepts a complete schema-valid report with its canonical identity", async () => {
     const report = await validReport();
 

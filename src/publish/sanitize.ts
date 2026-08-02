@@ -30,6 +30,7 @@ const SOURCE_SHAPED = [
   /\b(?:import|export)\s+(?:\{|\*|default\b|[A-Za-z_$])/u,
   /=>/u,
 ];
+const UNSAFE_HTML = [/<\/?[A-Za-z][^>]*>/u, /\bon[a-z][a-z0-9_-]*\s*=/iu];
 const SAFETY_CLAIM = [
   /\b(?:repository|project|code|package|extension|plugin)\b.{0,48}\b(?:safe|trusted|certified|verified)\b/iu,
   /\b(?:safe|trusted|certified|verified)\b.{0,48}\b(?:repository|project|code|package|extension|plugin)\b/iu,
@@ -83,6 +84,8 @@ function inspectString(value: string, path: string[]) {
     reject(`${field} contains secret-shaped output.`);
   if (narrative && SOURCE_SHAPED.some((pattern) => pattern.test(value)))
     reject(`${field} contains a source excerpt.`);
+  if (narrative && UNSAFE_HTML.some((pattern) => pattern.test(value)))
+    reject(`${field} contains unsafe HTML.`);
   if (narrative && SAFETY_CLAIM.some((pattern) => pattern.test(value)))
     reject(`${field} contains a safety claim.`);
 }

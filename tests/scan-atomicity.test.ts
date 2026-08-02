@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { ScannerPolicy } from "../src/config/policy.js";
-import { ScanReportV2Schema } from "../src/contracts/reports.js";
+import { ScanReportV3Schema } from "../src/contracts/reports.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
 import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
 import { ModelRequestError } from "../src/model/openai-compatible-client.js";
@@ -213,8 +213,48 @@ describe("atomic repository scan", () => {
       },
     });
     expect(
-      result.ok && ScanReportV2Schema.safeParse(result.value.report).success,
+      result.ok && ScanReportV3Schema.safeParse(result.value.report).success,
     ).toBe(true);
+    expect(result.ok && result.value.report.tool_results).toEqual([
+      { name: "inventory", version: "1.0.0", status: "completed", signals: [] },
+      ...scannerRuns.map(({ name, version, status }) => ({
+        name,
+        version,
+        status,
+        signals: [],
+      })),
+    ]);
+    expect(result.ok && result.value.report.model_review).toEqual({
+      assessment: "no_concerning_evidence",
+      recap: "The completed review found no review-level concern.",
+      concerns: [],
+    });
+    expect(result.ok && result.value.report.finding_counts).toMatchObject({
+      total: 0,
+      actionable: 0,
+      disposition: { confirmed: 0, not_supported: 0, inconclusive: 0 },
+    });
+  });
+
+  test("rejects unsafe synthesized public content before returning a direct candidate", async () => {
+    const unsafeDependencies = dependencies();
+    const review = unsafeDependencies.review;
+    unsafeDependencies.review = async (reviewSpec) => ({
+      ...(await review(reviewSpec)),
+      synthesis: {
+        assessment: "no_concerning_evidence" as const,
+        recap: '<img src=x onerror="alert(1)">',
+        concerns: [],
+      },
+    });
+
+    const result = await scanRepository(spec(), unsafeDependencies);
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: "REPORT_INVALID", scope: "system" },
+    });
+    expect("value" in result).toBe(false);
   });
 
   test("canonicalizes scanner coverage order", async () => {

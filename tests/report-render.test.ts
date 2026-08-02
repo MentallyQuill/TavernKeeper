@@ -17,14 +17,14 @@ async function reportWithHostileText() {
   };
   modelReview.concerns[0] = {
     ...modelReview.concerns[0],
-    title: '<img src=x onerror="alert(1)"> suspicious markup',
+    title: 'Comparison: 2 < 3 & "quoted" > baseline',
   };
   const report = { ...raw, model_review: modelReview };
   return { ...report, report_id: reportIdentity(report as never) };
 }
 
 describe("static report rendering", () => {
-  test("escapes hostile values and emits script-free restrictive HTML", async () => {
+  test("escapes accepted special characters and emits script-free restrictive HTML", async () => {
     const html = renderReportHtml(await reportWithHostileText());
 
     expect(html).toContain("Content-Security-Policy");
@@ -32,7 +32,9 @@ describe("static report rendering", () => {
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/<img\b/iu);
     expect(html).not.toMatch(/<[^>]+\sonerror\s*=/iu);
-    expect(html).toContain("&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+    expect(html).toContain(
+      "Comparison: 2 &lt; 3 &amp; &quot;quoted&quot; &gt; baseline",
+    );
     expect(html).toContain("not a safety certification");
   });
 

@@ -13,8 +13,6 @@ import { z } from "zod";
 
 import type { ScannerPins, ScannerPolicy } from "../config/policy.js";
 import {
-  buildModelConcernCounts,
-  deriveV3Result,
   FindingSchema,
   ScanModeSchema,
   ScanReportV3Schema,
@@ -42,8 +40,6 @@ import {
 } from "../model/openai-compatible-client.js";
 import { validateRepositorySynthesis } from "../model/repository-synthesis.js";
 import { RepositorySynthesisSchema } from "../model/review-contracts.js";
-import { reportIdentity } from "../publish/report-path.js";
-import { sanitizeReportV3 } from "../publish/sanitize.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import {
   runApplicableScanners,
@@ -53,7 +49,7 @@ import {
   canonicalScannerRuns,
   classificationIsConsistent,
   inventoryIsConsistent,
-  projectV3ReportSections,
+  assembleAndSanitizeReportV3,
   scanStructuralFiles,
   validateChunkCoverage,
   validateScannerRuns,
@@ -762,57 +758,41 @@ export async function finalizePreparedSession({
         prepared.target.target_sha,
       ),
     ).validated;
-    const sections = projectV3ReportSections(
-      prepared.tools,
-      chunks,
-      prepared.deterministic_findings,
-      validatedSynthesis,
-      prepared.target.target_sha,
-    );
-    const reportWithoutIdentity = {
-      schema_version: 3 as const,
-      report_version: prepared.report_version,
-      supersedes_report_id: prepared.supersedes_report_id,
-      scanner_version: prepared.scanner_version,
-      scanner_policy_version: prepared.scanner_policy_version,
-      prompt_policy_version: prepared.prompt_policy_version,
-      source_id: prepared.target.source_id,
-      provider: prepared.target.provider,
-      repository_id: prepared.target.repository_id,
-      repository: prepared.target.repository,
-      canonical_url: prepared.target.canonical_url,
-      target_sha: prepared.target.target_sha,
-      completed_at: completedAt,
-      mode: prepared.mode,
-      history: prepared.history,
-      coverage: {
-        inventory: prepared.inventory,
-        tools: prepared.tools,
-        model: {
-          status: "completed" as const,
-          endpoint_origin: review.endpoint_origin,
-          provider: review.provider,
-          model: review.model,
-          input_chunks: expectedChunkIds.length,
-          completed_chunks: review.completed_chunk_ids.length,
-          input_tokens: review.usage.inputTokens,
-          output_tokens: review.usage.outputTokens,
-          cache_read_tokens: review.usage.cacheReadTokens,
-          reasoning_tokens: review.usage.reasoningTokens,
-          total_tokens: review.usage.inputTokens + review.usage.outputTokens,
-        },
-        evidence_validation: {
-          status: "completed" as const,
-          validated_findings: sections.model_review.concerns.length,
-        },
+    const report = assembleAndSanitizeReportV3({
+      identity: {
+        report_version: prepared.report_version,
+        supersedes_report_id: prepared.supersedes_report_id,
+        scanner_version: prepared.scanner_version,
+        scanner_policy_version: prepared.scanner_policy_version,
+        prompt_policy_version: prepared.prompt_policy_version,
+        source_id: prepared.target.source_id,
+        provider: prepared.target.provider,
+        repository_id: prepared.target.repository_id,
+        repository: prepared.target.repository,
+        canonical_url: prepared.target.canonical_url,
+        target_sha: prepared.target.target_sha,
+        completed_at: completedAt,
+        mode: prepared.mode,
       },
-      result: deriveV3Result(sections.model_review),
-      finding_counts: buildModelConcernCounts(sections.model_review.concerns),
-      ...sections,
-    };
-    const report = sanitizeReportV3({
-      ...reportWithoutIdentity,
-      report_id: reportIdentity(reportWithoutIdentity),
+      history: prepared.history,
+      inventory: prepared.inventory,
+      tools: prepared.tools,
+      model: {
+        status: "completed",
+        endpoint_origin: review.endpoint_origin,
+        provider: review.provider,
+        model: review.model,
+        input_chunks: expectedChunkIds.length,
+        completed_chunks: review.completed_chunk_ids.length,
+        input_tokens: review.usage.inputTokens,
+        output_tokens: review.usage.outputTokens,
+        cache_read_tokens: review.usage.cacheReadTokens,
+        reasoning_tokens: review.usage.reasoningTokens,
+        total_tokens: review.usage.inputTokens + review.usage.outputTokens,
+      },
+      chunks,
+      deterministicFindings: prepared.deterministic_findings,
+      synthesis: validatedSynthesis,
     });
     const candidate = { report };
     await writeExclusive(destination, candidate);

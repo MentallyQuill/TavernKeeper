@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
 
 import { loadScannerPolicy } from "../src/config/policy.js";
-import { ScanReportV2Schema } from "../src/contracts/reports.js";
+import { ScanReportV3Schema } from "../src/contracts/reports.js";
 import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
 import { chunkCorpus } from "../src/model/chunker.js";
 import {
@@ -306,12 +306,90 @@ describe("ephemeral split scan session", () => {
     expect(finalized.status).toBe("completed");
     expect(
       finalized.status === "completed" &&
-        ScanReportV2Schema.safeParse(finalized.candidate.report).success,
+        ScanReportV3Schema.safeParse(finalized.candidate.report).success,
     ).toBe(true);
+    if (finalized.status !== "completed")
+      throw new Error("Expected candidate.");
+    expect(finalized.candidate.report).toMatchObject({
+      result: "teal",
+      model_review: {
+        assessment: "no_concerning_evidence",
+        recap: "The completed review found no review-level concern.",
+        concerns: [],
+      },
+      finding_counts: {
+        total: 0,
+        actionable: 0,
+        disposition: { confirmed: 0, not_supported: 0, inconclusive: 0 },
+      },
+      tool_results: expect.arrayContaining([
+        expect.objectContaining({
+          name: "tavernkeeper-static",
+          status: "completed",
+          signals: [
+            expect.objectContaining({ rule_id: "credential-exfiltration" }),
+          ],
+        }),
+      ]),
+    });
     await expect(readFile(join(root, "prepared.json"))).rejects.toMatchObject({
       code: "ENOENT",
     });
     await rm(output, { force: true });
+  });
+
+  test("rejects unsafe public synthesis while finalizing a prepared candidate", async () => {
+    const { root, prepared } = await preparedSession();
+    const calls: string[] = [];
+    const completions = completionDoubles(calls);
+    const policy = await loadScannerPolicy(
+      fileURLToPath(
+        new URL("../config/scanner-policy.v1.json", import.meta.url),
+      ),
+    );
+    const review = await reviewPreparedSession({
+      sessionRoot: root,
+      manifest: {
+        schema_version: 2,
+        generated_at: "2026-07-31T15:30:00.000Z",
+        repositories: [
+          {
+            ...prepared.target,
+            project_kinds: ["extension"],
+            catalog_priority: {
+              top_30: false,
+              first_cataloged_at: "2026-07-01T00:00:00.000Z",
+            },
+          },
+        ],
+      },
+      endpoint: "https://provider.example/v1/chat/completions",
+      apiKey: "test-key",
+      model: "vendor/model-test",
+      policy,
+      cache: new InMemoryModelChunkCache(),
+      requestTextCompletion: completions.text as never,
+      requestStructuredCompletion: (async () => ({
+        ...(await completions.structured()),
+        content: JSON.stringify({
+          assessment: "no_concerning_evidence",
+          recap: '<img src=x onerror="alert(1)">',
+          concerns: [],
+        }),
+      })) as never,
+      verifyHead: async () => ({ ok: true, value: targetSha }),
+    });
+    const output = join(root, "..", `unsafe-candidate-${Date.now()}.json`);
+
+    await expect(
+      finalizePreparedSession({
+        sessionRoot: root,
+        review,
+        output,
+        completedAt: "2026-07-31T16:00:00.000Z",
+      }),
+    ).rejects.toThrow(/public report rejected/iu);
+    await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   test("finishes the exact prepared SHA when Tavernary has already advanced", async () => {
