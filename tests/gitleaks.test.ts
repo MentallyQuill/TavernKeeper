@@ -20,6 +20,8 @@ class GitleaksRunner implements CommandRunner {
     [];
   reportsAfterRun: string[] = [];
 
+  constructor(private readonly file = "src/index.ts") {}
+
   async run(
     command: string,
     args: string[],
@@ -34,7 +36,7 @@ class GitleaksRunner implements CommandRunner {
         {
           RuleID: "generic-api-key",
           Description: `Found ${seedSecret}`,
-          File: "src/index.ts",
+          File: this.file,
           StartLine: 4,
           EndLine: 4,
           Commit: args[0] === "git" ? fullSha : "",
@@ -127,5 +129,26 @@ describe("Gitleaks adapter", () => {
     expect(runner.calls[1]?.args).toContain(
       `--log-opts=--no-merges -n 7 ${fullSha}`,
     );
+  });
+
+  test("normalizes absolute findings beneath the trusted checkout root", async () => {
+    const runner = new GitleaksRunner("C:/scan/repository/src/nested/index.ts");
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-gitleaks-test-"),
+    );
+
+    const run = await runGitleaks({
+      root: "C:/scan/repository",
+      history: { baseSha: null, targetSha: fullSha, commits: 7 },
+      runner,
+      executable: "C:/trusted/gitleaks",
+      version: "8.30.1",
+      temporaryRoot,
+    });
+
+    expect(run.findings.map(({ path }) => path)).toEqual([
+      "src/nested/index.ts",
+      "src/nested/index.ts",
+    ]);
   });
 });

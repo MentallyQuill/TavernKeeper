@@ -77,11 +77,16 @@ function scannerArgs(
   ];
 }
 
-function normalizePath(value: string) {
-  return value.replaceAll("\\", "/").replace(/^\.\//u, "");
+function normalizePath(value: string, root: string) {
+  const normalized = value.replaceAll("\\", "/").replace(/^\.\//u, "");
+  const normalizedRoot = root.replaceAll("\\", "/").replace(/\/+$/u, "");
+  const rootPrefix = `${normalizedRoot}/`;
+  return normalized.startsWith(rootPrefix)
+    ? normalized.slice(rootPrefix.length)
+    : normalized;
 }
 
-async function parseReport(reportPath: string) {
+async function parseReport(reportPath: string, root: string) {
   let parsed: z.infer<typeof GitleaksReportSchema>;
   try {
     parsed = GitleaksReportSchema.parse(
@@ -107,7 +112,7 @@ async function parseReport(reportPath: string) {
         category: "credential-exposure",
         severity: "high",
         confidence: "high",
-        path: normalizePath(value.File),
+        path: normalizePath(value.File, root),
         lineStart: value.StartLine,
         lineEnd: value.EndLine ?? value.StartLine,
         evidenceSha: commit,
@@ -166,7 +171,7 @@ async function invokeGitleaks({
       `Gitleaks exited with code ${result.value.exitCode}.`,
       "gitleaks",
     );
-  return parseReport(reportPath);
+  return parseReport(reportPath, root);
 }
 
 export async function runGitleaks({
