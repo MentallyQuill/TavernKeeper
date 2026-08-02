@@ -197,6 +197,11 @@ function workflowSecretReferences(workflow) {
   return references;
 }
 
+function workflowCallSecretDeclarations(workflow) {
+  const events = workflow.on ?? workflow.true ?? {};
+  return Object.keys(events.workflow_call?.secrets ?? {});
+}
+
 function normalized(value) {
   if (value === undefined) return undefined;
   if (value === null || typeof value !== "object" || Array.isArray(value))
@@ -261,6 +266,10 @@ function checkPins(file, workflow) {
 }
 
 function checkSecretPlacement(file, workflow) {
+  for (const name of workflowCallSecretDeclarations(workflow))
+    if (!approvedWorkflowSecretNames.has(name))
+      fail(file, `unapproved workflow secret ${name}`);
+
   const references = workflowSecretReferences(workflow);
   for (const { name, path } of references) {
     if (!approvedWorkflowSecretNames.has(name)) {

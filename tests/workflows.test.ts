@@ -426,6 +426,17 @@ describe("least-privilege GitHub Actions orchestration", () => {
     );
   });
 
+  test("workflow policy rejects declaration-only unapproved provider secrets", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  workflow_call:\n    inputs:\n",
+          "  workflow_call:\n    secrets:\n      TAVERNKEEPER_BACKUP_API_KEY:\n        required: false\n    inputs:\n",
+        ),
+      /unapproved workflow secret TAVERNKEEPER_BACKUP_API_KEY/u,
+    );
+  });
+
   test("workflow policy rejects plaintext scan artifact uploads", async () => {
     await expectPolicyFailure(
       (text) => text.replace("path: outcome.enc", "path: candidate.json"),
