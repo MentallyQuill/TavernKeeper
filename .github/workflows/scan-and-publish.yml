@@ -34,6 +34,61 @@ jobs:
       matrix:
         request: ${{ fromJSON(inputs.requests_json) }}
     steps:
+      - name: Initialize encrypted bootstrap failure
+        env:
+          TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
+        shell: bash
+        run: |
+          node <<'NODE'
+          const { createCipheriv, randomBytes } = require("node:crypto");
+          const { writeFileSync } = require("node:fs");
+
+          const request = JSON.parse(process.env.TAVERNKEEPER_SCAN_REQUEST);
+          const target = Object.fromEntries(
+            [
+              "source_id",
+              "provider",
+              "repository_id",
+              "repository",
+              "target_sha",
+              "canonical_url",
+            ].map((key) => [key, request[key]]),
+          );
+          const payload = {
+            schema_version: 1,
+            candidate: null,
+            transition: {
+              schema_version: 1,
+              status: "failure",
+              target,
+              code: "SCAN_BOOTSTRAP_FAILED",
+              scope: "system",
+              at: new Date().toISOString(),
+            },
+          };
+          const encodedKey = process.env.TAVERNKEEPER_ARTIFACT_KEY;
+          if (!/^[A-Za-z0-9+/]{43}=$/.test(encodedKey)) {
+            throw new Error("Artifact encryption key is invalid.");
+          }
+          const key = Buffer.from(encodedKey, "base64");
+          if (key.length !== 32) {
+            throw new Error("Artifact encryption key is invalid.");
+          }
+          const magic = Buffer.from("TKAT1", "ascii");
+          const nonce = randomBytes(12);
+          const cipher = createCipheriv("aes-256-gcm", key, nonce);
+          cipher.setAAD(magic);
+          const ciphertext = Buffer.concat([
+            cipher.update(Buffer.from(JSON.stringify(payload), "utf8")),
+            cipher.final(),
+          ]);
+          writeFileSync(
+            "outcome.enc",
+            Buffer.concat([magic, nonce, cipher.getAuthTag(), ciphertext]),
+            { flag: "wx" },
+          );
+          NODE
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -101,7 +156,10 @@ jobs:
         if: always()
         env:
           TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
-        run: npm run --silent artifact-transport -- encrypt outcome.enc candidate.json transition.json
+        shell: bash
+        run: |
+          npm run --silent artifact-transport -- encrypt outcome-actual.enc candidate.json transition.json
+          mv outcome-actual.enc outcome.enc
       - name: Remove plaintext handoff files
         if: always()
         shell: bash

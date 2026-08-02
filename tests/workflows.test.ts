@@ -177,10 +177,43 @@ describe("least-privilege GitHub Actions orchestration", () => {
       /candidate\.json|transition\.json/u,
     );
     expect(transportKeySteps.map((step) => step.name)).toEqual([
+      "Initialize encrypted bootstrap failure",
       "Encrypt sanitized outcome",
       "Decrypt sanitized outcomes",
     ]);
     expect(JSON.stringify(transportKeySteps)).not.toMatch(/GITHUB_OUTPUT/iu);
+  });
+
+  test("creates an encrypted retry transition before fallible scan setup", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const steps = value.jobs.scan.steps as Workflow[];
+    const bootstrap = steps[0];
+    const checkoutIndex = steps.findIndex((step) =>
+      String(step.uses).startsWith("actions/checkout@"),
+    );
+    const encrypt = steps.find(
+      (step) => step.name === "Encrypt sanitized outcome",
+    );
+    const upload = steps.find((step) =>
+      String(step.uses).startsWith("actions/upload-artifact@"),
+    );
+
+    expect(bootstrap).toMatchObject({
+      name: "Initialize encrypted bootstrap failure",
+      env: {
+        TAVERNKEEPER_ARTIFACT_KEY: "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}",
+        TAVERNKEEPER_SCAN_REQUEST: "${{ toJSON(matrix.request) }}",
+      },
+    });
+    expect(checkoutIndex).toBeGreaterThan(0);
+    expect(String(bootstrap?.run)).toMatch(
+      /SCAN_BOOTSTRAP_FAILED|outcome\.enc|aes-256-gcm/u,
+    );
+    expect(encrypt?.if).toBe("always()");
+    expect(String(encrypt?.run)).toMatch(
+      /outcome-actual\.enc[\s\S]*mv outcome-actual\.enc outcome\.enc/u,
+    );
+    expect(upload?.if).toBe("always()");
   });
 
   test("the Publisher App token has one reviewed consumer", async () => {

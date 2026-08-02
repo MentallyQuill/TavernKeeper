@@ -9,6 +9,7 @@ const failures = [];
 const publisherAction =
   "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
 const publisherToken = "${{ steps.publisher-token.outputs.token }}";
+const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
   "deep-scan.yml": ["workflow_dispatch"],
@@ -237,9 +238,11 @@ function checkSecretPlacement(file, workflow) {
       : undefined;
     if (
       !declaration &&
-      !["Encrypt sanitized outcome", "Decrypt sanitized outcomes"].includes(
-        step?.name,
-      )
+      ![
+        "Initialize encrypted bootstrap failure",
+        "Encrypt sanitized outcome",
+        "Decrypt sanitized outcomes",
+      ].includes(step?.name)
     )
       fail(file, "artifact key appears outside authenticated transport steps");
   }
@@ -247,13 +250,32 @@ function checkSecretPlacement(file, workflow) {
 
 function checkEncryptedHandoff(file, workflow) {
   if (file !== "scan-and-publish.yml") return;
-  const uploads = (workflow.jobs?.scan?.steps ?? []).filter(
+  const steps = workflow.jobs?.scan?.steps ?? [];
+  const bootstrap = steps[0];
+  if (
+    bootstrap?.name !== "Initialize encrypted bootstrap failure" ||
+    bootstrap?.env?.TAVERNKEEPER_ARTIFACT_KEY !== artifactSecret ||
+    !bootstrap?.run?.includes("SCAN_BOOTSTRAP_FAILED") ||
+    !bootstrap?.run?.includes("aes-256-gcm") ||
+    !bootstrap?.run?.includes('"outcome.enc"')
+  )
+    fail(file, "scan must initialize an encrypted failure before setup");
+  const uploads = steps.filter(
     (step) =>
       typeof step?.uses === "string" &&
       step.uses.startsWith("actions/upload-artifact@"),
   );
   if (uploads.length !== 1 || uploads[0]?.with?.path !== "outcome.enc")
     fail(file, "scan artifact upload must contain only outcome.enc");
+  const encrypt = steps.find(
+    (step) => step?.name === "Encrypt sanitized outcome",
+  );
+  if (
+    encrypt?.if !== "always()" ||
+    !encrypt?.run?.includes("outcome-actual.enc") ||
+    !encrypt?.run?.includes("mv outcome-actual.enc outcome.enc")
+  )
+    fail(file, "scan must atomically replace the bootstrap failure outcome");
   if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2)
     fail(file, "scan matrix must retain max-parallel: 2");
   if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== true)
