@@ -25,7 +25,9 @@ The initial one-token check proved the rotated credential and Bearer header, but
 - [x] Split provider-envelope validation into safe, content-free response-stage diagnostics.
 - [x] Add a fixed, repository-free analyzer compatibility request after the one-token Bearer proof.
 - [x] Reuse the production analyzer schema, strict structured-output request, response parser, usage accounting, and 8,192-token per-role allowance.
-- [ ] Run the full local gate, publish through PR review, run the protected compatibility action, and use its safe result to decide the Wandlight retry.
+- [x] Run the full local gate, publish through PR review, run the protected compatibility action, and use its safe result to decide the Wandlight retry.
+
+The repository-free check passed for DeepSeek V4 Flash base, while Wandlight's first large analyzer request returned `MODEL_PROVIDER`. Before changing chunking or provider configuration, retain only the integer 400-599 HTTP status in the sanitized CLI diagnostic so the next retry distinguishes request rejection from upstream failure without exposing a response body.
 
 ---
 

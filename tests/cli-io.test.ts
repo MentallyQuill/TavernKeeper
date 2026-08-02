@@ -47,4 +47,28 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
   });
+
+  test("retains only an error-range provider HTTP status", () => {
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_PROVIDER",
+        scope: "system",
+        httpStatus: 413,
+      }),
+    ).toEqual({ code: "MODEL_PROVIDER", scope: "system", http_status: 413 });
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_PROVIDER",
+        scope: "system",
+        httpStatus: "secret-bearing provider text",
+      }),
+    ).toEqual({ code: "MODEL_PROVIDER", scope: "system" });
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_PROVIDER",
+        scope: "system",
+        httpStatus: 200,
+      }),
+    ).toEqual({ code: "MODEL_PROVIDER", scope: "system" });
+  });
 });

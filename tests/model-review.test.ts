@@ -126,7 +126,11 @@ describe("OpenAI-compatible client", () => {
         fetchImpl,
         resolveAddresses: async () => ["93.184.216.34"],
       }),
-    ).rejects.toMatchObject({ code: "MODEL_PROVIDER", scope: "system" });
+    ).rejects.toMatchObject({
+      code: "MODEL_PROVIDER",
+      scope: "system",
+      httpStatus: 500,
+    });
     expect(cancel).toHaveBeenCalledOnce();
   });
 
@@ -324,5 +328,27 @@ describe("OpenAI-compatible client", () => {
         resolveAddresses: async () => ["93.184.216.34"],
       }),
     ).rejects.toMatchObject({ code: "MODEL_PROVIDER" });
+  });
+
+  test("retains only the HTTP status for a rejected structured request", async () => {
+    await expect(
+      requestStructuredCompletion({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        systemContent: "System",
+        userContent: "large but never logged",
+        maxOutputTokens: 8_192,
+        schemaName: "test_schema",
+        jsonSchema: { type: "object" },
+        fetchImpl: async () =>
+          new Response("secret-bearing provider explanation", { status: 413 }),
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_PROVIDER",
+      scope: "system",
+      httpStatus: 413,
+    });
   });
 });

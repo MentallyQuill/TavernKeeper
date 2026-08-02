@@ -74,6 +74,7 @@ export class ModelRequestError extends Error {
     readonly scope: "repository" | "system",
     message: string,
     readonly diagnostic?: ModelResponseDiagnostic,
+    readonly httpStatus?: number,
   ) {
     super(message);
     this.name = "ModelRequestError";
@@ -341,6 +342,8 @@ export async function checkModelProviderConnectivity(
       "MODEL_PROVIDER",
       "system",
       `Configured model returned HTTP ${response.status}.`,
+      undefined,
+      response.status,
     );
   return { status: "passed" as const, authMode: "bearer" as const };
 }
@@ -425,6 +428,8 @@ export async function requestStructuredCompletion(
       "MODEL_PROVIDER",
       "system",
       `Configured model returned HTTP ${response.status}.`,
+      undefined,
+      response.status,
     );
 
   let decoded: unknown;
