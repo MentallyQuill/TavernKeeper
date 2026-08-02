@@ -21,6 +21,31 @@ const target: Target = {
 };
 
 describe("scan retry schedule", () => {
+  test("a failure clears the matching active scan before scheduling retry", () => {
+    const initial = "2026-07-31T12:00:00.000Z";
+    const active = {
+      ...initialOperationsState(initial),
+      active_scans: [
+        {
+          source_id: target.source_id,
+          repository_id: target.repository_id,
+          target_sha: target.target_sha,
+          started_at: initial,
+          run_id: "run-42",
+        },
+      ],
+    };
+
+    const failed = recordFailure(active, {
+      target,
+      code: "MODEL_QUOTA",
+      scope: "system",
+      at: initial,
+    });
+
+    expect(failed.state.active_scans).toEqual([]);
+  });
+
   test("schedules retries at one, two, and three hours from initial failure", () => {
     const initial = "2026-07-31T12:00:00.000Z";
     const first = recordFailure(initialOperationsState(initial), {

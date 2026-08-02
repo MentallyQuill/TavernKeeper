@@ -165,6 +165,13 @@ describe("least-privilege GitHub Actions orchestration", () => {
     });
     expect(value.jobs.resolve.if).toContain("github.actor_id");
     expect(value.jobs.resolve.if).toContain("vars.TAVERNARY_WAKE_APP_BOT_ID");
+    expect(value.jobs.resolve.permissions).toEqual({
+      contents: "read",
+      actions: "read",
+    });
+    expect(text).toMatch(
+      /actions\/runs\/\$\{GITHUB_RUN_ID\}[\s\S]*TAVERNKEEPER_REQUEST_CREATED_AT/u,
+    );
     expect(text).toMatch(/tavernkeeper-targets\.json/u);
     expect(text).toMatch(/targeted-scan/u);
     expect(text).not.toMatch(

@@ -101,7 +101,10 @@ const permissionProfiles = {
       "id-token": "write",
       actions: "write",
     },
-    jobs: { resolve: { contents: "read" }, scan: undefined },
+    jobs: {
+      resolve: { contents: "read", actions: "read" },
+      scan: undefined,
+    },
   },
 };
 const protectedManual = new Set([

@@ -11,7 +11,7 @@ import {
   requiredEnvironment,
   runJsonCli,
 } from "./io.js";
-import { REPORT_INDEX_URL, TARGET_MANIFEST_URL } from "./reconcile.js";
+import { TARGET_MANIFEST_URL } from "./reconcile.js";
 import {
   ScanRequestSchema,
   validateTargetedScanHint,
@@ -23,12 +23,14 @@ export function buildTargetedMatrix({
   state: stateInput,
   repositoryId,
   scannerPolicyVersion,
+  requestCreatedAt,
 }: {
   manifest: unknown;
   index: unknown;
   state: unknown;
   repositoryId: number;
   scannerPolicyVersion: string;
+  requestCreatedAt: string;
 }) {
   const manifest = requireTargetManifestV2(parseTargetManifest(manifestInput));
   const index = parseReportIndex(indexInput);
@@ -42,26 +44,39 @@ export function buildTargetedMatrix({
     throw new Error(
       "Targeted repository ID is not in Tavernary's V2 manifest.",
     );
+  const requestCreatedAtMs = Date.parse(requestCreatedAt);
+  if (!Number.isFinite(requestCreatedAtMs))
+    throw new Error("Targeted workflow creation time is invalid.");
+  const previous = index.reports.filter(
+    ({ repository_id }) => repository_id === target.repository_id,
+  );
+  const matchingReports = previous.filter(
+    ({ target_sha, scanner_policy_version, mode }) =>
+      target_sha === target.target_sha &&
+      scanner_policy_version === scannerPolicyVersion &&
+      mode === "standard",
+  );
   if (
     state.active_scans.some(
       (active) =>
         active.repository_id === target.repository_id &&
         active.target_sha === target.target_sha,
+    ) ||
+    state.retries.some(
+      (retry) =>
+        retry.repository_id === target.repository_id &&
+        retry.target_sha === target.target_sha &&
+        !retry.exhausted,
+    ) ||
+    matchingReports.some(
+      ({ completed_at }) => Date.parse(completed_at) >= requestCreatedAtMs,
     )
   )
     return { include: [], coalesced: true };
 
-  const previous = index.reports.filter(
-    ({ repository_id }) => repository_id === target.repository_id,
-  );
-  const prior = previous
-    .filter(
-      ({ target_sha, scanner_policy_version, mode }) =>
-        target_sha === target.target_sha &&
-        scanner_policy_version === scannerPolicyVersion &&
-        mode === "standard",
-    )
-    .sort((left, right) => right.report_version - left.report_version)[0];
+  const prior = matchingReports.sort(
+    (left, right) => right.report_version - left.report_version,
+  )[0];
   const request = ScanRequestSchema.parse({
     ...target,
     reason: "staff",
@@ -81,7 +96,7 @@ async function main() {
   );
   const [manifest, index, state] = await Promise.all([
     fetchFixedJson(TARGET_MANIFEST_URL),
-    fetchFixedJson(REPORT_INDEX_URL),
+    readJsonFile("reports/index.json"),
     readJsonFile("operations/state.json"),
   ]);
   return buildTargetedMatrix({
@@ -90,6 +105,10 @@ async function main() {
     state,
     repositoryId: hint.repository_id,
     scannerPolicyVersion: "1",
+    requestCreatedAt: requiredEnvironment(
+      process.env,
+      "TAVERNKEEPER_REQUEST_CREATED_AT",
+    ),
   });
 }
 

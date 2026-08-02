@@ -25,6 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: read
     outputs:
       requests_json: ${{ steps.request.outputs.requests_json }}
     steps:
@@ -43,11 +44,13 @@ jobs:
       - name: Resolve repository ID from the public Tavernary V2 manifest
         id: request
         env:
+          GH_TOKEN: ${{ github.token }}
           TAVERNKEEPER_TARGETED_SCAN: '{"repository_id":${{ inputs.repository_id }}}'
           TAVERNARY_TARGET_MANIFEST: https://tavernary.org/security/tavernkeeper-targets.json
         shell: bash
         run: |
-          resolved="$(npm run --silent targeted-scan)"
+          created_at="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)"
+          resolved="$(TAVERNKEEPER_REQUEST_CREATED_AT="$created_at" npm run --silent targeted-scan)"
           echo "requests_json=$(jq -c '.include' <<< "$resolved")" >> "$GITHUB_OUTPUT"
 
   scan:

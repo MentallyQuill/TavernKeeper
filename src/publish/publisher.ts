@@ -190,15 +190,6 @@ function completedState(
       },
       generatedAt,
     );
-    state = OperationsStateSchema.parse({
-      ...state,
-      updated_at: generatedAt,
-      active_scans: state.active_scans.filter(
-        (active) =>
-          active.repository_id !== report.repository_id ||
-          active.target_sha !== report.target_sha,
-      ),
-    });
   }
   return state;
 }

@@ -38,7 +38,7 @@ Generate a replacement private key from the App settings before revoking the act
 
 On the first staff resume, TavernKeeper records the immutable `coverage_started_at` timestamp. Ordinary work uses three lanes: current Top 30, submissions first cataloged on or after that timestamp, and older projects. New and old lanes sort by `first_cataloged_at`; due retries return to their target's source lane. Thirty-day age boosts prevent a lower lane from starving without changing its lane identity.
 
-The queue is derived, not separately mutable. A target that advances before it starts is coalesced to the newest manifest SHA. Once exact-SHA acquisition begins, TavernKeeper completes and publishes that immutable SHA even if the catalog advances; Tavernary then presents a clean older report as pending an updated scan.
+The queue is derived, not separately mutable. A target that advances before it starts is coalesced to the newest manifest SHA. All scan entry points share one non-cancelling global queue. A duplicate targeted request records its immutable GitHub workflow creation time; after it reaches the resolver, it coalesces when the same SHA was completed after that request entered the queue or when the target already has a scheduled retry. A staff request created after a prior completed report remains an intentional forced rescan. Resolution uses the committed report index, so a Pages deployment delay cannot cause duplicate model spend. Once exact-SHA acquisition begins, TavernKeeper completes and publishes that immutable SHA even if the catalog advances; Tavernary then presents a clean older report as pending an updated scan. Success and failure transitions both clear any matching active-scan state.
 
 ## Pause and recovery
 
