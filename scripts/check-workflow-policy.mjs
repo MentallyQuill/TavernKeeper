@@ -57,7 +57,12 @@ const permissionProfiles = {
       "id-token": "write",
       actions: "write",
     },
-    jobs: { plan: { contents: "read" }, run: undefined },
+    jobs: {
+      plan: { contents: "read" },
+      "recover-pages": undefined,
+      run: undefined,
+      "resume-after-recovery": { actions: "write" },
+    },
   },
   "retry.yml": {
     workflow: {

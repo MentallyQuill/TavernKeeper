@@ -95,6 +95,38 @@ describe("least-privilege GitHub Actions orchestration", () => {
     );
   });
 
+  test("reconciliation restores a committed Pages index before planning scans", async () => {
+    const value = await workflow("reconcile.yml");
+    const plan = value.jobs.plan;
+    const planStep = plan.steps.find(
+      (step: Workflow) =>
+        step.name === "Plan deployment recovery or bounded batch",
+    );
+
+    expect(plan.outputs).toMatchObject({
+      requests_json: "${{ steps.plan.outputs.requests_json }}",
+      remaining: "${{ steps.plan.outputs.remaining }}",
+      deploy_required: "${{ steps.plan.outputs.deploy_required }}",
+      source_sha: "${{ steps.plan.outputs.source_sha }}",
+    });
+    expect(String(planStep?.run)).toMatch(
+      /reports\/index\.json[\s\S]*live-index\.json[\s\S]*deploy_required=true[\s\S]*requests_json=\[\]/u,
+    );
+    expect(value.jobs["recover-pages"]).toMatchObject({
+      needs: "plan",
+      if: "${{ needs.plan.outputs.deploy_required == 'true' }}",
+      uses: "./.github/workflows/deploy-pages.yml",
+      with: { source_sha: "${{ needs.plan.outputs.source_sha }}" },
+      secrets: "inherit",
+    });
+    expect(value.jobs.run.if).toContain(
+      "needs.plan.outputs.deploy_required == 'false'",
+    );
+    expect(String(value.jobs["resume-after-recovery"].steps[0].run)).toContain(
+      "gh workflow run reconcile.yml --ref main",
+    );
+  });
+
   test("automatic retry is hourly and reuses ordinary reconciliation", async () => {
     const value = await workflow("retry.yml");
 
