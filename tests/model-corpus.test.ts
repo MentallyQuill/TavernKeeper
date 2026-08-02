@@ -34,27 +34,25 @@ const classification: InventoryClassification = {
   },
 };
 
+function compareExpectedPath(left: InventoryFile, right: InventoryFile) {
+  const leftIdentity = left.path.toLowerCase();
+  const rightIdentity = right.path.toLowerCase();
+  if (leftIdentity !== rightIdentity)
+    return leftIdentity < rightIdentity ? -1 : 1;
+  return left.path === right.path ? 0 : left.path < right.path ? -1 : 1;
+}
+
 describe("model corpus selection", () => {
-  test("standard mode includes the complete eligible changed and finding union", () => {
-    expect(
-      selectModelCorpus({
-        mode: "standard",
-        classification,
-        changedPaths: ["b.ts", "not-eligible.bin"],
-        findingPaths: ["a.ts", "a.ts"],
-      }).map(({ path }) => path),
-    ).toEqual(["a.ts", "b.ts"]);
+  test("standard mode includes every eligible first-party text file", () => {
+    expect(selectModelCorpus({ classification })).toEqual(
+      classification.modelEligible.toSorted(compareExpectedPath),
+    );
   });
 
   test("deep mode includes every eligible first-party text file without aggregate caps", () => {
-    expect(
-      selectModelCorpus({
-        mode: "deep",
-        classification,
-        changedPaths: [],
-        findingPaths: [],
-      }).map(({ path }) => path),
-    ).toEqual(["a.ts", "b.ts", "README.md"]);
+    expect(selectModelCorpus({ classification })).toEqual(
+      classification.modelEligible.toSorted(compareExpectedPath),
+    );
   });
 
   test("loads selected source only when bytes and hash still match inventory", async () => {

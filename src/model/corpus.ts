@@ -2,7 +2,6 @@ import { createHash } from "node:crypto";
 import { lstat, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ScanMode } from "../contracts/reports.js";
 import type { InventoryClassification } from "../inventory/classify.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
 
@@ -18,23 +17,12 @@ function comparePath(left: string, right: string) {
   return left === right ? 0 : left < right ? -1 : 1;
 }
 
-export function selectModelCorpus({
-  mode,
-  classification,
-  changedPaths,
-  findingPaths,
-}: {
-  mode: ScanMode;
-  classification: InventoryClassification;
-  changedPaths: string[];
-  findingPaths: string[];
-}): InventoryFile[] {
-  const selected = new Set(
-    mode === "deep" ? [] : [...changedPaths, ...findingPaths],
+export function selectModelCorpus<
+  T extends { classification: InventoryClassification },
+>({ classification }: T): InventoryFile[] {
+  return classification.modelEligible.toSorted((left, right) =>
+    comparePath(left.path, right.path),
   );
-  return classification.modelEligible
-    .filter((file) => mode === "deep" || selected.has(file.path))
-    .sort((left, right) => comparePath(left.path, right.path));
 }
 
 export async function loadModelCorpus(
