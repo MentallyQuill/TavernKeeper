@@ -23,6 +23,7 @@ const workflowPolicyScript = fileURLToPath(
 );
 const publisherAction =
   "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
+const cacheAction = "caa296126883cff596d87d8935842f9db880ef25";
 
 async function workflow(name: string): Promise<Workflow> {
   return parse(
@@ -265,6 +266,35 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(JSON.stringify(value.jobs.scan.steps)).toMatch(
       /Stop pending repositories after a system failure/u,
     );
+  });
+
+  test("saves validated model progress before a system failure stops the batch", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const steps = value.jobs.scan.steps as Workflow[];
+    const restoreIndex = steps.findIndex(
+      (step) => step.name === "Restore sanitized model cache",
+    );
+    const saveIndex = steps.findIndex(
+      (step) => step.name === "Save sanitized model progress",
+    );
+    const stopIndex = steps.findIndex(
+      (step) =>
+        step.name === "Stop pending repositories after a system failure",
+    );
+
+    expect(steps[restoreIndex]).toMatchObject({
+      uses: `actions/cache/restore@${cacheAction}`,
+    });
+    expect(steps[saveIndex]).toMatchObject({
+      if: "always() && steps.prepare.outcome == 'success'",
+      uses: `actions/cache/save@${cacheAction}`,
+      with: {
+        path: "${{ runner.temp }}/tavernkeeper-model-cache",
+        key: "model-cache-v2-${{ hashFiles('config/scanner-policy.v1.json') }}-${{ github.run_id }}-${{ matrix.request.repository_id }}",
+      },
+    });
+    expect(saveIndex).toBeGreaterThan(restoreIndex);
+    expect(stopIndex).toBeGreaterThan(saveIndex);
   });
 
   test("uploads only authenticated ciphertext and exposes the key only to transport steps", async () => {
