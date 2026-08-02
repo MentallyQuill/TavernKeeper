@@ -25,12 +25,11 @@ export const ScannerPolicySchema = z.strictObject({
     protocol: z.literal("openai-compatible-chat-completions"),
     chunkBytes: z.literal(524_288),
     chunkOverlapBytes: z.literal(8_192),
-    maxOutputTokensPerRole: z.literal(8_192),
-    rolePolicies: z.strictObject({
-      analyzer: z.literal("analyzer-v1"),
-      challenger: z.literal("challenger-v1"),
-      arbiter: z.literal("arbiter-v1"),
-    }),
+    maxOutputTokensPerChunkReview: z.literal(8_192),
+    maxChunkReviewCharacters: z.literal(12_000),
+    maxOutputTokensForSynthesis: z.literal(8_192),
+    chunkReviewPolicy: z.literal("chunk-review-v2"),
+    synthesisPolicy: z.literal("repository-synthesis-v2"),
   }),
   retry: z.strictObject({
     hoursFromInitialFailure: z.tuple([

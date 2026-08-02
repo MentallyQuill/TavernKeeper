@@ -52,7 +52,7 @@ async function preparedSession({
     {
       chunkBytes,
       overlapBytes,
-      promptPolicyVersion: "1",
+      promptPolicyVersion: "repository-review-v2",
       scannerPolicyVersion: "1",
     },
   );
@@ -65,7 +65,7 @@ async function preparedSession({
     ),
   );
   const base = {
-    schema_version: 2 as const,
+    schema_version: 3 as const,
     target: {
       source_id: "github-42",
       provider: "github" as const,
@@ -78,7 +78,7 @@ async function preparedSession({
     prepared_at: "2026-07-31T15:00:00.000Z",
     scanner_version: "1.0.0",
     scanner_policy_version: "1",
-    prompt_policy_version: "1",
+    prompt_policy_version: "repository-review-v2",
     report_version: 1,
     supersedes_report_id: null,
     mode: "standard" as const,
@@ -125,7 +125,6 @@ async function preparedSession({
         disposition: "active" as const,
       },
     ],
-    relationships: [],
     selected_files: [
       {
         path: "src/index.ts",
@@ -152,49 +151,34 @@ async function preparedSession({
   return { root, prepared, chunks };
 }
 
-function completionDouble(calls: string[]) {
-  return async (request: { schemaName: string; userContent: string }) => {
-    calls.push(request.schemaName);
-    const input = JSON.parse(request.userContent) as any;
-    const payload = request.schemaName.endsWith("analyzer")
-      ? {
-          assessments: input.deterministic_findings.map((finding: any) => ({
-            fingerprint: finding.fingerprint,
-            evidence: finding.evidence,
-            assessment: "concerning",
-            rationale: "The deterministic signal requires review.",
-          })),
-          discoveries: [],
-        }
-      : request.schemaName.endsWith("challenger")
-        ? {
-            challenges: input.claims.map((claim: any) => ({
-              fingerprint: claim.fingerprint,
-              evidence: claim.evidence,
-              position: "supports",
-              rationale: "The deterministic evidence is specific.",
-            })),
-          }
-        : {
-            decisions: input.claims.map((claim: any) => ({
-              fingerprint: claim.fingerprint,
-              evidence: claim.evidence,
-              disposition: "confirmed",
-              rationale: "The evidence supports the finding.",
-            })),
-          };
-    return {
-      content: JSON.stringify(payload),
-      usage: {
-        inputTokens: 10,
-        outputTokens: 2,
-        cacheReadTokens: 0,
-        reasoningTokens: 1,
-      },
-      completionId: `completion-${calls.length}`,
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-    };
+function completionDoubles(calls: string[]) {
+  const complete = (content: string) => ({
+    content,
+    usage: {
+      inputTokens: 10,
+      outputTokens: 2,
+      cacheReadTokens: 0,
+      reasoningTokens: 1,
+    },
+    completionId: `completion-${calls.length}`,
+    endpointOrigin: "https://provider.example",
+    provider: "provider.example",
+  });
+  return {
+    text: async () => {
+      calls.push("text");
+      return complete("No review-level concern appears in this chunk.");
+    },
+    structured: async () => {
+      calls.push("synthesis");
+      return complete(
+        JSON.stringify({
+          assessment: "no_concerning_evidence",
+          recap: "The completed review found no review-level concern.",
+          concerns: [],
+        }),
+      );
+    },
   };
 }
 
@@ -218,7 +202,7 @@ describe("ephemeral split scan session", () => {
     expect(containingChunk).toBeDefined();
     const observedEvidence: unknown[] = [];
     const calls: string[] = [];
-    const completion = completionDouble(calls);
+    const completions = completionDoubles(calls);
     const policy = await loadScannerPolicy(
       fileURLToPath(
         new URL("../config/scanner-policy.v1.json", import.meta.url),
@@ -246,20 +230,12 @@ describe("ephemeral split scan session", () => {
       model: "vendor/model-test",
       policy,
       cache: new InMemoryModelChunkCache(),
-      requestCompletion: (async (request: {
-        schemaName: string;
-        userContent: string;
-      }) => {
-        if (request.schemaName.endsWith("analyzer")) {
-          const input = JSON.parse(request.userContent) as any;
-          observedEvidence.push(
-            ...input.deterministic_findings.map(
-              (finding: any) => finding.evidence,
-            ),
-          );
-        }
-        return completion(request);
+      requestTextCompletion: (async (request: { userContent: string }) => {
+        const input = JSON.parse(request.userContent) as any;
+        observedEvidence.push(...input.tool_evidence);
+        return completions.text();
       }) as never,
+      requestStructuredCompletion: completions.structured as never,
       verifyHead: async () => ({ ok: true, value: targetSha }),
     });
 
@@ -268,8 +244,8 @@ describe("ephemeral split scan session", () => {
         path: "src/index.ts",
         line_start: 10,
         line_end: 10,
-        segment_id: containingChunk!.id,
-        content_digest: containingChunk!.segments[0]!.content_hash,
+        id: "tool-000001",
+        source_id: expect.stringMatching(/^source-[0-9]{6}$/u),
         target_sha: targetSha,
       }),
     ]);
@@ -278,6 +254,7 @@ describe("ephemeral split scan session", () => {
   test("streams every chunk through model review and finalizes a complete candidate", async () => {
     const { root, prepared } = await preparedSession();
     const calls: string[] = [];
+    const completions = completionDoubles(calls);
     const policy = await loadScannerPolicy(
       fileURLToPath(
         new URL("../config/scanner-policy.v1.json", import.meta.url),
@@ -304,15 +281,19 @@ describe("ephemeral split scan session", () => {
       model: "vendor/model-test",
       policy,
       cache: new InMemoryModelChunkCache(),
-      requestCompletion: completionDouble(calls) as never,
+      requestTextCompletion: completions.text as never,
+      requestStructuredCompletion: completions.structured as never,
       verifyHead: async () => ({ ok: true, value: targetSha }),
     });
 
-    expect(calls).toEqual([
-      "tavernkeeper_analyzer",
-      "tavernkeeper_challenger",
-      "tavernkeeper_arbiter",
-    ]);
+    expect(calls).toEqual(["text", "synthesis"]);
+    expect(review).toMatchObject({
+      schema_version: 3,
+      stage_completion: {
+        chunk_review: { required: 1, completed: 1 },
+        synthesis: { required: 1, completed: 1 },
+      },
+    });
     expect(JSON.stringify(review)).not.toMatch(/segments|content|test-key/iu);
     const output = join(root, "..", `candidate-${Date.now()}.json`);
     const finalized = await finalizePreparedSession({
@@ -336,6 +317,7 @@ describe("ephemeral split scan session", () => {
   test("finishes the exact prepared SHA when Tavernary has already advanced", async () => {
     const { root, prepared } = await preparedSession();
     const calls: string[] = [];
+    const completions = completionDoubles(calls);
     const policy = await loadScannerPolicy(
       fileURLToPath(
         new URL("../config/scanner-policy.v1.json", import.meta.url),
@@ -364,15 +346,12 @@ describe("ephemeral split scan session", () => {
       model: "vendor/model-test",
       policy,
       cache: new InMemoryModelChunkCache(),
-      requestCompletion: completionDouble(calls) as never,
+      requestTextCompletion: completions.text as never,
+      requestStructuredCompletion: completions.structured as never,
       verifyHead: async () => ({ ok: true, value: targetSha }),
     });
 
     expect(review).toMatchObject({ status: "completed" });
-    expect(calls).toEqual([
-      "tavernkeeper_analyzer",
-      "tavernkeeper_challenger",
-      "tavernkeeper_arbiter",
-    ]);
+    expect(calls).toEqual(["text", "synthesis"]);
   });
 });

@@ -258,6 +258,10 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(value.jobs.scan.permissions.contents).toBe("read");
     expect(secretSteps).toHaveLength(1);
     expect(secretSteps[0].name).toBe("Review with configured model");
+    expect(JSON.stringify(value.jobs.scan)).toContain(
+      "model-cache-v2-${{ hashFiles('config/scanner-policy.v1.json') }}-",
+    );
+    expect(JSON.stringify(value)).not.toMatch(/LUNA|SECOND_MODEL/iu);
     expect(JSON.stringify(value.jobs.scan.steps)).toMatch(
       /Stop pending repositories after a system failure/u,
     );

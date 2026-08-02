@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
 
 import {
+  buildFindingCountsV2,
+  deriveV2Result,
   FindingSchema,
+  FindingV2Schema,
   ScanReportV2Schema,
   type Finding,
   type ScanMode,
@@ -29,13 +32,12 @@ import {
   type ModelCorpusFile,
 } from "../model/corpus.js";
 import { ModelCacheError } from "../model/chunk-cache.js";
-import { reviewWithConfiguredModel } from "../model/model-review.js";
-import { buildAutomatedReportFindings } from "../model/report-builder.js";
+import { reviewRepositoryWithConfiguredModel } from "../model/model-review.js";
 import {
   ModelRequestError,
   validateModelEndpoint,
 } from "../model/openai-compatible-client.js";
-import type { ModelRelationship } from "../model/role-contracts.js";
+import type { ValidatedRepositorySynthesis } from "../model/repository-synthesis.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { reportIdentity } from "../publish/report-path.js";
 import {
@@ -67,7 +69,6 @@ export interface ScanRepositorySpec {
   pins: ScannerVersionPins;
   rulesRoot: string;
   runner: CommandRunner;
-  relationships?: ModelRelationship[];
   executables?: Partial<ScannerExecutables>;
   temporaryRoot?: string;
   model: {
@@ -93,7 +94,7 @@ export interface ScanDependencies {
     policy: Parameters<typeof chunkCorpus>[1],
   ): ModelChunk[];
   verifyHead: typeof verifyExactHead;
-  review: typeof reviewWithConfiguredModel;
+  review: typeof reviewRepositoryWithConfiguredModel;
 }
 
 export interface SanitizedCandidate {
@@ -132,7 +133,7 @@ const defaultDependencies: ScanDependencies = {
   loadCorpus: loadModelCorpus,
   chunk: chunkCorpus,
   verifyHead: verifyExactHead,
-  review: reviewWithConfiguredModel,
+  review: reviewRepositoryWithConfiguredModel,
 };
 
 const scannerOrder = [
@@ -334,14 +335,12 @@ export function validateChunkCoverage(
 
 function validateModelCoverage({
   chunks,
-  deterministicFindings,
   model,
   endpoint,
   identifier,
 }: {
   chunks: ModelChunk[];
-  deterministicFindings: Finding[];
-  model: Awaited<ReturnType<typeof reviewWithConfiguredModel>>;
+  model: Awaited<ReturnType<typeof reviewRepositoryWithConfiguredModel>>;
   endpoint: string;
   identifier: string;
 }) {
@@ -358,19 +357,46 @@ function validateModelCoverage({
       "system",
       "Configured model coverage identity is incomplete.",
     );
-  const finalFingerprints = new Set(
-    model.findings.map(({ fingerprint }) => fingerprint),
-  );
   if (
-    deterministicFindings.some(
-      ({ fingerprint }) => !finalFingerprints.has(fingerprint),
-    )
+    model.stageCompletion.chunkReview.required !== chunks.length ||
+    model.stageCompletion.chunkReview.completed !== chunks.length ||
+    model.stageCompletion.synthesis.required !== 1 ||
+    model.stageCompletion.synthesis.completed !== 1
   )
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Final synthesis removed deterministic evidence.",
+      "Configured model stage completion is incomplete.",
     );
+}
+
+function projectSynthesisFindings(
+  synthesis: ValidatedRepositorySynthesis,
+  promptPolicyVersion: string,
+) {
+  return synthesis.concerns.map((concern) => {
+    const evidence = concern.evidence[0]!;
+    return FindingV2Schema.parse({
+      origin: "model:repository-review",
+      rule_id: `repository-concern:${concern.id.slice(0, 16)}`,
+      category: concern.category,
+      severity: concern.severity,
+      confidence: concern.confidence,
+      path: evidence.path,
+      line_start: evidence.lineStart,
+      line_end: evidence.lineEnd,
+      evidence_sha: evidence.targetSha,
+      title: concern.title,
+      explanation: concern.explanation,
+      fingerprint: concern.fingerprint,
+      disposition: "confirmed",
+      automated_review: {
+        analyzer_policy: promptPolicyVersion,
+        challenger_policy: promptPolicyVersion,
+        arbiter_policy: promptPolicyVersion,
+      },
+    });
+  });
 }
 
 function buildReport({
@@ -388,9 +414,12 @@ function buildReport({
   history: Awaited<ReturnType<typeof planHistory>> & { ok: true };
   scannerRuns: ScannerRun[];
   chunks: ModelChunk[];
-  model: Awaited<ReturnType<typeof reviewWithConfiguredModel>>;
+  model: Awaited<ReturnType<typeof reviewRepositoryWithConfiguredModel>>;
 }) {
-  const automated = buildAutomatedReportFindings(model.findings);
+  const findings = projectSynthesisFindings(
+    model.synthesis,
+    spec.promptPolicyVersion,
+  );
   const eligibleTextBytes = classification.modelEligible.reduce(
     (total, file) => total + file.bytes,
     0,
@@ -446,13 +475,20 @@ function buildReport({
         cache_read_tokens: model.usage.cacheReadTokens,
         reasoning_tokens: model.usage.reasoningTokens,
         total_tokens: model.usage.inputTokens + model.usage.outputTokens,
-        roles: model.roleCompletion,
+        roles: {
+          analyzer: model.stageCompletion.chunkReview,
+          challenger: model.stageCompletion.synthesis,
+          arbiter: model.stageCompletion.synthesis,
+        },
       },
-      evidence_validation: automated.evidenceValidation,
+      evidence_validation: {
+        status: "completed",
+        validated_findings: findings.length,
+      },
     },
-    result: automated.result,
-    finding_counts: automated.findingCounts,
-    findings: automated.findings,
+    result: deriveV2Result(findings),
+    finding_counts: buildFindingCountsV2(findings),
+    findings,
   };
   return ScanReportV2Schema.parse({
     ...withoutId,
@@ -568,12 +604,7 @@ export async function scanRepository(
       ({ findings }) => findings,
     );
 
-    const selected = selectModelCorpus({
-      mode: spec.mode,
-      classification,
-      changedPaths: history.value.changedPaths,
-      findingPaths: deterministicFindings.map(({ path }) => path),
-    });
+    const selected = selectModelCorpus({ classification });
     const corpus = await dependencies.loadCorpus(spec.root, selected);
     const chunks = dependencies.chunk(corpus, {
       chunkBytes: spec.policy.model.chunkBytes,
@@ -603,16 +634,23 @@ export async function scanRepository(
       projectKinds: spec.projectKinds,
       chunks,
       deterministicFindings,
-      relationships: spec.relationships ?? [],
+      tools: [
+        { name: "inventory", status: "completed" as const },
+        ...orderedScannerRuns.map(({ name, status }) => ({ name, status })),
+      ],
       promptPolicyVersion: spec.promptPolicyVersion,
       scannerPolicyVersion: spec.scannerPolicyVersion,
-      rolePolicies: spec.policy.model.rolePolicies,
-      maxOutputTokensPerRole: spec.policy.model.maxOutputTokensPerRole,
+      chunkReviewPolicy: spec.policy.model.chunkReviewPolicy,
+      synthesisPolicy: spec.policy.model.synthesisPolicy,
+      maxOutputTokensPerChunkReview:
+        spec.policy.model.maxOutputTokensPerChunkReview,
+      maxChunkReviewCharacters: spec.policy.model.maxChunkReviewCharacters,
+      maxOutputTokensForSynthesis:
+        spec.policy.model.maxOutputTokensForSynthesis,
       cache: spec.model.cache,
     });
     validateModelCoverage({
       chunks,
-      deterministicFindings,
       model,
       endpoint: spec.model.endpoint,
       identifier: spec.model.identifier,

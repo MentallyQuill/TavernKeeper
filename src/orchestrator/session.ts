@@ -13,12 +13,13 @@ import { z } from "zod";
 
 import type { ScannerPins, ScannerPolicy } from "../config/policy.js";
 import {
+  buildFindingCountsV2,
+  deriveV2Result,
   FindingSchema,
   FindingV2Schema,
   ScanModeSchema,
   ScanReportV2Schema,
   ToolCoverageSchema,
-  type Finding,
 } from "../contracts/reports.js";
 import {
   FullShaSchema,
@@ -33,16 +34,18 @@ import { inventoryRepository } from "../inventory/inventory-handler.js";
 import type { ModelChunkCache } from "../model/chunk-cache.js";
 import { chunkCorpus, type ModelChunk } from "../model/chunker.js";
 import { loadModelCorpus, selectModelCorpus } from "../model/corpus.js";
+import { buildEvidenceManifest } from "../model/evidence-manifest.js";
+import { reviewRepositoryWithConfiguredModel } from "../model/model-review.js";
 import {
-  addModelUsage,
-  reviewWithConfiguredModel,
-} from "../model/model-review.js";
-import {
+  requestTextCompletion as defaultRequestTextCompletion,
   validateModelEndpoint,
-  type ModelUsage,
   type RequestStructuredCompletion,
 } from "../model/openai-compatible-client.js";
-import { buildAutomatedReportFindings } from "../model/report-builder.js";
+import {
+  validateRepositorySynthesis,
+  type ValidatedRepositorySynthesis,
+} from "../model/repository-synthesis.js";
+import { RepositorySynthesisSchema } from "../model/review-contracts.js";
 import { reportIdentity } from "../publish/report-path.js";
 import { sanitizeReportV2 } from "../publish/sanitize.js";
 import type { CommandRunner } from "../process/command-runner.js";
@@ -105,11 +108,6 @@ const ChunkManifestSchema = z.strictObject({
   content_hashes: z.array(DigestSchema),
   paths: z.array(RepositoryPathSchema),
 });
-const RelationshipSchema = z.strictObject({
-  from: RepositoryPathSchema,
-  to: RepositoryPathSchema,
-  kind: z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/u),
-});
 const SegmentSchema = z.strictObject({
   path: RepositoryPathSchema,
   line_start: z.number().int().positive(),
@@ -128,7 +126,7 @@ const ModelChunkSchema = z.strictObject({
 });
 
 const PreparedSessionObjectSchema = z.strictObject({
-  schema_version: z.literal(2),
+  schema_version: z.literal(3),
   session_id: DigestSchema,
   target: TargetSchema,
   project_kinds: z.array(z.enum(["extension", "frontend", "preset"])).min(1),
@@ -146,7 +144,6 @@ const PreparedSessionObjectSchema = z.strictObject({
   inventory: InventoryCoverageSchema,
   tools: z.array(ToolCoverageSchema).min(1),
   deterministic_findings: z.array(FindingSchema),
-  relationships: z.array(RelationshipSchema),
   selected_files: z.array(SelectedFileSchema),
   chunks: z.array(ChunkManifestSchema),
 });
@@ -202,15 +199,6 @@ export class ScanPhaseError extends Error {
   }
 }
 
-function chunkContainsFinding(chunk: ModelChunk, finding: Finding) {
-  return chunk.segments.some((segment) => {
-    if (segment.path !== finding.path) return false;
-    if (finding.line_start === null) return finding.line_end === null;
-    const end = finding.line_end ?? finding.line_start;
-    return finding.line_start >= segment.line_start && end <= segment.line_end;
-  });
-}
-
 const ModelUsageSchema = z.strictObject({
   inputTokens: NonNegativeIntegerSchema,
   outputTokens: NonNegativeIntegerSchema,
@@ -218,26 +206,22 @@ const ModelUsageSchema = z.strictObject({
   reasoningTokens: NonNegativeIntegerSchema,
 });
 const CompletedReviewSchema = z.strictObject({
-  schema_version: z.literal(2),
+  schema_version: z.literal(3),
   session_id: DigestSchema,
   status: z.literal("completed"),
   endpoint_origin: z.url(),
   provider: VersionSchema,
   model: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/u),
   completed_chunk_ids: z.array(DigestSchema),
-  findings: z.array(FindingV2Schema),
-  role_completion: z.strictObject({
-    analyzer: z.strictObject({
+  synthesis: RepositorySynthesisSchema,
+  stage_completion: z.strictObject({
+    chunk_review: z.strictObject({
       required: NonNegativeIntegerSchema,
       completed: NonNegativeIntegerSchema,
     }),
-    challenger: z.strictObject({
-      required: NonNegativeIntegerSchema,
-      completed: NonNegativeIntegerSchema,
-    }),
-    arbiter: z.strictObject({
-      required: NonNegativeIntegerSchema,
-      completed: NonNegativeIntegerSchema,
+    synthesis: z.strictObject({
+      required: z.literal(1),
+      completed: z.literal(1),
     }),
   }),
   usage: ModelUsageSchema,
@@ -245,7 +229,7 @@ const CompletedReviewSchema = z.strictObject({
   cache_misses: NonNegativeIntegerSchema,
 });
 const ObsoleteReviewSchema = z.strictObject({
-  schema_version: z.literal(2),
+  schema_version: z.literal(3),
   session_id: DigestSchema,
   status: z.literal("obsolete"),
   reason: z.literal("target-advanced"),
@@ -273,7 +257,6 @@ function identityFields(session: Omit<PreparedSession, "session_id">) {
     deterministic_fingerprints: session.deterministic_findings.map(
       ({ fingerprint }) => fingerprint,
     ),
-    relationships: session.relationships,
     selected_files: session.selected_files,
     chunks: session.chunks,
   };
@@ -456,12 +439,7 @@ export async function prepareTargetSession({
     const deterministicFindings = orderedRuns.flatMap(
       ({ findings }) => findings,
     );
-    const selected = selectModelCorpus({
-      mode,
-      classification,
-      changedPaths: history.value.changedPaths,
-      findingPaths: deterministicFindings.map(({ path }) => path),
-    });
+    const selected = selectModelCorpus({ classification });
     await mkdir(resolve(sessionRoot, "chunks"), { recursive: true });
     sessionCreated = true;
     const chunks: z.infer<typeof ChunkManifestSchema>[] = [];
@@ -497,7 +475,7 @@ export async function prepareTargetSession({
       0,
     );
     const withoutIdentity = {
-      schema_version: 2 as const,
+      schema_version: 3 as const,
       target,
       project_kinds: [...projectKinds].sort(),
       prepared_at: preparedAt,
@@ -533,7 +511,6 @@ export async function prepareTargetSession({
       deterministic_findings: [...deterministicFindings].sort((left, right) =>
         left.fingerprint.localeCompare(right.fingerprint),
       ),
-      relationships: [],
       selected_files: selected.map(({ path, bytes, sha256 }) => ({
         path,
         bytes,
@@ -599,15 +576,6 @@ async function loadChunk(
   return chunk;
 }
 
-function zeroUsage(): ModelUsage {
-  return {
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheReadTokens: 0,
-    reasoningTokens: 0,
-  };
-}
-
 export async function reviewPreparedSession({
   sessionRoot,
   manifest: manifestInput,
@@ -616,7 +584,8 @@ export async function reviewPreparedSession({
   model,
   policy,
   cache,
-  requestCompletion,
+  requestTextCompletion,
+  requestStructuredCompletion,
   verifyHead,
 }: {
   sessionRoot: string;
@@ -626,7 +595,8 @@ export async function reviewPreparedSession({
   model: string;
   policy: ScannerPolicy;
   cache: ModelChunkCache;
-  requestCompletion?: RequestStructuredCompletion;
+  requestTextCompletion?: typeof defaultRequestTextCompletion;
+  requestStructuredCompletion?: RequestStructuredCompletion;
   verifyHead: () => Promise<
     { ok: true; value: string } | { ok: false; error: unknown }
   >;
@@ -646,94 +616,103 @@ export async function reviewPreparedSession({
       "Prepared target is no longer valid for model review.",
     );
   const configured = validateModelEndpoint(endpoint);
-  let usage = zeroUsage();
-  let cacheHits = 0;
-  let cacheMisses = 0;
-  const modelFindings: z.infer<typeof FindingV2Schema>[] = [];
-  const completedChunkIds: string[] = [];
-  const roleCompletion = {
-    analyzer: { required: 0, completed: 0 },
-    challenger: { required: 0, completed: 0 },
-    arbiter: { required: 0, completed: 0 },
-  };
-  const remaining = new Map(
-    prepared.deterministic_findings.map((finding) => [
-      finding.fingerprint,
-      finding,
-    ]),
-  );
-
-  const reviewUnit = async (
-    chunks: ModelChunk[],
-    deterministicFindings: Finding[],
-  ) => {
-    const reviewed = await reviewWithConfiguredModel({
-      endpoint,
-      apiKey,
-      model,
-      targetSha: prepared.target.target_sha,
-      projectKinds: prepared.project_kinds,
-      chunks,
-      deterministicFindings,
-      relationships: prepared.relationships,
-      promptPolicyVersion: prepared.prompt_policy_version,
-      scannerPolicyVersion: prepared.scanner_policy_version,
-      rolePolicies: policy.model.rolePolicies,
-      maxOutputTokensPerRole: policy.model.maxOutputTokensPerRole,
-      cache,
-      ...(requestCompletion === undefined ? {} : { requestCompletion }),
-    });
-    if (
-      reviewed.endpointOrigin !== configured.origin ||
-      reviewed.provider !== configured.hostname
-    ) {
-      throw new Error("Model role endpoint identity changed.");
-    }
-    modelFindings.push(...reviewed.findings);
-    usage = addModelUsage(usage, reviewed.usage);
-    cacheHits += reviewed.cacheHits;
-    cacheMisses += reviewed.cacheMisses;
-    for (const role of ["analyzer", "challenger", "arbiter"] as const) {
-      roleCompletion[role].required += reviewed.roleCompletion[role].required;
-      roleCompletion[role].completed += reviewed.roleCompletion[role].completed;
-    }
-  };
-
+  const chunks: ModelChunk[] = [];
   for (let position = 0; position < prepared.chunks.length; position += 1) {
-    const chunk = await loadChunk(sessionRoot, prepared, position);
-    const assigned = [...remaining.values()].filter((finding) =>
-      chunkContainsFinding(chunk, finding),
-    );
-    assigned.forEach(({ fingerprint }) => remaining.delete(fingerprint));
-    await reviewUnit([chunk], assigned);
-    completedChunkIds.push(chunk.id);
+    chunks.push(await loadChunk(sessionRoot, prepared, position));
   }
-  if ([...remaining.values()].some(({ line_start }) => line_start !== null)) {
-    throw new ScanPhaseError(
-      "MODEL_EVIDENCE_INVALID",
-      "repository",
-      "A line-bounded deterministic finding has no matching model segment.",
-    );
-  }
-  if (prepared.chunks.length === 0 || remaining.size > 0) {
-    await reviewUnit([], [...remaining.values()]);
-  }
-  buildAutomatedReportFindings(modelFindings);
+  const reviewed = await reviewRepositoryWithConfiguredModel({
+    endpoint,
+    apiKey,
+    model,
+    targetSha: prepared.target.target_sha,
+    projectKinds: prepared.project_kinds,
+    chunks,
+    deterministicFindings: prepared.deterministic_findings,
+    tools: prepared.tools.map(({ name, status }) => ({ name, status })),
+    promptPolicyVersion: prepared.prompt_policy_version,
+    scannerPolicyVersion: prepared.scanner_policy_version,
+    chunkReviewPolicy: policy.model.chunkReviewPolicy,
+    synthesisPolicy: policy.model.synthesisPolicy,
+    maxOutputTokensPerChunkReview: policy.model.maxOutputTokensPerChunkReview,
+    maxChunkReviewCharacters: policy.model.maxChunkReviewCharacters,
+    maxOutputTokensForSynthesis: policy.model.maxOutputTokensForSynthesis,
+    cache,
+    ...(requestTextCompletion === undefined ? {} : { requestTextCompletion }),
+    ...(requestStructuredCompletion === undefined
+      ? {}
+      : { requestStructuredCompletion }),
+  });
+  if (
+    reviewed.endpointOrigin !== configured.origin ||
+    reviewed.provider !== configured.hostname ||
+    reviewed.model !== model
+  )
+    throw new Error("Model review endpoint identity changed.");
   return CompletedReviewSchema.parse({
-    schema_version: 2,
+    schema_version: 3,
     session_id: prepared.session_id,
     status: "completed",
     endpoint_origin: configured.origin,
     provider: configured.hostname,
     model,
-    completed_chunk_ids: completedChunkIds,
-    findings: [...modelFindings].sort((left, right) =>
-      left.fingerprint.localeCompare(right.fingerprint),
-    ),
-    role_completion: roleCompletion,
-    usage,
-    cache_hits: cacheHits,
-    cache_misses: cacheMisses,
+    completed_chunk_ids: reviewed.completedChunkIds,
+    synthesis: {
+      assessment: reviewed.synthesis.assessment,
+      recap: reviewed.synthesis.recap,
+      concerns: reviewed.synthesis.concerns.map(
+        ({
+          title,
+          category,
+          severity,
+          confidence,
+          explanation,
+          evidence_ids,
+        }) => ({
+          title,
+          category,
+          severity,
+          confidence,
+          explanation,
+          evidence_ids,
+        }),
+      ),
+    },
+    stage_completion: {
+      chunk_review: reviewed.stageCompletion.chunkReview,
+      synthesis: reviewed.stageCompletion.synthesis,
+    },
+    usage: reviewed.usage,
+    cache_hits: reviewed.cacheHits,
+    cache_misses: reviewed.cacheMisses,
+  });
+}
+
+function projectSynthesisFindings(
+  synthesis: ValidatedRepositorySynthesis,
+  promptPolicyVersion: string,
+): z.infer<typeof FindingV2Schema>[] {
+  return synthesis.concerns.map((concern) => {
+    const evidence = concern.evidence[0]!;
+    return FindingV2Schema.parse({
+      origin: "model:repository-review",
+      rule_id: `repository-concern:${concern.id.slice(0, 16)}`,
+      category: concern.category,
+      severity: concern.severity,
+      confidence: concern.confidence,
+      path: evidence.path,
+      line_start: evidence.lineStart,
+      line_end: evidence.lineEnd,
+      evidence_sha: evidence.targetSha,
+      title: concern.title,
+      explanation: concern.explanation,
+      fingerprint: concern.fingerprint,
+      disposition: "confirmed",
+      automated_review: {
+        analyzer_policy: promptPolicyVersion,
+        challenger_policy: promptPolicyVersion,
+        arbiter_policy: promptPolicyVersion,
+      },
+    });
   });
 }
 
@@ -795,7 +774,30 @@ export async function finalizePreparedSession({
       JSON.stringify(expectedChunkIds)
     )
       throw new Error("Model review did not complete every prepared chunk.");
-    const automated = buildAutomatedReportFindings(review.findings);
+    if (
+      review.stage_completion.chunk_review.required !==
+        expectedChunkIds.length ||
+      review.stage_completion.chunk_review.completed !==
+        expectedChunkIds.length ||
+      review.stage_completion.synthesis.required !== 1 ||
+      review.stage_completion.synthesis.completed !== 1
+    )
+      throw new Error("Model review did not complete every required stage.");
+    const chunks: ModelChunk[] = [];
+    for (let position = 0; position < prepared.chunks.length; position += 1)
+      chunks.push(await loadChunk(sessionRoot, prepared, position));
+    const validatedSynthesis = validateRepositorySynthesis(
+      JSON.stringify(review.synthesis),
+      buildEvidenceManifest(
+        chunks,
+        prepared.deterministic_findings,
+        prepared.target.target_sha,
+      ),
+    ).validated;
+    const findings = projectSynthesisFindings(
+      validatedSynthesis,
+      prepared.prompt_policy_version,
+    );
     const reportWithoutIdentity = {
       schema_version: 2 as const,
       report_version: prepared.report_version,
@@ -827,13 +829,20 @@ export async function finalizePreparedSession({
           cache_read_tokens: review.usage.cacheReadTokens,
           reasoning_tokens: review.usage.reasoningTokens,
           total_tokens: review.usage.inputTokens + review.usage.outputTokens,
-          roles: review.role_completion,
+          roles: {
+            analyzer: review.stage_completion.chunk_review,
+            challenger: review.stage_completion.synthesis,
+            arbiter: review.stage_completion.synthesis,
+          },
         },
-        evidence_validation: automated.evidenceValidation,
+        evidence_validation: {
+          status: "completed" as const,
+          validated_findings: findings.length,
+        },
       },
-      result: automated.result,
-      finding_counts: automated.findingCounts,
-      findings: automated.findings,
+      result: deriveV2Result(findings),
+      finding_counts: buildFindingCountsV2(findings),
+      findings,
     };
     const report = sanitizeReportV2({
       ...reportWithoutIdentity,

@@ -36,7 +36,7 @@ async function main() {
     preparedAt: new Date().toISOString(),
     scannerVersion: "0.1.0",
     scannerPolicyVersion: policy.version,
-    promptPolicyVersion: "1",
+    promptPolicyVersion: "repository-review-v2",
     reportVersion: request.report_version,
     supersedesReportId: request.supersedes_report_id,
     mode: request.mode,

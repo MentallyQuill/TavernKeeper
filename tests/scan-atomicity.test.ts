@@ -47,12 +47,11 @@ const policy: ScannerPolicy = {
     protocol: "openai-compatible-chat-completions",
     chunkBytes: 524_288,
     chunkOverlapBytes: 8_192,
-    maxOutputTokensPerRole: 8_192,
-    rolePolicies: {
-      analyzer: "analyzer-v1",
-      challenger: "challenger-v1",
-      arbiter: "arbiter-v1",
-    },
+    maxOutputTokensPerChunkReview: 8_192,
+    maxChunkReviewCharacters: 12_000,
+    maxOutputTokensForSynthesis: 8_192,
+    chunkReviewPolicy: "chunk-review-v2",
+    synthesisPolicy: "repository-synthesis-v2",
   },
   retry: { hoursFromInitialFailure: [1, 2, 3] },
 };
@@ -96,7 +95,7 @@ function spec(): ScanRepositorySpec {
     completedAt: "2026-07-31T12:05:00.000Z",
     scannerVersion: "1.0.0",
     scannerPolicyVersion: "1",
-    promptPolicyVersion: "1",
+    promptPolicyVersion: "repository-review-v2",
     reportVersion: 1,
     supersedesReportId: null,
     mode: "standard",
@@ -172,15 +171,18 @@ function dependencies(): ScanDependencies {
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
       model: "vendor/model-test",
-      findings: [],
       completedChunkIds: ["c".repeat(64)],
-      roleCompletion: {
-        analyzer: { required: 1, completed: 1 },
-        challenger: { required: 1, completed: 1 },
-        arbiter: { required: 1, completed: 1 },
+      synthesis: {
+        assessment: "no_concerning_evidence" as const,
+        recap: "The completed review found no review-level concern.",
+        concerns: [],
+      },
+      stageCompletion: {
+        chunkReview: { required: 1, completed: 1 },
+        synthesis: { required: 1 as const, completed: 1 as const },
       },
       cacheHits: 0,
-      cacheMisses: 3,
+      cacheMisses: 2,
       usage: {
         inputTokens: 100,
         outputTokens: 20,
@@ -417,28 +419,33 @@ describe("atomic repository scan", () => {
           const complete = deps.review;
           deps.review = async (reviewSpec) => ({
             ...(await complete(reviewSpec)),
-            findings: [
-              {
-                origin: "model:provider-example",
-                rule_id: "invalid-path",
-                category: "credential-theft",
-                severity: "high",
-                confidence: "high",
-                path: "../outside.ts",
-                line_start: 1,
-                line_end: 1,
-                evidence_sha: null,
-                title: "Invalid path",
-                explanation: "This finding must fail report validation.",
-                fingerprint: "9".repeat(64),
-                disposition: "confirmed",
-                automated_review: {
-                  analyzer_policy: "analyzer-v1",
-                  challenger_policy: "challenger-v1",
-                  arbiter_policy: "arbiter-v1",
+            synthesis: {
+              assessment: "concerning" as const,
+              recap: "The review found one repository-level concern.",
+              concerns: [
+                {
+                  id: "8".repeat(64),
+                  fingerprint: "9".repeat(64),
+                  title: "Invalid path",
+                  category: "credential-theft",
+                  severity: "high",
+                  confidence: "high",
+                  explanation: "This finding must fail report validation.",
+                  evidence_ids: ["source-000001"],
+                  evidence: [
+                    {
+                      evidenceId: "source-000001",
+                      kind: "source" as const,
+                      path: "../outside.ts",
+                      lineStart: 1,
+                      lineEnd: 1,
+                      targetSha,
+                      contentDigest: helloHash,
+                    },
+                  ],
                 },
-              },
-            ],
+              ],
+            },
           });
         },
       },
