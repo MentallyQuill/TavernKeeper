@@ -9,6 +9,7 @@ import { safeCliErrorRecord } from "../src/cli/io.js";
 import { loadScannerPins } from "../src/config/policy.js";
 import { ProcessCommandRunner } from "../src/process/command-runner.js";
 import { runGitleaks } from "../src/scanners/gitleaks.js";
+import { runMalcontent } from "../src/scanners/malcontent.js";
 import { runOpenGrep } from "../src/scanners/opengrep.js";
 import { resolveToolsDirectory } from "./verify-scanners.mjs";
 
@@ -47,10 +48,11 @@ async function main() {
         "",
       ].join("\n"),
     );
+    await writeFile(join(fixture, "src", "harmless.txt"), "hello tavern\n");
     await git(fixture, ["init", "--quiet"]);
     await git(fixture, ["config", "user.name", "TavernKeeper CI"]);
     await git(fixture, ["config", "user.email", "ci@invalid.example"]);
-    await git(fixture, ["add", "--", "src/index.js"]);
+    await git(fixture, ["add", "--", "src/index.js", "src/harmless.txt"]);
     await git(fixture, ["commit", "--quiet", "-m", "scanner fixture"]);
     const targetSha = (await git(fixture, ["rev-parse", "HEAD"])).stdout.trim();
     const runner = new ProcessCommandRunner();
@@ -77,6 +79,25 @@ async function main() {
     });
     process.stdout.write(
       `Scanner adapter smoke passed: ${opengrep.name} (${opengrep.findings.length} findings).\n`,
+    );
+
+    const malcontent = await runMalcontent({
+      root: fixture,
+      inputs: [
+        {
+          path: "src/harmless.txt",
+          bytes: 13,
+          sha256: "0".repeat(64),
+          kind: "text",
+        },
+      ],
+      runner,
+      executable: join(toolsDir, "bin", "malcontent"),
+      version: pins.malcontent.version,
+      temporaryRoot: join(toolsDir, "tmp"),
+    });
+    process.stdout.write(
+      `Scanner adapter smoke passed: ${malcontent.name} (${malcontent.findings.length} findings).\n`,
     );
   } finally {
     await rm(fixture, { recursive: true, force: true });

@@ -27,7 +27,7 @@ const FileReportSchema = z.looseObject({
   Behaviors: z.array(BehaviorSchema).max(100_000),
 });
 const MalcontentReportSchema = z.looseObject({
-  Files: z.record(z.string(), FileReportSchema),
+  Files: z.record(z.string(), FileReportSchema).optional().default({}),
 });
 
 function portableOutputPath(root: string, value: string) {

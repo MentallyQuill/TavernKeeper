@@ -344,6 +344,23 @@ describe("conditional scanner adapters", () => {
     expect(runner.calls).toHaveLength(0);
   });
 
+  test("malcontent accepts a clean report with the omitted empty Files field", async () => {
+    const runner = new JsonRunner("{}");
+
+    await expect(
+      runMalcontent({
+        root: repositoryRoot,
+        inputs: [file("bin/clean-helper.exe")],
+        runner,
+        version: "1.25.7",
+      }),
+    ).resolves.toMatchObject({
+      name: "malcontent",
+      status: "completed",
+      findings: [],
+    });
+  });
+
   test("malcontent rejects malformed JSON instead of returning empty coverage", async () => {
     const runner = new JsonRunner("not-json");
 
