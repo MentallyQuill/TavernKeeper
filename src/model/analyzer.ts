@@ -19,7 +19,12 @@ export interface DeterministicEvidence {
 }
 
 function invalid(message: string): never {
-  throw new ModelRequestError("MODEL_INVALID_RESPONSE", "repository", message);
+  throw new ModelRequestError(
+    "MODEL_INVALID_RESPONSE",
+    "repository",
+    message,
+    "role_schema_analyzer",
+  );
 }
 
 function sameEvidence(left: EvidenceReference, right: EvidenceReference) {

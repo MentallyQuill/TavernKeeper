@@ -10,7 +10,12 @@ import {
 import { publicClaim } from "./challenger.js";
 
 function invalid(message: string): never {
-  throw new ModelRequestError("MODEL_INVALID_RESPONSE", "repository", message);
+  throw new ModelRequestError(
+    "MODEL_INVALID_RESPONSE",
+    "repository",
+    message,
+    "role_schema_arbiter",
+  );
 }
 
 export const arbiterSystemPrompt =

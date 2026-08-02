@@ -3,6 +3,7 @@ import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 
 import { ScannerComponents } from "../scanners/types.js";
+import { ModelResponseDiagnostics } from "../model/openai-compatible-client.js";
 
 export async function readJsonFile(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8"));
@@ -57,6 +58,7 @@ export function safeCliErrorRecord(error: unknown): {
   code: string;
   scope: "repository" | "system";
   component?: (typeof ScannerComponents)[number];
+  diagnostic?: (typeof ModelResponseDiagnostics)[number];
 } {
   const candidateCode =
     error !== null &&
@@ -84,7 +86,19 @@ export function safeCliErrorRecord(error: unknown): {
   const component = ScannerComponents.find(
     (value) => value === candidateComponent,
   );
-  return component === undefined ? { code, scope } : { code, scope, component };
+  const candidateDiagnostic =
+    error !== null && typeof error === "object" && "diagnostic" in error
+      ? error.diagnostic
+      : undefined;
+  const diagnostic = ModelResponseDiagnostics.find(
+    (value) => value === candidateDiagnostic,
+  );
+  return {
+    code,
+    scope,
+    ...(component === undefined ? {} : { component }),
+    ...(diagnostic === undefined ? {} : { diagnostic }),
+  };
 }
 
 export function runJsonCli(main: () => Promise<unknown>) {

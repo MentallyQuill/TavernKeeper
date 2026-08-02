@@ -78,7 +78,7 @@ async function expectPolicyFailure(
 }
 
 describe("least-privilege GitHub Actions orchestration", () => {
-  test("provider connectivity checks are staff-authorized and non-mutating", async () => {
+  test("provider compatibility checks are staff-authorized and non-mutating", async () => {
     const value = await workflow("provider-check.yml");
     const text = await readFile(
       new URL("../.github/workflows/provider-check.yml", import.meta.url),

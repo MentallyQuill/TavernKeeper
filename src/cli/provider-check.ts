@@ -1,8 +1,8 @@
-import { checkModelProviderConnectivity } from "../model/openai-compatible-client.js";
+import { checkModelProviderCompatibility } from "../model/provider-check.js";
 import { isDirectExecution, runJsonCli } from "./io.js";
 
 export function checkConfiguredProvider(environment: NodeJS.ProcessEnv) {
-  return checkModelProviderConnectivity({
+  return checkModelProviderCompatibility({
     endpoint: environment.TAVERNKEEPER_API_ENDPOINT ?? "",
     apiKey: environment.TAVERNKEEPER_API_KEY ?? "",
     model: environment.TAVERNKEEPER_MODEL ?? "",

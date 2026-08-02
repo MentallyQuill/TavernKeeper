@@ -55,11 +55,25 @@ export type ModelRequestErrorCode =
   | "MODEL_INVALID_RESPONSE"
   | "MODEL_EVIDENCE_INVALID";
 
+export const ModelResponseDiagnostics = [
+  "output_limit",
+  "response_content",
+  "response_envelope",
+  "response_json",
+  "response_size",
+  "response_usage",
+  "role_schema_analyzer",
+  "role_schema_arbiter",
+  "role_schema_challenger",
+] as const;
+export type ModelResponseDiagnostic = (typeof ModelResponseDiagnostics)[number];
+
 export class ModelRequestError extends Error {
   constructor(
     readonly code: ModelRequestErrorCode,
     readonly scope: "repository" | "system",
     message: string,
+    readonly diagnostic?: ModelResponseDiagnostic,
   ) {
     super(message);
     this.name = "ModelRequestError";
@@ -67,36 +81,41 @@ export class ModelRequestError extends Error {
 }
 
 const NonNegativeIntegerSchema = z.number().int().nonnegative();
-const ProviderResponseSchema = z.looseObject({
-  id: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u),
+const CompletionIdSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u);
+const ProviderUsageSchema = z.looseObject({
+  prompt_tokens: NonNegativeIntegerSchema.optional(),
+  input_tokens: NonNegativeIntegerSchema.optional(),
+  completion_tokens: NonNegativeIntegerSchema.optional(),
+  output_tokens: NonNegativeIntegerSchema.optional(),
+  cache_read_input_tokens: NonNegativeIntegerSchema.optional(),
+  reasoning_tokens: NonNegativeIntegerSchema.optional(),
+  prompt_tokens_details: z
+    .looseObject({ cached_tokens: NonNegativeIntegerSchema.optional() })
+    .optional(),
+  input_tokens_details: z
+    .looseObject({ cached_tokens: NonNegativeIntegerSchema.optional() })
+    .optional(),
+  completion_tokens_details: z
+    .looseObject({ reasoning_tokens: NonNegativeIntegerSchema.optional() })
+    .optional(),
+  output_tokens_details: z
+    .looseObject({ reasoning_tokens: NonNegativeIntegerSchema.optional() })
+    .optional(),
+});
+const ProviderEnvelopeSchema = z.looseObject({
+  id: z.unknown(),
   choices: z
     .array(
       z.looseObject({
-        message: z.looseObject({ content: z.string() }),
+        message: z.looseObject({ content: z.unknown() }),
+        finish_reason: z.unknown().optional(),
       }),
     )
     .min(1)
     .max(100),
-  usage: z.looseObject({
-    prompt_tokens: NonNegativeIntegerSchema.optional(),
-    input_tokens: NonNegativeIntegerSchema.optional(),
-    completion_tokens: NonNegativeIntegerSchema.optional(),
-    output_tokens: NonNegativeIntegerSchema.optional(),
-    cache_read_input_tokens: NonNegativeIntegerSchema.optional(),
-    reasoning_tokens: NonNegativeIntegerSchema.optional(),
-    prompt_tokens_details: z
-      .looseObject({ cached_tokens: NonNegativeIntegerSchema.optional() })
-      .optional(),
-    input_tokens_details: z
-      .looseObject({ cached_tokens: NonNegativeIntegerSchema.optional() })
-      .optional(),
-    completion_tokens_details: z
-      .looseObject({ reasoning_tokens: NonNegativeIntegerSchema.optional() })
-      .optional(),
-    output_tokens_details: z
-      .looseObject({ reasoning_tokens: NonNegativeIntegerSchema.optional() })
-      .optional(),
-  }),
+  usage: z.unknown(),
 });
 
 function privateIpv4(address: string) {
@@ -212,6 +231,7 @@ async function readBoundedResponse(response: Response, maximumBytes: number) {
         "MODEL_INVALID_RESPONSE",
         "system",
         "Model response exceeded its byte ceiling.",
+        "response_size",
       );
     }
     chunks.push(value);
@@ -220,7 +240,7 @@ async function readBoundedResponse(response: Response, maximumBytes: number) {
 }
 
 function usageFromResponse(
-  usage: z.infer<typeof ProviderResponseSchema>["usage"],
+  usage: z.infer<typeof ProviderUsageSchema>,
 ): ModelUsage {
   const inputTokens = usage.prompt_tokens ?? usage.input_tokens;
   const outputTokens = usage.completion_tokens ?? usage.output_tokens;
@@ -229,6 +249,7 @@ function usageFromResponse(
       "MODEL_INVALID_RESPONSE",
       "system",
       "Model response omitted actual input or output usage.",
+      "response_usage",
     );
   return {
     inputTokens,
@@ -406,14 +427,12 @@ export async function requestStructuredCompletion(
       `Configured model returned HTTP ${response.status}.`,
     );
 
-  let parsed: z.infer<typeof ProviderResponseSchema>;
+  let decoded: unknown;
   try {
-    parsed = ProviderResponseSchema.parse(
-      JSON.parse(
-        await readBoundedResponse(
-          response,
-          request.maxResponseBytes ?? 5_000_000,
-        ),
+    decoded = JSON.parse(
+      await readBoundedResponse(
+        response,
+        request.maxResponseBytes ?? 5_000_000,
       ),
     );
   } catch (error) {
@@ -421,14 +440,60 @@ export async function requestStructuredCompletion(
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Configured model returned malformed structured output.",
+      "Configured model returned malformed JSON.",
+      "response_json",
     );
   }
+  const envelope = ProviderEnvelopeSchema.safeParse(decoded);
+  if (!envelope.success)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model returned an invalid response envelope.",
+      "response_envelope",
+    );
+  const parsedId = CompletionIdSchema.safeParse(envelope.data.id);
+  if (!parsedId.success)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model returned an invalid completion identity.",
+      "response_envelope",
+    );
+  const firstChoice = envelope.data.choices[0]!;
+  if (
+    firstChoice.finish_reason === "length" ||
+    firstChoice.finish_reason === "max_tokens"
+  )
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model exhausted its output allowance.",
+      "output_limit",
+    );
+  if (
+    typeof firstChoice.message.content !== "string" ||
+    firstChoice.message.content.trim() === ""
+  )
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model omitted its final structured content.",
+      "response_content",
+    );
+  const parsedUsage = ProviderUsageSchema.safeParse(envelope.data.usage);
+  if (!parsedUsage.success)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Configured model returned invalid usage metadata.",
+      "response_usage",
+    );
   return {
-    completionId: parsed.id,
+    completionId: parsedId.data,
     endpointOrigin: endpoint.origin,
     provider: endpoint.hostname,
-    content: parsed.choices[0]!.message.content,
-    usage: usageFromResponse(parsed.usage),
+    content: firstChoice.message.content,
+    usage: usageFromResponse(parsedUsage.data),
   };
 }
