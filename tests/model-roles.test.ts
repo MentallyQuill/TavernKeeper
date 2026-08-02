@@ -12,6 +12,10 @@ import {
   type ConfiguredModelReviewSpec,
 } from "../src/model/model-review.js";
 import { ModelRequestError } from "../src/model/openai-compatible-client.js";
+import {
+  repositorySynthesisInput,
+  validateRepositorySynthesis,
+} from "../src/model/repository-synthesis.js";
 import { normalizeFinding } from "../src/scanners/types.js";
 
 const targetSha = "a".repeat(40);
@@ -445,6 +449,12 @@ describe("configured repository review", () => {
     expect(requestTextCompletion).toHaveBeenCalledTimes(2);
     expect(requestStructuredCompletion).toHaveBeenCalledTimes(3);
     expect(result).toMatchObject({ cacheHits: 4, cacheMisses: 3 });
+    expect(result.usage).toEqual({
+      inputTokens: 5,
+      outputTokens: 10,
+      cacheReadTokens: 15,
+      reasoningTokens: 20,
+    });
 
     const unusedText = vi.fn();
     const unusedStructured = vi.fn();
@@ -458,6 +468,120 @@ describe("configured repository review", () => {
     expect(unusedText).not.toHaveBeenCalled();
     expect(unusedStructured).not.toHaveBeenCalled();
     expect(resumed).toMatchObject({ cacheHits: 3, cacheMisses: 0 });
+  });
+
+  test("canonicalizes evidence order before assigning stable concern identities", () => {
+    const manifest = buildEvidenceManifest(chunks, [finding], targetSha);
+    const concern = {
+      title: "Untrusted execution path",
+      category: "unsafe-execution",
+      severity: "high",
+      confidence: "high",
+      explanation: "Submitted source and tool evidence support the concern.",
+    } as const;
+    const forward = validateRepositorySynthesis(
+      JSON.stringify({
+        assessment: "concerning",
+        recap: "The completed review found an execution concern.",
+        concerns: [
+          {
+            ...concern,
+            evidence_ids: ["source-000001", "tool-000001"],
+          },
+        ],
+      }),
+      manifest,
+    );
+    const reversed = validateRepositorySynthesis(
+      JSON.stringify({
+        assessment: "concerning",
+        recap: "The completed review found an execution concern.",
+        concerns: [
+          {
+            ...concern,
+            evidence_ids: ["tool-000001", "source-000001"],
+          },
+        ],
+      }),
+      manifest,
+    );
+
+    expect(reversed.validated.concerns[0]).toEqual(
+      forward.validated.concerns[0],
+    );
+    expect(forward.validated.concerns[0]?.evidence_ids).toEqual([
+      "source-000001",
+      "tool-000001",
+    ]);
+  });
+
+  test("rejects duplicate computed concern identities", () => {
+    const concern = {
+      title: "Untrusted execution path",
+      category: "unsafe-execution",
+      severity: "high",
+      confidence: "high",
+      explanation: "Submitted source evidence supports the concern.",
+      evidence_ids: ["source-000001"],
+    } as const;
+    expect(() =>
+      validateRepositorySynthesis(
+        JSON.stringify({
+          assessment: "concerning",
+          recap: "The completed review found duplicated concerns.",
+          concerns: [concern, concern],
+        }),
+        buildEvidenceManifest(chunks, [finding], targetSha),
+      ),
+    ).toThrowError(
+      expect.objectContaining({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "repository",
+        diagnostic: "synthesis_evidence",
+      }),
+    );
+  });
+
+  test("rejects not-applicable tool coverage that has manifest signals", async () => {
+    await expectInvalid(
+      configuredSpec({
+        tools: [{ name: "opengrep", status: "not-applicable" }],
+      }),
+      "synthesis_evidence",
+    );
+    expect(() =>
+      repositorySynthesisInput({
+        targetSha,
+        projectKinds: ["extension"],
+        tools: [{ name: "opengrep", status: "not-applicable" }],
+        evidenceManifest: buildEvidenceManifest(chunks, [finding], targetSha),
+        completedChunkReviews: [],
+      }),
+    ).toThrowError(
+      expect.objectContaining({ diagnostic: "synthesis_evidence" }),
+    );
+  });
+
+  test("rejects configured model mismatch at chunk and synthesis boundaries", async () => {
+    const wrongChunkModel = vi.fn(async () => ({
+      ...completion("Bounded private recap.", "wrong-chunk-model"),
+      model: "vendor/other-model",
+    }));
+    await expectInvalid(
+      configuredSpec({ requestTextCompletion: wrongChunkModel }),
+      "chunk_review_identity",
+    );
+    expect(wrongChunkModel).toHaveBeenCalledTimes(3);
+
+    const wrongSynthesisModel = vi.fn(async () => ({
+      ...completion(cleanSynthesis(), "wrong-synthesis-model"),
+      model: "vendor/other-model",
+    }));
+    await expectInvalid(
+      configuredSpec({ requestStructuredCompletion: wrongSynthesisModel }),
+      "synthesis_identity",
+    );
+    expect(wrongSynthesisModel).toHaveBeenCalledTimes(3);
   });
 
   test("fails closed when configured chunks and evidence manifest diverge", async () => {

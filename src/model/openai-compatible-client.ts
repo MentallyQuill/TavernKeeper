@@ -62,6 +62,10 @@ export type ModelRequestErrorCode =
   | "MODEL_EVIDENCE_INVALID";
 
 export const ModelResponseDiagnostics = [
+  "chunk_review_cache",
+  "chunk_review_empty",
+  "chunk_review_identity",
+  "chunk_review_size",
   "output_limit",
   "response_content",
   "response_envelope",
@@ -73,6 +77,10 @@ export const ModelResponseDiagnostics = [
   "role_schema_analyzer",
   "role_schema_arbiter",
   "role_schema_challenger",
+  "synthesis_evidence",
+  "synthesis_identity",
+  "synthesis_inconclusive",
+  "synthesis_schema",
 ] as const;
 export type ModelResponseDiagnostic = (typeof ModelResponseDiagnostics)[number];
 

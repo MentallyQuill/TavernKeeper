@@ -59,6 +59,29 @@ describe("safe CLI error diagnostics", () => {
     ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
   });
 
+  test.each([
+    "chunk_review_cache",
+    "chunk_review_empty",
+    "chunk_review_identity",
+    "chunk_review_size",
+    "synthesis_evidence",
+    "synthesis_identity",
+    "synthesis_inconclusive",
+    "synthesis_schema",
+  ])("retains repository-review diagnostic %s", (diagnostic) => {
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "repository",
+        diagnostic,
+      }),
+    ).toEqual({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic,
+    });
+  });
+
   test("retains only an error-range provider HTTP status", () => {
     expect(
       safeCliErrorRecord({

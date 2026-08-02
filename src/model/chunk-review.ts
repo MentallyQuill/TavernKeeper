@@ -42,6 +42,7 @@ export interface ReviewChunkSpec {
   maxCharacters: number;
   cache: ModelChunkCache;
   requestCompletion?: typeof requestTextCompletion;
+  onProviderUsage?: (usage: ModelUsage) => void;
 }
 
 const zeroUsage: ModelUsage = {
@@ -55,12 +56,12 @@ function digest(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function invalid(message: string, diagnostic: string) {
+function invalid(message: string, diagnostic: ModelResponseDiagnostic) {
   return new ModelRequestError(
     "MODEL_INVALID_RESPONSE",
     "repository",
     message,
-    diagnostic as ModelResponseDiagnostic,
+    diagnostic,
   );
 }
 
@@ -160,6 +161,7 @@ export async function reviewChunk(
     systemContent,
     userContent,
   });
+  spec.onProviderUsage?.(completion.usage);
   if (
     completion.endpointOrigin !== spec.endpointOrigin ||
     completion.provider !== spec.provider ||

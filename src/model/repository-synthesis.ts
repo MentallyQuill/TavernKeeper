@@ -76,6 +76,7 @@ export interface SynthesizeRepositorySpec {
   maxOutputTokens: number;
   cache: ModelChunkCache;
   requestCompletion?: typeof requestStructuredCompletion;
+  onProviderUsage?: (usage: ModelUsage) => void;
 }
 
 const zeroUsage: ModelUsage = {
@@ -112,12 +113,12 @@ function digest(value: string) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function invalid(message: string, diagnostic: string) {
+function invalid(message: string, diagnostic: ModelResponseDiagnostic) {
   return new ModelRequestError(
     "MODEL_INVALID_RESPONSE",
     "repository",
     message,
-    diagnostic as ModelResponseDiagnostic,
+    diagnostic,
   );
 }
 
@@ -209,6 +210,20 @@ export function repositorySynthesisInput(spec: {
   evidenceManifest: EvidenceManifest;
   completedChunkReviews: readonly CompletedChunkReview[];
 }) {
+  if (
+    new Set(spec.tools.map(({ name }) => name)).size !== spec.tools.length ||
+    spec.tools.some(
+      ({ name, status }) =>
+        status === "not-applicable" &&
+        spec.evidenceManifest.scannerSignals.some(
+          ({ origin }) => origin === name,
+        ),
+    )
+  )
+    throw invalid(
+      "Configured tool coverage contradicts repository evidence.",
+      "synthesis_evidence",
+    );
   const declared = new Map(spec.tools.map((tool) => [tool.name, tool.status]));
   for (const signal of spec.evidenceManifest.scannerSignals)
     if (!declared.has(signal.origin)) declared.set(signal.origin, "completed");
@@ -338,7 +353,8 @@ export function validateRepositorySynthesis(
     inspectPublicText(concern.explanation);
   }
   const concerns = parsed.data.concerns.map((concern) => {
-    const locations = concern.evidence_ids.map((identifier) =>
+    const evidenceIds = [...new Set(concern.evidence_ids)].sort();
+    const locations = evidenceIds.map((identifier) =>
       evidenceLocation(evidence.get(identifier)!),
     );
     const identity = JSON.stringify({
@@ -357,10 +373,19 @@ export function validateRepositorySynthesis(
       severity: concern.severity,
       confidence: concern.confidence,
       explanation: concern.explanation,
-      evidence_ids: [...concern.evidence_ids],
+      evidence_ids: evidenceIds,
       evidence: locations,
     };
   });
+  if (
+    new Set(concerns.map(({ id }) => id)).size !== concerns.length ||
+    new Set(concerns.map(({ fingerprint }) => fingerprint)).size !==
+      concerns.length
+  )
+    throw invalid(
+      "The configured model returned duplicate repository concerns.",
+      "synthesis_evidence",
+    );
   return {
     raw: parsed.data,
     validated: {
@@ -431,6 +456,7 @@ export async function synthesizeRepository(
     systemContent,
     userContent,
   });
+  spec.onProviderUsage?.(completion.usage);
   if (
     completion.endpointOrigin !== spec.endpointOrigin ||
     completion.provider !== spec.provider ||

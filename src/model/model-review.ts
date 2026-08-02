@@ -83,6 +83,7 @@ interface ValidatedConfiguration {
 interface CacheCounts {
   hits: number;
   misses: number;
+  usage: ModelUsage;
 }
 
 const zeroUsage: ModelUsage = {
@@ -111,7 +112,7 @@ function repositoryEvidenceError() {
     "MODEL_INVALID_RESPONSE",
     "repository",
     "Configured repository evidence does not match the requested review.",
-    "synthesis_evidence" as never,
+    "synthesis_evidence",
   );
 }
 
@@ -143,7 +144,6 @@ function validateSpec(spec: ConfiguredModelReviewSpec): ValidatedConfiguration {
       "system",
       "Configured model review is incomplete or invalid.",
     );
-
   const canonicalManifest = buildEvidenceManifest(
     spec.chunks,
     spec.deterministicFindings,
@@ -170,6 +170,14 @@ function validateSpec(spec: ConfiguredModelReviewSpec): ValidatedConfiguration {
       "system",
       "Configured model review is incomplete or invalid.",
     );
+  if (
+    tools.some(
+      ({ name, status }) =>
+        status === "not-applicable" &&
+        evidenceManifest.scannerSignals.some(({ origin }) => origin === name),
+    )
+  )
+    throw repositoryEvidenceError();
   return {
     endpointOrigin: endpoint.origin,
     provider: endpoint.hostname,
@@ -192,7 +200,6 @@ async function completeOnce(
   configured: ValidatedConfiguration,
   cacheCounts: CacheCounts,
 ): Promise<CompletedModelReview> {
-  let usage = zeroUsage;
   const completedChunkReviews: CompletedChunkReview[] = [];
   for (const chunk of spec.chunks) {
     const completed = await reviewChunk({
@@ -214,9 +221,11 @@ async function completeOnce(
       ...(spec.requestTextCompletion === undefined
         ? {}
         : { requestCompletion: spec.requestTextCompletion }),
+      onProviderUsage: (usage) => {
+        cacheCounts.usage = addModelUsage(cacheCounts.usage, usage);
+      },
     });
     completedChunkReviews.push(completed);
-    usage = addModelUsage(usage, completed.usage);
     if (completed.cached) cacheCounts.hits += 1;
     else cacheCounts.misses += 1;
   }
@@ -243,8 +252,10 @@ async function completeOnce(
     ...(structuredRequest === undefined
       ? {}
       : { requestCompletion: structuredRequest }),
+    onProviderUsage: (usage) => {
+      cacheCounts.usage = addModelUsage(cacheCounts.usage, usage);
+    },
   });
-  usage = addModelUsage(usage, completedSynthesis.usage);
   if (completedSynthesis.cached) cacheCounts.hits += 1;
   else cacheCounts.misses += 1;
 
@@ -261,7 +272,7 @@ async function completeOnce(
       },
       synthesis: { required: 1, completed: 1 },
     },
-    usage,
+    usage: cacheCounts.usage,
     cacheHits: cacheCounts.hits,
     cacheMisses: cacheCounts.misses,
   };
@@ -271,7 +282,7 @@ export async function reviewRepositoryWithConfiguredModel(
   spec: ConfiguredModelReviewSpec,
 ): Promise<CompletedModelReview> {
   const configured = validateSpec(spec);
-  const cacheCounts = { hits: 0, misses: 0 };
+  const cacheCounts = { hits: 0, misses: 0, usage: zeroUsage };
   for (let attempt = 1; attempt <= ImmediateAttempts; attempt += 1) {
     try {
       return await completeOnce(spec, configured, cacheCounts);
