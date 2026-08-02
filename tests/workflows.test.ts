@@ -371,6 +371,39 @@ describe("least-privilege GitHub Actions orchestration", () => {
     );
   });
 
+  test("workflow policy rejects lowercase approved model secrets outside the review step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  scan:\n",
+          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.tavernkeeper_model }}\n",
+        ),
+      /model secret appears outside a reviewed provider step/u,
+    );
+  });
+
+  test("workflow policy rejects mixed-case bracket model secrets outside the review step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "  scan:\n",
+          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets[ 'TavernKeeper_Model' ] }}\n",
+        ),
+      /model secret appears outside a reviewed provider step/u,
+    );
+  });
+
+  test("workflow policy rejects dynamic secret-context access", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets[env.PROVIDER_SECRET] }}\n",
+        ),
+      /dynamic secrets context access is not allowed/u,
+    );
+  });
+
   test("workflow policy requires exactly one configured-model review step", async () => {
     await expectPolicyFailure(
       (text) =>

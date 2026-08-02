@@ -187,19 +187,31 @@ function locationsMatching(value, pattern) {
 
 function workflowSecretReferences(workflow) {
   const references = [];
+  const dynamicAccesses = [];
   walk(workflow, (candidate, path) => {
     if (typeof candidate !== "string") return;
-    for (const match of candidate.matchAll(/secrets\.([A-Z0-9_]+)/gu))
-      references.push({ name: match[1], path });
-    for (const match of candidate.matchAll(/secrets\[['"]([A-Z0-9_]+)['"]\]/gu))
-      references.push({ name: match[1], path });
+    for (const match of candidate.matchAll(/secrets\s*\.\s*([A-Z0-9_]+)/giu))
+      references.push({ name: match[1].toUpperCase(), path });
+    for (const match of candidate.matchAll(
+      /secrets\s*\[\s*['"]([A-Z0-9_]+)['"]\s*\]/giu,
+    ))
+      references.push({ name: match[1].toUpperCase(), path });
+    for (const expression of candidate.matchAll(/\$\{\{([\s\S]*?)\}\}/gu)) {
+      const withoutLiterals = expression[1].replace(
+        /secrets\s*(?:\.\s*[A-Z0-9_]+|\[\s*(['"])[A-Z0-9_]+\1\s*\])/giu,
+        "",
+      );
+      if (/\bsecrets\b/iu.test(withoutLiterals)) dynamicAccesses.push({ path });
+    }
   });
-  return references;
+  return { references, dynamicAccesses };
 }
 
 function workflowCallSecretDeclarations(workflow) {
   const events = workflow.on ?? workflow.true ?? {};
-  return Object.keys(events.workflow_call?.secrets ?? {});
+  return Object.keys(events.workflow_call?.secrets ?? {}).map((name) =>
+    name.toUpperCase(),
+  );
 }
 
 function normalized(value) {
@@ -270,7 +282,9 @@ function checkSecretPlacement(file, workflow) {
     if (!approvedWorkflowSecretNames.has(name))
       fail(file, `unapproved workflow secret ${name}`);
 
-  const references = workflowSecretReferences(workflow);
+  const { references, dynamicAccesses } = workflowSecretReferences(workflow);
+  for (const _access of dynamicAccesses)
+    fail(file, "dynamic secrets context access is not allowed");
   for (const { name, path } of references) {
     if (!approvedWorkflowSecretNames.has(name)) {
       fail(file, `unapproved workflow secret ${name}`);
@@ -320,7 +334,7 @@ function checkModelReviewPhase(file, workflow) {
       if (
         step?.name === "Review with configured model" ||
         String(step?.run ?? "").includes("review-target") ||
-        workflowSecretReferences(step).some(({ name }) =>
+        workflowSecretReferences(step).references.some(({ name }) =>
           modelProviderSecretNames.has(name),
         )
       )

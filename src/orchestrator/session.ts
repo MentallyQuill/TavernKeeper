@@ -595,7 +595,24 @@ export async function reviewPreparedSession({
   >;
 }): Promise<SessionReview> {
   const prepared = await loadPrepared(sessionRoot);
-  requireTargetManifestV2(parseTargetManifest(manifestInput));
+  const manifest = requireTargetManifestV2(parseTargetManifest(manifestInput));
+  const currentTarget = manifest.repositories.find(
+    ({ repository_id }) => repository_id === prepared.target.repository_id,
+  );
+  if (
+    currentTarget === undefined ||
+    currentTarget.source_id !== prepared.target.source_id ||
+    currentTarget.provider !== prepared.target.provider ||
+    currentTarget.repository !== prepared.target.repository ||
+    currentTarget.canonical_url !== prepared.target.canonical_url ||
+    currentTarget.target_sha !== prepared.target.target_sha
+  )
+    return ObsoleteReviewSchema.parse({
+      schema_version: 3,
+      session_id: prepared.session_id,
+      status: "obsolete",
+      reason: "target-advanced",
+    });
   if (prepared.scanner_policy_version !== policy.version)
     throw new ScanPhaseError(
       "INVALID_SCAN_SPEC",

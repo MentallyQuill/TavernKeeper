@@ -36,7 +36,7 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({
       code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
+      scope: "system",
       diagnostic: "output_limit",
     });
     expect(
@@ -56,14 +56,14 @@ describe("safe CLI error diagnostics", () => {
         scope: "system",
         diagnostic: "role_schema_analyzer",
       }),
-    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
+    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "system" });
     expect(
       safeCliErrorRecord({
         code: "MODEL_INVALID_RESPONSE",
         scope: "system",
         diagnostic: "provider output that must never be logged",
       }),
-    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
+    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "system" });
   });
 
   test.each([

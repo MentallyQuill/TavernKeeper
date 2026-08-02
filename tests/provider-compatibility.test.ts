@@ -94,4 +94,45 @@ describe("model provider compatibility check", () => {
       diagnostic: "synthesis_schema",
     });
   });
+
+  test("rejects a concerning conclusion for the benign compatibility fixture", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 200 }))
+      .mockResolvedValueOnce(
+        compatibleResponse("No review-level concern appears in this chunk."),
+      )
+      .mockResolvedValueOnce(
+        compatibleResponse(
+          JSON.stringify({
+            assessment: "concerning",
+            recap: "The compatibility fixture unexpectedly raised a concern.",
+            concerns: [
+              {
+                title: "Unexpected fixture concern",
+                category: "unsafe-execution",
+                severity: "high",
+                confidence: "high",
+                explanation: "The benign fixture was classified as concerning.",
+                evidence_ids: ["source-000001"],
+              },
+            ],
+          }),
+        ),
+      );
+
+    await expect(
+      checkModelProviderCompatibility({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "synthesis_schema",
+    });
+  });
 });

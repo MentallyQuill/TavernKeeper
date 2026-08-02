@@ -88,6 +88,7 @@ export class ModelRequestError extends Error {
     message: string,
     readonly diagnostic?: ModelResponseDiagnostic,
     readonly httpStatus?: number,
+    readonly usage?: ModelUsage,
   ) {
     super(message);
     this.name = "ModelRequestError";
@@ -286,6 +287,16 @@ function usageFromResponse(
   };
 }
 
+function reportedUsage(value: unknown): ModelUsage | undefined {
+  const parsed = ProviderUsageSchema.safeParse(value);
+  if (!parsed.success) return undefined;
+  try {
+    return usageFromResponse(parsed.data);
+  } catch {
+    return undefined;
+  }
+}
+
 export async function checkModelProviderConnectivity(
   request: ProviderConnectivityRequest,
 ) {
@@ -476,7 +487,12 @@ async function requestCompletion(
       "system",
       "Configured model returned an invalid response envelope.",
       "response_envelope",
+      undefined,
+      decoded !== null && typeof decoded === "object" && "usage" in decoded
+        ? reportedUsage(decoded.usage)
+        : undefined,
     );
+  const completionUsage = reportedUsage(envelope.data.usage);
   const parsedId = CompletionIdSchema.safeParse(envelope.data.id);
   if (!parsedId.success)
     throw new ModelRequestError(
@@ -484,6 +500,8 @@ async function requestCompletion(
       "system",
       "Configured model returned an invalid completion identity.",
       "response_envelope",
+      undefined,
+      completionUsage,
     );
   if (
     envelope.data.model !== undefined &&
@@ -494,6 +512,8 @@ async function requestCompletion(
       "system",
       "Configured model returned an unexpected model identity.",
       "response_envelope",
+      undefined,
+      completionUsage,
     );
   const firstChoice = envelope.data.choices[0]!;
   if (
@@ -510,12 +530,16 @@ async function requestCompletion(
         "system",
         "Configured model exhausted its output allowance.",
         "output_limit",
+        undefined,
+        completionUsage,
       );
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
       "Configured model returned an unsuccessful finish state.",
       "response_envelope",
+      undefined,
+      completionUsage,
     );
   }
   if (
@@ -527,6 +551,8 @@ async function requestCompletion(
       "system",
       "Configured model returned an unsupported tool call.",
       "response_envelope",
+      undefined,
+      completionUsage,
     );
   if (
     typeof firstChoice.message.content !== "string" ||
@@ -537,6 +563,8 @@ async function requestCompletion(
       "system",
       "Configured model omitted its final completion content.",
       "response_content",
+      undefined,
+      completionUsage,
     );
   const parsedUsage = ProviderUsageSchema.safeParse(envelope.data.usage);
   if (!parsedUsage.success)

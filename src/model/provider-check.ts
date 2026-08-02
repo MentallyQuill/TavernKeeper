@@ -111,7 +111,20 @@ export async function checkModelProviderCompatibility(
     schemaName: "tavernkeeper_repository_synthesis",
     jsonSchema: repositorySynthesisJsonSchema,
   });
-  validateRepositorySynthesis(synthesisCompletion.content, evidenceManifest);
+  const synthesis = validateRepositorySynthesis(
+    synthesisCompletion.content,
+    evidenceManifest,
+  );
+  if (
+    synthesis.validated.assessment !== "no_concerning_evidence" ||
+    synthesis.validated.concerns.length !== 0
+  )
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "repository",
+      "Configured model returned an invalid compatibility synthesis conclusion.",
+      "synthesis_schema",
+    );
   return {
     ...connectivity,
     textReview: "passed" as const,

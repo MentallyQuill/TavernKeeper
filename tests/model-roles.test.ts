@@ -11,7 +11,11 @@ import {
   reviewRepositoryWithConfiguredModel,
   type ConfiguredModelReviewSpec,
 } from "../src/model/model-review.js";
-import { ModelRequestError } from "../src/model/openai-compatible-client.js";
+import {
+  ModelRequestError,
+  requestStructuredCompletion,
+  requestTextCompletion,
+} from "../src/model/openai-compatible-client.js";
 import {
   repositorySynthesisInput,
   validateRepositorySynthesis,
@@ -468,6 +472,172 @@ describe("configured repository review", () => {
     expect(unusedText).not.toHaveBeenCalled();
     expect(unusedStructured).not.toHaveBeenCalled();
     expect(resumed).toMatchObject({ cacheHits: 3, cacheMisses: 0 });
+  });
+
+  test("retries real-client truncated chunk output and accumulates reported usage", async () => {
+    const selectedChunks = chunks.slice(0, 1);
+    const evidenceManifest = buildEvidenceManifest(
+      selectedChunks,
+      [finding],
+      targetSha,
+    );
+    let textAttempts = 0;
+    const textFetch = vi.fn<typeof fetch>(async () => {
+      textAttempts += 1;
+      return new Response(
+        JSON.stringify({
+          id: `text-${textAttempts}`,
+          model: "vendor/model:thinking",
+          choices: [
+            {
+              message: { content: "Bounded private recap." },
+              finish_reason: textAttempts < 3 ? "length" : "stop",
+            },
+          ],
+          usage: { prompt_tokens: 10, completion_tokens: 2 },
+        }),
+        { status: 200 },
+      );
+    });
+    const structuredFetch = vi.fn<typeof fetch>(
+      async () =>
+        new Response(
+          JSON.stringify({
+            id: "synthesis-valid",
+            model: "vendor/model:thinking",
+            choices: [
+              { message: { content: cleanSynthesis() }, finish_reason: "stop" },
+            ],
+            usage: { prompt_tokens: 7, completion_tokens: 3 },
+          }),
+          { status: 200 },
+        ),
+    );
+
+    const result = await reviewRepositoryWithConfiguredModel(
+      configuredSpec({
+        chunks: selectedChunks,
+        evidenceManifest,
+        requestTextCompletion: (request) =>
+          requestTextCompletion({
+            ...request,
+            fetchImpl: textFetch,
+            resolveAddresses: async () => ["93.184.216.34"],
+          }),
+        requestStructuredCompletion: (request) =>
+          requestStructuredCompletion({
+            ...request,
+            fetchImpl: structuredFetch,
+            resolveAddresses: async () => ["93.184.216.34"],
+          }),
+      }),
+    );
+
+    expect(textFetch).toHaveBeenCalledTimes(3);
+    expect(structuredFetch).toHaveBeenCalledOnce();
+    expect(result.usage).toEqual({
+      inputTokens: 37,
+      outputTokens: 9,
+      cacheReadTokens: 0,
+      reasoningTokens: 0,
+    });
+  });
+
+  test("does not retry real-client authentication failures", async () => {
+    const selectedChunks = chunks.slice(0, 1);
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () => new Response(null, { status: 401 }),
+    );
+
+    await expect(
+      reviewRepositoryWithConfiguredModel(
+        configuredSpec({
+          chunks: selectedChunks,
+          evidenceManifest: buildEvidenceManifest(
+            selectedChunks,
+            [finding],
+            targetSha,
+          ),
+          requestTextCompletion: (request) =>
+            requestTextCompletion({
+              ...request,
+              fetchImpl,
+              resolveAddresses: async () => ["93.184.216.34"],
+            }),
+        }),
+      ),
+    ).rejects.toMatchObject({
+      code: "MODEL_AUTHENTICATION",
+      scope: "system",
+    });
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  test("reuses real-client chunk cache during synthesis-only retries", async () => {
+    let textCalls = 0;
+    const textFetch = vi.fn<typeof fetch>(async () => {
+      textCalls += 1;
+      return new Response(
+        JSON.stringify({
+          id: `text-cache-${textCalls}`,
+          model: "vendor/model:thinking",
+          choices: [
+            {
+              message: { content: "Bounded private recap." },
+              finish_reason: "stop",
+            },
+          ],
+          usage: { prompt_tokens: 10, completion_tokens: 2 },
+        }),
+        { status: 200 },
+      );
+    });
+    let synthesisCalls = 0;
+    const structuredFetch = vi.fn<typeof fetch>(async () => {
+      synthesisCalls += 1;
+      return new Response(
+        JSON.stringify({
+          id: `synthesis-cache-${synthesisCalls}`,
+          model: "vendor/model:thinking",
+          choices: [
+            {
+              message: {
+                content: synthesisCalls < 3 ? "not json" : cleanSynthesis(),
+              },
+              finish_reason: "stop",
+            },
+          ],
+          usage: { prompt_tokens: 7, completion_tokens: 3 },
+        }),
+        { status: 200 },
+      );
+    });
+
+    const result = await reviewRepositoryWithConfiguredModel(
+      configuredSpec({
+        requestTextCompletion: (request) =>
+          requestTextCompletion({
+            ...request,
+            fetchImpl: textFetch,
+            resolveAddresses: async () => ["93.184.216.34"],
+          }),
+        requestStructuredCompletion: (request) =>
+          requestStructuredCompletion({
+            ...request,
+            fetchImpl: structuredFetch,
+            resolveAddresses: async () => ["93.184.216.34"],
+          }),
+      }),
+    );
+
+    expect(textFetch).toHaveBeenCalledTimes(2);
+    expect(structuredFetch).toHaveBeenCalledTimes(3);
+    expect(result.usage).toEqual({
+      inputTokens: 41,
+      outputTokens: 13,
+      cacheReadTokens: 0,
+      reasoningTokens: 0,
+    });
   });
 
   test("canonicalizes evidence order before assigning stable concern identities", () => {

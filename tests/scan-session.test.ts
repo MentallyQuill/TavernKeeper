@@ -392,7 +392,7 @@ describe("ephemeral split scan session", () => {
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  test("finishes the exact prepared SHA when Tavernary has already advanced", async () => {
+  test("abandons an obsolete target before any model review call", async () => {
     const { root, prepared } = await preparedSession();
     const calls: string[] = [];
     const completions = completionDoubles(calls);
@@ -425,6 +425,55 @@ describe("ephemeral split scan session", () => {
       policy,
       cache: new InMemoryModelChunkCache(),
       requestTextCompletion: completions.text as never,
+      requestStructuredCompletion: completions.structured as never,
+      verifyHead: async () => ({ ok: true, value: targetSha }),
+    });
+
+    expect(review).toEqual({
+      schema_version: 3,
+      session_id: prepared.session_id,
+      status: "obsolete",
+      reason: "target-advanced",
+    });
+    expect(calls).toEqual([]);
+  });
+
+  test("finishes the exact prepared SHA when the target advances after review starts", async () => {
+    const { root, prepared } = await preparedSession();
+    const calls: string[] = [];
+    const completions = completionDoubles(calls);
+    const policy = await loadScannerPolicy(
+      fileURLToPath(
+        new URL("../config/scanner-policy.v1.json", import.meta.url),
+      ),
+    );
+    const currentManifest = {
+      schema_version: 2 as const,
+      generated_at: "2026-07-31T15:30:00.000Z",
+      repositories: [
+        {
+          ...prepared.target,
+          project_kinds: ["extension"] as const,
+          catalog_priority: {
+            top_30: false,
+            first_cataloged_at: "2026-07-01T00:00:00.000Z",
+          },
+        },
+      ],
+    };
+
+    const review = await reviewPreparedSession({
+      sessionRoot: root,
+      manifest: currentManifest,
+      endpoint: "https://provider.example/v1/chat/completions",
+      apiKey: "test-key",
+      model: "vendor/model-test",
+      policy,
+      cache: new InMemoryModelChunkCache(),
+      requestTextCompletion: (async () => {
+        currentManifest.repositories[0]!.target_sha = "c".repeat(40);
+        return completions.text();
+      }) as never,
       requestStructuredCompletion: completions.structured as never,
       verifyHead: async () => ({ ok: true, value: targetSha }),
     });

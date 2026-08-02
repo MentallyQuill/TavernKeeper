@@ -122,6 +122,28 @@ function invalid(message: string, diagnostic: ModelResponseDiagnostic) {
   );
 }
 
+function repositoryCompletionError(
+  error: unknown,
+  onProviderUsage?: (usage: ModelUsage) => void,
+) {
+  if (
+    error instanceof ModelRequestError &&
+    error.code === "MODEL_INVALID_RESPONSE" &&
+    error.scope === "system"
+  ) {
+    if (error.usage !== undefined) onProviderUsage?.(error.usage);
+    return new ModelRequestError(
+      error.code,
+      "repository",
+      error.message,
+      error.diagnostic,
+      error.httpStatus,
+      error.usage,
+    );
+  }
+  return error;
+}
+
 function inspectPublicText(value: string) {
   if (
     /[\u0000-\u001f\u007f-\u009f]/u.test(value) ||
@@ -444,18 +466,21 @@ export async function synthesizeRepository(
     };
   }
 
-  const completion = await (
-    spec.requestCompletion ?? requestStructuredCompletion
-  )({
-    endpoint: spec.endpoint,
-    apiKey: spec.apiKey,
-    model: spec.model,
-    maxOutputTokens: spec.maxOutputTokens,
-    schemaName: "tavernkeeper_repository_synthesis",
-    jsonSchema: repositorySynthesisJsonSchema,
-    systemContent,
-    userContent,
-  });
+  let completion;
+  try {
+    completion = await (spec.requestCompletion ?? requestStructuredCompletion)({
+      endpoint: spec.endpoint,
+      apiKey: spec.apiKey,
+      model: spec.model,
+      maxOutputTokens: spec.maxOutputTokens,
+      schemaName: "tavernkeeper_repository_synthesis",
+      jsonSchema: repositorySynthesisJsonSchema,
+      systemContent,
+      userContent,
+    });
+  } catch (error) {
+    throw repositoryCompletionError(error, spec.onProviderUsage);
+  }
   spec.onProviderUsage?.(completion.usage);
   if (
     completion.endpointOrigin !== spec.endpointOrigin ||
