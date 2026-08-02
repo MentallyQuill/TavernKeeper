@@ -29,7 +29,7 @@ const allowedTriggers = {
 const permissionProfiles = {
   "ci.yml": {
     workflow: { contents: "read" },
-    jobs: { check: undefined },
+    jobs: { check: undefined, "scanner-toolchain": undefined },
   },
   "deep-scan.yml": {
     workflow: {

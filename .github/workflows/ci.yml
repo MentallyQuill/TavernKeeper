@@ -25,3 +25,19 @@ jobs:
         run: npm ci
       - name: Run complete local gate
         run: npm run check && npm run build
+  scanner-toolchain:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out TavernKeeper
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install and verify the production scanner toolchain
+        run: npm run scanners:install && npm run scanners:verify

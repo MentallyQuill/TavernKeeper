@@ -9,7 +9,7 @@ TavernKeeper does **not** certify that software is safe. A teal result means onl
 Target repositories are treated as hostile data:
 
 - TavernKeeper checks out one validated GitHub repository ID and exact SHA in a disposable GitHub-hosted runner.
-- It never installs target dependencies or runs target scripts, builds, tests, hooks, Actions, macros, containers, or executables.
+- It never installs target dependencies or runs target scripts, builds, tests, hooks, Actions, macros, containers, or executables. Malcontent itself runs as trusted scanner infrastructure in a digest-pinned, network-disabled, read-only container; target containers are never run.
 - It inventories without following links and rejects unsafe or ambiguous paths.
 - Required deterministic coverage cannot be silently skipped.
 - Analyzer, challenger, and arbiter review must cover every selected chunk and preserve deterministic evidence identity.
