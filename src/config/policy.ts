@@ -82,9 +82,9 @@ export const ScannerPinsSchema = z.strictObject({
   }),
   malcontent: z.strictObject({
     version: z.literal("1.25.7"),
-    repository: z.literal("https://github.com/chainguard-dev/malcontent.git"),
-    commit: z.literal("790a3df22393eb9a9c43be78925a3aafee9e1fdb"),
-    go: z.literal("1.26.5"),
+    image: z.literal(
+      "cgr.dev/chainguard/malcontent@sha256:8c976e9536ded51e277f57946bb11e5ecd16989d1f767c5c2f1423722f5c0138",
+    ),
   }),
 });
 

@@ -27,7 +27,7 @@ Tavernary target manifest (repository ID + exact SHA)
 
 ## Trust and execution boundaries
 
-Repository content is untrusted data. Checkout URLs are derived from the validated GitHub repository name; arbitrary clone URLs are not accepted. Git hooks, credential helpers, LFS smudging, submodules, recursive clones, local protocols, and interactive prompts are disabled. Target dependencies, scripts, actions, builds, tests, containers, and executables are never run.
+Repository content is untrusted data. Checkout URLs are derived from the validated GitHub repository name; arbitrary clone URLs are not accepted. Git hooks, credential helpers, LFS smudging, submodules, recursive clones, local protocols, and interactive prompts are disabled. Target dependencies, scripts, actions, builds, tests, containers, and executables are never run. The trusted Malcontent scanner runs in its official linux-amd64 image pinned by immutable digest, with networking disabled, a read-only root filesystem, all capabilities dropped, no-new-privileges, and only the target checkout mounted read-only.
 
 Inventory establishes portable path safety and byte/file coverage before expensive work. Deterministic tools receive TavernKeeper-owned rules and configuration. Raw target data stays in disposable runner storage. Model credentials are injected only into the configured-model review step. The provider endpoint and model identifier are runtime configuration, so the pipeline is model-agnostic.
 

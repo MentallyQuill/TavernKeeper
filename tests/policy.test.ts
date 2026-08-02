@@ -50,9 +50,8 @@ describe("versioned scanner policy", () => {
       },
       malcontent: {
         version: "1.25.7",
-        repository: "https://github.com/chainguard-dev/malcontent.git",
-        commit: "790a3df22393eb9a9c43be78925a3aafee9e1fdb",
-        go: "1.26.5",
+        image:
+          "cgr.dev/chainguard/malcontent@sha256:8c976e9536ded51e277f57946bb11e5ecd16989d1f767c5c2f1423722f5c0138",
       },
     });
   });

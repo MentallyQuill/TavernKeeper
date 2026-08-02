@@ -19,6 +19,18 @@ export interface ScannerArchiveEntry {
 export function releaseDownloads(pins: ScannerPins): ReleaseDownload[];
 export function verifyDigest(bytes: Uint8Array, expected: string): string;
 export function assertSafeArchiveEntries(entries: ScannerArchiveEntry[]): void;
+export function malcontentContainerWrapper(image: string): string;
+export function installMalcontentContainer(spec: {
+  pins: ScannerPins;
+  toolsDir: string;
+  run?: CommandRunner;
+  write?: (
+    path: string,
+    data: string,
+    options: { flag: string; mode: number },
+  ) => Promise<unknown>;
+  chmodFile?: (path: string, mode: number) => Promise<unknown>;
+}): Promise<void>;
 export function installScannerToolchain(spec: {
   pins: ScannerPins;
   toolsDir: string;

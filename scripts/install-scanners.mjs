@@ -8,6 +8,7 @@ import {
   readdir,
   rename,
   rm,
+  writeFile,
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import {
@@ -281,123 +282,103 @@ async function installRelease({
   await chmod(destination, 0o755);
 }
 
-function installEnvironment(toolsDir) {
-  return {
-    CGO_ENABLED: "0",
-    GOCACHE: join(toolsDir, "go-build-cache"),
-    GOMODCACHE: join(toolsDir, "go-module-cache"),
-    GOTOOLCHAIN: "local",
-    GOWORK: "off",
-    HOME: join(toolsDir, "home"),
-    LANG: "C.UTF-8",
-    LC_ALL: "C.UTF-8",
-    PATH: process.env.PATH || "",
-    TMP: join(toolsDir, "tmp"),
-    TEMP: join(toolsDir, "tmp"),
-    TMPDIR: join(toolsDir, "tmp"),
-  };
-}
-
 async function runChecked(run, spec, label) {
   const result = await run(spec);
-  if (result.code !== 0) throw new Error(`${label} failed.`);
+  if (result.code !== 0) {
+    const detail = `${result.stdout}\n${result.stderr}`
+      .replace(/[\u0000-\u001F\u007F]/gu, " ")
+      .trim()
+      .slice(0, 2_000);
+    throw new Error(`${label} failed${detail ? `: ${detail}` : "."}`);
+  }
   return `${result.stdout}\n${result.stderr}`;
 }
 
-async function installMalcontent({ pins, toolsDir, run }) {
-  const source = join(toolsDir, "source", "malcontent");
+export function malcontentContainerWrapper(image) {
+  return [
+    "#!/bin/bash",
+    "set -euo pipefail",
+    `readonly image=${JSON.stringify(image)}`,
+    "readonly docker=/usr/bin/docker",
+    'readonly host_uid="$(/usr/bin/id -u)"',
+    'readonly host_gid="$(/usr/bin/id -g)"',
+    'if [[ ! -x "$docker" ]]; then',
+    '  echo "The trusted Docker runtime is unavailable." >&2',
+    "  exit 127",
+    "fi",
+    'if [[ "$#" -eq 1 && "$1" == "--version" ]]; then',
+    '  exec "$docker" run --rm --pull=never --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=512 --user="$host_uid:$host_gid" "$image" --version',
+    "fi",
+    'if [[ -z "${XDG_CACHE_HOME:-}" ]]; then',
+    '  echo "The isolated Malcontent cache directory is unavailable." >&2',
+    "  exit 2",
+    "fi",
+    '/bin/mkdir -p -- "$XDG_CACHE_HOME"',
+    'exec "$docker" run --rm --pull=never --network=none --read-only --cap-drop=ALL --security-opt=no-new-privileges --pids-limit=512 --user="$host_uid:$host_gid" --tmpfs "/tmp:rw,noexec,nosuid,size=1073741824,uid=$host_uid,gid=$host_gid" --mount "type=bind,source=$PWD,target=$PWD,readonly" --mount "type=bind,source=$XDG_CACHE_HOME,target=$XDG_CACHE_HOME" --workdir "$PWD" --env NO_COLOR=1 --env "XDG_CACHE_HOME=$XDG_CACHE_HOME" "$image" "$@"',
+    "",
+  ].join("\n");
+}
+
+export async function installMalcontentContainer({
+  pins,
+  toolsDir,
+  run = runCommand,
+  write = writeFile,
+  chmodFile = chmod,
+}) {
   const executable = join(toolsDir, "bin", "malcontent");
-  const env = installEnvironment(toolsDir);
-  await rm(source, { recursive: true, force: true });
-  await mkdir(source, { recursive: true });
+  const home = join(toolsDir, "home");
+  const temporary = join(toolsDir, "tmp");
+  const env = {
+    HOME: home,
+    LANG: "C.UTF-8",
+    LC_ALL: "C.UTF-8",
+    PATH: process.env.PATH || "",
+    TMP: temporary,
+    TEMP: temporary,
+    TMPDIR: temporary,
+  };
   await mkdir(join(toolsDir, "bin"), { recursive: true });
-  await mkdir(env.HOME, { recursive: true });
-  await mkdir(env.TMPDIR, { recursive: true });
-
-  const goVersion = await runChecked(
-    run,
-    { command: "go", args: ["version"], cwd: toolsDir, env },
-    "Go version check",
-  );
-  if (
-    !new RegExp(
-      `\\bgo${pins.malcontent.go.replaceAll(".", "\\.")}\\b`,
-      "u",
-    ).test(goVersion)
-  ) {
-    throw new Error(`Malcontent requires Go ${pins.malcontent.go}.`);
-  }
-
-  await runChecked(
-    run,
-    { command: "git", args: ["init", "--quiet"], cwd: source, env },
-    "Malcontent repository initialization",
-  );
+  await mkdir(home, { recursive: true });
+  await mkdir(temporary, { recursive: true });
+  const docker = "/usr/bin/docker";
   await runChecked(
     run,
     {
-      command: "git",
-      args: ["remote", "add", "origin", pins.malcontent.repository],
-      cwd: source,
-      env,
-    },
-    "Malcontent remote configuration",
-  );
-  await runChecked(
-    run,
-    {
-      command: "git",
-      args: ["fetch", "--depth=1", "origin", pins.malcontent.commit],
-      cwd: source,
+      command: docker,
+      args: ["pull", pins.malcontent.image],
+      cwd: toolsDir,
       env,
       timeoutMs: 300_000,
-      maxOutputBytes: 1_048_576,
-    },
-    "Malcontent pinned fetch",
-  );
-  await runChecked(
-    run,
-    {
-      command: "git",
-      args: ["checkout", "--detach", "FETCH_HEAD"],
-      cwd: source,
-      env,
-    },
-    "Malcontent pinned checkout",
-  );
-  await runChecked(
-    run,
-    {
-      command: "go",
-      args: [
-        "build",
-        "-trimpath",
-        "-buildvcs=true",
-        "-o",
-        executable,
-        "./cmd/mal",
-      ],
-      cwd: source,
-      env,
-      timeoutMs: 900_000,
       maxOutputBytes: 4_194_304,
     },
-    "Malcontent pinned build",
+    "Malcontent pinned image pull",
   );
-  await chmod(executable, 0o755);
-  const moduleVersion = await runChecked(
+  const inspected = await runChecked(
     run,
     {
-      command: "go",
-      args: ["version", "-m", executable],
-      cwd: source,
+      command: docker,
+      args: [
+        "image",
+        "inspect",
+        "--format={{index .RepoDigests 0}}",
+        pins.malcontent.image,
+      ],
+      cwd: toolsDir,
       env,
     },
-    "Malcontent module verification",
+    "Malcontent pinned image inspection",
   );
-  if (!moduleVersion.includes(pins.malcontent.commit)) {
-    throw new Error("Malcontent binary does not embed the pinned revision.");
+  if (inspected.trim() !== pins.malcontent.image) {
+    throw new Error(
+      "Malcontent image inspection did not match its digest pin.",
+    );
   }
+  await write(executable, malcontentContainerWrapper(pins.malcontent.image), {
+    flag: "wx",
+    mode: 0o700,
+  });
+  await chmodFile(executable, 0o755);
 }
 
 export async function installScannerToolchain({
@@ -417,7 +398,7 @@ export async function installScannerToolchain({
       extractArchive,
     });
   }
-  await installMalcontent({ pins, toolsDir, run });
+  await installMalcontentContainer({ pins, toolsDir, run });
   return { toolsDir, binDir: join(toolsDir, "bin") };
 }
 

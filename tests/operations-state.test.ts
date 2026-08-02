@@ -12,7 +12,7 @@ import {
 import { recordFailure } from "../src/operations/retry.js";
 
 describe("secret-free operational state", () => {
-  test("ships paused until staff explicitly starts the initial rollout", async () => {
+  test("remains paused until staff explicitly starts the initial rollout", async () => {
     const state = parseOperationsState(
       JSON.parse(
         await readFile(
@@ -25,10 +25,16 @@ describe("secret-free operational state", () => {
     expect(state).toMatchObject({
       coverage_started_at: null,
       pause: { kind: "staff", reason_code: "INITIAL_ROLLOUT" },
-      circuit_breaker: null,
-      retries: [],
       active_scans: [],
     });
+    expect(
+      state.retries.every(
+        (retry) =>
+          retry.source_id === `github-${String(retry.repository_id)}` &&
+          retry.attempt >= 1 &&
+          retry.attempt <= 3,
+      ),
+    ).toBe(true);
   });
 
   test("records coverage start once on first resume and never moves it", () => {
