@@ -231,6 +231,135 @@ describe("automated model roles", () => {
     expect(provider).toHaveBeenCalledTimes(1);
   });
 
+  test("identifies review-level inconclusive findings without exposing model content", async () => {
+    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
+      const input = JSON.parse(request.userContent) as any;
+      const payload = request.schemaName.endsWith("analyzer")
+        ? {
+            assessments: input.deterministic_findings.map((finding: any) => ({
+              fingerprint: finding.fingerprint,
+              evidence: finding.evidence,
+              assessment: "concerning",
+              rationale: "The deterministic signal requires review.",
+            })),
+            discoveries: [],
+          }
+        : request.schemaName.endsWith("challenger")
+          ? {
+              challenges: input.claims.map((claim: any) => ({
+                fingerprint: claim.fingerprint,
+                evidence: claim.evidence,
+                position: "disputes",
+                rationale: "The evidence is ambiguous.",
+              })),
+            }
+          : {
+              decisions: input.claims.map((claim: any) => ({
+                fingerprint: claim.fingerprint,
+                evidence: claim.evidence,
+                disposition: "inconclusive",
+                rationale: "The available evidence cannot resolve the claim.",
+              })),
+            };
+      return {
+        completionId: `completion-${provider.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify(payload),
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      };
+    });
+
+    await expect(
+      reviewWithConfiguredModel(spec(provider)),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "review_inconclusive",
+    });
+  });
+
+  test("identifies duplicate final findings without exposing model content", async () => {
+    const secondChunk: ModelChunk = {
+      ...chunk,
+      id: "f".repeat(64),
+    };
+    const provider = vi.fn(async (request: StructuredCompletionRequest) => {
+      const input = JSON.parse(request.userContent) as any;
+      const payload = request.schemaName.endsWith("analyzer")
+        ? {
+            assessments: [],
+            discoveries: [
+              {
+                rule_id: "duplicate-discovery",
+                category: "credential-theft",
+                severity: "high",
+                confidence: "high",
+                title: "Repeated normalized discovery",
+                explanation: "The same normalized finding appears twice.",
+                remediation: null,
+                evidence: {
+                  path: input.segments[0].path,
+                  line_start: input.segments[0].line_start,
+                  line_end: input.segments[0].line_end,
+                  segment_id: input.segments[0].segment_id,
+                  content_digest: input.segments[0].content_digest,
+                  target_sha: input.target_sha,
+                },
+                assessment: "not-supported",
+                rationale: "The discovery is not supported.",
+              },
+            ],
+          }
+        : request.schemaName.endsWith("challenger")
+          ? {
+              challenges: input.claims.map((claim: any) => ({
+                fingerprint: claim.fingerprint,
+                evidence: claim.evidence,
+                position: "supports",
+                rationale: "The assessment is grounded.",
+              })),
+            }
+          : {
+              decisions: input.claims.map((claim: any) => ({
+                fingerprint: claim.fingerprint,
+                evidence: claim.evidence,
+                disposition: "not-supported",
+                rationale: "The evidence is benign.",
+              })),
+            };
+      return {
+        completionId: `completion-${provider.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify(payload),
+        usage: {
+          inputTokens: 1,
+          outputTokens: 1,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      };
+    });
+
+    await expect(
+      reviewWithConfiguredModel({
+        ...spec(provider),
+        chunks: [chunk, secondChunk],
+        deterministicFindings: [],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "review_duplicate_findings",
+    });
+  });
+
   test("resumes from sanitized role cache without repeating provider calls", async () => {
     const cache = new InMemoryModelChunkCache();
     const provider = vi.fn(async (request: StructuredCompletionRequest) => {

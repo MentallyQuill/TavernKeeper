@@ -412,6 +412,7 @@ export async function reviewWithConfiguredModel(
       "MODEL_INVALID_RESPONSE",
       "repository",
       "A review-level model claim remained inconclusive.",
+      "review_inconclusive",
     );
   }
   const fingerprints = findings.map(({ fingerprint }) => fingerprint);
@@ -420,6 +421,7 @@ export async function reviewWithConfiguredModel(
       "MODEL_INVALID_RESPONSE",
       "repository",
       "Automated review returned duplicate findings.",
+      "review_duplicate_findings",
     );
   }
 

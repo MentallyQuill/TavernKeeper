@@ -42,6 +42,17 @@ describe("safe CLI error diagnostics", () => {
     expect(
       safeCliErrorRecord({
         code: "MODEL_INVALID_RESPONSE",
+        scope: "repository",
+        diagnostic: "review_inconclusive",
+      }),
+    ).toEqual({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "review_inconclusive",
+    });
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_INVALID_RESPONSE",
         scope: "system",
         diagnostic: "provider output that must never be logged",
       }),
