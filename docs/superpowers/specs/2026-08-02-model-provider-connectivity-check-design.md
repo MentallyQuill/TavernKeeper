@@ -47,7 +47,7 @@ HTTP 402 or 429 maps to `MODEL_QUOTA`. Redirects, DNS/network failures, and othe
 
 The first response body is never read. The structured response is read only inside the same bounded production parser and is never printed or persisted. The probe never prints the endpoint, key, model, request body, response headers, response body, assistant content, or reasoning content. Success emits only a small JSON record identifying `passed`, `bearer`, and `structuredOutput: passed`; failure uses TavernKeeper's sanitized JSON CLI error record.
 
-Malformed structured responses may add one allowlisted shape/stage diagnostic such as `output_limit`, `response_content`, `response_usage`, or `role_schema_analyzer`. Arbitrary provider text cannot enter that field. GitHub Actions logs and summaries therefore contain only safe classifications.
+Malformed structured responses may add one allowlisted shape/stage diagnostic such as `output_limit`, `response_content`, `response_usage`, or `role_schema_analyzer`. A rejected provider request may add only its integer HTTP error status from 400 through 599. Arbitrary provider text cannot enter either field. GitHub Actions logs and summaries therefore contain only safe classifications.
 
 ## Testing and release
 

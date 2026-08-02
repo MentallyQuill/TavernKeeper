@@ -59,6 +59,7 @@ export function safeCliErrorRecord(error: unknown): {
   scope: "repository" | "system";
   component?: (typeof ScannerComponents)[number];
   diagnostic?: (typeof ModelResponseDiagnostics)[number];
+  http_status?: number;
 } {
   const candidateCode =
     error !== null &&
@@ -93,11 +94,23 @@ export function safeCliErrorRecord(error: unknown): {
   const diagnostic = ModelResponseDiagnostics.find(
     (value) => value === candidateDiagnostic,
   );
+  const candidateHttpStatus =
+    error !== null && typeof error === "object" && "httpStatus" in error
+      ? error.httpStatus
+      : undefined;
+  const httpStatus =
+    typeof candidateHttpStatus === "number" &&
+    Number.isInteger(candidateHttpStatus) &&
+    candidateHttpStatus >= 400 &&
+    candidateHttpStatus <= 599
+      ? candidateHttpStatus
+      : undefined;
   return {
     code,
     scope,
     ...(component === undefined ? {} : { component }),
     ...(diagnostic === undefined ? {} : { diagnostic }),
+    ...(httpStatus === undefined ? {} : { http_status: httpStatus }),
   };
 }
 
