@@ -492,20 +492,30 @@ async function requestCompletion(
     );
   const firstChoice = envelope.data.choices[0]!;
   if (
-    firstChoice.finish_reason === "length" ||
-    firstChoice.finish_reason === "max_tokens"
-  )
+    firstChoice.finish_reason !== undefined &&
+    firstChoice.finish_reason !== null &&
+    firstChoice.finish_reason !== "stop"
+  ) {
+    if (
+      firstChoice.finish_reason === "length" ||
+      firstChoice.finish_reason === "max_tokens"
+    )
+      throw new ModelRequestError(
+        "MODEL_INVALID_RESPONSE",
+        "system",
+        "Configured model exhausted its output allowance.",
+        "output_limit",
+      );
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Configured model exhausted its output allowance.",
-      "output_limit",
+      "Configured model returned an unsuccessful finish state.",
+      "response_envelope",
     );
+  }
   if (
     firstChoice.message.tool_calls !== undefined ||
-    firstChoice.message.function_call !== undefined ||
-    firstChoice.finish_reason === "tool_calls" ||
-    firstChoice.finish_reason === "function_call"
+    firstChoice.message.function_call !== undefined
   )
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
@@ -520,7 +530,7 @@ async function requestCompletion(
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "system",
-      "Configured model omitted its final structured content.",
+      "Configured model omitted its final completion content.",
       "response_content",
     );
   const parsedUsage = ProviderUsageSchema.safeParse(envelope.data.usage);
