@@ -1,0 +1,45 @@
+name: "Staff: Check configured model provider"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tavernkeeper-provider-check
+  cancel-in-progress: false
+
+jobs:
+  authorize:
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-staff
+    permissions: {}
+    steps:
+      - name: Confirm protected staff authorization
+        run: echo "Provider connectivity check authorized."
+  check:
+    needs: authorize
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
+    permissions:
+      contents: read
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Check configured model provider
+        env:
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
+        run: npm run --silent provider:check

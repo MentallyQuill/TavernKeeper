@@ -1,8 +1,152 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { requestStructuredCompletion } from "../src/model/openai-compatible-client.js";
+import {
+  checkModelProviderConnectivity,
+  requestStructuredCompletion,
+} from "../src/model/openai-compatible-client.js";
 
 describe("OpenAI-compatible client", () => {
+  test("checks provider connectivity with the production Bearer request", async () => {
+    const cancel = vi.fn(async () => undefined);
+    const fetchImpl = vi.fn<typeof fetch>(
+      async (_input, _init) =>
+        ({ status: 200, ok: true, body: { cancel } }) as unknown as Response,
+    );
+    const endpoint = "https://provider.example/api/v1/chat/completions";
+
+    await expect(
+      checkModelProviderConnectivity({
+        endpoint,
+        apiKey: " \r\ntest-key\n ",
+        model: "configured/model",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).resolves.toEqual({ status: "passed", authMode: "bearer" });
+
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    const [input, init] = fetchImpl.mock.calls[0]!;
+    expect(input).toBe(endpoint);
+    expect(init).toMatchObject({
+      method: "POST",
+      redirect: "manual",
+      headers: {
+        Authorization: "Bearer test-key",
+        "Content-Type": "application/json",
+      },
+    });
+    expect(JSON.parse(String(init?.body))).toEqual({
+      model: "configured/model",
+      messages: [{ role: "user", content: "Reply with OK." }],
+      stream: false,
+      temperature: 0,
+      max_tokens: 1,
+    });
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  test("diagnoses providers that accept only the alternate API-key header", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 401 }))
+      .mockResolvedValueOnce(new Response(null, { status: 200 }));
+
+    await expect(
+      checkModelProviderConnectivity({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_AUTH_HEADER_MISMATCH",
+      scope: "system",
+    });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl.mock.calls[0]?.[1]?.headers).toMatchObject({
+      Authorization: "Bearer test-key",
+    });
+    expect(fetchImpl.mock.calls[1]?.[1]?.headers).toEqual({
+      "Content-Type": "application/json",
+      "x-api-key": "test-key",
+    });
+  });
+
+  test("classifies credentials rejected by both supported headers", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 401 }));
+
+    await expect(
+      checkModelProviderConnectivity({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_AUTHENTICATION",
+      scope: "system",
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
+  test("classifies unavailable provider quota without trying another header", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 429 }));
+
+    await expect(
+      checkModelProviderConnectivity({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_QUOTA", scope: "system" });
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  test("classifies provider failures without reading their response body", async () => {
+    const cancel = vi.fn(async () => undefined);
+    const fetchImpl = vi.fn<typeof fetch>(
+      async (_input, _init) =>
+        ({ status: 500, ok: false, body: { cancel } }) as unknown as Response,
+    );
+
+    await expect(
+      checkModelProviderConnectivity({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_PROVIDER", scope: "system" });
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  test("rejects incomplete provider configuration before network access", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const resolveAddresses = vi.fn(async () => ["93.184.216.34"]);
+
+    await expect(
+      checkModelProviderConnectivity({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: " \r\n ",
+        model: "configured/model",
+        fetchImpl,
+        resolveAddresses,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_CONFIGURATION", scope: "system" });
+    expect(resolveAddresses).not.toHaveBeenCalled();
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   test("posts to the exact endpoint, uses assistant content only, and extracts NanoGPT usage", async () => {
     const fetchImpl = vi.fn(
       async (

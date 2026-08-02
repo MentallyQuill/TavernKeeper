@@ -33,6 +33,15 @@ export interface StructuredCompletionRequest {
   maxResponseBytes?: number;
 }
 
+export interface ProviderConnectivityRequest {
+  endpoint: string;
+  apiKey: string;
+  model: string;
+  fetchImpl?: typeof fetch;
+  resolveAddresses?: (hostname: string) => Promise<string[]>;
+  timeoutMs?: number;
+}
+
 export type RequestStructuredCompletion = (
   request: StructuredCompletionRequest,
 ) => Promise<StructuredCompletionResult>;
@@ -40,6 +49,7 @@ export type RequestStructuredCompletion = (
 export type ModelRequestErrorCode =
   | "MODEL_CONFIGURATION"
   | "MODEL_AUTHENTICATION"
+  | "MODEL_AUTH_HEADER_MISMATCH"
   | "MODEL_QUOTA"
   | "MODEL_PROVIDER"
   | "MODEL_INVALID_RESPONSE"
@@ -163,6 +173,30 @@ async function defaultResolveAddresses(hostname: string) {
   );
 }
 
+async function resolvePublicModelEndpoint(
+  endpoint: URL,
+  resolveAddresses?: (hostname: string) => Promise<string[]>,
+) {
+  let addresses: string[];
+  try {
+    addresses = await (resolveAddresses ?? defaultResolveAddresses)(
+      endpoint.hostname,
+    );
+  } catch {
+    throw new ModelRequestError(
+      "MODEL_PROVIDER",
+      "system",
+      "Configured model endpoint could not be resolved.",
+    );
+  }
+  if (addresses.length === 0 || addresses.some(privateIp))
+    throw new ModelRequestError(
+      "MODEL_CONFIGURATION",
+      "system",
+      "Configured model endpoint resolves outside the public network boundary.",
+    );
+}
+
 async function readBoundedResponse(response: Response, maximumBytes: number) {
   if (!response.body) return "";
   const reader = response.body.getReader();
@@ -212,6 +246,84 @@ function usageFromResponse(
   };
 }
 
+export async function checkModelProviderConnectivity(
+  request: ProviderConnectivityRequest,
+) {
+  const endpoint = validateModelEndpoint(request.endpoint);
+  const apiKey = request.apiKey.trim();
+  const model = request.model.trim();
+  if (apiKey === "" || model === "" || model.length > 200)
+    throw new ModelRequestError(
+      "MODEL_CONFIGURATION",
+      "system",
+      "Configured model request is incomplete or invalid.",
+    );
+  await resolvePublicModelEndpoint(endpoint, request.resolveAddresses);
+
+  const body = JSON.stringify({
+    model,
+    messages: [{ role: "user", content: "Reply with OK." }],
+    stream: false,
+    temperature: 0,
+    max_tokens: 1,
+  });
+  const send = async (headers: Record<string, string>) => {
+    let response: Response;
+    try {
+      response = await (request.fetchImpl ?? fetch)(request.endpoint, {
+        method: "POST",
+        redirect: "manual",
+        signal: AbortSignal.timeout(request.timeoutMs ?? 60_000),
+        headers,
+        body,
+      });
+    } catch {
+      throw new ModelRequestError(
+        "MODEL_PROVIDER",
+        "system",
+        "Configured model request failed.",
+      );
+    }
+    await response.body?.cancel();
+    return response;
+  };
+  let response = await send({
+    Authorization: `Bearer ${apiKey}`,
+    "Content-Type": "application/json",
+  });
+  if (response.status === 401 || response.status === 403) {
+    response = await send({
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+    });
+    if (response.ok)
+      throw new ModelRequestError(
+        "MODEL_AUTH_HEADER_MISMATCH",
+        "system",
+        "Configured model accepts only the alternate API-key header.",
+      );
+  }
+  if (response.status === 401 || response.status === 403)
+    throw new ModelRequestError(
+      "MODEL_AUTHENTICATION",
+      "system",
+      "Configured model rejected its credentials.",
+    );
+  if (response.status === 402 || response.status === 429)
+    throw new ModelRequestError(
+      "MODEL_QUOTA",
+      "system",
+      "Configured model quota is unavailable.",
+    );
+  if (!response.ok)
+    throw new ModelRequestError(
+      "MODEL_PROVIDER",
+      "system",
+      `Configured model returned HTTP ${response.status}.`,
+    );
+  return { status: "passed" as const, authMode: "bearer" as const };
+}
+
 export async function requestStructuredCompletion(
   request: StructuredCompletionRequest,
 ): Promise<StructuredCompletionResult> {
@@ -230,25 +342,7 @@ export async function requestStructuredCompletion(
       "system",
       "Configured model request is incomplete or invalid.",
     );
-
-  let addresses: string[];
-  try {
-    addresses = await (request.resolveAddresses ?? defaultResolveAddresses)(
-      endpoint.hostname,
-    );
-  } catch {
-    throw new ModelRequestError(
-      "MODEL_PROVIDER",
-      "system",
-      "Configured model endpoint could not be resolved.",
-    );
-  }
-  if (addresses.length === 0 || addresses.some(privateIp))
-    throw new ModelRequestError(
-      "MODEL_CONFIGURATION",
-      "system",
-      "Configured model endpoint resolves outside the public network boundary.",
-    );
+  await resolvePublicModelEndpoint(endpoint, request.resolveAddresses);
 
   let response: Response;
   try {

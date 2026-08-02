@@ -4,7 +4,7 @@ All privileged workflows run from trusted TavernKeeper code. Keep `main` protect
 
 ## Runtime configuration
 
-Configure these Actions secrets in the unattended `tavernkeeper-scanner` environment. Workflow policy permits provider credentials only on the shared workflow step named `Review with configured model`:
+Configure these Actions secrets in the unattended `tavernkeeper-scanner` environment. Workflow policy permits provider credentials only on the shared workflow step named `Review with configured model` and the staff-authorized workflow step named `Check configured model provider`:
 
 - `TAVERNKEEPER_API_ENDPOINT`: the complete HTTPS OpenAI-compatible Chat Completions endpoint
 - `TAVERNKEEPER_API_KEY`: provider credential
@@ -50,6 +50,7 @@ Repository-specific failures delay only that target. External project owners rec
 
 ## Staff workflows
 
+- `provider-check.yml`: after protected staff authorization, sends one minimal status-only request through the configured production Bearer path. It tries `x-api-key` only after a 401 or 403 to diagnose an authentication-header mismatch. It logs no provider response body and cannot scan repositories, mutate operational state, publish reports, or wake Tavernary.
 - `targeted-scan.yml`: accepts only a repository-ID routing hint from the immutable Tavernary wake-App actor, refetches the public V2 manifest, and derives a standard scan request. Humans begin this flow only through Tavernary's staff-only exact-GitHub-URL action.
 - `deep-scan.yml`: rescan every eligible first-party text file for one repository ID.
 - `policy-rescan.yml`: schedule a staff-initiated campaign under a new policy.

@@ -15,6 +15,7 @@ const allowedTriggers = {
   "deep-scan.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
+  "provider-check.yml": ["workflow_dispatch"],
   "reconcile.yml": [
     "repository_dispatch",
     "schedule",
@@ -48,6 +49,10 @@ const permissionProfiles = {
   "policy-rescan.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: { schedule: { contents: "read", actions: "write" } },
+  },
+  "provider-check.yml": {
+    workflow: { contents: "read" },
+    jobs: { authorize: {}, check: { contents: "read" } },
   },
   "reconcile.yml": {
     workflow: {
@@ -110,6 +115,7 @@ const permissionProfiles = {
 const protectedManual = new Set([
   "deep-scan.yml",
   "policy-rescan.yml",
+  "provider-check.yml",
   "staff-operations.yml",
 ]);
 const mutationJobs = {
@@ -130,6 +136,10 @@ const publisherSecretPattern =
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
 const sensitiveInputPattern =
   /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
+const modelSecretSteps = {
+  "provider-check.yml": new Set(["Check configured model provider"]),
+  "scan-and-publish.yml": new Set(["Review with configured model"]),
+};
 
 function fail(file, message) {
   failures.push(`${file}: ${message}`);
@@ -229,12 +239,12 @@ function checkSecretPlacement(file, workflow) {
     const step = Number.isInteger(stepIndex)
       ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
       : undefined;
-    const reviewEnvironment =
+    const reviewedProviderStep =
       joined.includes(".steps.") &&
       joined.includes(".env.") &&
-      step?.name === "Review with configured model";
-    if (!declaration && !reviewEnvironment)
-      fail(file, "model secret appears outside the review-step env");
+      modelSecretSteps[file]?.has(step?.name);
+    if (!declaration && !reviewedProviderStep)
+      fail(file, "model secret appears outside a reviewed provider step");
   }
 
   for (const location of locationsMatching(workflow, artifactSecretPattern)) {
