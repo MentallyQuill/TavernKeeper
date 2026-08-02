@@ -12,7 +12,7 @@ import {
   restrictedEnvironment,
 } from "../src/process/command-runner.js";
 import { runGitleaks } from "../src/scanners/gitleaks.js";
-import { runOpenGrep } from "../src/scanners/opengrep.js";
+import { OpenGrepReportSchema, runOpenGrep } from "../src/scanners/opengrep.js";
 import { resolveToolsDirectory } from "./verify-scanners.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -153,6 +153,16 @@ async function main() {
         },
       })}\n`,
     );
+    const parsedShape = OpenGrepReportSchema.safeParse(value);
+    if (!parsedShape.success)
+      process.stdout.write(
+        `OpenGrep schema issues: ${JSON.stringify(
+          parsedShape.error.issues.slice(0, 10).map((issue) => ({
+            code: issue.code,
+            path: issue.path,
+          })),
+        )}\n`,
+      );
 
     const opengrep = await runOpenGrep({
       root: fixture,
