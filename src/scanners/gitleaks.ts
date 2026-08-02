@@ -45,6 +45,7 @@ function historyLogOptions(history: GitleaksHistory) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "Gitleaks history bounds are invalid.",
+      "gitleaks",
     );
   return history.baseSha === null
     ? `--no-merges -n ${history.commits} ${targetSha}`
@@ -91,6 +92,7 @@ async function parseReport(reportPath: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "Gitleaks returned malformed JSON output.",
+      "gitleaks",
     );
   }
   try {
@@ -119,6 +121,7 @@ async function parseReport(reportPath: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "Gitleaks returned an invalid finding identity or location.",
+      "gitleaks",
     );
   }
 }
@@ -155,12 +158,13 @@ async function invokeGitleaks({
       shell: false,
     },
   );
-  if (!result.ok) throw scannerExecutionError("Gitleaks", result.error.code);
+  if (!result.ok) throw scannerExecutionError("gitleaks", result.error.code);
   if (result.value.exitCode !== 0 && result.value.exitCode !== 1)
     throw new ScannerError(
       "SCANNER_FAILED",
       "system",
       `Gitleaks exited with code ${result.value.exitCode}.`,
+      "gitleaks",
     );
   return parseReport(reportPath);
 }

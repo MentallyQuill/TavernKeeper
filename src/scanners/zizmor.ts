@@ -103,6 +103,7 @@ function parseReport(root: string, stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "zizmor returned malformed JSON output.",
+      "zizmor",
     );
   }
   try {
@@ -138,6 +139,7 @@ function parseReport(root: string, stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "zizmor returned an invalid finding identity or location.",
+      "zizmor",
     );
   }
 }
@@ -200,6 +202,7 @@ export async function runZizmor({
         "SCANNER_FAILED",
         result.value.exitCode === 3 ? "repository" : "system",
         `zizmor exited with code ${result.value.exitCode}.`,
+        "zizmor",
       );
     const findings = parseReport(root, result.value.stdout);
     if (result.value.exitCode !== 0 && findings.length === 0)
@@ -207,6 +210,7 @@ export async function runZizmor({
         "MALFORMED_SCANNER_OUTPUT",
         "system",
         "zizmor reported findings without structured results.",
+        "zizmor",
       );
     return {
       name: "zizmor",
