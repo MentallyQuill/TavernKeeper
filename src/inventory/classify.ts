@@ -53,13 +53,8 @@ const lockfiles = new Set([
 
 const osvFiles = new Set([
   ...lockfiles,
-  "cargo.toml",
-  "composer.json",
-  "gemfile",
   "go.mod",
-  "package.json",
   "packages.config",
-  "pyproject.toml",
   "requirements.txt",
 ]);
 
