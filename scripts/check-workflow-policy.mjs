@@ -131,6 +131,7 @@ const mutationJobs = {
 };
 const modelSecretPattern =
   /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
+const secondModelSecretPattern = /TAVERNKEEPER_(?:LUNA|SECOND_MODEL)\w*/iu;
 const publisherSecretPattern =
   /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
@@ -232,6 +233,9 @@ function checkPins(file, workflow) {
 }
 
 function checkSecretPlacement(file, workflow) {
+  if (locationsMatching(workflow, secondModelSecretPattern).length > 0)
+    fail(file, "second-model secret is forbidden");
+
   for (const location of locationsMatching(workflow, modelSecretPattern)) {
     const joined = location.path.join(".");
     const declaration = joined.startsWith("on.workflow_call.secrets.");
@@ -264,6 +268,15 @@ function checkSecretPlacement(file, workflow) {
     )
       fail(file, "artifact key appears outside authenticated transport steps");
   }
+}
+
+function checkModelReviewPhase(file, workflow) {
+  if (file !== "scan-and-publish.yml") return;
+  const reviewSteps = (workflow.jobs?.scan?.steps ?? []).filter(
+    (step) => step?.name === "Review with configured model",
+  );
+  if (reviewSteps.length !== 1)
+    fail(file, "must contain exactly one configured-model review step");
 }
 
 function checkEncryptedHandoff(file, workflow) {
@@ -423,6 +436,7 @@ for (const file of names) {
   checkPermissions(file, workflow);
   checkPins(file, workflow);
   checkSecretPlacement(file, workflow);
+  checkModelReviewPhase(file, workflow);
   checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
   checkTargetedAuthority(file, workflow);

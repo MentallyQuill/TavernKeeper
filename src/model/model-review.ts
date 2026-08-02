@@ -45,10 +45,6 @@ export interface ConfiguredModelReviewSpec {
   /** Temporary input compatibility for Task 4 callers. Ignored. */
   relationships?: unknown[];
   /** Temporary input compatibility for Task 4 callers. Ignored. */
-  rolePolicies?: Record<string, string>;
-  /** Temporary input compatibility for Task 4 callers. */
-  maxOutputTokensPerRole?: number;
-  /** Temporary input compatibility for Task 4 callers. Ignored. */
   requestCompletion?: typeof requestStructuredCompletion;
 }
 
@@ -118,13 +114,9 @@ function repositoryEvidenceError() {
 
 function validateSpec(spec: ConfiguredModelReviewSpec): ValidatedConfiguration {
   const endpoint = validateModelEndpoint(spec.endpoint);
-  const maximumOutput = spec.maxOutputTokensPerRole;
-  const maxOutputTokensPerChunkReview =
-    spec.maxOutputTokensPerChunkReview ?? maximumOutput;
-  const maxOutputTokensForSynthesis =
-    spec.maxOutputTokensForSynthesis ?? maximumOutput;
-  const maxChunkReviewCharacters =
-    spec.maxChunkReviewCharacters ?? maximumOutput;
+  const maxOutputTokensPerChunkReview = spec.maxOutputTokensPerChunkReview;
+  const maxOutputTokensForSynthesis = spec.maxOutputTokensForSynthesis;
+  const maxChunkReviewCharacters = spec.maxChunkReviewCharacters;
   if (
     spec.apiKey === null ||
     spec.apiKey.trim() === "" ||

@@ -539,7 +539,7 @@ describe("OpenAI-compatible client", () => {
       systemContent: "System",
       userContent: "User",
       maxOutputTokens: 8_192,
-      schemaName: "tavernkeeper_arbiter",
+      schemaName: "tavernkeeper_repository_synthesis",
       jsonSchema: { type: "object" },
       fetchImpl,
       resolveAddresses: async () => ["104.21.10.20"],
@@ -562,7 +562,7 @@ describe("OpenAI-compatible client", () => {
       response_format: {
         type: "json_schema",
         json_schema: {
-          name: "tavernkeeper_arbiter",
+          name: "tavernkeeper_repository_synthesis",
           strict: true,
         },
       },

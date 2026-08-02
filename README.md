@@ -2,7 +2,7 @@
 
 TavernKeeper performs advisory, exact-commit security scans for public GitHub repositories listed by [Tavernary](https://tavernary.org). It combines deterministic security tools with a required, configurable OpenAI-compatible model review, then publishes immutable, sanitized reports through GitHub Pages.
 
-TavernKeeper does **not** certify that software is safe. A teal result means only that every required deterministic scanner plus analyzer, challenger, and arbiter call completed for the named commit without a confirmed review-level concern. A red result means the completed scan confirmed at least one review-level concern. Tavernary derives orange, gray, and unsupported presentation states locally.
+TavernKeeper does **not** certify that software is safe. A teal result means only that every required deterministic scanner, every private text chunk review, and the single repository synthesis completed for the named commit without a confirmed review-level concern. A red result means the completed scan confirmed at least one review-level concern. Tavernary derives orange, gray, and unsupported presentation states locally.
 
 ## Safety boundary
 
@@ -12,7 +12,7 @@ Target repositories are treated as hostile data:
 - It never installs target dependencies or runs target scripts, builds, tests, hooks, Actions, macros, containers, or executables. Malcontent itself runs as trusted scanner infrastructure in a digest-pinned, network-disabled, read-only container; target containers are never run.
 - It inventories without following links and rejects unsafe or ambiguous paths.
 - Required deterministic coverage cannot be silently skipped.
-- Analyzer, challenger, and arbiter review must cover every selected chunk and preserve deterministic evidence identity.
+- Model review covers the complete eligible current-tree corpus: every selected text segment receives a private review, then one strict JSON synthesis considers all validated chunk recaps, observations, and sanitized tool results.
 - Any incomplete scanner, model, quota, token, validation, or publication operation produces no report.
 - Published JSON and HTML contain normalized findings and coverage totals, not source excerpts, raw payloads, credentials, or local paths.
 
@@ -22,7 +22,7 @@ Tavernary owns the exact-SHA target manifest and the mapping from GitHub reposit
 
 Three single-repository GitHub Apps keep authority separate. Each bridge App can dispatch Actions only in its one destination repository. The dedicated `TavernKeeper Publisher` App is installed only on TavernKeeper and can write repository contents but cannot dispatch Actions. Protected mutation jobs create short-lived Publisher installation tokens; TavernKeeper's workflow-local token remains contents-read.
 
-Only Tavernary staff can initiate targeted standard scans, through Tavernary's exact-GitHub-URL action; TavernKeeper accepts only the authorized wake App's repository-ID hint. Public Issues do not trigger scan workflows. Automatic work is limited to five repositories per batch and two concurrent repositories. A system/provider failure pauses normal scanning; the initial attempt is followed by three retries at one-hour intervals, and TavernKeeper staff are notified only after the third retry fails. TavernKeeper never publishes a reduced-coverage report.
+Only Tavernary staff can initiate targeted standard scans, through Tavernary's exact-GitHub-URL action; TavernKeeper accepts only the authorized wake App's repository-ID hint. Public Issues do not trigger scan workflows. Automatic work is limited to five repositories per batch and two concurrent repositories. A repository-scoped invalid model response receives up to three immediate attempts. A remaining system/provider failure pauses normal scanning; delayed retries run at T+1, T+2, and T+3 hours from the initial failure, and the circuit breaker remains stopped after exhaustion until staff explicitly resume it. TavernKeeper never publishes a reduced-coverage report.
 
 The initial rollout is intentionally staff-paused in `operations/state.json`. See [operations](docs/operations.md), [architecture](docs/architecture.md), and [rule documentation](docs/rules.md).
 

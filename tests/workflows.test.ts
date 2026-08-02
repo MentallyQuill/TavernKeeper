@@ -371,6 +371,28 @@ describe("least-privilege GitHub Actions orchestration", () => {
     );
   });
 
+  test("workflow policy requires exactly one configured-model review step", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Finalize complete review without provider credentials\n",
+          "      - name: Review with configured model\n        run: npm run --silent review-target -- duplicate.json\n      - name: Finalize complete review without provider credentials\n",
+        ),
+      /must contain exactly one configured-model review step/u,
+    );
+  });
+
+  test("workflow policy rejects second-model secrets", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
+          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_LUNA_KEY: ${{ secrets.TAVERNKEEPER_LUNA_KEY }}\n",
+        ),
+      /second-model secret is forbidden/u,
+    );
+  });
+
   test("workflow policy rejects plaintext scan artifact uploads", async () => {
     await expectPolicyFailure(
       (text) => text.replace("path: outcome.enc", "path: candidate.json"),

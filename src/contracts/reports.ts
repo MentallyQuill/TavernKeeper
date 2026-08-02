@@ -129,6 +129,8 @@ export const FindingSchema = z
       });
   });
 
+// Frozen V2 compatibility projection only. The analyzer/challenger/arbiter
+// production role chain was removed in V3.
 const AutomatedReviewSchema = z.strictObject({
   analyzer_policy: VersionSchema,
   challenger_policy: VersionSchema,
@@ -262,6 +264,8 @@ const ModelCoverageSchema = z
     },
   );
 
+// Frozen V2 compatibility projection only. New V3 reports use chunk-review
+// and synthesis completion instead of the removed production role chain.
 const RoleCompletionSchema = z
   .strictObject({
     required: NonNegativeIntegerSchema,
@@ -674,6 +678,8 @@ export function buildModelConcernCounts(
         explanation: concern.explanation,
         fingerprint: concern.id,
         disposition: "confirmed",
+        // V3 publishes the single synthesis above. These names exist only in
+        // the frozen V2 compatibility projection consumed by Tavernary.
         automated_review: {
           analyzer_policy: "v3-counts",
           challenger_policy: "v3-counts",

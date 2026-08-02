@@ -597,7 +597,7 @@ describe("configured repository review", () => {
       "utf8",
     );
     expect(source).not.toMatch(
-      /(?:analyzer|challenger|arbiter|role-policy|automated-disposition|role-schema)/iu,
+      /(?:analyzer|challenger|arbiter|rolePolicies|maxOutputTokensPerRole|role-policy|automated-disposition|role-schema)/iu,
     );
   });
 });

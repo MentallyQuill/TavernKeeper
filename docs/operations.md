@@ -8,7 +8,7 @@ Configure these Actions secrets in the unattended `tavernkeeper-scanner` environ
 
 - `TAVERNKEEPER_API_ENDPOINT`: the complete HTTPS OpenAI-compatible Chat Completions endpoint
 - `TAVERNKEEPER_API_KEY`: provider credential
-- `TAVERNKEEPER_MODEL`: provider model identifier
+- `TAVERNKEEPER_MODEL`: provider model identifier; the initial production value is `deepseek/deepseek-v4-flash-0731:thinking`
 - `TAVERNKEEPER_ARTIFACT_KEY`: canonical base64 encoding of exactly 32 random bytes, used only for the authenticated matrix-to-publisher handoff
 
 The shared workflow encrypts the sanitized candidate/transition envelope with AES-256-GCM before artifact upload, deletes the plaintext handoff files, retains the ciphertext artifact for one day, and decrypts it only in the serialized publisher job. Generate this value from a cryptographically secure random source. Never reuse the model key or an App key.
@@ -28,6 +28,10 @@ Protect `main` with the active ruleset `Protect main; allow TavernKeeper Publish
 
 Do not put secret values in workflow inputs, repository files, Issues, logs, reports, or shell history. Workflows pass model secrets only to the step named `Review with configured model`.
 
+Before enabling or resuming production scans, run `provider-check.yml`. The protected preflight proves the configured Bearer endpoint and then exercises the same private chunk-text and strict repository-synthesis response contracts used by production, without checking out a repository or mutating scan state. The production review covers the complete eligible corpus, retains chunk prose only as private synthesis input or a content-addressed private cache entry, and makes exactly one final JSON synthesis call after all chunks and tools succeed. Cache entries never contain raw source chunks, prompts, credentials, or raw provider responses.
+
+The initial release uses only the configured DeepSeek model. Adding Luna or any second model is not an automatic fallback: it requires a separate, approved, versioned scanner/prompt policy revision with tests and an explicit credential-placement review.
+
 ## GitHub App key rotation
 
 Generate a replacement private key from the App settings before revoking the active key. For a wake App, update both source-repository secret values, prove an input-free destination dispatch, then revoke the old key. For the Publisher App, update the ID and private key in both protected environments, prove one protected operational-state publication, then revoke the old key. Resolve every downloaded PEM to the expected Downloads directory, remove it immediately after GitHub secret storage, and verify only secret names in logs.
@@ -44,13 +48,13 @@ The queue is derived, not separately mutable. A target that advances before it s
 
 The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT` and has no coverage-start timestamp. Use `staff-operations.yml` in the protected staff environment to pause, resume, or request a retry. The first resume records `coverage_started_at`; later pause/resume cycles preserve it. Never edit state concurrently with a publication workflow.
 
-System/provider failures stop ordinary scanning and engage the circuit breaker. No degraded report is published. The first failure is retried after one hour, again after two hours, and again after three hours, measured from the initial failure. No staff or owner notification is sent for intermediate failures. After the third retry also fails, TavernKeeper creates or updates one deduplicated `scanner-operations` Issue for staff and remains stopped until staff correct the cause and explicitly resume.
+Repository-scoped `MODEL_INVALID_RESPONSE` failures receive up to three immediate attempts inside one scan execution. If the review still fails, system/provider failures stop ordinary scanning and engage the circuit breaker. No degraded report is published. Delayed retries run at T+1, T+2, and T+3 hours, measured from the initial failure. No staff or owner notification is sent for intermediate failures. After the T+3 retry also fails, TavernKeeper creates or updates one deduplicated `scanner-operations` Issue for staff and remains stopped until staff correct the cause and explicitly resume.
 
 Repository-specific failures delay only that target. External project owners receive no operational-failure notification.
 
 ## Staff workflows
 
-- `provider-check.yml`: after protected staff authorization, sends a one-token status request through the configured production Bearer path, then validates a fixed repository-free request against the production analyzer JSON Schema and response parser. It tries `x-api-key` only after a 401 or 403 on the status request. Logs contain only a pass record, an allowlisted response-stage diagnostic, and when applicable an integer HTTP error status from 400 through 599; endpoint, model output, reasoning, headers, and provider bodies are never logged. The action cannot scan repositories, mutate operational state, publish reports, or wake Tavernary.
+- `provider-check.yml`: after protected staff authorization, sends a one-token status request through the configured production Bearer path, then validates fixed repository-free requests against the production chunk-review and repository-synthesis response parsers. It tries `x-api-key` only after a 401 or 403 on the status request. Logs contain only a pass record, an allowlisted response-stage diagnostic, and when applicable an integer HTTP error status from 400 through 599; endpoint, model output, reasoning, headers, and provider bodies are never logged. The action cannot scan repositories, mutate operational state, publish reports, or wake Tavernary.
 - `targeted-scan.yml`: accepts only a repository-ID routing hint from the immutable Tavernary wake-App actor, refetches the public V2 manifest, and derives a standard scan request. Humans begin this flow only through Tavernary's staff-only exact-GitHub-URL action.
 - `deep-scan.yml`: rescan every eligible first-party text file for one repository ID.
 - `policy-rescan.yml`: schedule a staff-initiated campaign under a new policy.
