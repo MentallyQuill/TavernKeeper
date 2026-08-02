@@ -159,7 +159,7 @@ export async function runOsv({
       },
     );
     if (!result.ok)
-      throw scannerExecutionError("OSV-Scanner", result.error.code);
+      throw scannerExecutionError("osv-scanner", result.error.code);
     if (result.value.exitCode !== 0 && result.value.exitCode !== 1)
       throw new ScannerError(
         "SCANNER_FAILED",

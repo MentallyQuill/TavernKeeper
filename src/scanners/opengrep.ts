@@ -55,6 +55,7 @@ function parseReport(stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "OpenGrep returned malformed JSON output.",
+      "opengrep",
     );
   }
   if (report.errors.length > 0)
@@ -62,6 +63,7 @@ function parseReport(stdout: string) {
       "SCANNER_FAILED",
       "system",
       "OpenGrep reported scan errors.",
+      "opengrep",
     );
   try {
     return report.results
@@ -88,6 +90,7 @@ function parseReport(stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "OpenGrep returned an invalid finding identity or location.",
+      "opengrep",
     );
   }
 }
@@ -131,12 +134,13 @@ export async function runOpenGrep({
       shell: false,
     },
   );
-  if (!result.ok) throw scannerExecutionError("OpenGrep", result.error.code);
+  if (!result.ok) throw scannerExecutionError("opengrep", result.error.code);
   if (result.value.exitCode !== 0)
     throw new ScannerError(
       "SCANNER_FAILED",
       "system",
       `OpenGrep exited with code ${result.value.exitCode}.`,
+      "opengrep",
     );
   return {
     name: "opengrep",

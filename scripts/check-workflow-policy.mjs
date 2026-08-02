@@ -382,6 +382,19 @@ function checkTargetedAuthority(file, workflow) {
     );
 }
 
+function checkScannerToolchain(file, workflow) {
+  if (file !== "ci.yml") return;
+  const steps = workflow.jobs?.["scanner-toolchain"]?.steps ?? [];
+  const smoke = steps.find(
+    (step) => step?.name === "Smoke-test the production scanner adapters",
+  );
+  if (smoke?.run !== "npm run scanners:smoke")
+    fail(
+      file,
+      "scanner-toolchain must run the real adapter compatibility smoke test",
+    );
+}
+
 const names = (await readdir(workflowRoot))
   .filter((name) => /\.ya?ml$/u.test(name))
   .sort();
@@ -403,6 +416,7 @@ for (const file of names) {
   checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
   checkTargetedAuthority(file, workflow);
+  checkScannerToolchain(file, workflow);
 }
 
 const policy = JSON.parse(

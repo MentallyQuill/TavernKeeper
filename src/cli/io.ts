@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 
+import { ScannerComponents } from "../scanners/types.js";
+
 export async function readJsonFile(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8"));
 }
@@ -51,39 +53,58 @@ export function isDirectExecution(metaUrl: string) {
   );
 }
 
+export function safeCliErrorRecord(error: unknown): {
+  code: string;
+  scope: "repository" | "system";
+  component?: (typeof ScannerComponents)[number];
+} {
+  const candidateCode =
+    error !== null &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string"
+      ? error.code
+      : "CLI_FAILED";
+  const code = /^[A-Z][A-Z0-9_]{0,79}$/u.test(candidateCode)
+    ? candidateCode
+    : "CLI_FAILED";
+  const candidateScope =
+    error !== null &&
+    typeof error === "object" &&
+    "scope" in error &&
+    (error.scope === "repository" || error.scope === "system")
+      ? error.scope
+      : "system";
+  const scope =
+    code === "MODEL_INVALID_RESPONSE" ? "repository" : candidateScope;
+  const candidateComponent =
+    error !== null && typeof error === "object" && "component" in error
+      ? error.component
+      : undefined;
+  const component = ScannerComponents.find(
+    (value) => value === candidateComponent,
+  );
+  return component === undefined ? { code, scope } : { code, scope, component };
+}
+
 export function runJsonCli(main: () => Promise<unknown>) {
   void main()
     .then((result) => {
       process.stdout.write(`${JSON.stringify(result)}\n`);
     })
     .catch(async (error: unknown) => {
-      const candidateCode =
-        error !== null &&
-        typeof error === "object" &&
-        "code" in error &&
-        typeof error.code === "string"
-          ? error.code
-          : "CLI_FAILED";
-      const code = /^[A-Z][A-Z0-9_]{0,79}$/u.test(candidateCode)
-        ? candidateCode
-        : "CLI_FAILED";
-      const candidateScope =
-        error !== null &&
-        typeof error === "object" &&
-        "scope" in error &&
-        (error.scope === "repository" || error.scope === "system")
-          ? error.scope
-          : "system";
-      const scope =
-        code === "MODEL_INVALID_RESPONSE" ? "repository" : candidateScope;
+      const record = safeCliErrorRecord(error);
       const failureOutput = process.env.TAVERNKEEPER_ERROR_OUTPUT;
       if (failureOutput !== undefined)
         try {
-          await writeJsonFile(failureOutput, { code, scope });
+          await writeJsonFile(failureOutput, {
+            code: record.code,
+            scope: record.scope,
+          });
         } catch {
           // The stderr record below remains deliberately body-free.
         }
-      process.stderr.write(`${JSON.stringify({ code, scope })}\n`);
+      process.stderr.write(`${JSON.stringify(record)}\n`);
       process.exitCode = 1;
     });
 }

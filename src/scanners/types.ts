@@ -21,11 +21,21 @@ export type ScannerErrorCode =
   | "SCANNER_FAILED"
   | "MALFORMED_SCANNER_OUTPUT";
 
+export const ScannerComponents = [
+  "gitleaks",
+  "opengrep",
+  "osv-scanner",
+  "zizmor",
+  "malcontent",
+] as const;
+export type ScannerComponent = (typeof ScannerComponents)[number];
+
 export class ScannerError extends Error {
   constructor(
     readonly code: ScannerErrorCode,
     readonly scope: "repository" | "system",
     message: string,
+    readonly component?: ScannerComponent,
   ) {
     super(message);
     this.name = "ScannerError";
@@ -81,24 +91,34 @@ export function normalizeFinding(input: NormalizedFindingInput): Finding {
 }
 
 export function scannerExecutionError(
-  scanner: string,
+  scanner: ScannerComponent,
   code: "SPAWN_FAILED" | "TIMED_OUT" | "OUTPUT_LIMIT_EXCEEDED",
 ): ScannerError {
+  const displayName: Record<ScannerComponent, string> = {
+    gitleaks: "Gitleaks",
+    opengrep: "OpenGrep",
+    "osv-scanner": "OSV-Scanner",
+    zizmor: "zizmor",
+    malcontent: "malcontent",
+  };
   if (code === "SPAWN_FAILED")
     return new ScannerError(
       "SCANNER_UNAVAILABLE",
       "system",
-      `${scanner} could not be started.`,
+      `${displayName[scanner]} could not be started.`,
+      scanner,
     );
   if (code === "TIMED_OUT")
     return new ScannerError(
       "SCANNER_TIMEOUT",
       "system",
-      `${scanner} exceeded its runtime ceiling.`,
+      `${displayName[scanner]} exceeded its runtime ceiling.`,
+      scanner,
     );
   return new ScannerError(
     "SCANNER_OUTPUT_LIMIT",
     "system",
-    `${scanner} exceeded its output ceiling.`,
+    `${displayName[scanner]} exceeded its output ceiling.`,
+    scanner,
   );
 }
