@@ -31,7 +31,7 @@ The probe validates the endpoint with TavernKeeper's existing public-HTTPS and D
 
 The first request asks for a one-token response without structured output. It proves status and authentication while retaining the alternate-header diagnostic below.
 
-After Bearer succeeds, the second request uses the same `json_schema`, strictness, response envelope, usage accounting, 8,192-token per-role allowance, and analyzer payload parser as a production scan. Its fixed prompt contains no repository URL, source, finding, or report data and asks for empty analyzer collections. This distinguishes a mere HTTP success from actual production-protocol compatibility.
+After Bearer succeeds, the second request uses the same `json_schema`, strictness, response envelope, usage accounting, and analyzer payload parser as a production scan. The repository-free diagnostic retains its bounded 8,192-token allowance; production repository requests delegate output capacity to the configured provider. Its fixed prompt contains no repository URL, source, finding, or report data and asks for empty analyzer collections. This distinguishes a mere HTTP success from actual production-protocol compatibility.
 
 The production-compatible attempt uses:
 

@@ -739,11 +739,7 @@ export async function scanRepository(
       scannerPolicyVersion: spec.scannerPolicyVersion,
       chunkReviewPolicy: spec.policy.model.chunkReviewPolicy,
       synthesisPolicy: spec.policy.model.synthesisPolicy,
-      maxOutputTokensPerChunkReview:
-        spec.policy.model.maxOutputTokensPerChunkReview,
       maxChunkReviewCharacters: spec.policy.model.maxChunkReviewCharacters,
-      maxOutputTokensForSynthesis:
-        spec.policy.model.maxOutputTokensForSynthesis,
       cache: spec.model.cache,
     });
     validateModelCoverage({

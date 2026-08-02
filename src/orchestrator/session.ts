@@ -643,9 +643,7 @@ export async function reviewPreparedSession({
     scannerPolicyVersion: prepared.scanner_policy_version,
     chunkReviewPolicy: policy.model.chunkReviewPolicy,
     synthesisPolicy: policy.model.synthesisPolicy,
-    maxOutputTokensPerChunkReview: policy.model.maxOutputTokensPerChunkReview,
     maxChunkReviewCharacters: policy.model.maxChunkReviewCharacters,
-    maxOutputTokensForSynthesis: policy.model.maxOutputTokensForSynthesis,
     cache,
     ...(requestTextCompletion === undefined ? {} : { requestTextCompletion }),
     ...(requestStructuredCompletion === undefined
