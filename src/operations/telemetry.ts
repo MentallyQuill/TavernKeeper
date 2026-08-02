@@ -7,10 +7,20 @@ const UsageSchema = z.strictObject({
   reasoningTokens: z.number().int().nonnegative(),
 });
 
+const RoleCompletionSchema = z.strictObject({
+  required: z.number().int().nonnegative(),
+  completed: z.number().int().nonnegative(),
+});
+
 const ScanTelemetrySchema = z.strictObject({
   repositoryId: z.number().int().positive(),
   outcome: z.enum(["completed", "repository-failed", "system-failed"]),
   chunks: z.number().int().nonnegative(),
+  roles: z.strictObject({
+    analyzer: RoleCompletionSchema,
+    challenger: RoleCompletionSchema,
+    arbiter: RoleCompletionSchema,
+  }),
   usage: UsageSchema,
 });
 
@@ -126,6 +136,21 @@ export function buildTelemetry(input: z.input<typeof TelemetryInputSchema>) {
     ),
     model: {
       chunks: parsed.scans.reduce((total, scan) => total + scan.chunks, 0),
+      roles: Object.fromEntries(
+        (["analyzer", "challenger", "arbiter"] as const).map((role) => [
+          role,
+          parsed.scans.reduce(
+            (totals, scan) => ({
+              required: totals.required + scan.roles[role].required,
+              completed: totals.completed + scan.roles[role].completed,
+            }),
+            { required: 0, completed: 0 },
+          ),
+        ]),
+      ) as Record<
+        "analyzer" | "challenger" | "arbiter",
+        { required: number; completed: number }
+      >,
       usage,
     },
     cache: parsed.cache,

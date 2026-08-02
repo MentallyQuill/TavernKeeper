@@ -26,7 +26,8 @@ describe("non-scanning false-positive appeal", () => {
     expect(text).toMatch(/does not trigger a TavernKeeper scan/iu);
     expect(text).toMatch(/does not change Tavernary/iu);
     expect(text).toMatch(/does not hide or dismiss a finding/iu);
-    expect(text).toMatch(/does not guarantee acceptance/iu);
+    expect(text).toMatch(/global.*policy correction/iu);
+    expect(text).not.toMatch(/approve this report|recolor this report/iu);
   });
 
   test("has no issue-event workflow that can turn an appeal into work", async () => {
@@ -50,5 +51,13 @@ describe("non-scanning false-positive appeal", () => {
     expect(texts.join("\n")).not.toMatch(
       /issue_comment|issues:\s*\n|pull_request_target/iu,
     );
+  });
+
+  test("exposes no per-report adjudication command", async () => {
+    const packageJson = JSON.parse(
+      await readFile(new URL("../package.json", import.meta.url), "utf8"),
+    ) as { scripts: Record<string, string> };
+
+    expect(packageJson.scripts).not.toHaveProperty("adjudicate");
   });
 });

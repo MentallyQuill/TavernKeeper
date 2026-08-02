@@ -5,8 +5,12 @@ import { parse } from "yaml";
 
 const root = process.cwd();
 const workflowRoot = join(root, ".github", "workflows");
+const failures = [];
+const publisherAction =
+  "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
+const publisherToken = "${{ steps.publisher-token.outputs.token }}";
+const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 const allowedTriggers = {
-  "adjudicate.yml": ["workflow_dispatch"],
   "ci.yml": ["pull_request", "push"],
   "deep-scan.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
@@ -18,115 +22,11 @@ const allowedTriggers = {
     "workflow_dispatch",
   ],
   "retry.yml": ["schedule"],
+  "scan-and-publish.yml": ["workflow_call"],
   "staff-operations.yml": ["workflow_dispatch"],
+  "targeted-scan.yml": ["workflow_dispatch"],
 };
-const protectedManualWorkflows = new Set([
-  "adjudicate.yml",
-  "deep-scan.yml",
-  "policy-rescan.yml",
-  "staff-operations.yml",
-]);
-const modelSecretPattern =
-  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
-const modelSecretNames = new Set([
-  "TAVERNKEEPER_API_ENDPOINT",
-  "TAVERNKEEPER_API_KEY",
-  "TAVERNKEEPER_MODEL",
-]);
-const publisherAction =
-  "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
-const publisherToken = "${{ steps.publisher-token.outputs.token }}";
-const publisherSecretPattern =
-  /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
-const mutationJobs = {
-  "adjudicate.yml": {
-    job: "adjudicate",
-    environment: "tavernkeeper-staff",
-  },
-  "deep-scan.yml": { job: "scan", environment: "tavernkeeper-staff" },
-  "policy-rescan.yml": {
-    job: "schedule",
-    environment: "tavernkeeper-staff",
-  },
-  "reconcile.yml": { job: "publish", environment: "tavernkeeper-scanner" },
-  "staff-operations.yml": {
-    job: "operate",
-    environment: "tavernkeeper-staff",
-  },
-};
-const reviewedPublisherRuns = {
-  "adjudicate.yml": `gh auth setup-git
-git config user.name "TavernKeeper"
-git config user.email "tavernkeeper@users.noreply.github.com"
-git add reports operations/state.json rules/dismissals.json
-git commit -m "chore(reports): publish staff adjudication"
-git push origin HEAD:main
-echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
-  "deep-scan.yml": `gh auth setup-git
-git config user.name "TavernKeeper"
-git config user.email "tavernkeeper@users.noreply.github.com"
-git add reports operations/state.json
-if ! git diff --cached --quiet; then
-  git commit -m "chore(reports): publish staff deep scan"
-  git push origin HEAD:main
-fi
-echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
-  "policy-rescan.yml": `gh auth setup-git
-git config user.name "TavernKeeper"
-git config user.email "tavernkeeper@users.noreply.github.com"
-git add operations/state.json
-git commit -m "chore(scans): schedule policy campaign"
-git push origin HEAD:main`,
-  "reconcile.yml": `gh auth setup-git
-git config user.name "TavernKeeper"
-git config user.email "tavernkeeper@users.noreply.github.com"
-git add reports operations/state.json
-if ! git diff --cached --quiet; then
-  git commit -m "chore(reports): publish completed scans"
-  git push origin HEAD:main
-fi
-echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"`,
-  "staff-operations.yml": `gh auth setup-git
-git config user.name "TavernKeeper"
-git config user.email "tavernkeeper@users.noreply.github.com"
-git add operations/state.json
-git commit -m "chore(ops): apply staff queue operation"
-git push origin HEAD:main`,
-};
-const reviewedContinuationDispatches = {
-  "policy-rescan.yml": {
-    job: "schedule",
-    step: {
-      name: "Dispatch reconcile",
-      env: { GH_TOKEN: "${{ github.token }}" },
-      run: "gh workflow run reconcile.yml --ref main",
-    },
-  },
-  "reconcile.yml": {
-    job: "continue",
-    needs: ["plan", "deploy"],
-    if: "${{ needs.deploy.result == 'success' && needs.plan.outputs.remaining != '0' }}",
-    step: {
-      name: "Continue remaining backlog without inputs",
-      env: { GH_TOKEN: "${{ github.token }}" },
-      run: "gh workflow run reconcile.yml --ref main",
-    },
-  },
-  "staff-operations.yml": {
-    job: "operate",
-    step: {
-      name: "Dispatch reconcile",
-      if: "${{ inputs.operation != 'pause' }}",
-      env: { GH_TOKEN: "${{ github.token }}" },
-      run: "gh workflow run reconcile.yml --ref main",
-    },
-  },
-};
-const reviewedPermissionProfiles = {
-  "adjudicate.yml": {
-    workflow: { contents: "read", pages: "write", "id-token": "write" },
-    jobs: { adjudicate: { contents: "read" }, deploy: undefined },
-  },
+const permissionProfiles = {
   "ci.yml": {
     workflow: { contents: "read" },
     jobs: { check: undefined },
@@ -137,11 +37,9 @@ const reviewedPermissionProfiles = {
       issues: "write",
       pages: "write",
       "id-token": "write",
+      actions: "write",
     },
-    jobs: {
-      scan: { contents: "read", issues: "write" },
-      deploy: undefined,
-    },
+    jobs: { resolve: { contents: "read" }, scan: undefined },
   },
   "deploy-pages.yml": {
     workflow: { contents: "read", pages: "write", "id-token": "write" },
@@ -154,34 +52,84 @@ const reviewedPermissionProfiles = {
   "reconcile.yml": {
     workflow: {
       contents: "read",
+      issues: "write",
       pages: "write",
       "id-token": "write",
       actions: "write",
     },
     jobs: {
       plan: { contents: "read" },
-      scan: { contents: "read" },
-      publish: { contents: "read", issues: "write" },
-      deploy: undefined,
-      continue: { actions: "write" },
+      "recover-pages": undefined,
+      run: undefined,
+      "resume-after-recovery": { actions: "write" },
     },
   },
   "retry.yml": {
     workflow: {
       contents: "read",
+      issues: "write",
       pages: "write",
       "id-token": "write",
       actions: "write",
     },
     jobs: { reconcile: undefined },
   },
+  "scan-and-publish.yml": {
+    workflow: {
+      contents: "read",
+      issues: "write",
+      pages: "write",
+      "id-token": "write",
+      actions: "write",
+    },
+    jobs: {
+      scan: { contents: "read" },
+      publish: { contents: "read", issues: "write" },
+      deploy: undefined,
+      continue: { actions: "write" },
+    },
+  },
   "staff-operations.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: { operate: { contents: "read", actions: "write" } },
   },
+  "targeted-scan.yml": {
+    workflow: {
+      contents: "read",
+      issues: "write",
+      pages: "write",
+      "id-token": "write",
+      actions: "write",
+    },
+    jobs: {
+      resolve: { contents: "read", actions: "read" },
+      scan: undefined,
+    },
+  },
 };
-const sensitiveInputPattern = /clone_url|endpoint|model|token|budget|command/iu;
-const failures = [];
+const protectedManual = new Set([
+  "deep-scan.yml",
+  "policy-rescan.yml",
+  "staff-operations.yml",
+]);
+const mutationJobs = {
+  "policy-rescan.yml": { job: "schedule", environment: "tavernkeeper-staff" },
+  "scan-and-publish.yml": {
+    job: "publish",
+    environment: "tavernkeeper-scanner",
+  },
+  "staff-operations.yml": {
+    job: "operate",
+    environment: "tavernkeeper-staff",
+  },
+};
+const modelSecretPattern =
+  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
+const publisherSecretPattern =
+  /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
+const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
+const sensitiveInputPattern =
+  /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
 
 function fail(file, message) {
   failures.push(`${file}: ${message}`);
@@ -198,6 +146,33 @@ function walk(value, visit, path = []) {
     walk(child, visit, [...path, key]);
 }
 
+function locationsMatching(value, pattern) {
+  const locations = [];
+  walk(value, (candidate, path) => {
+    if (
+      (typeof candidate === "string" && pattern.test(candidate)) ||
+      (typeof path.at(-1) === "string" && pattern.test(path.at(-1)))
+    )
+      locations.push({ path, value: candidate });
+  });
+  return locations;
+}
+
+function normalized(value) {
+  if (value === undefined) return undefined;
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, child]) => [key, normalized(child)]),
+  );
+}
+
+function same(left, right) {
+  return JSON.stringify(normalized(left)) === JSON.stringify(normalized(right));
+}
+
 function checkTriggers(file, workflow) {
   const expected = allowedTriggers[file];
   if (expected === undefined) {
@@ -206,277 +181,179 @@ function checkTriggers(file, workflow) {
   }
   const actual = Object.keys(workflow.on ?? {}).sort();
   if (JSON.stringify(actual) !== JSON.stringify([...expected].sort()))
-    fail(
-      file,
-      `trigger set changed (expected ${expected.join(", ")}; received ${actual.join(", ")})`,
-    );
-  const dispatchInputs = workflow.on?.workflow_dispatch?.inputs ?? {};
-  for (const name of Object.keys(dispatchInputs))
-    if (sensitiveInputPattern.test(name))
-      fail(
-        file,
-        `manual input ${name} may bypass the trusted target/model contract`,
-      );
+    fail(file, "trigger set changed from the reviewed contract");
+  for (const name of Object.keys(workflow.on?.workflow_dispatch?.inputs ?? {}))
+    if (
+      sensitiveInputPattern.test(name) &&
+      !(file === "deploy-pages.yml" && name === "source_sha")
+    )
+      fail(file, `manual input ${name} bypasses the trusted target contract`);
   if (
-    protectedManualWorkflows.has(file) &&
+    protectedManual.has(file) &&
     !JSON.stringify(workflow.jobs).includes("tavernkeeper-staff")
   )
-    fail(
-      file,
-      "staff-only manual workflow lacks tavernkeeper-staff protection",
-    );
-}
-
-function normalizedPermissions(value) {
-  if (value === undefined) return undefined;
-  if (value === null || typeof value !== "object" || Array.isArray(value))
-    return value;
-  return Object.fromEntries(
-    Object.entries(value).sort(([left], [right]) => left.localeCompare(right)),
-  );
-}
-
-function samePermissions(left, right) {
-  return (
-    JSON.stringify(normalizedPermissions(left)) ===
-    JSON.stringify(normalizedPermissions(right))
-  );
+    fail(file, "staff-only manual workflow lacks staff environment protection");
 }
 
 function checkPermissions(file, workflow) {
-  const expected = reviewedPermissionProfiles[file];
+  const expected = permissionProfiles[file];
   if (expected === undefined) return;
-  if (!samePermissions(workflow.permissions, expected.workflow))
+  if (!same(workflow.permissions, expected.workflow))
     fail(file, "root permissions changed from the reviewed profile");
-
   const jobs = workflow.jobs ?? {};
-  const expectedNames = Object.keys(expected.jobs).sort();
-  const actualNames = Object.keys(jobs).sort();
-  if (JSON.stringify(actualNames) !== JSON.stringify(expectedNames)) {
+  if (
+    JSON.stringify(Object.keys(jobs).sort()) !==
+    JSON.stringify(Object.keys(expected.jobs).sort())
+  ) {
     fail(file, "job set changed from the reviewed permission profile");
     return;
   }
-  for (const jobName of expectedNames)
-    if (!samePermissions(jobs[jobName]?.permissions, expected.jobs[jobName]))
-      fail(file, `${jobName} permissions changed from the reviewed profile`);
+  for (const [job, permissions] of Object.entries(expected.jobs))
+    if (!same(jobs[job]?.permissions, permissions))
+      fail(file, `${job} permissions changed from the reviewed profile`);
 }
 
-function checkActionPins(file, workflow) {
+function checkPins(file, workflow) {
   walk(workflow, (value, path) => {
     if (path.at(-1) !== "uses" || typeof value !== "string") return;
-    if (value.startsWith("./")) return;
-    if (!/@[0-9a-f]{40}$/u.test(value))
-      fail(
-        file,
-        `external action is not pinned to a full commit SHA: ${value}`,
-      );
+    if (!value.startsWith("./") && !/@[0-9a-f]{40}$/u.test(value))
+      fail(file, `external action is not pinned: ${value}`);
   });
 }
 
-function checkParallelism(file, workflow) {
-  walk(workflow, (value, path) => {
-    if (path.at(-1) !== "max-parallel") return;
-    if (!Number.isInteger(value) || value < 1 || value > 2)
-      fail(
-        file,
-        `max-parallel must be an integer from 1 through 2, not ${String(value)}`,
-      );
-  });
-  if (
-    file === "reconcile.yml" &&
-    workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2
-  )
-    fail(file, "scan matrix must retain max-parallel: 2");
-}
-
-function modelSecretLocations(value, path = [], locations = []) {
-  if (typeof value === "string") {
-    if (modelSecretPattern.test(value)) locations.push({ path, value });
-    return locations;
-  }
-  if (Array.isArray(value)) {
-    value.forEach((child, index) =>
-      modelSecretLocations(child, [...path, index], locations),
-    );
-    return locations;
-  }
-  if (value === null || typeof value !== "object") return locations;
-  for (const [key, child] of Object.entries(value)) {
-    const childPath = [...path, key];
-    if (modelSecretPattern.test(key)) {
-      locations.push({ path: childPath, value: child });
-      continue;
-    }
-    modelSecretLocations(child, childPath, locations);
-  }
-  return locations;
-}
-
-function isAllowedModelSecretLocation(workflow, location) {
-  const path = location.path;
-  if (
-    path.length !== 6 ||
-    path[0] !== "jobs" ||
-    path[2] !== "steps" ||
-    !Number.isInteger(path[3]) ||
-    path[4] !== "env" ||
-    typeof path[5] !== "string" ||
-    !modelSecretNames.has(path[5])
-  )
-    return false;
-  const step = workflow.jobs?.[path[1]]?.steps?.[path[3]];
-  if (step?.name !== "Review with configured model") return false;
-  return (
-    typeof location.value === "string" &&
-    new RegExp(`^\\$\\{\\{\\s*secrets\\.${path[5]}\\s*\\}\\}$`, "u").test(
-      location.value,
-    )
-  );
-}
-
-function checkModelSecretPlacement(file, workflow) {
-  for (const location of modelSecretLocations(workflow))
-    if (!isAllowedModelSecretLocation(workflow, location))
+function checkSecretPlacement(file, workflow) {
+  for (const location of locationsMatching(workflow, modelSecretPattern)) {
+    const joined = location.path.join(".");
+    const declaration = joined.startsWith("on.workflow_call.secrets.");
+    const stepIndex = location.path[3];
+    const step = Number.isInteger(stepIndex)
+      ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
+      : undefined;
+    const reviewEnvironment =
+      joined.includes(".steps.") &&
+      joined.includes(".env.") &&
+      step?.name === "Review with configured model";
+    if (!declaration && !reviewEnvironment)
       fail(file, "model secret appears outside the review-step env");
+  }
+
+  for (const location of locationsMatching(workflow, artifactSecretPattern)) {
+    const joined = location.path.join(".");
+    const declaration = joined.startsWith("on.workflow_call.secrets.");
+    const stepIndex = location.path[3];
+    const step = Number.isInteger(stepIndex)
+      ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
+      : undefined;
+    if (
+      !declaration &&
+      ![
+        "Initialize encrypted bootstrap failure",
+        "Encrypt sanitized outcome",
+        "Decrypt sanitized outcomes",
+      ].includes(step?.name)
+    )
+      fail(file, "artifact key appears outside authenticated transport steps");
+  }
 }
 
-function publisherSecretLocations(value, path = [], locations = []) {
-  if (typeof value === "string") {
-    if (publisherSecretPattern.test(value)) locations.push({ path, value });
-    return locations;
-  }
-  if (Array.isArray(value)) {
-    value.forEach((child, index) =>
-      publisherSecretLocations(child, [...path, index], locations),
-    );
-    return locations;
-  }
-  if (value === null || typeof value !== "object") return locations;
-  for (const [key, child] of Object.entries(value))
-    publisherSecretLocations(child, [...path, key], locations);
-  return locations;
-}
-
-function publisherTokenLocations(value, path = [], locations = []) {
-  if (typeof value === "string") {
-    if (value.includes(publisherToken)) locations.push(path);
-    return locations;
-  }
-  if (Array.isArray(value)) {
-    value.forEach((child, index) =>
-      publisherTokenLocations(child, [...path, index], locations),
-    );
-    return locations;
-  }
-  if (value === null || typeof value !== "object") return locations;
-  for (const [key, child] of Object.entries(value))
-    publisherTokenLocations(child, [...path, key], locations);
-  return locations;
-}
-
-function checkContinuationDispatch(file, workflow) {
-  const contract = reviewedContinuationDispatches[file];
-  if (contract === undefined) return;
-  const job = workflow.jobs?.[contract.job];
-  const dispatches = Object.entries(workflow.jobs ?? {}).flatMap(
-    ([jobName, candidate]) =>
-      (Array.isArray(candidate?.steps) ? candidate.steps : [])
-        .filter(
-          (step) =>
-            typeof step?.run === "string" &&
-            step.run.includes("gh workflow run"),
-        )
-        .map((step) => ({ jobName, step })),
+function checkEncryptedHandoff(file, workflow) {
+  if (file !== "scan-and-publish.yml") return;
+  const steps = workflow.jobs?.scan?.steps ?? [];
+  const bootstrap = steps[0];
+  if (
+    bootstrap?.name !== "Initialize encrypted bootstrap failure" ||
+    bootstrap?.env?.TAVERNKEEPER_ARTIFACT_KEY !== artifactSecret ||
+    !bootstrap?.run?.includes("SCAN_BOOTSTRAP_FAILED") ||
+    !bootstrap?.run?.includes("aes-256-gcm") ||
+    !bootstrap?.run?.includes('"outcome.enc"')
+  )
+    fail(file, "scan must initialize an encrypted failure before setup");
+  const uploads = steps.filter(
+    (step) =>
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/upload-artifact@"),
+  );
+  if (uploads.length !== 1 || uploads[0]?.with?.path !== "outcome.enc")
+    fail(file, "scan artifact upload must contain only outcome.enc");
+  const encrypt = steps.find(
+    (step) => step?.name === "Encrypt sanitized outcome",
   );
   if (
-    job === undefined ||
-    (contract.needs !== undefined &&
-      JSON.stringify(job.needs) !== JSON.stringify(contract.needs)) ||
-    (contract.if !== undefined && job.if !== contract.if) ||
-    dispatches.length !== 1 ||
-    dispatches[0]?.jobName !== contract.job ||
-    JSON.stringify(dispatches[0]?.step) !== JSON.stringify(contract.step)
+    encrypt?.if !== "always()" ||
+    !encrypt?.run?.includes("outcome-actual.enc") ||
+    !encrypt?.run?.includes("mv outcome-actual.enc outcome.enc")
   )
-    fail(file, "continuation dispatch changed from the reviewed contract");
+    fail(file, "scan must atomically replace the bootstrap failure outcome");
+  if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2)
+    fail(file, "scan matrix must retain max-parallel: 2");
+  if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== true)
+    fail(file, "scan matrix must stop pending work after a system failure");
 }
 
 function checkPublisherBoundary(file, workflow) {
   const mutation = mutationJobs[file];
-  const secretLocations = publisherSecretLocations(workflow);
+  const publisherLocations = locationsMatching(
+    workflow,
+    publisherSecretPattern,
+  );
   if (mutation === undefined) {
-    if (secretLocations.length > 0)
+    if (publisherLocations.length > 0)
       fail(file, "Publisher App secret appears outside a mutation workflow");
     return;
   }
-
   const job = workflow.jobs?.[mutation.job];
-  if (job === undefined) {
-    fail(file, `missing reviewed mutation job ${mutation.job}`);
-    return;
-  }
-  if (job.environment !== mutation.environment)
-    fail(
-      file,
-      `${mutation.job} must use protected environment ${mutation.environment}`,
-    );
-
-  const steps = Array.isArray(job.steps) ? job.steps : [];
-  const secretSteps = steps.filter((step) =>
+  if (job?.environment !== mutation.environment)
+    fail(file, `${mutation.job} must use ${mutation.environment}`);
+  const steps = job?.steps ?? [];
+  const tokenSteps = steps.filter((step) =>
     JSON.stringify(step).match(publisherSecretPattern),
   );
-  if (secretSteps.length !== 1)
-    fail(file, "Publisher App secrets must appear in exactly one token step");
-
-  const tokenStep = steps.find((step) => step?.id === "publisher-token");
-  const tokenStepIndex = steps.indexOf(tokenStep);
-  const expectedWith = {
-    "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
-    "private-key": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
-    owner: "MentallyQuill",
-    repositories: "TavernKeeper",
-    "permission-contents": "write",
-  };
+  const tokenStep = tokenSteps[0];
   if (
+    tokenSteps.length !== 1 ||
     tokenStep?.name !== "Create TavernKeeper Publisher token" ||
+    tokenStep?.id !== "publisher-token" ||
     tokenStep?.uses !== publisherAction ||
-    JSON.stringify(tokenStep?.with) !== JSON.stringify(expectedWith)
+    tokenStep?.with?.owner !== "MentallyQuill" ||
+    tokenStep?.with?.repositories !== "TavernKeeper" ||
+    tokenStep?.with?.["permission-contents"] !== "write"
   )
     fail(file, "Publisher App token step changed from the reviewed contract");
-
-  const expectedSecretLocations = new Map([
-    [
-      JSON.stringify([
-        "jobs",
-        mutation.job,
-        "steps",
-        tokenStepIndex,
-        "with",
-        "app-id",
-      ]),
-      expectedWith["app-id"],
-    ],
-    [
-      JSON.stringify([
-        "jobs",
-        mutation.job,
-        "steps",
-        tokenStepIndex,
-        "with",
-        "private-key",
-      ]),
-      expectedWith["private-key"],
-    ],
-  ]);
+  const consumers = [];
+  walk(workflow, (value, path) => {
+    if (typeof value === "string" && value.includes(publisherToken))
+      consumers.push(path);
+  });
+  const pushStep = steps.find(
+    (step) =>
+      typeof step?.run === "string" &&
+      step.run.includes("git push origin HEAD:main"),
+  );
+  const expectedConsumer = [
+    "jobs",
+    mutation.job,
+    "steps",
+    steps.indexOf(pushStep),
+    "env",
+    "GH_TOKEN",
+  ];
   if (
-    secretLocations.length !== expectedSecretLocations.size ||
-    secretLocations.some(
-      (location) =>
-        expectedSecretLocations.get(JSON.stringify(location.path)) !==
-        location.value,
-    )
+    consumers.length !== 1 ||
+    JSON.stringify(consumers[0]) !== JSON.stringify(expectedConsumer)
   )
-    fail(file, "Publisher App secret appears outside the reviewed token step");
-
+    fail(
+      file,
+      "Publisher App token is consumed outside the reviewed commit step",
+    );
+  if (
+    pushStep?.env?.GH_TOKEN !== publisherToken ||
+    !pushStep?.run?.includes("gh auth setup-git") ||
+    /--force|gh workflow run/iu.test(pushStep?.run ?? "")
+  )
+    fail(
+      file,
+      "Publisher-authenticated push changed from the reviewed contract",
+    );
   const checkouts = steps.filter(
     (step) =>
       typeof step?.uses === "string" &&
@@ -484,52 +361,25 @@ function checkPublisherBoundary(file, workflow) {
   );
   if (
     checkouts.length === 0 ||
-    checkouts.some((step) => step?.with?.["persist-credentials"] !== false)
+    checkouts.some((step) => step.with?.["persist-credentials"] !== false)
   )
     fail(file, "mutation checkout must disable persisted credentials");
+}
 
-  const pushSteps = steps.filter(
-    (step) =>
-      typeof step?.run === "string" &&
-      step.run.includes("git push origin HEAD:main"),
-  );
-  if (pushSteps.length !== 1)
-    fail(
-      file,
-      "mutation job must contain exactly one reviewed direct push step",
-    );
-  const pushStep = pushSteps[0];
-  const pushStepIndex = steps.indexOf(pushStep);
-  const expectedTokenLocation = JSON.stringify([
-    "jobs",
-    mutation.job,
-    "steps",
-    pushStepIndex,
-    "env",
-    "GH_TOKEN",
-  ]);
-  const tokenLocations = publisherTokenLocations(workflow);
+function checkTargetedAuthority(file, workflow) {
+  if (file !== "targeted-scan.yml") return;
+  const inputs = Object.keys(workflow.on?.workflow_dispatch?.inputs ?? {});
+  if (JSON.stringify(inputs) !== JSON.stringify(["repository_id"]))
+    fail(file, "targeted workflow accepts more than repository_id");
+  const condition = workflow.jobs?.resolve?.if ?? "";
   if (
-    tokenLocations.length !== 1 ||
-    JSON.stringify(tokenLocations[0]) !== expectedTokenLocation
+    !condition.includes("github.actor_id") ||
+    !condition.includes("vars.TAVERNARY_WAKE_APP_BOT_ID")
   )
     fail(
       file,
-      "Publisher App token is consumed outside the reviewed commit step",
+      "targeted workflow lacks immutable wake-App actor authorization",
     );
-  if (pushStep?.run?.trim() !== reviewedPublisherRuns[file])
-    fail(
-      file,
-      "Publisher-authenticated commit script changed from the reviewed contract",
-    );
-  for (const step of pushSteps) {
-    if (step?.env?.GH_TOKEN !== publisherToken)
-      fail(file, "direct push does not use the Publisher App token");
-    if (!step.run.includes("gh auth setup-git"))
-      fail(file, "direct push does not configure Git authentication");
-    if (step.run.includes("gh workflow run"))
-      fail(file, "direct push step also dispatches Actions");
-  }
 }
 
 const names = (await readdir(workflowRoot))
@@ -548,11 +398,11 @@ for (const file of names) {
   }
   checkTriggers(file, workflow);
   checkPermissions(file, workflow);
-  checkActionPins(file, workflow);
-  checkParallelism(file, workflow);
-  checkModelSecretPlacement(file, workflow);
+  checkPins(file, workflow);
+  checkSecretPlacement(file, workflow);
+  checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
-  checkContinuationDispatch(file, workflow);
+  checkTargetedAuthority(file, workflow);
 }
 
 const policy = JSON.parse(

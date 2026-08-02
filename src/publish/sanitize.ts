@@ -1,4 +1,9 @@
-import { ScanReportSchema, type ScanReport } from "../contracts/reports.js";
+import {
+  ScanReportSchema,
+  ScanReportV2Schema,
+  type ScanReport,
+  type ScanReportV2,
+} from "../contracts/reports.js";
 import { reportIdentity } from "./report-path.js";
 
 const CONTROL_CHARACTER = /[\u0000-\u001f\u007f-\u009f]/u;
@@ -99,6 +104,17 @@ export function sanitizeReport(input: unknown): ScanReport {
   const report = parsed.data;
   if (report.report_id !== reportIdentity(report))
     reject("report identity does not match immutable fields.");
+  inspectValue(report);
+  return report;
+}
+
+export function sanitizeReportV2(input: unknown): ScanReportV2 {
+  const parsed = ScanReportV2Schema.safeParse(input);
+  if (!parsed.success) reject("schema or derived V2 fields are invalid.");
+  const report = parsed.data;
+  if (report.report_id !== reportIdentity(report)) {
+    reject("report identity does not match immutable fields.");
+  }
   inspectValue(report);
   return report;
 }

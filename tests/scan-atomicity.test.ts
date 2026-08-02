@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { ScannerPolicy } from "../src/config/policy.js";
-import { ScanReportSchema } from "../src/contracts/reports.js";
+import { ScanReportV2Schema } from "../src/contracts/reports.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
 import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
 import { ModelRequestError } from "../src/model/openai-compatible-client.js";
@@ -47,8 +47,12 @@ const policy: ScannerPolicy = {
     protocol: "openai-compatible-chat-completions",
     chunkBytes: 524_288,
     chunkOverlapBytes: 8_192,
-    maxOutputTokensPerChunk: 8_192,
-    maxSynthesisOutputTokens: 8_192,
+    maxOutputTokensPerRole: 8_192,
+    rolePolicies: {
+      analyzer: "analyzer-v1",
+      challenger: "challenger-v1",
+      arbiter: "arbiter-v1",
+    },
   },
   retry: { hoursFromInitialFailure: [1, 2, 3] },
 };
@@ -78,6 +82,7 @@ const scannerRuns: ScannerRun[] = (
 
 function spec(): ScanRepositorySpec {
   return {
+    projectKinds: ["extension"],
     target: {
       source_id: "github-42",
       provider: "github",
@@ -169,6 +174,13 @@ function dependencies(): ScanDependencies {
       model: "vendor/model-test",
       findings: [],
       completedChunkIds: ["c".repeat(64)],
+      roleCompletion: {
+        analyzer: { required: 1, completed: 1 },
+        challenger: { required: 1, completed: 1 },
+        arbiter: { required: 1, completed: 1 },
+      },
+      cacheHits: 0,
+      cacheMisses: 3,
       usage: {
         inputTokens: 100,
         outputTokens: 20,
@@ -187,7 +199,7 @@ describe("atomic repository scan", () => {
       ok: true,
       value: {
         report: {
-          result: "green",
+          result: "teal",
           coverage: {
             model: {
               status: "completed",
@@ -199,7 +211,7 @@ describe("atomic repository scan", () => {
       },
     });
     expect(
-      result.ok && ScanReportSchema.safeParse(result.value.report).success,
+      result.ok && ScanReportV2Schema.safeParse(result.value.report).success,
     ).toBe(true);
   });
 
@@ -419,7 +431,12 @@ describe("atomic repository scan", () => {
                 title: "Invalid path",
                 explanation: "This finding must fail report validation.",
                 fingerprint: "9".repeat(64),
-                disposition: "active",
+                disposition: "confirmed",
+                automated_review: {
+                  analyzer_policy: "analyzer-v1",
+                  challenger_policy: "challenger-v1",
+                  arbiter_policy: "arbiter-v1",
+                },
               },
             ],
           });

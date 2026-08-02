@@ -9,55 +9,76 @@ import {
   modelChunkCacheKey,
 } from "../src/model/chunk-cache.js";
 
-describe("sanitized model chunk cache", () => {
-  test("round-trips normalized results without source, prompt, credentials, or raw response", async () => {
+function cacheKey(role: "analyzer" | "challenger" | "arbiter" = "analyzer") {
+  return modelChunkCacheKey({
+    role,
+    rolePromptDigest: "a".repeat(64),
+    endpointOrigin: "https://provider.example",
+    modelIdentifier: "vendor/model-test",
+    promptPolicyVersion: "2",
+    scannerPolicyVersion: "1",
+    inputDigest: "b".repeat(64),
+  });
+}
+
+function value() {
+  return {
+    role: "analyzer" as const,
+    inputDigest: "b".repeat(64),
+    completionId: "completion-1",
+    payload: {
+      role: "analyzer" as const,
+      result: { assessments: [], discoveries: [] },
+    },
+    usage: {
+      inputTokens: 100,
+      outputTokens: 20,
+      cacheReadTokens: 10,
+      reasoningTokens: 5,
+    },
+  };
+}
+
+describe("sanitized model role cache", () => {
+  test("round-trips strict parsed results without source, prompts, credentials, or raw responses", async () => {
     const directory = await mkdtemp(join(tmpdir(), "tavernkeeper-cache-test-"));
     const cache = new FileModelChunkCache(directory);
-    const key = modelChunkCacheKey({
-      endpointOrigin: "https://nano-gpt.com",
-      modelIdentifier: "deepseek/deepseek-v4-flash",
-      promptPolicyVersion: "1",
-      scannerPolicyVersion: "1",
-      chunkId: "a".repeat(64),
-    });
-    const value = {
-      chunkId: "a".repeat(64),
-      completionId: "completion-1",
-      findings: [],
-      usage: {
-        inputTokens: 100,
-        outputTokens: 20,
-        cacheReadTokens: 10,
-        reasoningTokens: 5,
-      },
-    };
+    const key = cacheKey();
+    const cached = value();
 
-    await cache.save(key, value);
-    await expect(cache.load(key)).resolves.toEqual(value);
+    await cache.save(key, cached);
+    await expect(cache.load(key)).resolves.toEqual(cached);
     const serialized = await readFile(join(directory, `${key}.json`), "utf8");
     expect(serialized).not.toMatch(
       /source|prompt|credential|api[_-]?key|raw[_-]?response/iu,
     );
   });
 
+  test("separates cache identity by role and role-prompt digest", () => {
+    expect(cacheKey("analyzer")).not.toBe(cacheKey("arbiter"));
+    expect(cacheKey()).not.toBe(
+      modelChunkCacheKey({
+        role: "analyzer",
+        rolePromptDigest: "c".repeat(64),
+        endpointOrigin: "https://provider.example",
+        modelIdentifier: "vendor/model-test",
+        promptPolicyVersion: "2",
+        scannerPolicyVersion: "1",
+        inputDigest: "b".repeat(64),
+      }),
+    );
+  });
+
   test("rejects cache records with unknown raw fields", async () => {
     const directory = await mkdtemp(join(tmpdir(), "tavernkeeper-cache-test-"));
     const cache = new FileModelChunkCache(directory);
-    const key = "b".repeat(64);
+    const key = cacheKey();
     await writeFile(
       join(directory, `${key}.json`),
       JSON.stringify({
-        schemaVersion: 1,
+        schemaVersion: 2,
         key,
-        chunkId: "a".repeat(64),
-        completionId: "completion-1",
-        findings: [],
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
+        ...value(),
         rawResponse: "forbidden",
       }),
     );
@@ -74,16 +95,9 @@ describe("sanitized model chunk cache", () => {
     );
 
     await expect(
-      cache.save("c".repeat(64), {
-        chunkId: "a".repeat(64),
+      cache.save(cacheKey(), {
+        ...value(),
         completionId: "source text must never enter the cache",
-        findings: [],
-        usage: {
-          inputTokens: 1,
-          outputTokens: 1,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
       }),
     ).rejects.toMatchObject({
       code: "MODEL_CACHE_INVALID",

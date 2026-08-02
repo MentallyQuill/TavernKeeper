@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 
 import { loadScannerPolicy } from "../config/policy.js";
-import { TargetManifestSchema } from "../contracts/targets.js";
+import {
+  parseTargetManifest,
+  requireTargetManifestV2,
+} from "../contracts/targets.js";
 import {
   OperationsStateSchema,
   parseOperationsState,
@@ -20,7 +23,7 @@ async function main() {
   const [policy, manifest, state] = await Promise.all([
     loadScannerPolicy("config/scanner-policy.v1.json"),
     fetchFixedJson(TARGET_MANIFEST_URL).then((value) =>
-      TargetManifestSchema.parse(value),
+      requireTargetManifestV2(parseTargetManifest(value)),
     ),
     readJsonFile("operations/state.json").then(parseOperationsState),
   ]);

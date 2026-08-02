@@ -25,6 +25,11 @@ describe("secret-free scan telemetry", () => {
           repositoryId: 42,
           outcome: "completed",
           chunks: 2,
+          roles: {
+            analyzer: { required: 2, completed: 2 },
+            challenger: { required: 2, completed: 2 },
+            arbiter: { required: 2, completed: 2 },
+          },
           usage: {
             inputTokens: 1_200,
             outputTokens: 300,
@@ -69,6 +74,11 @@ describe("secret-free scan telemetry", () => {
       reasoningTokens: 90,
     });
     expect(telemetry.model.chunks).toBe(2);
+    expect(telemetry.model.roles).toEqual({
+      analyzer: { required: 2, completed: 2 },
+      challenger: { required: 2, completed: 2 },
+      arbiter: { required: 2, completed: 2 },
+    });
     expect(telemetry).toMatchObject({
       queue: {
         desired: 12,

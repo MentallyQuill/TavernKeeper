@@ -26,6 +26,7 @@ async function main() {
       target_sha: request.target_sha,
       canonical_url: request.canonical_url,
     },
+    projectKinds: request.project_kinds,
     checkoutRoot: requiredEnvironment(
       process.env,
       "TAVERNKEEPER_CHECKOUT_ROOT",

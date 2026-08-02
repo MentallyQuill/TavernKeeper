@@ -56,6 +56,12 @@ const AdjudicationSchema = z.strictObject({
   reusable: z.boolean(),
 });
 export const PublicResultSchema = z.enum(["green", "yellow"]);
+export const PublicResultV2Schema = z.enum(["teal", "red"]);
+export const AutomatedDispositionSchema = z.enum([
+  "confirmed",
+  "not-supported",
+  "inconclusive",
+]);
 export const SeveritySchema = z.enum([
   "critical",
   "high",
@@ -123,12 +129,51 @@ export const FindingSchema = z
       });
   });
 
+const AutomatedReviewSchema = z.strictObject({
+  analyzer_policy: VersionSchema,
+  challenger_policy: VersionSchema,
+  arbiter_policy: VersionSchema,
+});
+
+export const FindingV2Schema = z
+  .strictObject({
+    origin: z.string().regex(/^[a-z0-9][a-z0-9:_-]{0,79}$/u),
+    rule_id: z.string().min(1).max(120),
+    category: CategorySchema,
+    severity: SeveritySchema,
+    confidence: ConfidenceSchema,
+    path: RepositoryPathSchema,
+    line_start: z.number().int().positive().nullable(),
+    line_end: z.number().int().positive().nullable(),
+    evidence_sha: FullShaSchema.nullable(),
+    title: z.string().min(1).max(200),
+    explanation: z.string().min(1).max(1_000),
+    remediation: z.string().min(1).max(1_000).optional(),
+    reference_url: RuleReferenceUrlSchema.optional(),
+    fingerprint: ReportIdSchema,
+    disposition: AutomatedDispositionSchema,
+    automated_review: AutomatedReviewSchema,
+  })
+  .refine(
+    (finding) =>
+      finding.line_start === null
+        ? finding.line_end === null
+        : finding.line_end === null || finding.line_end >= finding.line_start,
+    {
+      path: ["line_end"],
+      message: "Line end must be null or at least line start.",
+    },
+  );
+
 export type ScanMode = z.infer<typeof ScanModeSchema>;
 export type Severity = z.infer<typeof SeveritySchema>;
 export type Confidence = z.infer<typeof ConfidenceSchema>;
 export type Disposition = z.infer<typeof DispositionSchema>;
 export type PublicResult = z.infer<typeof PublicResultSchema>;
+export type PublicResultV2 = z.infer<typeof PublicResultV2Schema>;
+export type AutomatedDisposition = z.infer<typeof AutomatedDispositionSchema>;
 export type Finding = z.infer<typeof FindingSchema>;
+export type FindingV2 = z.infer<typeof FindingV2Schema>;
 
 export function deriveResult(
   findings: Array<Pick<Finding, "severity" | "confidence" | "disposition">>,
@@ -141,6 +186,23 @@ export function deriveResult(
   )
     ? "yellow"
     : "green";
+}
+
+export function deriveV2Result(
+  findings: Array<{
+    severity: Severity;
+    confidence: Confidence;
+    disposition: AutomatedDisposition;
+  }>,
+): PublicResultV2 {
+  return findings.some(
+    (finding) =>
+      finding.disposition === "confirmed" &&
+      ["critical", "high", "medium"].includes(finding.severity) &&
+      ["high", "medium"].includes(finding.confidence),
+  )
+    ? "red"
+    : "teal";
 }
 
 export const ToolCoverageSchema = z.strictObject({
@@ -200,6 +262,24 @@ const ModelCoverageSchema = z
     },
   );
 
+const RoleCompletionSchema = z
+  .strictObject({
+    required: NonNegativeIntegerSchema,
+    completed: NonNegativeIntegerSchema,
+  })
+  .refine((value) => value.completed === value.required, {
+    path: ["completed"],
+    message: "Every required model role call must complete.",
+  });
+
+const ModelCoverageV2Schema = ModelCoverageSchema.safeExtend({
+  roles: z.strictObject({
+    analyzer: RoleCompletionSchema,
+    challenger: RoleCompletionSchema,
+    arbiter: RoleCompletionSchema,
+  }),
+});
+
 const FindingCountsSchema = z.strictObject({
   total: NonNegativeIntegerSchema,
   actionable: NonNegativeIntegerSchema,
@@ -236,6 +316,21 @@ const FindingCountsSchema = z.strictObject({
     ),
 });
 
+const FindingCountsV2Schema = FindingCountsSchema.omit({
+  disposition: true,
+}).extend({
+  actionable_severity: z.strictObject({
+    critical: NonNegativeIntegerSchema,
+    high: NonNegativeIntegerSchema,
+    medium: NonNegativeIntegerSchema,
+  }),
+  disposition: z.strictObject({
+    confirmed: NonNegativeIntegerSchema,
+    not_supported: NonNegativeIntegerSchema,
+    inconclusive: NonNegativeIntegerSchema,
+  }),
+});
+
 export function buildFindingCounts(findings: Finding[]) {
   const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
   const confidence = { high: 0, medium: 0, low: 0 };
@@ -270,6 +365,48 @@ function findingCountsMatch(
   return (
     JSON.stringify(buildFindingCounts(findings)) === JSON.stringify(counts)
   );
+}
+
+export function buildFindingCountsV2(findings: FindingV2[]) {
+  const severity = { critical: 0, high: 0, medium: 0, low: 0, info: 0 };
+  const actionableSeverity = { critical: 0, high: 0, medium: 0 };
+  const confidence = { high: 0, medium: 0, low: 0 };
+  const disposition = { confirmed: 0, not_supported: 0, inconclusive: 0 };
+  const categories: Record<string, number> = {};
+  let actionable = 0;
+
+  for (const finding of findings) {
+    severity[finding.severity] += 1;
+    confidence[finding.confidence] += 1;
+    disposition[
+      finding.disposition === "not-supported"
+        ? "not_supported"
+        : finding.disposition
+    ] += 1;
+    categories[finding.category] = (categories[finding.category] ?? 0) + 1;
+    if (deriveV2Result([finding]) === "red") {
+      actionable += 1;
+      if (
+        finding.severity === "critical" ||
+        finding.severity === "high" ||
+        finding.severity === "medium"
+      ) {
+        actionableSeverity[finding.severity] += 1;
+      }
+    }
+  }
+
+  return FindingCountsV2Schema.parse({
+    total: findings.length,
+    actionable,
+    actionable_severity: actionableSeverity,
+    severity,
+    confidence,
+    disposition,
+    categories: Object.entries(categories)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([category, count]) => ({ category, count })),
+  });
 }
 
 const ReportIdentitySchema = z.strictObject({
@@ -351,6 +488,90 @@ export const ScanReportSchema = ReportIdentitySchema.extend({
   }
 });
 
+export const ScanReportV2Schema = ReportIdentitySchema.extend({
+  schema_version: z.literal(2),
+  history: z.strictObject({
+    base_sha: FullShaSchema.nullable(),
+    commits: z.number().int().min(1).max(20),
+  }),
+  coverage: z.strictObject({
+    inventory: InventoryCoverageSchema,
+    tools: z.array(ToolCoverageSchema).min(1),
+    model: ModelCoverageV2Schema,
+    evidence_validation: z.strictObject({
+      status: z.literal("completed"),
+      validated_findings: NonNegativeIntegerSchema,
+    }),
+  }),
+  result: PublicResultV2Schema,
+  finding_counts: FindingCountsV2Schema,
+  findings: z.array(FindingV2Schema),
+}).superRefine((report, context) => {
+  if (report.source_id !== `github-${report.repository_id}`) {
+    context.addIssue({
+      code: "custom",
+      path: ["source_id"],
+      message: "Source ID must match repository ID.",
+    });
+  }
+  if (report.canonical_url !== `https://github.com/${report.repository}`) {
+    context.addIssue({
+      code: "custom",
+      path: ["canonical_url"],
+      message: "Canonical URL must match repository.",
+    });
+  }
+  if (report.supersedes_report_id === report.report_id) {
+    context.addIssue({
+      code: "custom",
+      path: ["supersedes_report_id"],
+      message: "A report cannot supersede itself.",
+    });
+  }
+  if (report.result !== deriveV2Result(report.findings)) {
+    context.addIssue({
+      code: "custom",
+      path: ["result"],
+      message: "Result must be derived from confirmed review-level findings.",
+    });
+  }
+  if (
+    JSON.stringify(buildFindingCountsV2(report.findings)) !==
+    JSON.stringify(report.finding_counts)
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["finding_counts"],
+      message: "Finding totals must match sanitized findings.",
+    });
+  }
+  if (
+    report.coverage.evidence_validation.validated_findings !==
+    report.findings.length
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["coverage", "evidence_validation", "validated_findings"],
+      message: "Every published finding must pass evidence validation.",
+    });
+  }
+  if (
+    report.findings.some(
+      (finding) =>
+        finding.disposition === "inconclusive" &&
+        ["critical", "high", "medium"].includes(finding.severity) &&
+        ["high", "medium"].includes(finding.confidence),
+    )
+  ) {
+    context.addIssue({
+      code: "custom",
+      path: ["findings"],
+      message:
+        "A complete report cannot contain an inconclusive review-level finding.",
+    });
+  }
+});
+
 export const ReportIndexEntrySchema = ReportIdentitySchema.omit({
   canonical_url: true,
 })
@@ -397,6 +618,65 @@ export const ReportIndexEntrySchema = ReportIdentitySchema.omit({
     }
   });
 
+export const ReportIndexEntryV2Schema = ReportIdentitySchema.omit({
+  canonical_url: true,
+})
+  .extend({
+    result: PublicResultV2Schema,
+    finding_counts: FindingCountsV2Schema,
+    coverage: z.strictObject({
+      history_commits: z.number().int().min(1).max(20),
+      inventory_files: NonNegativeIntegerSchema,
+      inventory_bytes: NonNegativeIntegerSchema,
+      tools_completed: NonNegativeIntegerSchema,
+      tools_not_applicable: NonNegativeIntegerSchema,
+      model_chunks: NonNegativeIntegerSchema,
+    }),
+    report_url: z
+      .url()
+      .startsWith("https://mentallyquill.github.io/TavernKeeper/reports/"),
+    history_url: z
+      .url()
+      .startsWith("https://mentallyquill.github.io/TavernKeeper/reports/"),
+  })
+  .superRefine((report, context) => {
+    if (report.source_id !== `github-${report.repository_id}`) {
+      context.addIssue({
+        code: "custom",
+        path: ["source_id"],
+        message: "Source ID must match repository ID.",
+      });
+    }
+    const expectedReportUrl =
+      `https://mentallyquill.github.io/TavernKeeper/reports/github/` +
+      `${report.repository_id}/${report.target_sha}/${report.scanner_policy_version}/` +
+      `${report.mode}/${report.report_version}/`;
+    if (report.report_url !== expectedReportUrl) {
+      context.addIssue({
+        code: "custom",
+        path: ["report_url"],
+        message: "Report URL must match immutable report identity.",
+      });
+    }
+    const expectedHistoryUrl =
+      "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
+      `${report.repository_id}/history/`;
+    if (report.history_url !== expectedHistoryUrl) {
+      context.addIssue({
+        code: "custom",
+        path: ["history_url"],
+        message: "History URL must match immutable repository identity.",
+      });
+    }
+    if (report.supersedes_report_id === report.report_id) {
+      context.addIssue({
+        code: "custom",
+        path: ["supersedes_report_id"],
+        message: "A report cannot supersede itself.",
+      });
+    }
+  });
+
 export const ReportIndexSchema = z
   .strictObject({
     schema_version: z.literal(1),
@@ -425,7 +705,47 @@ export const ReportIndexSchema = z
     }
   });
 
+export const ReportIndexV2Schema = z
+  .strictObject({
+    schema_version: z.literal(2),
+    generated_at: z.iso.datetime(),
+    reports: z.array(ReportIndexEntryV2Schema),
+  })
+  .superRefine((index, context) => {
+    const preferredIdentities = index.reports.map(
+      (report) =>
+        `${report.repository_id}:${report.target_sha}:${report.scanner_policy_version}`,
+    );
+    if (new Set(preferredIdentities).size !== preferredIdentities.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["reports"],
+        message: "Preferred report identities must be unique.",
+      });
+    }
+    const reportIds = index.reports.map((report) => report.report_id);
+    if (new Set(reportIds).size !== reportIds.length) {
+      context.addIssue({
+        code: "custom",
+        path: ["reports"],
+        message: "Report IDs must be unique.",
+      });
+    }
+  });
+
+const ReportIndexInputSchema = z.union([
+  ReportIndexSchema,
+  ReportIndexV2Schema,
+]);
+
+export function parseReportIndex(input: unknown) {
+  return ReportIndexInputSchema.parse(input);
+}
+
 export type ToolCoverage = z.infer<typeof ToolCoverageSchema>;
 export type ScanReport = z.infer<typeof ScanReportSchema>;
+export type ScanReportV2 = z.infer<typeof ScanReportV2Schema>;
 export type ReportIndex = z.infer<typeof ReportIndexSchema>;
 export type ReportIndexEntry = z.infer<typeof ReportIndexEntrySchema>;
+export type ReportIndexV2 = z.infer<typeof ReportIndexV2Schema>;
+export type ReportIndexEntryV2 = z.infer<typeof ReportIndexEntryV2Schema>;

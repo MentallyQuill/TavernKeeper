@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import type { ScanReport } from "../src/contracts/reports.js";
+import type { ScanReportV2 } from "../src/contracts/reports.js";
 import {
   initialOperationsState,
   parseOperationsState,
@@ -19,7 +19,7 @@ const generatedAt = "2026-07-31T15:00:00.000Z";
 async function fixtureReport(overrides: Record<string, unknown> = {}) {
   const raw = JSON.parse(
     await readFile(
-      new URL("./fixtures/contracts/report.valid.json", import.meta.url),
+      new URL("./fixtures/contracts/report.v2.valid.json", import.meta.url),
       "utf8",
     ),
   ) as Record<string, unknown>;
@@ -27,7 +27,7 @@ async function fixtureReport(overrides: Record<string, unknown> = {}) {
   return {
     ...report,
     report_id: reportIdentity(report as never),
-  } as unknown as ScanReport;
+  } as unknown as ScanReportV2;
 }
 
 async function publicationRoot() {
@@ -87,7 +87,15 @@ describe("serialized report publisher", () => {
     expect(published.index.reports[0]).toMatchObject({
       report_id: report.report_id,
       report_url: `https://mentallyquill.github.io/TavernKeeper/${reportPath(report)}/`,
+      history_url:
+        "https://mentallyquill.github.io/TavernKeeper/reports/github/42/history/",
     });
+    expect(
+      await readFile(
+        join(root, "reports", "github", "42", "history", "index.html"),
+        "utf8",
+      ),
+    ).toContain(report.target_sha);
     expect(published.state.active_scans).toEqual([]);
     expect(
       JSON.parse(
@@ -96,13 +104,13 @@ describe("serialized report publisher", () => {
     ).toEqual(published.state);
   });
 
-  test("prefers a higher report version before deep mode", async () => {
+  test("prefers deep mode before a newer standard correction", async () => {
     const root = await publicationRoot();
     const standardV1 = await fixtureReport();
     const deepV1 = await fixtureReport({ mode: "deep" });
     const standardV2 = await fixtureReport({
       report_version: 2,
-      supersedes_report_id: deepV1.report_id,
+      supersedes_report_id: standardV1.report_id,
     });
 
     const published = await publishCandidates({
@@ -114,10 +122,36 @@ describe("serialized report publisher", () => {
 
     expect(published.index.reports).toHaveLength(1);
     expect(published.index.reports[0]).toMatchObject({
-      report_version: 2,
-      mode: "standard",
-      report_id: standardV2.report_id,
+      report_version: 1,
+      mode: "deep",
+      report_id: deepV1.report_id,
     });
+  });
+
+  test("preserves preferred conclusions for older SHAs in repository history", async () => {
+    const root = await publicationRoot();
+    const oldReport = await fixtureReport();
+    const currentReport = await fixtureReport({
+      target_sha: "f".repeat(40),
+      completed_at: "2026-07-31T16:00:00.000Z",
+    });
+
+    const published = await publishCandidates({
+      root,
+      candidates: [oldReport, currentReport],
+      state: initialOperationsState(generatedAt),
+      generatedAt: "2026-07-31T16:05:00.000Z",
+    });
+
+    expect(published.index.reports.map(({ target_sha }) => target_sha)).toEqual(
+      [oldReport.target_sha, currentReport.target_sha],
+    );
+    const history = await readFile(
+      join(root, "reports", "github", "42", "history", "index.html"),
+      "utf8",
+    );
+    expect(history).toContain(oldReport.target_sha);
+    expect(history).toContain(currentReport.target_sha);
   });
 
   test("rejects an immutable-path collision", async () => {

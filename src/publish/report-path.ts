@@ -51,3 +51,15 @@ export function reportPath(report: ReportIdentityInput) {
 export function reportUrl(report: ReportIdentityInput) {
   return `https://mentallyquill.github.io/TavernKeeper/${reportPath(report)}/`;
 }
+
+export function historyPath(
+  report: Pick<ReportIdentityInput, "provider" | "repository_id">,
+) {
+  return `reports/${report.provider}/${report.repository_id}/history`;
+}
+
+export function historyUrl(
+  report: Pick<ReportIdentityInput, "provider" | "repository_id">,
+) {
+  return `https://mentallyquill.github.io/TavernKeeper/${historyPath(report)}/`;
+}

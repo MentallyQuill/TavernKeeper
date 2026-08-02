@@ -107,6 +107,11 @@ export function recordFailure(
     updated_at: input.at,
     retries: replaceTargetRetry(state.retries, entry),
     circuit_breaker: circuitBreaker,
+    active_scans: state.active_scans.filter(
+      (active) =>
+        active.repository_id !== target.repository_id ||
+        active.target_sha !== target.target_sha,
+    ),
   });
   return {
     state: nextState,
@@ -179,5 +184,10 @@ export function recordSuccess(
     updated_at: at,
     retries,
     circuit_breaker: releaseTransientBreaker ? null : breaker,
+    active_scans: state.active_scans.filter(
+      (active) =>
+        active.repository_id !== target.repository_id ||
+        active.target_sha !== target.target_sha,
+    ),
   });
 }

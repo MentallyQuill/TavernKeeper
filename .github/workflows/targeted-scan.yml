@@ -1,0 +1,64 @@
+name: Tavernary targeted scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      repository_id:
+        description: Tavernary GitHub repository ID
+        type: number
+        required: true
+
+concurrency:
+  group: tavernkeeper-global-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pages: write
+  id-token: write
+  actions: write
+
+jobs:
+  resolve:
+    if: ${{ github.actor_id == vars.TAVERNARY_WAKE_APP_BOT_ID }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      requests_json: ${{ steps.request.outputs.requests_json }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Resolve repository ID from the public Tavernary V2 manifest
+        id: request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAVERNKEEPER_TARGETED_SCAN: '{"repository_id":${{ inputs.repository_id }}}'
+          TAVERNARY_TARGET_MANIFEST: https://tavernary.org/security/tavernkeeper-targets.json
+        shell: bash
+        run: |
+          created_at="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)"
+          resolved="$(TAVERNKEEPER_REQUEST_CREATED_AT="$created_at" npm run --silent targeted-scan)"
+          echo "requests_json=$(jq -c '.include' <<< "$resolved")" >> "$GITHUB_OUTPUT"
+
+  scan:
+    needs: resolve
+    if: ${{ needs.resolve.result == 'success' && fromJSON(needs.resolve.outputs.requests_json)[0] != null }}
+    uses: ./.github/workflows/scan-and-publish.yml
+    with:
+      requests_json: ${{ needs.resolve.outputs.requests_json }}
+      remaining: "0"
+      continue_backlog: false
+    secrets: inherit
