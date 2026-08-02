@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
   ConfidenceSchema,
@@ -35,8 +36,20 @@ export const OpenGrepReportSchema = z.looseObject({
   errors: z.array(z.unknown()).max(10_000),
 });
 
-function normalizePath(value: string) {
-  return value.replaceAll("\\", "/").replace(/^\.\//u, "");
+function normalizePath(root: string, value: string) {
+  const repositoryRoot = resolve(root);
+  const candidate = isAbsolute(value)
+    ? resolve(value)
+    : resolve(repositoryRoot, value);
+  const repositoryPath = relative(repositoryRoot, candidate);
+  if (
+    !repositoryPath ||
+    isAbsolute(repositoryPath) ||
+    repositoryPath === ".." ||
+    repositoryPath.startsWith(`..${sep}`)
+  )
+    throw new Error("OpenGrep returned a path outside the repository root.");
+  return repositoryPath.split(sep).join("/");
 }
 
 function cleanText(value: string, maxLength: number) {
@@ -46,7 +59,7 @@ function cleanText(value: string, maxLength: number) {
     .slice(0, maxLength);
 }
 
-function parseReport(stdout: string) {
+function parseReport(root: string, stdout: string) {
   let report: z.infer<typeof OpenGrepReportSchema>;
   try {
     report = OpenGrepReportSchema.parse(JSON.parse(stdout));
@@ -75,7 +88,7 @@ function parseReport(stdout: string) {
           category: metadata.tavernkeeper_category,
           severity: metadata.tavernkeeper_severity as Severity,
           confidence: metadata.tavernkeeper_confidence as Confidence,
-          path: normalizePath(value.path),
+          path: normalizePath(root, value.path),
           lineStart: value.start.line,
           lineEnd: value.end.line,
           evidenceSha: null,
@@ -146,6 +159,6 @@ export async function runOpenGrep({
     name: "opengrep",
     version,
     status: "completed",
-    findings: parseReport(result.value.stdout),
+    findings: parseReport(root, result.value.stdout),
   };
 }

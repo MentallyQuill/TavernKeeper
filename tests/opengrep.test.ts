@@ -1,4 +1,5 @@
 import { readFile } from "node:fs/promises";
+import { dirname, join, resolve } from "node:path";
 
 import { parse } from "yaml";
 import { describe, expect, test } from "vitest";
@@ -32,14 +33,14 @@ class OpenGrepRunner implements CommandRunner {
   }
 }
 
-function resultJson() {
+function resultJson(path = "src/index.ts") {
   return JSON.stringify({
     version: "1.26.0",
     results: [
       {
         check_id:
           "tavernkeeper.credential-exfiltration.javascript-browser-secret-to-fetch",
-        path: "src/index.ts",
+        path,
         start: { line: 3, col: 1, offset: 20 },
         end: { line: 5, col: 2, offset: 90 },
         extra: {
@@ -181,6 +182,41 @@ describe("OpenGrep adapter", () => {
     ).rejects.toMatchObject({
       code: "MALFORMED_SCANNER_OUTPUT",
       scope: "system",
+    });
+  });
+
+  test("normalizes an absolute scanner path beneath the repository root", async () => {
+    const root = resolve("fixture", "repository");
+    const runner = new OpenGrepRunner(
+      resultJson(join(root, "src", "index.ts")),
+    );
+
+    const run = await runOpenGrep({
+      root,
+      rulesRoot: resolve("rules", "opengrep"),
+      runner,
+      version: "1.26.0",
+    });
+
+    expect(run.findings[0]?.path).toBe("src/index.ts");
+  });
+
+  test("rejects an absolute scanner path outside the repository root", async () => {
+    const root = resolve("fixture", "repository");
+    const runner = new OpenGrepRunner(
+      resultJson(join(dirname(root), "outside.ts")),
+    );
+
+    await expect(
+      runOpenGrep({
+        root,
+        rulesRoot: resolve("rules", "opengrep"),
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      component: "opengrep",
     });
   });
 });
