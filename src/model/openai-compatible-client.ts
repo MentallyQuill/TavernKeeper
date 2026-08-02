@@ -62,6 +62,8 @@ export const ModelResponseDiagnostics = [
   "response_json",
   "response_size",
   "response_usage",
+  "review_duplicate_findings",
+  "review_inconclusive",
   "role_schema_analyzer",
   "role_schema_arbiter",
   "role_schema_challenger",
