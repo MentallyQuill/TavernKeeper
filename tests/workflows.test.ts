@@ -123,7 +123,36 @@ describe("least-privilege GitHub Actions orchestration", () => {
       "needs.plan.outputs.deploy_required == 'false'",
     );
     expect(String(value.jobs["resume-after-recovery"].steps[0].run)).toContain(
-      "gh workflow run reconcile.yml --ref main",
+      'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    );
+  });
+
+  test("every reconciliation dispatch names its repository explicitly", async () => {
+    const names = [
+      "reconcile.yml",
+      "policy-rescan.yml",
+      "scan-and-publish.yml",
+      "staff-operations.yml",
+    ];
+    const texts = await Promise.all(
+      names.map((name) =>
+        readFile(
+          new URL(`../.github/workflows/${name}`, import.meta.url),
+          "utf8",
+        ),
+      ),
+    );
+    const dispatches = texts.flatMap((text) =>
+      [
+        ...text.matchAll(/^\s*run:\s*(gh workflow run reconcile\.yml.*)$/gmu),
+      ].map((match) => match[1]!),
+    );
+
+    expect(dispatches).toHaveLength(4);
+    expect(dispatches).toEqual(
+      Array(4).fill(
+        'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
+      ),
     );
   });
 
