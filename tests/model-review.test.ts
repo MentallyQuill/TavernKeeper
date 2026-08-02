@@ -2,11 +2,16 @@ import { describe, expect, test, vi } from "vitest";
 
 import {
   checkModelProviderConnectivity,
+  DefaultModelCompletionTimeoutMs,
   requestStructuredCompletion,
   requestTextCompletion,
 } from "../src/model/openai-compatible-client.js";
 
 describe("OpenAI-compatible client", () => {
+  test("allows production model completions the full scanner command window", () => {
+    expect(DefaultModelCompletionTimeoutMs).toBe(2_700_000);
+  });
+
   test("requests an unstructured completion without a response format", async () => {
     const fetchImpl = vi.fn<typeof fetch>(
       async () =>

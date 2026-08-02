@@ -20,6 +20,8 @@ export interface ModelCompletionResult {
 
 export type StructuredCompletionResult = ModelCompletionResult;
 
+export const DefaultModelCompletionTimeoutMs = 2_700_000;
+
 interface CompletionRequest extends ProviderConnectivityRequest {
   systemContent: string;
   userContent: string;
@@ -403,7 +405,9 @@ async function requestCompletion(
     response = await (request.fetchImpl ?? fetch)(request.endpoint, {
       method: "POST",
       redirect: "manual",
-      signal: AbortSignal.timeout(request.timeoutMs ?? 600_000),
+      signal: AbortSignal.timeout(
+        request.timeoutMs ?? DefaultModelCompletionTimeoutMs,
+      ),
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
