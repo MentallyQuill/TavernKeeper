@@ -78,6 +78,42 @@ async function expectPolicyFailure(
 }
 
 describe("least-privilege GitHub Actions orchestration", () => {
+  test("provider connectivity checks are staff-authorized and non-mutating", async () => {
+    const value = await workflow("provider-check.yml");
+    const text = await readFile(
+      new URL("../.github/workflows/provider-check.yml", import.meta.url),
+      "utf8",
+    );
+    const secretSteps = Object.values(value.jobs).flatMap((job: any) =>
+      (job.steps ?? []).filter((step: Workflow) =>
+        JSON.stringify(step).match(
+          /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u,
+        ),
+      ),
+    );
+
+    expect(value.on.workflow_dispatch).toBeNull();
+    expect(value.permissions).toEqual({ contents: "read" });
+    expect(value.concurrency).toEqual({
+      group: "tavernkeeper-provider-check",
+      "cancel-in-progress": false,
+    });
+    expect(value.jobs.authorize).toMatchObject({
+      environment: "tavernkeeper-staff",
+      permissions: {},
+    });
+    expect(value.jobs.check).toMatchObject({
+      needs: "authorize",
+      environment: "tavernkeeper-scanner",
+      permissions: { contents: "read" },
+    });
+    expect(secretSteps).toHaveLength(1);
+    expect(secretSteps[0]?.name).toBe("Check configured model provider");
+    expect(text).not.toMatch(
+      /operations\/state|reports\/|deploy-pages|git push|gh workflow run|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
+    );
+  });
+
   test("ordinary reconciliation plans five targets and calls one reusable path", async () => {
     const value = await workflow("reconcile.yml");
 
@@ -327,7 +363,7 @@ describe("least-privilege GitHub Actions orchestration", () => {
           "  scan:\n",
           "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
         ),
-      /model secret appears outside the review-step env/u,
+      /model secret appears outside a reviewed provider step/u,
     );
   });
 

@@ -22,10 +22,12 @@
 ### Task 1: Status-only provider probe
 
 **Files:**
+
 - Modify: `src/model/openai-compatible-client.ts`
 - Test: `tests/model-review.test.ts`
 
 **Interfaces:**
+
 - Produces: `checkModelProviderConnectivity(request: ProviderConnectivityRequest): Promise<{status: "passed"; authMode: "bearer"}>`
 - Reuses: `validateModelEndpoint`, `ModelRequestError`, public-address resolution, and the existing model error codes plus `MODEL_AUTH_HEADER_MISMATCH`.
 
@@ -86,6 +88,7 @@ Extract one private helper used by both structured completions and connectivity 
 ### Task 2: Staff action and workflow policy
 
 **Files:**
+
 - Create: `src/cli/provider-check.ts`
 - Create: `.github/workflows/provider-check.yml`
 - Modify: `package.json`
@@ -94,6 +97,7 @@ Extract one private helper used by both structured completions and connectivity 
 - Modify: `docs/operations.md`
 
 **Interfaces:**
+
 - Consumes: `checkModelProviderConnectivity` from Task 1.
 - Produces: `npm run provider:check` and the `Staff: Check configured model provider` action.
 
@@ -128,9 +132,11 @@ Add `provider-check.yml` to `docs/operations.md`, explicitly documenting that it
 ### Task 3: Verify, publish, and run
 
 **Files:**
+
 - Verify all changed files from Tasks 1 and 2.
 
 **Interfaces:**
+
 - Produces: merged GitHub Action and one protected live provider-check result.
 
 - [ ] **Step 1: Run formatting and the full local gate**
