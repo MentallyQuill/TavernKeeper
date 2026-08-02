@@ -31,7 +31,7 @@ const OpenGrepFindingSchema = z.looseObject({
   end: z.looseObject({ line: z.number().int().positive() }),
   extra: z.looseObject({ metadata: MetadataSchema }),
 });
-export const OpenGrepReportSchema = z.looseObject({
+const OpenGrepReportSchema = z.looseObject({
   results: z.array(OpenGrepFindingSchema).max(100_000),
   errors: z.array(z.unknown()).max(10_000),
 });

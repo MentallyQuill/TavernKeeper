@@ -66,6 +66,7 @@ function parseReport(root: string, stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "OSV-Scanner returned malformed JSON output.",
+      "osv-scanner",
     );
   }
   try {
@@ -100,6 +101,7 @@ function parseReport(root: string, stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "OSV-Scanner returned an invalid finding identity or source path.",
+      "osv-scanner",
     );
   }
 }
@@ -165,6 +167,7 @@ export async function runOsv({
         "SCANNER_FAILED",
         result.value.exitCode === 128 ? "repository" : "system",
         `OSV-Scanner exited with code ${result.value.exitCode}.`,
+        "osv-scanner",
       );
     const findings = parseReport(root, result.value.stdout);
     if (result.value.exitCode === 1 && findings.length === 0)
@@ -172,6 +175,7 @@ export async function runOsv({
         "MALFORMED_SCANNER_OUTPUT",
         "system",
         "OSV-Scanner reported findings without structured results.",
+        "osv-scanner",
       );
     return {
       name: "osv-scanner",

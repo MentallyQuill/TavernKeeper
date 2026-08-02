@@ -72,6 +72,7 @@ function parseReport(root: string, stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "malcontent returned malformed JSON output.",
+      "malcontent",
     );
   }
   try {
@@ -104,6 +105,7 @@ function parseReport(root: string, stdout: string) {
       "MALFORMED_SCANNER_OUTPUT",
       "system",
       "malcontent returned an invalid finding identity or source path.",
+      "malcontent",
     );
   }
 }
@@ -164,6 +166,7 @@ export async function runMalcontent({
         "SCANNER_FAILED",
         "system",
         `malcontent exited with code ${result.value.exitCode}.`,
+        "malcontent",
       );
     return {
       name: "malcontent",
