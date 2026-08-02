@@ -67,6 +67,14 @@ describe("inventory classification", () => {
     const classification = classifyInventory(
       inventory([
         file("package.json", 10),
+        file("Cargo.toml", 11),
+        file("composer.json", 12),
+        file("pyproject.toml", 13),
+        file("Gemfile", 14),
+        file("package-lock.json", 15),
+        file("go.mod", 16),
+        file("requirements.txt", 17),
+        file("packages.config", 18),
         file(".github/workflows/scan.yml", 20),
         file("scripts/install", 30, "text", { executable: true }),
         file("README.md", 40),
@@ -79,7 +87,7 @@ describe("inventory classification", () => {
       malcontent: true,
     });
     expect(classification.scannerInputs.osv.map((entry) => entry.path)).toEqual(
-      ["package.json"],
+      ["package-lock.json", "go.mod", "requirements.txt", "packages.config"],
     );
     expect(
       classification.scannerInputs.zizmor.map((entry) => entry.path),
