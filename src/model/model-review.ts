@@ -298,9 +298,9 @@ async function requestRole({
   };
 }
 
-export async function reviewWithConfiguredModel(
-  spec: ConfiguredModelReviewSpec,
-) {
+const ModelReviewAttempts = 3;
+
+async function reviewWithConfiguredModelOnce(spec: ConfiguredModelReviewSpec) {
   const configured = validateSpec(spec);
   const requestCompletion =
     spec.requestCompletion ?? requestStructuredCompletion;
@@ -314,6 +314,7 @@ export async function reviewWithConfiguredModel(
   };
   let cacheHits = 0;
   let cacheMisses = 0;
+  const pendingArbiterCommits: Array<() => Promise<void>> = [];
 
   for (const unit of units) {
     const analyzer = await requestRole({
@@ -377,7 +378,7 @@ export async function reviewWithConfiguredModel(
       claims,
       segments: unit.chunk.segments,
     });
-    await arbiter.commit();
+    pendingArbiterCommits.push(arbiter.commit);
     if (arbiter.cached) cacheHits += 1;
     else cacheMisses += 1;
     roleCompletion.arbiter.completed += 1;
@@ -425,6 +426,10 @@ export async function reviewWithConfiguredModel(
     );
   }
 
+  for (const commit of pendingArbiterCommits) {
+    await commit();
+  }
+
   return {
     endpointOrigin: configured.origin,
     provider: configured.provider,
@@ -438,4 +443,24 @@ export async function reviewWithConfiguredModel(
     cacheHits,
     cacheMisses,
   };
+}
+
+export async function reviewWithConfiguredModel(
+  spec: ConfiguredModelReviewSpec,
+) {
+  for (let attempt = 1; attempt <= ModelReviewAttempts; attempt += 1) {
+    try {
+      return await reviewWithConfiguredModelOnce(spec);
+    } catch (error) {
+      const retryable =
+        error instanceof ModelRequestError &&
+        error.code === "MODEL_INVALID_RESPONSE" &&
+        error.scope === "repository";
+      if (!retryable || attempt === ModelReviewAttempts) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error("Model review retry loop ended unexpectedly.");
 }
