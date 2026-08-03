@@ -173,6 +173,47 @@ describe("contextual evidence review", () => {
     ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
   });
 
+  test("retries public safety claims before report finalization", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => {
+      const item = assessment(ids[0]!, current.path, 2);
+      return {
+        completionId: `completion-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify({
+          status: "complete",
+          assessments: [
+            requestCompletion.mock.calls.length === 1
+              ? { ...item, layman_explanation: "This repository is safe." }
+              : item,
+          ],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+  });
+
   test("retries malformed JSON immediately and then accepts complete coverage", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async () => ({
