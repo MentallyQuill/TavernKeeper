@@ -255,7 +255,7 @@ describe("contextual V5 reports", () => {
     const report = reportWithObservation();
     const html = renderReportV5Html(report);
 
-    expect(html).toContain("Contextual assessments");
+    expect(html).toContain("What this review found");
     expect(html).toContain("This request appears to be expected.");
     expect(html).toContain("Expected scanner matches");
     expect(html).toContain(
