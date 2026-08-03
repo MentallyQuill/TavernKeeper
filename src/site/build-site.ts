@@ -1,5 +1,18 @@
-import { copyFile, mkdir, readdir, rm, writeFile } from "node:fs/promises";
+import {
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
+
+import { parseReportIndexV5 } from "../contracts/reports-v5.js";
+import { renderHistoryHtml } from "../publish/render-history.js";
+import { renderReportV5Html } from "../publish/render-report.js";
+import { renderLandingHtml } from "./render-landing.js";
+import { REPORT_SEARCH_SCRIPT } from "./search-script.js";
 
 export interface BuildSiteInput {
   root: string;
@@ -69,23 +82,31 @@ async function listFiles(root: string, directory = root): Promise<string[]> {
   return files.sort((left, right) => left.localeCompare(right));
 }
 
-const ROOT_PAGE = `<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'none'; img-src 'none'; object-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'">
-  <title>TavernKeeper reports</title>
-</head>
-<body>
-  <main>
-    <h1>TavernKeeper reports</h1>
-    <p>Immutable, sanitized scan reports published for Tavernary.</p>
-    <p><a href="reports/index.json">Report index</a></p>
-  </main>
-</body>
-</html>
-`;
+function publicDirectory(urlInput: string) {
+  const url = new URL(urlInput);
+  const prefix = "/TavernKeeper/";
+  if (
+    url.origin !== "https://mentallyquill.github.io" ||
+    !url.pathname.startsWith(prefix)
+  )
+    throw new Error("Public report URL is outside the TavernKeeper site.");
+  const segments = url.pathname.slice(prefix.length).split("/").filter(Boolean);
+  if (
+    segments.length === 0 ||
+    segments.some(
+      (segment) =>
+        segment === "." ||
+        segment === ".." ||
+        decodeURIComponent(segment).includes("\\"),
+    )
+  )
+    throw new Error("Public report URL has an unsafe path.");
+  return segments.map(decodeURIComponent).join("/");
+}
+
+async function readJson(path: string) {
+  return JSON.parse(await readFile(path, "utf8")) as unknown;
+}
 
 export async function buildSite({
   root: rootInput,
@@ -99,13 +120,46 @@ export async function buildSite({
     join(root, "docs", "rules"),
   ];
   validateOutput(root, output, sources);
+  const index = parseReportIndexV5(
+    await readJson(join(root, "reports", "index.json")),
+  );
 
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   await copyTree(sources[0]!, join(output, "reports"));
   await copyTree(sources[1]!, join(output, "schemas"));
   await copyTree(sources[2]!, join(output, "rules"));
-  await writeFile(join(output, "index.html"), ROOT_PAGE);
+  await mkdir(join(output, "assets"), { recursive: true });
+  await writeFile(join(output, "index.html"), renderLandingHtml(index));
+  await writeFile(
+    join(output, "assets", "report-search.js"),
+    REPORT_SEARCH_SCRIPT,
+  );
+
+  for (const entry of index.reports) {
+    const directory = publicDirectory(entry.report_url);
+    const report = await readJson(
+      join(root, ...directory.split("/"), "report.json"),
+    );
+    await writeFile(
+      join(output, ...directory.split("/"), "index.html"),
+      renderReportV5Html(report),
+    );
+  }
+
+  const histories = new Set(index.reports.map((entry) => entry.history_url));
+  for (const historyUrl of histories) {
+    const directory = publicDirectory(historyUrl);
+    const history = await readJson(
+      join(root, ...directory.split("/"), "history.json"),
+    );
+    if (!Array.isArray(history))
+      throw new Error("Public report history must be an array.");
+    await writeFile(
+      join(output, ...directory.split("/"), "index.html"),
+      renderHistoryHtml(history),
+    );
+  }
   await writeFile(join(output, ".nojekyll"), "");
 
   return { output, files: await listFiles(output) };
