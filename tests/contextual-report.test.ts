@@ -45,7 +45,7 @@ const scanPackage = buildScanPackage({
   },
   history: { baseSha: null, commits: 1 },
   scannerVersion: "1.0.0",
-  scannerPolicyVersion: "2",
+  scannerPolicyVersion: "3",
   ruleCatalogVersion: "1",
   inventory: {
     root: "C:/scan/repository",
@@ -257,10 +257,10 @@ describe("contextual V5 reports", () => {
     expect(report.report_id).toBe(report.report_digest);
     expect(report.report_id).toBe(reportIdentity(report));
     expect(reportPath(report)).toBe(
-      `reports/github/42/${targetSha}/2/${report.report_id}`,
+      `reports/github/42/${targetSha}/3/${report.report_id}`,
     );
     expect(reportUrl(report)).toBe(
-      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/2/${report.report_id}/`,
+      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/3/${report.report_id}/`,
     );
     expect(ScanReportV5Schema.parse(report)).toEqual(report);
   });

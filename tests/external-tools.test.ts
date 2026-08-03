@@ -55,7 +55,7 @@ const baseSpec = {
   structuralFiles: [],
   runner,
   policy: {
-    version: "2" as const,
+    version: "3" as const,
     queue: { batchSize: 5 as const, maxParallel: 2 as const },
     history: { maxCommits: 20 as const },
     inventory: {

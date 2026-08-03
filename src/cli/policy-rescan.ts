@@ -21,7 +21,7 @@ import { TARGET_MANIFEST_URL } from "./reconcile.js";
 
 async function main() {
   const [policy, manifest, state] = await Promise.all([
-    loadScannerPolicy("config/scanner-policy.v2.json"),
+    loadScannerPolicy("config/scanner-policy.v3.json"),
     fetchFixedJson(TARGET_MANIFEST_URL).then((value) =>
       requireTargetManifestV2(parseTargetManifest(value)),
     ),

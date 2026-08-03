@@ -29,12 +29,12 @@ const scannerPolicyShape = {
   }),
 };
 
-export const ScannerPolicyV2Schema = z.strictObject({
-  version: z.literal("2"),
+export const ScannerPolicyV3Schema = z.strictObject({
+  version: z.literal("3"),
   ...scannerPolicyShape,
 });
 
-export type ScannerPolicyV2 = z.infer<typeof ScannerPolicyV2Schema>;
+export type ScannerPolicyV3 = z.infer<typeof ScannerPolicyV3Schema>;
 
 export const ScannerPinsSchema = z.strictObject({
   gitleaks: z.strictObject({
@@ -99,8 +99,8 @@ export type ContextualReviewPolicy = z.infer<
 
 export async function loadScannerPolicy(
   path: string,
-): Promise<ScannerPolicyV2> {
-  return ScannerPolicyV2Schema.parse(JSON.parse(await readFile(path, "utf8")));
+): Promise<ScannerPolicyV3> {
+  return ScannerPolicyV3Schema.parse(JSON.parse(await readFile(path, "utf8")));
 }
 
 export async function loadScannerPins(path: string): Promise<ScannerPins> {

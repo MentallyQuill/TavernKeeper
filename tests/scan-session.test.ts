@@ -64,7 +64,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     project_kinds: ["extension"] as const,
     prepared_at: "2026-08-02T15:00:00.000Z",
     scanner_version: "1.0.0",
-    scanner_policy_version: "2",
+    scanner_policy_version: "3",
     rule_catalog_version: "1",
     report_version: 1,
     supersedes_report_id: null,

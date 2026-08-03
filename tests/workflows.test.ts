@@ -23,6 +23,10 @@ const workflowPolicyScript = fileURLToPath(
 );
 const publisherAction =
   "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
+const uploadArtifactAction =
+  "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a";
+const downloadArtifactAction =
+  "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const workflowNames = [
   "ci.yml",
   "deploy-pages.yml",
@@ -71,9 +75,9 @@ async function expectPolicyFailure(
       ),
     );
     await writeFile(
-      join(root, "config", "scanner-policy.v2.json"),
+      join(root, "config", "scanner-policy.v3.json"),
       await readFile(
-        new URL("../config/scanner-policy.v2.json", import.meta.url),
+        new URL("../config/scanner-policy.v3.json", import.meta.url),
         "utf8",
       ),
     );
@@ -229,6 +233,9 @@ describe("GitHub workflow security policy", () => {
     const upload = scanSteps.find((step) =>
       String(step.uses).startsWith("actions/upload-artifact@"),
     );
+    const download = (value.jobs.publish.steps as Workflow[]).find((step) =>
+      String(step.uses).startsWith("actions/download-artifact@"),
+    );
     const transportKeySteps = allSteps.filter((step) =>
       JSON.stringify(step).includes("TAVERNKEEPER_ARTIFACT_KEY"),
     );
@@ -239,9 +246,11 @@ describe("GitHub workflow security policy", () => {
     );
     expect(encrypt?.if).toBe("always()");
     expect(upload).toMatchObject({
+      uses: uploadArtifactAction,
       if: "always()",
       with: { path: "outcome.enc", "retention-days": 1 },
     });
+    expect(download?.uses).toBe(downloadArtifactAction);
     expect(JSON.stringify(upload)).not.toMatch(
       /candidate\.json|transition\.json/u,
     );
@@ -314,6 +323,25 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) => text.replace("path: outcome.enc", "path: candidate.json"),
       /scan artifact upload must always retain only outcome\.enc for one day/u,
+    );
+  });
+
+  test("workflow policy rejects artifact action pin drift", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          uploadArtifactAction,
+          `actions/upload-artifact@${"0".repeat(40)}`,
+        ),
+      /scan artifact upload must always retain only outcome\.enc for one day/u,
+    );
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          downloadArtifactAction,
+          `actions/download-artifact@${"0".repeat(40)}`,
+        ),
+      /artifact actions must retain the reviewed Node 24 pins/u,
     );
   });
 

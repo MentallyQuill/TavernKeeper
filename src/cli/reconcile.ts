@@ -67,7 +67,7 @@ async function main() {
     index: indexInput,
     state: stateInput,
     now: new Date().toISOString(),
-    scannerPolicyVersion: "2",
+    scannerPolicyVersion: "3",
   });
   return planned;
 }

@@ -120,6 +120,19 @@ review coverage are failures, never permission to skip candidates, reduce the
 policy, switch models automatically, infer a low result, or publish a partial
 report.
 
+OpenGrep policy 3 treats only warning-level code 2 `Other syntax error` and
+warning-level code 3 `PartialParsing` tuple diagnostics as bounded parser
+limitations. Valid findings remain eligible for contextual review when those
+warnings occur. Unknown warnings, error-level diagnostics, malformed output,
+nonzero exits, and process failures remain system failures and engage the same
+fail-closed queue controls.
+
+Any change to scanner behavior or output requires a clean canary baseline.
+Before reactivation, remove the existing Wandlight and Recursion report trees
+and preferred-index entries, prove Tavernary has imported the empty state, and
+then scan each canary once under the new policy. Do not reset other repository
+history as part of this release gate.
+
 ## Staff workflows
 
 - `provider-check.yml` makes one benign, bounded review request and validates

@@ -6,7 +6,7 @@ import {
   loadScannerPins,
   loadScannerPolicy,
   ScannerPinsSchema,
-  ScannerPolicyV2Schema,
+  ScannerPolicyV3Schema,
 } from "../src/config/policy.js";
 
 describe("deterministic scanner policy", () => {
@@ -27,14 +27,14 @@ describe("deterministic scanner policy", () => {
     ).toBe(false);
   });
 
-  test("loads V2 with bounded batches and no model policy", async () => {
-    const policy = await loadScannerPolicy("config/scanner-policy.v2.json");
-    expect(policy.version).toBe("2");
+  test("loads V3 with bounded batches and no model policy", async () => {
+    const policy = await loadScannerPolicy("config/scanner-policy.v3.json");
+    expect(policy.version).toBe("3");
     expect(policy.queue).toEqual({ batchSize: 5, maxParallel: 2 });
     expect(policy.history.maxCommits).toBe(20);
     expect(policy).not.toHaveProperty("model");
     expect(
-      ScannerPolicyV2Schema.safeParse({ ...policy, model: {} }).success,
+      ScannerPolicyV3Schema.safeParse({ ...policy, model: {} }).success,
     ).toBe(false);
   });
 
@@ -48,16 +48,16 @@ describe("deterministic scanner policy", () => {
   });
 
   test("rejects policy drift, unknown fields, and malformed pins", async () => {
-    const policy = await loadScannerPolicy("config/scanner-policy.v2.json");
+    const policy = await loadScannerPolicy("config/scanner-policy.v3.json");
     const pins = await loadScannerPins("config/scanners.v1.json");
     expect(
-      ScannerPolicyV2Schema.safeParse({
+      ScannerPolicyV3Schema.safeParse({
         ...policy,
         queue: { ...policy.queue, batchSize: 6 },
       }).success,
     ).toBe(false);
     expect(
-      ScannerPolicyV2Schema.safeParse({ ...policy, tokenBudget: 1_000 })
+      ScannerPolicyV3Schema.safeParse({ ...policy, tokenBudget: 1_000 })
         .success,
     ).toBe(false);
     expect(
