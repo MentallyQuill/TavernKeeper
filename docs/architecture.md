@@ -76,11 +76,14 @@ and hidden reasoning are never persisted or published.
 ## Atomic reporting
 
 Every applicable scanner must complete, and every candidate must receive
-exactly one valid contextual assessment. Evidence validation proves cited
-paths, line ranges, identities, content mappings, coverage, and the scanned
-SHA. TavernKeeper rechecks exact HEAD before finalization. A tool, provider,
-context, review, quota, evidence, schema, sanitizer, or publication failure
-yields no report and enters the retry path.
+exactly one valid contextual assessment. TavernKeeper attaches each
+assessment's location from validated deterministic candidate evidence instead
+of asking the model to reproduce it. Model-authored observation locations must
+still match supplied source context. Evidence validation proves cited paths,
+line ranges, identities, content mappings, coverage, and the scanned SHA.
+TavernKeeper rechecks exact HEAD before finalization. A tool, provider, context,
+review, quota, evidence, schema, sanitizer, or publication failure yields no
+report and enters the retry path.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Matrix jobs encrypt
