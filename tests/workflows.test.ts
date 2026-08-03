@@ -137,6 +137,9 @@ describe("GitHub workflow security policy", () => {
       type: "number",
       required: true,
     });
+    expect(value["run-name"]).toBe(
+      "Tavernary targeted scan #${{ inputs.repository_id }}",
+    );
     expect(value.jobs.resolve.if).toContain("github.actor_id");
     expect(value.jobs.resolve.if).toContain("vars.TAVERNARY_WAKE_APP_BOT_ID");
     expect(text).toMatch(/tavernkeeper-targets\.json/u);

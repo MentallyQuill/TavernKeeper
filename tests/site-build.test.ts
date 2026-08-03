@@ -15,7 +15,7 @@ afterEach(async () => {
 });
 
 describe("Pages site allowlist", () => {
-  test("tracked public output excludes invalid development canaries", async () => {
+  test("tracked public output excludes invalid legacy report IDs", async () => {
     const root = join(import.meta.dirname, "..");
     const index = await readFile(join(root, "reports", "index.json"), "utf8");
     const output = await mkdtemp(join(root, ".tavernkeeper-reset-site-"));
@@ -25,14 +25,12 @@ describe("Pages site allowlist", () => {
       output,
     });
 
-    for (const invalidIdentity of [
-      "1254077407",
-      "1285208664",
-      "2d4f818c2ad5855b0faff387d88c3f64479865c6",
-      "1bce1fa73fe6c0fe8e767c773a832b94bb336720",
+    for (const invalidReportId of [
+      "2f5195e3ee9ec8ad2cdde525d07f3cba546a4c128f45bcabbae53e2238de679d",
+      "7053d5db805d0853b3f5c30b7b1a0f4bad50b64a70fd1b3de474f91d0447237b",
     ]) {
-      expect(index).not.toContain(invalidIdentity);
-      expect(publishedFiles.files.join("\n")).not.toContain(invalidIdentity);
+      expect(index).not.toContain(invalidReportId);
+      expect(publishedFiles.files.join("\n")).not.toContain(invalidReportId);
     }
   });
 
