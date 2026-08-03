@@ -210,6 +210,40 @@ describe("two-phase deterministic scan session", () => {
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  test("classifies deterministic report finalization failures without exposing evidence", async () => {
+    const { root, prepared } = await preparedSession();
+    const unsafeRuleId = `github_pat_${"x".repeat(20)}`;
+    prepared.findings[0]!.rule_id = unsafeRuleId;
+    prepared.findings[0]!.fingerprint = findingFingerprint({
+      origin: prepared.findings[0]!.origin,
+      ruleId: unsafeRuleId,
+      path: prepared.findings[0]!.path,
+      lineStart: prepared.findings[0]!.line_start,
+      lineEnd: prepared.findings[0]!.line_end,
+      evidenceSha: prepared.findings[0]!.evidence_sha,
+    });
+    prepared.session_id = preparedSessionIdentity(prepared);
+    await writeFile(
+      join(root, "prepared.json"),
+      `${JSON.stringify(prepared, null, 2)}\n`,
+    );
+    const output = join(tmpdir(), `invalid-report-${Date.now()}.json`);
+    roots.push(output);
+
+    await expect(
+      finalizePreparedSession({
+        sessionRoot: root,
+        output,
+        completedAt: "2026-08-02T16:00:00.000Z",
+        verifyHead: async () => ({ ok: true, value: targetSha }),
+      }),
+    ).rejects.toMatchObject({
+      code: "REPORT_FINALIZATION_FAILED",
+      scope: "system",
+    });
+    await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   test("prepared persistence rejects model-era fields", async () => {
     const { prepared } = await preparedSession();
     expect(

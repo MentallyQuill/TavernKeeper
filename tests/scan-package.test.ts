@@ -122,6 +122,29 @@ describe("Scan Package V1", () => {
     expect(scanPackageDigest(left)).toBe(scanPackageDigest(right));
   });
 
+  test("collapses identical scanner findings before evidence validation", () => {
+    const scanPackage = buildScanPackage({
+      ...input(),
+      findings: [finding, structuredClone(finding)],
+    });
+
+    expect(scanPackage.findings).toEqual([finding]);
+    expect(scanPackage.evidence_validation).toEqual({
+      findings: 1,
+      paths_validated: 1,
+      fingerprints_validated: 1,
+    });
+  });
+
+  test("rejects conflicting evidence that reuses a finding fingerprint", () => {
+    expect(() =>
+      buildScanPackage({
+        ...input(),
+        findings: [finding, { ...finding, severity: "low" }],
+      }),
+    ).toThrow(/duplicate finding fingerprints disagree/iu);
+  });
+
   test("requires complete tool coverage and maps each finding origin", () => {
     expect(() =>
       buildScanPackage({ ...input(), tools: toolRuns.slice(0, -1) }),
