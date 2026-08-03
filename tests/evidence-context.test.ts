@@ -183,4 +183,67 @@ describe("evidence context builder", () => {
     expect(groups[0]?.context.source).toContain("historicalFlow");
     expect(groups[0]?.context.source).not.toContain("currentBehavior");
   });
+
+  test("splits a noisy file into bounded groups without dropping candidates", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-noisy-context-"));
+    roots.push(root);
+    const source = Array.from(
+      { length: 80 },
+      (_, index) => `callEndpoint(${index + 1});`,
+    ).join("\n");
+    await writeFile(join(root, "noisy.ts"), source);
+    const findings = Array.from({ length: 65 }, (_, index) =>
+      normalizeFinding({
+        origin: "opengrep",
+        ruleId: "network-call",
+        category: "network-access",
+        severity: "medium",
+        confidence: "medium",
+        path: "noisy.ts",
+        lineStart: index + 1,
+        lineEnd: index + 1,
+        evidenceSha: null,
+        title: "Network request",
+        explanation: "The file makes a network request.",
+      }),
+    );
+
+    const groups = await buildEvidenceContextGroups({
+      checkoutRoot: root,
+      target: {
+        source_id: "github-43",
+        provider: "github",
+        repository_id: 43,
+        repository: "owner/noisy-project",
+        canonical_url: "https://github.com/owner/noisy-project",
+        target_sha: "c".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings,
+      inventory: {
+        root,
+        files: [
+          {
+            path: "noisy.ts",
+            bytes: Buffer.byteLength(source),
+            sha256: createHash("sha256").update(source).digest("hex"),
+            kind: "text",
+          },
+        ],
+        totals: { files: 1, bytes: Buffer.byteLength(source) },
+        totalBytes: Buffer.byteLength(source),
+      },
+    });
+
+    expect(groups).toHaveLength(2);
+    expect(groups.every((item) => item.candidates.length <= 64)).toBe(true);
+    expect(groups.flatMap((item) => item.candidates)).toHaveLength(65);
+    expect(
+      new Set(
+        groups.flatMap((item) =>
+          item.candidates.map((candidate) => candidate.candidate_id),
+        ),
+      ).size,
+    ).toBe(65);
+  });
 });

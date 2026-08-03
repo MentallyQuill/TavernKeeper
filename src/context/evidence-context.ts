@@ -78,6 +78,7 @@ const PURPOSE_FILES = [
   "manifest.json",
 ];
 const SOURCE_CONTEXT_LINES = 40;
+const MAX_CANDIDATES_PER_GROUP = 64;
 const MAX_PURPOSE_CHARACTERS = 8_000;
 const MAX_IMPORT_CHARACTERS = 4_000;
 
@@ -182,6 +183,35 @@ function sourceWindows(source: string, findings: readonly Finding[]) {
     .join("\n\n[... separate evidence window ...]\n\n");
 }
 
+function coherentFindingGroups(findings: readonly Finding[]) {
+  const ordered = [...findings].sort(
+    (left, right) =>
+      (left.line_start ?? 1) - (right.line_start ?? 1) ||
+      (left.line_end ?? left.line_start ?? 1) -
+        (right.line_end ?? right.line_start ?? 1) ||
+      left.fingerprint.localeCompare(right.fingerprint),
+  );
+  const groups: Finding[][] = [];
+  let previousEnd = 0;
+  for (const finding of ordered) {
+    const start = finding.line_start ?? 1;
+    const end = finding.line_end ?? start;
+    let group = groups.at(-1);
+    if (
+      !group ||
+      group.length >= MAX_CANDIDATES_PER_GROUP ||
+      (previousEnd > 0 && start > previousEnd + SOURCE_CONTEXT_LINES * 2)
+    ) {
+      group = [];
+      groups.push(group);
+      previousEnd = 0;
+    }
+    group.push(finding);
+    previousEnd = Math.max(previousEnd, end);
+  }
+  return groups;
+}
+
 function importContext(source: string) {
   return source
     .split(/\r?\n/u)
@@ -276,45 +306,47 @@ export async function buildEvidenceContextGroups({
         );
       source = verifiedHistoricalText(historical);
     }
-    const orderedFindings = [...pathFindings].sort((left, right) =>
-      left.fingerprint.localeCompare(right.fingerprint),
-    );
-    const candidates = orderedFindings.map((finding) => ({
-      candidate_id: finding.fingerprint,
-      evidence_id: finding.fingerprint,
-      origin: finding.origin,
-      rule_id: finding.rule_id,
-      category: finding.category,
-      scanner_severity: finding.severity,
-      scanner_confidence: finding.confidence,
-      title: finding.title,
-      explanation: finding.explanation,
-      line_start: finding.line_start,
-      line_end: finding.line_end,
-    }));
-    groups.push({
-      group_id: digest([
-        target.source_id,
-        target.target_sha,
-        evidenceSha,
+    for (const scopedFindings of coherentFindingGroups(pathFindings)) {
+      const orderedFindings = [...scopedFindings].sort((left, right) =>
+        left.fingerprint.localeCompare(right.fingerprint),
+      );
+      const candidates = orderedFindings.map((finding) => ({
+        candidate_id: finding.fingerprint,
+        evidence_id: finding.fingerprint,
+        origin: finding.origin,
+        rule_id: finding.rule_id,
+        category: finding.category,
+        scanner_severity: finding.severity,
+        scanner_confidence: finding.confidence,
+        title: finding.title,
+        explanation: finding.explanation,
+        line_start: finding.line_start,
+        line_end: finding.line_end,
+      }));
+      groups.push({
+        group_id: digest([
+          target.source_id,
+          target.target_sha,
+          evidenceSha,
+          path,
+          candidates.map((candidate) => candidate.candidate_id),
+        ]),
+        repository: target.repository,
+        project_kinds: [...projectKinds].sort(),
         path,
-        candidates.map((candidate) => candidate.candidate_id),
-      ]),
-      repository: target.repository,
-      project_kinds: [...projectKinds].sort(),
-      path,
-      file_role: classifyFileRole(path),
-      target_sha: target.target_sha,
-      evidence_sha: evidenceSha ?? target.target_sha,
-      ecosystem_context_version: ECOSYSTEM_CONTEXT_VERSION,
-      ecosystem_context: ecosystemContext(),
-      candidates,
-      context: {
-        imports: importContext(source),
-        source: sourceWindows(source, orderedFindings),
-        project_purpose: purpose,
-      },
-    });
+        file_role: classifyFileRole(path),
+        target_sha: target.target_sha,
+        evidence_sha: evidenceSha ?? target.target_sha,
+        ecosystem_context_version: ECOSYSTEM_CONTEXT_VERSION,
+        ecosystem_context: ecosystemContext(),
+        candidates,
+        context: {
+          imports: importContext(source),
+          source: sourceWindows(source, orderedFindings),
+          project_purpose: purpose,
+        },
+      });
+    }
   }
   return groups;
 }

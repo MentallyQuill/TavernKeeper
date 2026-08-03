@@ -64,6 +64,22 @@ export const ExploitabilitySchema = z.enum([
 export const AssessmentConfidenceSchema = z.enum(["low", "medium", "high"]);
 export const ItemRiskSchema = z.enum(["low", "material", "high"]);
 
+function riskContradictsDisposition(assessment: {
+  disposition: z.infer<typeof DispositionSchema>;
+  recommended_risk: z.infer<typeof ItemRiskSchema>;
+}) {
+  const lowDisposition = ["expected_behavior", "minor_weakness"].includes(
+    assessment.disposition,
+  );
+  return (
+    (lowDisposition && assessment.recommended_risk !== "low") ||
+    (assessment.disposition === "material_vulnerability" &&
+      assessment.recommended_risk === "low") ||
+    (assessment.disposition === "credible_malicious_behavior" &&
+      assessment.recommended_risk !== "high")
+  );
+}
+
 export const ContextualAssessmentSchema = z
   .strictObject({
     candidate_id: IdentifierSchema,
@@ -79,16 +95,7 @@ export const ContextualAssessmentSchema = z
     locations: z.array(LocationSchema).min(1).max(16),
   })
   .superRefine((assessment, context) => {
-    const lowDisposition = ["expected_behavior", "minor_weakness"].includes(
-      assessment.disposition,
-    );
-    const contradictory =
-      (lowDisposition && assessment.recommended_risk !== "low") ||
-      (assessment.disposition === "material_vulnerability" &&
-        assessment.recommended_risk === "low") ||
-      (assessment.disposition === "credible_malicious_behavior" &&
-        assessment.recommended_risk !== "high");
-    if (contradictory)
+    if (riskContradictsDisposition(assessment))
       context.addIssue({
         code: "custom",
         path: ["recommended_risk"],
@@ -96,40 +103,60 @@ export const ContextualAssessmentSchema = z
       });
   });
 
+const ObservationFields = {
+  related_candidate_ids: z.array(IdentifierSchema).min(1).max(16),
+  evidence_ids: z.array(IdentifierSchema).min(1).max(16),
+  disposition: DispositionSchema,
+  impact: ImpactSchema,
+  exploitability: ExploitabilitySchema,
+  confidence: AssessmentConfidenceSchema,
+  recommended_risk: ItemRiskSchema,
+  title: SafeTextSchema(200),
+  technical_explanation: SafeTextSchema(1_200),
+  layman_explanation: SafeTextSchema(600),
+  developer_action: SafeTextSchema(600),
+  locations: z.array(LocationSchema).min(1).max(16),
+};
+
+function validateObservation(
+  observation: {
+    related_candidate_ids: string[];
+    evidence_ids: string[];
+    disposition: z.infer<typeof DispositionSchema>;
+    recommended_risk: z.infer<typeof ItemRiskSchema>;
+  },
+  context: z.core.$RefinementCtx,
+) {
+  if (riskContradictsDisposition(observation))
+    context.addIssue({
+      code: "custom",
+      path: ["recommended_risk"],
+      message: "Recommended risk contradicts the assessment disposition.",
+    });
+  if (
+    new Set(observation.related_candidate_ids).size !==
+      observation.related_candidate_ids.length ||
+    new Set(observation.evidence_ids).size !== observation.evidence_ids.length
+  )
+    context.addIssue({
+      code: "custom",
+      message: "Observation identifiers must be unique.",
+    });
+}
+
+export const ContextualObservationInputSchema = z
+  .strictObject(ObservationFields)
+  .superRefine(validateObservation);
+
 export const ContextualObservationSchema = z
-  .strictObject({
-    observation_id: IdentifierSchema,
-    related_candidate_ids: z.array(IdentifierSchema).min(1).max(16),
-    evidence_ids: z.array(IdentifierSchema).min(1).max(16),
-    disposition: DispositionSchema,
-    impact: ImpactSchema,
-    exploitability: ExploitabilitySchema,
-    confidence: AssessmentConfidenceSchema,
-    recommended_risk: ItemRiskSchema,
-    title: SafeTextSchema(200),
-    technical_explanation: SafeTextSchema(1_200),
-    layman_explanation: SafeTextSchema(600),
-    developer_action: SafeTextSchema(600),
-    locations: z.array(LocationSchema).min(1).max(16),
-  })
-  .superRefine((observation, context) => {
-    if (
-      new Set(observation.related_candidate_ids).size !==
-        observation.related_candidate_ids.length ||
-      new Set(observation.evidence_ids).size !== observation.evidence_ids.length
-    ) {
-      context.addIssue({
-        code: "custom",
-        message: "Observation identifiers must be unique.",
-      });
-    }
-  });
+  .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
+  .superRefine(validateObservation);
 
 const CompleteReviewResponseSchema = z
   .strictObject({
     status: z.literal("complete"),
     assessments: z.array(ContextualAssessmentSchema).min(1).max(256),
-    observations: z.array(ContextualObservationSchema).max(64),
+    observations: z.array(ContextualObservationInputSchema).max(64),
   })
   .superRefine((response, context) => {
     const candidateIds = response.assessments.map(
@@ -167,6 +194,9 @@ export const ContextualReviewResponseSchema = z.discriminatedUnion("status", [
 
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;
 export type ContextualObservation = z.infer<typeof ContextualObservationSchema>;
+export type ContextualObservationInput = z.infer<
+  typeof ContextualObservationInputSchema
+>;
 export type ContextualReviewResponse = z.infer<
   typeof ContextualReviewResponseSchema
 >;

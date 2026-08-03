@@ -41,7 +41,8 @@ export type ModelRequestErrorCode =
   | "MODEL_QUOTA"
   | "MODEL_PROVIDER"
   | "MODEL_INVALID_RESPONSE"
-  | "MODEL_EVIDENCE_INVALID";
+  | "MODEL_EVIDENCE_INVALID"
+  | "MODEL_CONTEXT_INCOMPLETE";
 
 export type ModelResponseDiagnostic =
   | "output_limit"

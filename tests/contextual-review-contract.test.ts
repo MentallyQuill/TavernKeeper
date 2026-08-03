@@ -72,4 +72,47 @@ describe("contextual review contract", () => {
       }),
     ).toThrow(/unique/iu);
   });
+
+  test("rejects a contextual observation with a contradictory risk", () => {
+    expect(() =>
+      ContextualReviewResponseSchema.parse({
+        status: "complete",
+        assessments: [
+          {
+            candidate_id: id,
+            evidence_ids: [id],
+            disposition: "expected_behavior",
+            impact: "none",
+            exploitability: "unlikely",
+            confidence: "high",
+            recommended_risk: "low",
+            technical_explanation: "The behavior is expected.",
+            layman_explanation: "This appears normal.",
+            developer_action: "none",
+            locations: [
+              { path: "src/client.ts", line_start: 20, line_end: 20 },
+            ],
+          },
+        ],
+        observations: [
+          {
+            related_candidate_ids: [id],
+            evidence_ids: [id],
+            disposition: "expected_behavior",
+            impact: "none",
+            exploitability: "unlikely",
+            confidence: "high",
+            recommended_risk: "high",
+            title: "Expected request",
+            technical_explanation: "The behavior is expected.",
+            layman_explanation: "This appears normal.",
+            developer_action: "none",
+            locations: [
+              { path: "src/client.ts", line_start: 20, line_end: 20 },
+            ],
+          },
+        ],
+      }),
+    ).toThrow(/risk.*disposition/iu);
+  });
 });

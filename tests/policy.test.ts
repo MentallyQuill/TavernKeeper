@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import {
+  ContextualReviewPolicySchema,
+  loadContextualReviewPolicy,
   loadScannerPins,
   loadScannerPolicy,
   ScannerPinsSchema,
@@ -8,6 +10,23 @@ import {
 } from "../src/config/policy.js";
 
 describe("deterministic scanner policy", () => {
+  test("loads the versioned contextual review policy without a token budget", async () => {
+    const policy = await loadContextualReviewPolicy(
+      "config/contextual-review.v1.json",
+    );
+    expect(policy).toMatchObject({
+      version: "1",
+      promptVersion: "contextual-review-v1",
+      schemaVersion: "contextual-assessment-v1",
+      maxImmediateAttempts: 3,
+    });
+    expect(policy).not.toHaveProperty("tokenBudget");
+    expect(
+      ContextualReviewPolicySchema.safeParse({ ...policy, tokenBudget: 1 })
+        .success,
+    ).toBe(false);
+  });
+
   test("loads V2 with bounded batches and no model policy", async () => {
     const policy = await loadScannerPolicy("config/scanner-policy.v2.json");
     expect(policy.version).toBe("2");
