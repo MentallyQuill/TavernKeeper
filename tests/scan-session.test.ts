@@ -213,7 +213,6 @@ async function completeReview(root: string) {
               technical_explanation: "The flow should be hardened.",
               layman_explanation: "This behavior deserves a small caution.",
               developer_action: "Document the destination.",
-              locations: [{ path: evidence.path, line_start: 1, line_end: 1 }],
             })),
             observations: [],
           }),

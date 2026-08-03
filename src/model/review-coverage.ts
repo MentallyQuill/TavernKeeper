@@ -46,6 +46,30 @@ function validateLocations(
   }
 }
 
+function canonicalCandidateLocation(
+  group: EvidenceContextGroup,
+  candidate: EvidenceContextGroup["candidates"][number],
+) {
+  const supplied = [...suppliedLines(group)].sort(
+    (left, right) => left - right,
+  );
+  const suppliedSet = new Set(supplied);
+  const fallback = supplied[0] ?? 1;
+  const requestedStart = candidate.line_start ?? fallback;
+  const requestedEnd = candidate.line_end ?? requestedStart;
+  const rangeLength = requestedEnd - requestedStart + 1;
+  let rangeIsSupplied = rangeLength > 0 && rangeLength <= suppliedSet.size;
+  for (
+    let line = requestedStart;
+    rangeIsSupplied && line <= requestedEnd;
+    line += 1
+  )
+    rangeIsSupplied = suppliedSet.has(line);
+  const lineStart = rangeIsSupplied ? requestedStart : fallback;
+  const lineEnd = rangeIsSupplied ? requestedEnd : fallback;
+  return [{ path: group.path, line_start: lineStart, line_end: lineEnd }];
+}
+
 export function validateCompletedGroupReview(
   group: EvidenceContextGroup,
   response: CompletedResponse,
@@ -77,7 +101,6 @@ export function validateCompletedGroupReview(
       assessment.evidence_ids.some((evidenceId) => !evidenceIds.has(evidenceId))
     )
       evidenceError("Contextual review cited unknown candidate evidence.");
-    validateLocations(group, assessment.locations);
   }
   for (const observation of response.observations) {
     if (
@@ -98,9 +121,10 @@ export function validateCompletedGroupReview(
     ]),
   );
   return {
-    assessments: group.candidates.map((candidate) =>
-      assessmentById.get(candidate.candidate_id)!,
-    ),
+    assessments: group.candidates.map((candidate) => ({
+      ...assessmentById.get(candidate.candidate_id)!,
+      locations: canonicalCandidateLocation(group, candidate),
+    })),
     observations: response.observations
       .map((observation) => ({
         observation_id: createHash("sha256")

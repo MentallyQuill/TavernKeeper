@@ -63,7 +63,7 @@ function group(
   };
 }
 
-function assessment(candidateId: string, path: string, line: number) {
+function assessment(candidateId: string, _path: string, _line: number) {
   return {
     candidate_id: candidateId,
     evidence_ids: [candidateId],
@@ -75,7 +75,6 @@ function assessment(candidateId: string, path: string, line: number) {
     technical_explanation: "The request matches the documented model helper.",
     layman_explanation: "This request appears to be expected.",
     developer_action: "none",
-    locations: [{ path, line_start: line, line_end: line }],
   } as const;
 }
 
@@ -127,6 +126,11 @@ describe("contextual evidence review", () => {
     expect(requestCompletion).toHaveBeenCalledTimes(2);
     expect(result.coverage).toEqual({ required: 3, completed: 3 });
     expect(result.assessments.map((item) => item.candidate_id)).toEqual(ids);
+    expect(result.assessments.map((item) => item.locations)).toEqual([
+      [{ path: "src/a.ts", line_start: 2, line_end: 2 }],
+      [{ path: "src/a.ts", line_start: 3, line_end: 3 }],
+      [{ path: "src/b.ts", line_start: 2, line_end: 2 }],
+    ]);
     expect(CompletedContextualReviewSchema.parse(result)).toEqual(result);
     expect(
       CompletedContextualReviewSchema.safeParse({
@@ -336,12 +340,11 @@ describe("contextual evidence review", () => {
     expect(requestCompletion).toHaveBeenCalledTimes(3);
   });
 
-  test("refuses invented evidence and source locations", async () => {
+  test("refuses invented evidence", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const invented = {
       ...assessment(ids[0]!, current.path, 2),
       evidence_ids: ["f".repeat(64)],
-      locations: [{ path: current.path, line_start: 99, line_end: 99 }],
     };
     const requestCompletion = vi.fn(async () => ({
       completionId: "completion-invented",
@@ -370,6 +373,54 @@ describe("contextual evidence review", () => {
           requestCompletion,
         },
         policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+  });
+
+  test("refuses invented observation locations", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-invented-observation",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [
+          {
+            related_candidate_ids: [ids[0]!],
+            evidence_ids: [ids[0]!],
+            disposition: "minor_weakness",
+            impact: "low",
+            exploitability: "unlikely",
+            confidence: "medium",
+            recommended_risk: "low",
+            title: "Invented location",
+            technical_explanation: "The location was not supplied.",
+            layman_explanation: "This location cannot be trusted.",
+            developer_action: "none",
+            locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+          },
+        ],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy: { ...policy, maxImmediateAttempts: 1 },
       }),
     ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
   });

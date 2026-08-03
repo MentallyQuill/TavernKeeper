@@ -61,7 +61,6 @@ describe("contextual review contract", () => {
       technical_explanation: "The behavior matches the stated project purpose.",
       layman_explanation: "This behavior appears expected.",
       developer_action: "none",
-      locations: [{ path: "src/client.ts", line_start: 20, line_end: 25 }],
     } as const;
 
     expect(() =>
@@ -89,9 +88,6 @@ describe("contextual review contract", () => {
             technical_explanation: "The behavior is expected.",
             layman_explanation: "This appears normal.",
             developer_action: "none",
-            locations: [
-              { path: "src/client.ts", line_start: 20, line_end: 20 },
-            ],
           },
         ],
         observations: [

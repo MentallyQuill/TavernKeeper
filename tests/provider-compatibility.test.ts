@@ -38,9 +38,6 @@ describe("model provider contextual compatibility check", () => {
             layman_explanation:
               "This is documentation, not code handling a real credential.",
             developer_action: "none",
-            locations: [
-              { path: "README.md", line_start: index + 1, line_end: index + 1 },
-            ],
           })),
           observations: [],
         }),

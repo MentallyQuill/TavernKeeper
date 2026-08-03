@@ -80,27 +80,45 @@ function riskContradictsDisposition(assessment: {
   );
 }
 
+const AssessmentFields = {
+  candidate_id: IdentifierSchema,
+  evidence_ids: z.array(IdentifierSchema).min(1).max(16),
+  disposition: DispositionSchema,
+  impact: ImpactSchema,
+  exploitability: ExploitabilitySchema,
+  confidence: AssessmentConfidenceSchema,
+  recommended_risk: ItemRiskSchema,
+  technical_explanation: SafeTextSchema(1_200),
+  layman_explanation: SafeTextSchema(600),
+  developer_action: SafeTextSchema(600),
+};
+
+function validateAssessment(
+  assessment: {
+    disposition: z.infer<typeof DispositionSchema>;
+    recommended_risk: z.infer<typeof ItemRiskSchema>;
+  },
+  context: z.core.$RefinementCtx,
+) {
+  if (riskContradictsDisposition(assessment))
+    context.addIssue({
+      code: "custom",
+      path: ["recommended_risk"],
+      message: "Recommended risk contradicts the assessment disposition.",
+    });
+}
+
+export const ContextualAssessmentInputSchema = z
+  .strictObject(AssessmentFields)
+  .superRefine(validateAssessment);
+
 export const ContextualAssessmentSchema = z
   .strictObject({
-    candidate_id: IdentifierSchema,
-    evidence_ids: z.array(IdentifierSchema).min(1).max(16),
-    disposition: DispositionSchema,
-    impact: ImpactSchema,
-    exploitability: ExploitabilitySchema,
-    confidence: AssessmentConfidenceSchema,
-    recommended_risk: ItemRiskSchema,
-    technical_explanation: SafeTextSchema(1_200),
-    layman_explanation: SafeTextSchema(600),
-    developer_action: SafeTextSchema(600),
+    ...AssessmentFields,
     locations: z.array(LocationSchema).min(1).max(16),
   })
   .superRefine((assessment, context) => {
-    if (riskContradictsDisposition(assessment))
-      context.addIssue({
-        code: "custom",
-        path: ["recommended_risk"],
-        message: "Recommended risk contradicts the assessment disposition.",
-      });
+    validateAssessment(assessment, context);
   });
 
 const ObservationFields = {
@@ -155,7 +173,7 @@ export const ContextualObservationSchema = z
 const CompleteReviewResponseSchema = z
   .strictObject({
     status: z.literal("complete"),
-    assessments: z.array(ContextualAssessmentSchema).min(1).max(256),
+    assessments: z.array(ContextualAssessmentInputSchema).min(1).max(256),
     observations: z.array(ContextualObservationInputSchema).max(64),
   })
   .superRefine((response, context) => {
@@ -193,6 +211,9 @@ export const ContextualReviewResponseSchema = z.discriminatedUnion("status", [
 ]);
 
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;
+export type ContextualAssessmentInput = z.infer<
+  typeof ContextualAssessmentInputSchema
+>;
 export type ContextualObservation = z.infer<typeof ContextualObservationSchema>;
 export type ContextualObservationInput = z.infer<
   typeof ContextualObservationInputSchema
