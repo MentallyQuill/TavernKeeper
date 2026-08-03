@@ -250,28 +250,42 @@ export function buildScanPackage(input: BuildScanPackageInput): ScanPackageV1 {
     (total, file) => total + file.bytes,
     0,
   );
-  const findings = input.findings
-    .map((finding) => ({
-      origin: finding.origin,
-      rule_id: finding.rule_id,
-      category: finding.category,
-      severity: finding.severity,
-      confidence: finding.confidence,
-      path: finding.path,
-      line_start: finding.line_start,
-      line_end: finding.line_end,
-      evidence_sha: finding.evidence_sha,
-      title: finding.title,
-      explanation: finding.explanation,
-      ...(finding.remediation === undefined
-        ? {}
-        : { remediation: finding.remediation }),
-      ...(finding.reference_url === undefined
-        ? {}
-        : { reference_url: finding.reference_url }),
-      fingerprint: finding.fingerprint,
-    }))
-    .sort((left, right) => left.fingerprint.localeCompare(right.fingerprint));
+  const normalizedFindings = input.findings.map((finding) => ({
+    origin: finding.origin,
+    rule_id: finding.rule_id,
+    category: finding.category,
+    severity: finding.severity,
+    confidence: finding.confidence,
+    path: finding.path,
+    line_start: finding.line_start,
+    line_end: finding.line_end,
+    evidence_sha: finding.evidence_sha,
+    title: finding.title,
+    explanation: finding.explanation,
+    ...(finding.remediation === undefined
+      ? {}
+      : { remediation: finding.remediation }),
+    ...(finding.reference_url === undefined
+      ? {}
+      : { reference_url: finding.reference_url }),
+    fingerprint: finding.fingerprint,
+  }));
+  const findingsByFingerprint = new Map<
+    string,
+    (typeof normalizedFindings)[number]
+  >();
+  for (const finding of normalizedFindings) {
+    const prior = findingsByFingerprint.get(finding.fingerprint);
+    if (
+      prior !== undefined &&
+      JSON.stringify(prior) !== JSON.stringify(finding)
+    )
+      throw new Error("Duplicate finding fingerprints disagree.");
+    findingsByFingerprint.set(finding.fingerprint, finding);
+  }
+  const findings = [...findingsByFingerprint.values()].sort((left, right) =>
+    left.fingerprint.localeCompare(right.fingerprint),
+  );
   const tools = input.tools
     .map(({ name, version, status }) => ({ name, version, status }))
     .sort(

@@ -565,13 +565,33 @@ export async function finalizePreparedSession({
         "repository",
         "Checked-out commit changed before deterministic finalization.",
       );
-    const scanPackage = scanPackageFor(prepared);
-    const report = buildDeterministicReport(scanPackage, {
-      targetSha: prepared.target.target_sha,
-      completedAt,
-      reportVersion: prepared.report_version,
-      supersedesReportId: prepared.supersedes_report_id,
-    });
+    let scanPackage: ReturnType<typeof scanPackageFor>;
+    try {
+      scanPackage = scanPackageFor(prepared);
+    } catch (error) {
+      if (error instanceof ScanPhaseError) throw error;
+      throw new ScanPhaseError(
+        "SCAN_PACKAGE_FINALIZATION_FAILED",
+        "system",
+        "Prepared scanner evidence could not be finalized.",
+      );
+    }
+    let report: z.infer<typeof ScanReportV4Schema>;
+    try {
+      report = buildDeterministicReport(scanPackage, {
+        targetSha: prepared.target.target_sha,
+        completedAt,
+        reportVersion: prepared.report_version,
+        supersedesReportId: prepared.supersedes_report_id,
+      });
+    } catch (error) {
+      if (error instanceof ScanPhaseError) throw error;
+      throw new ScanPhaseError(
+        "REPORT_FINALIZATION_FAILED",
+        "system",
+        "Deterministic report construction failed.",
+      );
+    }
     const candidate = { report };
     await writeExclusive(destination, candidate);
     return { status: "completed", candidate };
