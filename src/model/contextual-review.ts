@@ -38,6 +38,11 @@ type RequestCompletion = (
   request: TextCompletionRequest,
 ) => Promise<ModelCompletionResult>;
 
+const ContextualReviewJsonSchema = z.toJSONSchema(
+  ContextualReviewResponseSchema,
+  { target: "draft-7" },
+);
+
 export interface ContextualReviewProvider {
   endpoint: string;
   apiKey: string;
@@ -284,6 +289,7 @@ async function reviewGroup(
         timeoutMs: spec.policy.timeoutMs,
         systemContent: prompt.systemContent,
         userContent: prompt.userContent,
+        responseJsonSchema: ContextualReviewJsonSchema,
         ...(spec.provider.fetchImpl === undefined
           ? {}
           : { fetchImpl: spec.provider.fetchImpl }),

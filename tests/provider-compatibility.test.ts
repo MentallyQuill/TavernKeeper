@@ -19,29 +19,29 @@ function compatibleResponse(content: string) {
 }
 
 describe("model provider contextual compatibility check", () => {
-  test("validates one complete contextual review using Bearer authentication", async () => {
-    const candidateId = "c".repeat(64);
+  test("validates a multi-assessment contextual review using Bearer authentication", async () => {
+    const candidateIds = ["c", "d", "e", "f"].map((value) => value.repeat(64));
     const fetchImpl = vi.fn<typeof fetch>().mockResolvedValueOnce(
       compatibleResponse(
         JSON.stringify({
           status: "complete",
-          assessments: [
-            {
-              candidate_id: candidateId,
-              evidence_ids: [candidateId],
-              disposition: "expected_behavior",
-              impact: "none",
-              exploitability: "unlikely",
-              confidence: "high",
-              recommended_risk: "low",
-              technical_explanation:
-                "The credential-like word appears only in explanatory documentation.",
-              layman_explanation:
-                "This is documentation, not code handling a real credential.",
-              developer_action: "none",
-              locations: [{ path: "README.md", line_start: 1, line_end: 1 }],
-            },
-          ],
+          assessments: candidateIds.map((candidateId, index) => ({
+            candidate_id: candidateId,
+            evidence_ids: [candidateId],
+            disposition: "expected_behavior",
+            impact: "none",
+            exploitability: "unlikely",
+            confidence: "high",
+            recommended_risk: "low",
+            technical_explanation:
+              "The credential-like word appears only in explanatory documentation.",
+            layman_explanation:
+              "This is documentation, not code handling a real credential.",
+            developer_action: "none",
+            locations: [
+              { path: "README.md", line_start: index + 1, line_end: index + 1 },
+            ],
+          })),
           observations: [],
         }),
       ),
@@ -67,8 +67,18 @@ describe("model provider contextual compatibility check", () => {
       Authorization: "Bearer test-key",
     });
     const body = JSON.parse(String(request[1]?.body));
-    expect(body.response_format).toEqual({ type: "json_object" });
-    expect(body.messages[1].content).toContain(candidateId);
+    expect(body.response_format).toMatchObject({
+      type: "json_schema",
+      json_schema: {
+        name: "tavernkeeper_contextual_assessment",
+        strict: true,
+        schema: {
+          oneOf: expect.any(Array),
+        },
+      },
+    });
+    for (const candidateId of candidateIds)
+      expect(body.messages[1].content).toContain(candidateId);
   });
 
   test("rejects an incomplete local assessment schema without returning model text", async () => {
