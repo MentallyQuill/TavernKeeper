@@ -503,6 +503,45 @@ describe("contextual evidence review", () => {
     ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
   });
 
+  test("refuses generic secret assignments before report finalization", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const unsafe = {
+      ...assessment(ids[0]!, current.path, 2),
+      layman_explanation:
+        "The fixture contains token: fixturetoken123 for test coverage.",
+    };
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-generic-secret",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [unsafe],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy: { ...policy, maxImmediateAttempts: 1 },
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+    expect(requestCompletion).toHaveBeenCalledTimes(1);
+  });
+
   test("propagates quota failures without changing models or retrying", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {

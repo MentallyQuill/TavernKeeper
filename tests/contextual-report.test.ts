@@ -287,6 +287,29 @@ describe("contextual V5 reports", () => {
     ).toThrow(/secret-shaped/iu);
   });
 
+  test("rejects generic secret assignments with a recomputed identity", () => {
+    const report = validReport();
+    const changed = {
+      ...report,
+      assessments: [
+        {
+          ...report.assessments[0]!,
+          layman_explanation:
+            "The fixture contains token: fixturetoken123 for test coverage.",
+        },
+      ],
+    };
+    const identity = reportIdentity(changed);
+
+    expect(() =>
+      sanitizeReportV5({
+        ...changed,
+        report_id: identity,
+        report_digest: identity,
+      }),
+    ).toThrow(/secret-shaped/iu);
+  });
+
   test("renders approachable contextual findings with exact source links", () => {
     const report = reportWithObservation();
     const html = renderReportV5Html(report);
