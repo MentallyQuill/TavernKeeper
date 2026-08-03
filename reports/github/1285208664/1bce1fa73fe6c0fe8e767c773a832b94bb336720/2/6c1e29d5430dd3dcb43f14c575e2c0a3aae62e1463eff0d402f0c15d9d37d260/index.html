@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <title>TavernKeeper contextual report &middot; MentallyQuill/Recursion</title>
+  <style>
+    :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; background: #111318; color: #ecedf0; }
+    body { max-width: 62rem; margin: 0 auto; padding: 2rem 1rem 4rem; line-height: 1.55; }
+    a { color: #91c9ff; } code { overflow-wrap: anywhere; }
+    header, section { border: 1px solid #353a44; background: #191c22; padding: 1.25rem; margin-block: 1rem; }
+    h1, h2, h3 { line-height: 1.2; } h1 { margin-top: 0; }
+    dl { display: grid; grid-template-columns: minmax(9rem, auto) 1fr; gap: .45rem 1rem; }
+    dt { color: #aeb4bf; } dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+    .finding { border-left: .3rem solid #56d8c9; border-top: 1px solid #3a3f49; padding: 1rem; margin-top: 1rem; background: #15181e; }
+    .risk-material { border-left-color: #f0a24a; } .risk-high { border-left-color: #ff6b63; }
+    .label { color: #cdd2da; } summary { cursor: pointer; font-weight: 650; }
+    .expected { margin-top: 1rem; } .limitations { color: #c1c6cf; }
+    footer { color: #aeb4bf; margin-top: 2rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TavernKeeper Scan Report</h1>
+    <p><a href="https://github.com/MentallyQuill/Recursion" rel="noopener noreferrer">MentallyQuill/Recursion</a></p>
+    <dl>
+      <dt>Commit</dt><dd><a href="https://github.com/MentallyQuill/Recursion/commit/1bce1fa73fe6c0fe8e767c773a832b94bb336720" rel="noopener noreferrer">1bce1fa73fe6c0fe8e767c773a832b94bb336720</a></dd>
+      <dt>Completed</dt><dd>2026-08-03T10:32:31.505Z</dd>
+      <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+      <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash-0731:thinking</dd>
+      <dt>Report</dt><dd><code>6c1e29d5430dd3dcb43f14c575e2c0a3aae62e1463eff0d402f0c15d9d37d260</code></dd>
+    </dl>
+    <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+  </header>
+
+  <section>
+    <h2>Contextual assessments</h2>
+    <p>0 high danger &middot; 0 material concern &middot; 4 low concern</p>
+    <p>No material or high-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Expected scanner matches (4)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported private-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that checks whether the extension removes secret-looking text before sending data to a model provider. The flagged lines are made-up example secrets used for testing, not real credentials. Nothing harmful is happening.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule private-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines are test fixtures inside a developer test script. They contain deliberately fake private key markers such as &#39;BEGIN PRIVATE KEY&#39; followed by placeholder values like &#39;HASHKEY&#39; and &#39;SNAPKEY&#39;. The surrounding test code asserts that these placeholder secret values are redacted from provider-facing request payloads. No real private key material is present; the strings are synthetic inputs used to verify the project&#39;s redaction behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>private-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Recursion/blob/1bce1fa73fe6c0fe8e767c773a832b94bb336720/tools/scripts/test-cards.mjs#L748-L750" rel="noopener noreferrer">tools/scripts/test-cards.mjs:748-750</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported private-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake private key string used in a test to make sure the extension hides secret-like text. It is not a real key and is not part of the extension users run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule private-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched text is a test fixture string inside a developer test script. It contains a fake PEM header and placeholder values used to verify that provider-facing request data redacts multi-token secret assignments. No real private key material is present, and the file is tooling not shipped to users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>private-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Recursion/blob/bceb1e0c646831c6308b23299cb7a823eed60b6a/tools/scripts/test-cards.mjs#L748-L750" rel="noopener noreferrer">tools/scripts/test-cards.mjs:748-750</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported private-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another fake private key string in the same test. It exists only to check that secret-like text gets removed before being sent to the AI provider.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule private-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched lines are part of the same test fixture, using a fake PEM header and placeholder key values in runId and snapshotHash fields to assert that redaction removes them from provider-facing payloads. This is intentional test data, not a credential.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>private-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Recursion/blob/bceb1e0c646831c6308b23299cb7a823eed60b6a/tools/scripts/test-cards.mjs#L744-L747" rel="noopener noreferrer">tools/scripts/test-cards.mjs:744-747</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported private-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that makes sure the extension hides fake secret text before sending it to the AI provider. The flagged content is a made-up key used only for testing, so there is no real security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule private-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines are part of a test case that constructs a request with a fake private key placeholder (&#39;BEGIN PRIVATE KEY&#39; plus &#39;RUNKEY&#39;) and then verifies the redaction logic strips it from the provider-facing payload. The values are clearly synthetic test data, not real credentials, and the test asserts the secret-like content is removed. This is a legitimate test fixture for the project&#39;s stated goal of keeping provider secrets out of request data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>private-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Recursion/blob/1bce1fa73fe6c0fe8e767c773a832b94bb336720/tools/scripts/test-cards.mjs#L744-L747" rel="noopener noreferrer">tools/scripts/test-cards.mjs:744-747</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+  </section>
+
+  
+
+  <section>
+    <h2>Coverage and limitations</h2>
+    <dl>
+      <dt>History</dt><dd>20 commits</dd>
+      <dt>Inventory</dt><dd>444 files &middot; 15679502 bytes</dd>
+      <dt>Contextual coverage</dt><dd>4 of 4 candidates assessed</dd>
+    </dl>
+    <h3>Tools</h3>
+    <ul><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 2 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+    <h3>Limitations</h3>
+    <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+  </section>
+
+  <footer><p><a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a></p></footer>
+</body>
+</html>
