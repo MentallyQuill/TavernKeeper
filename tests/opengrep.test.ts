@@ -63,6 +63,44 @@ function resultJson(path = "src/index.ts") {
 }
 
 describe("OpenGrep adapter", () => {
+  test("startup persistence rule distinguishes startup paths from object properties", async () => {
+    const document = parse(
+      await readFile(
+        new URL(
+          "../rules/opengrep/install-and-persistence.yml",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    ) as { rules: Array<Record<string, unknown>> };
+    const rule = document.rules.find((candidate) =>
+      String(candidate.id).includes("persistence.startup-modification"),
+    );
+    const expression = new RegExp(
+      String(rule?.["pattern-regex"]).replace(/^\(\?i\)/u, ""),
+      "iu",
+    );
+
+    expect(expression.test("const id = profile.profileId;")).toBe(false);
+    expect(expression.test('writeFile("~/.profile", contents);')).toBe(true);
+  });
+
+  test("node execution rule restricts method calls to recognized process APIs", async () => {
+    const document = parse(
+      await readFile(
+        new URL("../rules/opengrep/dynamic-execution.yml", import.meta.url),
+        "utf8",
+      ),
+    ) as { rules: Array<Record<string, unknown>> };
+    const rule = document.rules.find((candidate) =>
+      String(candidate.id).includes("dynamic-execution.node-shell"),
+    );
+    const serialized = JSON.stringify(rule);
+
+    expect(serialized).toContain("metavariable-regex");
+    expect(serialized).toMatch(/child_process|childProcess/iu);
+  });
+
   test("ships TavernKeeper-owned rules for every approved V1 signal family", async () => {
     const files = [
       "credential-exfiltration.yml",

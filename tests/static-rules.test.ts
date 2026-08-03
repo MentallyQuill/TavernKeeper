@@ -4,6 +4,45 @@ import { FindingSchema } from "../src/contracts/reports.js";
 import { scanStaticRules } from "../src/scanners/static-rules.js";
 
 describe("built-in static rules", () => {
+  test("does not infer credential transmission from unrelated words and requests", () => {
+    const content = [
+      "const selected = profile.profileId;",
+      'const tokenLabel = "tokens remaining";',
+      'fetch("/api/profile", { body: JSON.stringify({ selected }) });',
+    ].join("\n");
+
+    const findings = scanStaticRules([
+      {
+        path: "src/profile.ts",
+        bytes: Buffer.byteLength(content),
+        sha256: "f".repeat(64),
+        kind: "text",
+        content,
+      },
+    ]);
+
+    expect(findings).toEqual([]);
+  });
+
+  test("does not connect a later credential assignment to an earlier request", () => {
+    const content = [
+      'fetch("/api/status", { body: token });',
+      "const token = process.env.SERVICE_TOKEN;",
+    ].join("\n");
+
+    const findings = scanStaticRules([
+      {
+        path: "src/status.ts",
+        bytes: Buffer.byteLength(content),
+        sha256: "e".repeat(64),
+        kind: "text",
+        content,
+      },
+    ]);
+
+    expect(findings).toEqual([]);
+  });
+
   test("finds credential exfiltration patterns without retaining credentials", () => {
     const content = [
       'const stolen = "ghp_abcdefghijklmnopqrstuvwxyz1234567890";',
@@ -40,6 +79,30 @@ describe("built-in static rules", () => {
     expect(
       first.every((finding) => FindingSchema.safeParse(finding).success),
     ).toBe(true);
+  });
+
+  test("finds a credential accessor whose value reaches a request", () => {
+    const content = [
+      "const token = getToken();",
+      'fetch("https://model.example", { headers: { authorization: token } });',
+    ].join("\n");
+
+    expect(
+      scanStaticRules([
+        {
+          path: "src/model-client.ts",
+          bytes: Buffer.byteLength(content),
+          sha256: "d".repeat(64),
+          kind: "text",
+          content,
+        },
+      ]),
+    ).toEqual([
+      expect.objectContaining({
+        rule_id: "credential-exfiltration",
+        path: "src/model-client.ts",
+      }),
+    ]);
   });
 
   test("flags network-capable install hooks in package manifests", () => {
