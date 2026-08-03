@@ -15,6 +15,27 @@ afterEach(async () => {
 });
 
 describe("Pages site allowlist", () => {
+  test("tracked public output excludes invalid development canaries", async () => {
+    const root = join(import.meta.dirname, "..");
+    const index = await readFile(join(root, "reports", "index.json"), "utf8");
+    const output = await mkdtemp(join(root, ".tavernkeeper-reset-site-"));
+    roots.push(output);
+    const publishedFiles = await buildSite({
+      root,
+      output,
+    });
+
+    for (const invalidIdentity of [
+      "1254077407",
+      "1285208664",
+      "2d4f818c2ad5855b0faff387d88c3f64479865c6",
+      "1bce1fa73fe6c0fe8e767c773a832b94bb336720",
+    ]) {
+      expect(index).not.toContain(invalidIdentity);
+      expect(publishedFiles.files.join("\n")).not.toContain(invalidIdentity);
+    }
+  });
+
   test("copies only reports, schemas, and public rule documentation", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-site-"));
     roots.push(root);
