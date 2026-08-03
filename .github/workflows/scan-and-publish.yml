@@ -115,9 +115,21 @@ jobs:
           TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         run: npm run --silent prepare-target
-      - name: Finalize deterministic report
-        id: finalize
+      - name: Contextually assess scanner evidence
+        id: review
         if: steps.prepare.outcome == 'success'
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent review-target
+      - name: Finalize contextual V5 report
+        id: finalize
+        if: steps.review.outcome == 'success'
         continue-on-error: true
         env:
           TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}

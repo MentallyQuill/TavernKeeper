@@ -27,6 +27,7 @@ const workflowNames = [
   "ci.yml",
   "deploy-pages.yml",
   "policy-rescan.yml",
+  "provider-check.yml",
   "reconcile.yml",
   "retry.yml",
   "scan-and-publish.yml",
@@ -144,14 +145,17 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
-  test("the scan job is deterministic with no provider runtime", async () => {
+  test("the scan job isolates provider secrets to contextual review", async () => {
     const value = await workflow("scan-and-publish.yml");
     const steps = value.jobs.scan.steps as Workflow[];
     const prepareIndex = steps.findIndex(
       (step) => step.name === "Prepare exact target and scanner evidence",
     );
     const finalizeIndex = steps.findIndex(
-      (step) => step.name === "Finalize deterministic report",
+      (step) => step.name === "Finalize contextual V5 report",
+    );
+    const reviewIndex = steps.findIndex(
+      (step) => step.name === "Contextually assess scanner evidence",
     );
     const source = await readFile(
       new URL("../.github/workflows/scan-and-publish.yml", import.meta.url),
@@ -164,13 +168,47 @@ describe("GitHub workflow security policy", () => {
 
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
     expect(value.jobs.scan.strategy["fail-fast"]).toBe(true);
-    expect(finalizeIndex).toBe(prepareIndex + 1);
+    expect(reviewIndex).toBe(prepareIndex + 1);
+    expect(finalizeIndex).toBe(reviewIndex + 1);
     expect(steps[prepareIndex]?.run).toBe("npm run --silent prepare-target");
     expect(steps[finalizeIndex]?.run).toBe(
       "npm run --silent finalize-target -- candidate.json",
     );
+    expect(steps[reviewIndex]?.run).toBe("npm run --silent review-target");
+    expect(steps[reviewIndex]?.env).toMatchObject({
+      TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
+      TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
+      TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
+    });
     expect(`${source}\n${packageSource}`).not.toMatch(
-      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|review-target|provider-check|deep-scan|tavernkeeper-model-cache/iu,
+      /deep-scan|tavernkeeper-model-cache/iu,
+    );
+    const providerSecretSteps = steps.filter((step) =>
+      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u.test(
+        JSON.stringify(step),
+      ),
+    );
+    expect(providerSecretSteps.map((step) => step.name)).toEqual([
+      "Contextually assess scanner evidence",
+    ]);
+  });
+
+  test("the protected provider check makes one non-publishing contextual request", async () => {
+    const value = await workflow("provider-check.yml");
+    expect(value.jobs.authorize.environment).toBe("tavernkeeper-staff");
+    expect(value.jobs.check.environment).toBe("tavernkeeper-scanner");
+    const steps = value.jobs.check.steps as Workflow[];
+    const check = steps.find(
+      (step) => step.name === "Check one benign contextual review",
+    );
+    expect(check?.run).toBe("npm run --silent provider:check");
+    expect(check?.env).toEqual({
+      TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
+      TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
+      TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
+    });
+    expect(JSON.stringify(value)).not.toMatch(
+      /publish|candidate\.json|git push/iu,
     );
   });
 
@@ -239,14 +277,14 @@ describe("GitHub workflow security policy", () => {
     expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
   });
 
-  test("workflow policy rejects removed provider runtime", async () => {
+  test("workflow policy rejects removal of the contextual review boundary", async () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "      - name: Finalize deterministic report\n",
-          "      - name: provider-check\n        run: npm run provider-check\n      - name: Finalize deterministic report\n",
+          /      - name: Contextually assess scanner evidence[\s\S]*?run: npm run --silent review-target\n/u,
+          "",
         ),
-      /removed provider or legacy scan runtime resurfaced/u,
+      /contextual review must separate preparation from V5 finalization/u,
     );
   });
 
@@ -328,7 +366,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 8 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 9 workflows/u),
     });
   });
 });

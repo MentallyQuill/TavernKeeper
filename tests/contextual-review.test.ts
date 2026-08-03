@@ -1,0 +1,566 @@
+import { describe, expect, test, vi } from "vitest";
+
+import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
+import {
+  CompletedContextualReviewSchema,
+  reviewEvidenceGroups,
+} from "../src/model/contextual-review.js";
+import {
+  ModelRequestError,
+  type ModelCompletionResult,
+  type TextCompletionRequest,
+} from "../src/model/openai-compatible-client.js";
+
+const ids = ["a", "b", "c"].map((character) => character.repeat(64));
+const policy = {
+  version: "1",
+  promptVersion: "contextual-review-v1",
+  schemaVersion: "contextual-assessment-v1",
+  maxImmediateAttempts: 3,
+  maxOutputTokens: 8_192,
+  maxResponseBytes: 5_000_000,
+  timeoutMs: 600_000,
+} as const;
+
+function group(
+  path: string,
+  candidateIds: readonly string[],
+): EvidenceContextGroup {
+  return {
+    group_id: candidateIds[0]!,
+    repository: "owner/project",
+    project_kinds: ["extension"],
+    path,
+    file_role: "production",
+    target_sha: "d".repeat(40),
+    evidence_sha: "d".repeat(40),
+    source_bytes: 1,
+    source_sha256: "e".repeat(64),
+    ecosystem_context_version: "sillytavern-community-v1",
+    ecosystem_context: "Trusted ecosystem context.",
+    candidates: candidateIds.map((candidateId, index) => ({
+      candidate_id: candidateId,
+      evidence_id: candidateId,
+      origin: "opengrep",
+      rule_id: `rule-${index}`,
+      category: "network-access",
+      scanner_severity: "medium",
+      scanner_confidence: "medium",
+      title: "Network access",
+      explanation: "A request is made.",
+      line_start: index + 2,
+      line_end: index + 2,
+    })),
+    context: {
+      imports: '     1 | import { fetch } from "client";',
+      source: [
+        '     1 | import { fetch } from "client";',
+        "     2 | fetch(endpoint);",
+        "     3 | fetch(secondEndpoint);",
+      ].join("\n"),
+      project_purpose: "A model helper.",
+    },
+  };
+}
+
+function assessment(candidateId: string, path: string, line: number) {
+  return {
+    candidate_id: candidateId,
+    evidence_ids: [candidateId],
+    disposition: "expected_behavior",
+    impact: "none",
+    exploitability: "unlikely",
+    confidence: "high",
+    recommended_risk: "low",
+    technical_explanation: "The request matches the documented model helper.",
+    layman_explanation: "This request appears to be expected.",
+    developer_action: "none",
+    locations: [{ path, line_start: line, line_end: line }],
+  } as const;
+}
+
+describe("contextual evidence review", () => {
+  test("reviews every file group and covers every candidate exactly once", async () => {
+    const groups = [
+      group("src/a.ts", ids.slice(0, 2)),
+      group("src/b.ts", [ids[2]!]),
+    ];
+    const requestCompletion = vi.fn(async (request) => {
+      const current = groups.find((item) =>
+        request.userContent.includes(item.group_id),
+      )!;
+      return {
+        completionId: `completion-${current.path.replaceAll("/", "-")}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify({
+          status: "complete",
+          assessments: current.candidates.map((candidate) =>
+            assessment(
+              candidate.candidate_id,
+              current.path,
+              candidate.line_start ?? 1,
+            ),
+          ),
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(result.coverage).toEqual({ required: 3, completed: 3 });
+    expect(result.assessments.map((item) => item.candidate_id)).toEqual(ids);
+    expect(CompletedContextualReviewSchema.parse(result)).toEqual(result);
+    expect(
+      CompletedContextualReviewSchema.safeParse({
+        ...result,
+        raw_response: "must never persist",
+      }).success,
+    ).toBe(false);
+  });
+
+  test("accepts one fenced JSON object from a non-strict provider", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-fenced",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: `\`\`\`json\n${JSON.stringify({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [],
+      })}\n\`\`\``,
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
+  });
+
+  test("retries malformed JSON immediately and then accepts complete coverage", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content:
+        requestCompletion.mock.calls.length === 1
+          ? "not usable JSON"
+          : JSON.stringify({
+              status: "complete",
+              assessments: [assessment(ids[0]!, current.path, 2)],
+              observations: [],
+            }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(result.coverage).toEqual({ required: 1, completed: 1 });
+  });
+
+  test("expands requested context instead of treating uncertainty as low risk", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify(
+        requestCompletion.mock.calls.length === 1
+          ? {
+              status: "needs_more_context",
+              candidate_ids: [ids[0]!],
+              requested_context: "Include the destination configuration.",
+            }
+          : {
+              status: "complete",
+              assessments: [assessment(ids[0]!, current.path, 2)],
+              observations: [],
+            },
+      ),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+    const expandContext = vi.fn(async (evidence: EvidenceContextGroup) => ({
+      ...evidence,
+      context: {
+        ...evidence.context,
+        source: `${evidence.context.source}\n     4 | const endpoint = configuredEndpoint;`,
+      },
+    }));
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+      expandContext,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(expandContext).toHaveBeenCalledOnce();
+    expect(result.assessments[0]?.recommended_risk).toBe("low");
+  });
+
+  test("refuses a response that omits a supplied candidate", async () => {
+    const current = group("src/a.ts", ids.slice(0, 2));
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-incomplete",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      scope: "repository",
+    });
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+  });
+
+  test("refuses invented evidence and source locations", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const invented = {
+      ...assessment(ids[0]!, current.path, 2),
+      evidence_ids: ["f".repeat(64)],
+      locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+    };
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-invented",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [invented],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+  });
+
+  test("refuses secret-shaped text in otherwise valid model output", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const unsafe = {
+      ...assessment(ids[0]!, current.path, 2),
+      layman_explanation: `The key was sk-nano-${"z".repeat(32)}.`,
+    };
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-secret",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [unsafe],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+  });
+
+  test("propagates quota failures without changing models or retrying", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {
+      throw new ModelRequestError(
+        "MODEL_QUOTA",
+        "system",
+        "Configured model quota is unavailable.",
+      );
+    });
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_QUOTA", scope: "system" });
+    expect(requestCompletion).toHaveBeenCalledOnce();
+    expect(requestCompletion.mock.calls[0]?.[0]).toMatchObject({
+      model: "configured/model:thinking",
+    });
+  });
+
+  test("fails a provider identity mismatch without repository retries", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-mismatch",
+      endpointOrigin: "https://attacker.example",
+      provider: "attacker.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "system",
+    });
+    expect(requestCompletion).toHaveBeenCalledOnce();
+  });
+
+  test("publishes nothing when more context is requested but unavailable", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-context-required",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "needs_more_context",
+        candidate_ids: [ids[0]!],
+        requested_context: "Include the destination configuration.",
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_CONTEXT_INCOMPLETE",
+      scope: "repository",
+    });
+    expect(requestCompletion).toHaveBeenCalledOnce();
+  });
+
+  test("fails cleanly when expanded context remains unresolved", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-unresolved-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "needs_more_context",
+        candidate_ids: [ids[0]!],
+        requested_context: "More context is still required.",
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+    const expandContext = vi.fn(async (evidence: EvidenceContextGroup) =>
+      Promise.resolve(evidence),
+    );
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+        expandContext,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_CONTEXT_INCOMPLETE" });
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(expandContext).toHaveBeenCalledTimes(2);
+  });
+
+  test("assigns a stable identity to a supported contextual observation", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-observation",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [
+          {
+            related_candidate_ids: [ids[0]!],
+            evidence_ids: [ids[0]!],
+            disposition: "minor_weakness",
+            impact: "low",
+            exploitability: "unlikely",
+            confidence: "medium",
+            recommended_risk: "low",
+            title: "Endpoint validation could be clearer",
+            technical_explanation:
+              "The configured endpoint is used without a visible allowlist.",
+            layman_explanation:
+              "A mistaken endpoint could send a request to the wrong service.",
+            developer_action: "Document and validate the configured endpoint.",
+            locations: [{ path: current.path, line_start: 2, line_end: 2 }],
+          },
+        ],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+    });
+
+    expect(result.observations).toEqual([
+      expect.objectContaining({
+        observation_id: expect.stringMatching(/^[a-f0-9]{64}$/u),
+      }),
+    ]);
+  });
+});

@@ -4,19 +4,53 @@ const CountSchema = z.number().int().nonnegative();
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const VersionSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u);
 
-const ScanTelemetrySchema = z.strictObject({
-  repositoryId: z.number().int().positive(),
-  outcome: z.enum(["completed", "repository-failed", "system-failed"]),
-  packageDigest: DigestSchema.nullable(),
-  result: z.enum(["teal", "red"]).nullable(),
-  findings: CountSchema,
-  inventory: z.strictObject({ files: CountSchema, bytes: CountSchema }),
-  tools: z.strictObject({
-    completed: CountSchema,
-    notApplicable: CountSchema,
-    failed: CountSchema,
-  }),
-});
+const ScanTelemetrySchema = z
+  .strictObject({
+    repositoryId: z.number().int().positive(),
+    outcome: z.enum(["completed", "repository-failed", "system-failed"]),
+    packageDigest: DigestSchema.nullable(),
+    candidates: CountSchema,
+    assessments: CountSchema,
+    observations: CountSchema,
+    recommendedRisk: z.strictObject({
+      low: CountSchema,
+      material: CountSchema,
+      high: CountSchema,
+    }),
+    review: z
+      .strictObject({
+        provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
+        model: z.string().trim().min(1).max(200),
+        inputTokens: CountSchema,
+        outputTokens: CountSchema,
+        cacheReadTokens: CountSchema,
+        reasoningTokens: CountSchema,
+      })
+      .nullable(),
+    inventory: z.strictObject({ files: CountSchema, bytes: CountSchema }),
+    tools: z.strictObject({
+      completed: CountSchema,
+      notApplicable: CountSchema,
+      failed: CountSchema,
+    }),
+  })
+  .superRefine((scan, context) => {
+    if (
+      scan.outcome === "completed" &&
+      (scan.assessments !== scan.candidates ||
+        scan.review === null ||
+        Object.values(scan.recommendedRisk).reduce(
+          (total, value) => total + value,
+          0,
+        ) !==
+          scan.assessments + scan.observations)
+    )
+      context.addIssue({
+        code: "custom",
+        message:
+          "Completed scan telemetry requires complete contextual review.",
+      });
+  });
 
 const QueueTelemetrySchema = z.strictObject({
   desired: CountSchema,
@@ -57,11 +91,15 @@ const TelemetryInputSchema = z.strictObject({
     tavernaryWakeAt: z.iso.datetime().nullable(),
   }),
   versions: z.strictObject({
-    contract: VersionSchema,
+    contract: z.literal("5"),
     scanner: VersionSchema,
     scannerPolicy: VersionSchema,
     ruleCatalog: VersionSchema,
     packageSchema: z.number().int().positive(),
+    contextualReviewPolicy: VersionSchema,
+    ecosystemContext: VersionSchema,
+    prompt: VersionSchema,
+    assessmentSchema: VersionSchema,
   }),
 });
 
@@ -99,8 +137,11 @@ export function buildTelemetry(input: z.input<typeof TelemetryInputSchema>) {
       repositoryId: scan.repositoryId,
       outcome: scan.outcome,
       packageDigest: scan.packageDigest,
-      result: scan.result,
-      findings: scan.findings,
+      candidates: scan.candidates,
+      assessments: scan.assessments,
+      observations: scan.observations,
+      recommendedRisk: scan.recommendedRisk,
+      review: scan.review,
       inventory: scan.inventory,
       tools: scan.tools,
     })),

@@ -15,6 +15,7 @@ const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
+  "provider-check.yml": ["workflow_dispatch"],
   "reconcile.yml": [
     "repository_dispatch",
     "schedule",
@@ -39,6 +40,10 @@ const permissionProfiles = {
   "policy-rescan.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: { schedule: { contents: "read", actions: "write" } },
+  },
+  "provider-check.yml": {
+    workflow: { contents: "read" },
+    jobs: { authorize: {}, check: { contents: "read" } },
   },
   "reconcile.yml": {
     workflow: {
@@ -99,7 +104,11 @@ const permissionProfiles = {
   },
 };
 
-const protectedManual = new Set(["policy-rescan.yml", "staff-operations.yml"]);
+const protectedManual = new Set([
+  "policy-rescan.yml",
+  "provider-check.yml",
+  "staff-operations.yml",
+]);
 const mutationJobs = {
   "policy-rescan.yml": { job: "schedule", environment: "tavernkeeper-staff" },
   "scan-and-publish.yml": {
@@ -113,6 +122,9 @@ const mutationJobs = {
 };
 const approvedWorkflowSecretNames = new Set([
   "TAVERNKEEPER_ARTIFACT_KEY",
+  "TAVERNKEEPER_API_ENDPOINT",
+  "TAVERNKEEPER_API_KEY",
+  "TAVERNKEEPER_MODEL",
   "TAVERNKEEPER_PUBLISHER_APP_ID",
   "TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY",
   "TAVERNARY_WAKE_APP_ID",
@@ -121,10 +133,12 @@ const approvedWorkflowSecretNames = new Set([
 const publisherSecretPattern =
   /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
+const providerSecretPattern =
+  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
 const sensitiveInputPattern =
   /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
 const forbiddenRuntimePattern =
-  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|review-target|provider-check|deep-scan|tavernkeeper-model-cache|scanner-policy\.v1\.json/iu;
+  /deep-scan|tavernkeeper-model-cache|scanner-policy\.v1\.json/iu;
 
 function fail(file, message) {
   failures.push(`${file}: ${message}`);
@@ -271,25 +285,67 @@ function checkSecretPlacement(file, workflow) {
     )
       fail(file, "artifact key appears outside authenticated transport steps");
   }
+  for (const location of locationsMatching(workflow, providerSecretPattern)) {
+    const stepIndex = location.path[3];
+    const step = Number.isInteger(stepIndex)
+      ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
+      : undefined;
+    const approved =
+      (file === "scan-and-publish.yml" &&
+        step?.name === "Contextually assess scanner evidence") ||
+      (file === "provider-check.yml" &&
+        step?.name === "Check one benign contextual review");
+    if (!approved)
+      fail(file, "model provider secret appears outside a review-only step");
+  }
 }
 
-function checkDeterministicRuntime(file, workflow) {
+function checkContextualRuntime(file, workflow) {
   if (forbiddenRuntimePattern.test(JSON.stringify(workflow)))
-    fail(file, "removed provider or legacy scan runtime resurfaced");
-  if (file !== "scan-and-publish.yml") return;
-  const steps = workflow.jobs?.scan?.steps ?? [];
-  const prepareIndex = steps.findIndex(
-    (step) =>
-      step?.name === "Prepare exact target and scanner evidence" &&
-      step?.run === "npm run --silent prepare-target",
-  );
-  const finalizeIndex = steps.findIndex(
-    (step) =>
-      step?.name === "Finalize deterministic report" &&
-      step?.run === "npm run --silent finalize-target -- candidate.json",
-  );
-  if (prepareIndex < 0 || finalizeIndex !== prepareIndex + 1)
-    fail(file, "deterministic prepare must flow directly into finalization");
+    fail(file, "removed legacy scan runtime resurfaced");
+  if (file === "scan-and-publish.yml") {
+    const steps = workflow.jobs?.scan?.steps ?? [];
+    const prepareIndex = steps.findIndex(
+      (step) =>
+        step?.name === "Prepare exact target and scanner evidence" &&
+        step?.run === "npm run --silent prepare-target",
+    );
+    const reviewIndex = steps.findIndex(
+      (step) =>
+        step?.name === "Contextually assess scanner evidence" &&
+        step?.run === "npm run --silent review-target",
+    );
+    const finalizeIndex = steps.findIndex(
+      (step) =>
+        step?.name === "Finalize contextual V5 report" &&
+        step?.run === "npm run --silent finalize-target -- candidate.json",
+    );
+    if (
+      prepareIndex < 0 ||
+      reviewIndex !== prepareIndex + 1 ||
+      finalizeIndex !== reviewIndex + 1
+    )
+      fail(
+        file,
+        "contextual review must separate preparation from V5 finalization",
+      );
+  }
+  if (file === "provider-check.yml") {
+    const steps = workflow.jobs?.check?.steps ?? [];
+    const check = steps.filter(
+      (step) =>
+        step?.name === "Check one benign contextual review" &&
+        step?.run === "npm run --silent provider:check",
+    );
+    if (
+      check.length !== 1 ||
+      /publish|candidate\.json|git push/iu.test(JSON.stringify(workflow))
+    )
+      fail(
+        file,
+        "provider check must make one non-publishing contextual request",
+      );
+  }
 }
 
 function checkEncryptedHandoff(file, workflow) {
@@ -463,7 +519,7 @@ for (const file of names) {
   checkPermissions(file, workflow);
   checkPins(file, workflow);
   checkSecretPlacement(file, workflow);
-  checkDeterministicRuntime(file, workflow);
+  checkContextualRuntime(file, workflow);
   checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
   checkTargetedAuthority(file, workflow);

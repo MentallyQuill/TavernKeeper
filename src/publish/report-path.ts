@@ -11,22 +11,29 @@ const ReportPathIdentitySchema = z.strictObject({
   scanner_policy_version: z
     .string()
     .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u),
-  report_version: z.number().int().positive(),
+  report_id: z.string().regex(/^[0-9a-f]{64}$/u),
 });
 
-type ReportIdentityInput = z.input<typeof ReportPathIdentitySchema> & {
+type ReportIdentityInput = {
+  provider: unknown;
+  repository_id: unknown;
+  target_sha?: unknown;
+  scanner_policy_version?: unknown;
   schema_version?: unknown;
   report_id?: string;
+  report_digest?: string;
   [key: string]: unknown;
 };
 
 function identityFields(report: ReportIdentityInput) {
+  if (report.schema_version !== 5)
+    throw new Error("Report path requires the V5 report contract.");
   return ReportPathIdentitySchema.parse({
     provider: report.provider,
     repository_id: report.repository_id,
     target_sha: report.target_sha,
     scanner_policy_version: report.scanner_policy_version,
-    report_version: report.report_version,
+    report_id: report.report_id,
   });
 }
 
@@ -42,10 +49,11 @@ function canonicalValue(value: unknown): unknown {
 }
 
 export function reportIdentity(report: ReportIdentityInput) {
-  if (report.schema_version !== 4)
-    throw new Error("Report identity requires the V4 report contract.");
+  if (report.schema_version !== 5)
+    throw new Error("Report identity requires the V5 report contract.");
   const body = { ...(report as unknown as Record<string, unknown>) };
   delete body.report_id;
+  delete body.report_digest;
   return createHash("sha256")
     .update(JSON.stringify(canonicalValue(body)))
     .digest("hex");
@@ -59,7 +67,7 @@ export function reportPath(report: ReportIdentityInput) {
     String(identity.repository_id),
     identity.target_sha,
     identity.scanner_policy_version,
-    String(identity.report_version),
+    identity.report_id,
   ].join("/");
 }
 

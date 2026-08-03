@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { ScannerPolicyV2 } from "../src/config/policy.js";
-import { ScanReportV4Schema } from "../src/contracts/reports.js";
+import { ScanPackageV1Schema } from "../src/contracts/scan-package.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
 import {
   scanRepository,
@@ -94,12 +94,9 @@ function spec(): ScanRepositorySpec {
     },
     root: inventory.root,
     previousReportShas: [],
-    completedAt: "2026-08-02T12:05:00.000Z",
     scannerVersion: "1.0.0",
     scannerPolicyVersion: "2",
     ruleCatalogVersion: "1",
-    reportVersion: 1,
-    supersedesReportId: null,
     policy,
     pins: {
       gitleaks: { version: "8.30.1" },
@@ -141,34 +138,33 @@ function dependencies(withFinding = false): ScanDependencies {
   };
 }
 
-describe("atomic deterministic repository scan", () => {
-  test("returns one schema-valid V4 candidate after complete scanner coverage", async () => {
+describe("atomic deterministic repository evidence", () => {
+  test("returns one schema-valid scan package after complete scanner coverage", async () => {
     const result = await scanRepository(spec(), dependencies());
 
     expect(result).toMatchObject({
       ok: true,
       value: {
-        report: {
-          schema_version: 4,
-          assessment_method: "deterministic-static-analysis",
-          result: "teal",
+        scanPackage: {
+          schema_version: 1,
+          findings: [],
         },
       },
     });
     expect(
-      result.ok && ScanReportV4Schema.safeParse(result.value.report).success,
+      result.ok &&
+        ScanPackageV1Schema.safeParse(result.value.scanPackage).success,
     ).toBe(true);
     expect(JSON.stringify(result)).not.toMatch(/model|prompt_policy|mode/iu);
   });
 
-  test("derives red from deterministic scanner findings", async () => {
+  test("preserves deterministic candidates without assigning public risk", async () => {
     const result = await scanRepository(spec(), dependencies(true));
     expect(result).toMatchObject({
       ok: true,
       value: {
-        report: {
-          result: "red",
-          finding_counts: { reportable: 1 },
+        scanPackage: {
+          findings: [{ rule_id: "credential-exfiltration", severity: "high" }],
         },
       },
     });
@@ -180,7 +176,7 @@ describe("atomic deterministic repository scan", () => {
     const result = await scanRepository(spec(), reversed);
     expect(
       result.ok
-        ? result.value.report.coverage.tools.map(({ name }) => name)
+        ? result.value.scanPackage.tools.map(({ name }) => name)
         : result,
     ).toEqual([
       "inventory",

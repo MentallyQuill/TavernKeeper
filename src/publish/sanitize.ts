@@ -1,4 +1,7 @@
-import { ScanReportV4Schema, type ScanReportV4 } from "../contracts/reports.js";
+import {
+  ScanReportV5Schema,
+  type ScanReportV5,
+} from "../contracts/reports-v5.js";
 import { reportIdentity } from "./report-path.js";
 
 const CONTROL_CHARACTER = /[\u0000-\u001f\u007f-\u009f]/u;
@@ -36,18 +39,24 @@ function normalizedPath(path: string[]) {
 }
 
 function isApprovedUrlPath(path: string[]) {
-  return ["canonical_url", "findings.*.reference_url"].includes(
+  return ["canonical_url", "candidates.*.reference_url"].includes(
     normalizedPath(path),
   );
 }
 
 function isNarrativePath(path: string[]) {
   return [
-    "findings.*.title",
-    "findings.*.explanation",
-    "findings.*.remediation",
-    "summary.headline",
-    "summary.detail",
+    "candidates.*.title",
+    "candidates.*.explanation",
+    "candidates.*.remediation",
+    "assessments.*.technical_explanation",
+    "assessments.*.layman_explanation",
+    "assessments.*.developer_action",
+    "observations.*.title",
+    "observations.*.technical_explanation",
+    "observations.*.layman_explanation",
+    "observations.*.developer_action",
+    "limitations.*",
   ].includes(normalizedPath(path));
 }
 
@@ -90,12 +99,15 @@ function inspectValue(value: unknown, path: string[] = []) {
       inspectValue(item, [...path, key]);
 }
 
-export function sanitizeReportV4(input: unknown): ScanReportV4 {
-  const parsed = ScanReportV4Schema.safeParse(input);
-  if (!parsed.success) reject("schema or derived V4 fields are invalid.");
+export function sanitizeReportV5(input: unknown): ScanReportV5 {
+  const parsed = ScanReportV5Schema.safeParse(input);
+  if (!parsed.success) reject("schema or derived V5 fields are invalid.");
   const report = parsed.data;
-  if (report.report_id !== reportIdentity(report))
-    reject("report identity does not match immutable fields.");
+  if (
+    report.report_id !== reportIdentity(report) ||
+    report.report_digest !== report.report_id
+  )
+    reject("report identity does not match the complete V5 public body.");
   inspectValue(report);
   return report;
 }

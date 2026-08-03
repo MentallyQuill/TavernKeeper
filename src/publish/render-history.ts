@@ -1,7 +1,7 @@
 import {
-  ReportIndexEntryV4Schema,
-  type ReportIndexEntryV4,
-} from "../contracts/reports.js";
+  ReportIndexEntryV5Schema,
+  type ReportIndexEntryV5,
+} from "../contracts/reports-v5.js";
 
 const CSP = [
   "default-src 'none'",
@@ -23,14 +23,14 @@ function escapeHtml(value: string | number) {
   );
 }
 
-function compareHistory(left: ReportIndexEntryV4, right: ReportIndexEntryV4) {
+function compareHistory(left: ReportIndexEntryV5, right: ReportIndexEntryV5) {
   const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
   return time !== 0 ? time : left.report_id.localeCompare(right.report_id);
 }
 
 export function renderHistoryHtml(input: readonly unknown[]) {
   const reports = input
-    .map((entry) => ReportIndexEntryV4Schema.parse(entry))
+    .map((entry) => ReportIndexEntryV5Schema.parse(entry))
     .sort(compareHistory);
   if (reports.length === 0)
     throw new Error("Repository history requires at least one report.");
@@ -46,10 +46,10 @@ export function renderHistoryHtml(input: readonly unknown[]) {
     throw new Error("Repository history entries must share one identity.");
   const conclusions = reports
     .map(
-      (report) => `<li class="result result-${escapeHtml(report.result)}">
-        <a href="${escapeHtml(report.report_url)}" rel="noopener noreferrer"><strong>${escapeHtml(report.result.toUpperCase())}</strong> at <code>${escapeHtml(report.target_sha)}</code></a>
-        <span>${escapeHtml(report.completed_at)} &middot; policy ${escapeHtml(report.scanner_policy_version)} &middot; ${escapeHtml(report.finding_counts.reportable)} reportable</span>
-        <p>${escapeHtml(report.summary.headline)}</p>
+      (report) => `<li class="result">
+        <a href="${escapeHtml(report.report_url)}" rel="noopener noreferrer"><strong>Contextual review</strong> at <code>${escapeHtml(report.target_sha)}</code></a>
+        <span>${escapeHtml(report.completed_at)} &middot; policy ${escapeHtml(report.scanner_policy_version)} &middot; ${escapeHtml(report.counts.recommended_risk.high)} high &middot; ${escapeHtml(report.counts.recommended_risk.material)} material &middot; ${escapeHtml(report.counts.recommended_risk.low)} low</span>
+        <p>${escapeHtml(report.coverage.review_completed)} of ${escapeHtml(report.coverage.review_required)} candidates assessed</p>
       </li>`,
     )
     .join("\n");
@@ -65,8 +65,7 @@ export function renderHistoryHtml(input: readonly unknown[]) {
     body { max-width: 58rem; margin: 0 auto; padding: 2rem 1rem 4rem; line-height: 1.55; }
     a { color: inherit; } code { overflow-wrap: anywhere; }
     ol { list-style: none; padding: 0; }
-    .result { border: 1px solid #353a44; border-left: .4rem solid currentColor; background: #191c22; padding: 1rem; margin-block: .75rem; display: grid; gap: .35rem; }
-    .result-teal { color: #56d8c9; } .result-red { color: #ff6b63; }
+    .result { border: 1px solid #353a44; border-left: .4rem solid #56d8c9; background: #191c22; padding: 1rem; margin-block: .75rem; display: grid; gap: .35rem; }
     .result span, .result p { color: #bcc2cc; margin: 0; }
   </style>
 </head>

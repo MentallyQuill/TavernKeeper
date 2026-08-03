@@ -3,12 +3,11 @@ import { lstat, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import type { ScannerPolicyV2 } from "../config/policy.js";
-import { buildScanPackage } from "../contracts/scan-package.js";
 import {
-  FindingSchema,
-  type Finding,
-  type ScanReportV4,
-} from "../contracts/reports.js";
+  buildScanPackage,
+  type ScanPackageV1,
+} from "../contracts/scan-package.js";
+import { FindingSchema, type Finding } from "../contracts/reports.js";
 import { TargetSchema, type Target } from "../contracts/targets.js";
 import { planHistory } from "../git/history.js";
 import { verifyExactHead } from "../git/checkout.js";
@@ -23,7 +22,6 @@ import {
   type InventorySpec,
 } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
-import { buildDeterministicReport } from "../report/deterministic-report.js";
 import {
   runApplicableScanners,
   type ApplicableScannerSpec,
@@ -45,12 +43,9 @@ export interface ScanRepositorySpec {
   projectKinds: readonly ("extension" | "frontend" | "preset")[];
   root: string;
   previousReportShas: string[];
-  completedAt: string;
   scannerVersion: string;
   scannerPolicyVersion: string;
   ruleCatalogVersion: string;
-  reportVersion: number;
-  supersedesReportId: string | null;
   policy: ScannerPolicyV2;
   pins: ScannerVersionPins;
   rulesRoot: string;
@@ -68,8 +63,8 @@ export interface ScanDependencies {
   verifyHead: typeof verifyExactHead;
 }
 
-export interface SanitizedCandidate {
-  report: ScanReportV4;
+export interface DeterministicEvidence {
+  scanPackage: ScanPackageV1;
 }
 
 export interface ScanFailure {
@@ -79,7 +74,8 @@ export interface ScanFailure {
 }
 
 export type ScanResult =
-  { ok: true; value: SanitizedCandidate } | { ok: false; error: ScanFailure };
+  | { ok: true; value: DeterministicEvidence }
+  | { ok: false; error: ScanFailure };
 
 async function loadStaticSource(
   root: string,
@@ -410,22 +406,15 @@ export async function scanRepository(
     });
     return {
       ok: true,
-      value: {
-        report: buildDeterministicReport(scanPackage, {
-          targetSha: target.data.target_sha,
-          completedAt: spec.completedAt,
-          reportVersion: spec.reportVersion,
-          supersedesReportId: spec.supersedesReportId,
-        }),
-      },
+      value: { scanPackage },
     };
   } catch (error) {
     if (error instanceof ScannerError)
       return failure(error.code, error.scope, error.message);
     return failure(
-      "REPORT_INVALID",
+      "SCAN_PACKAGE_INVALID",
       "system",
-      "Atomic deterministic scan assembly failed validation.",
+      "Atomic deterministic evidence assembly failed validation.",
     );
   }
 }

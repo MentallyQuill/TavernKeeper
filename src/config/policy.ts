@@ -83,6 +83,20 @@ export const ScannerPinsSchema = z.strictObject({
 
 export type ScannerPins = z.infer<typeof ScannerPinsSchema>;
 
+export const ContextualReviewPolicySchema = z.strictObject({
+  version: z.literal("1"),
+  promptVersion: z.literal("contextual-review-v1"),
+  schemaVersion: z.literal("contextual-assessment-v1"),
+  maxImmediateAttempts: z.literal(3),
+  maxOutputTokens: z.literal(32_768),
+  maxResponseBytes: z.literal(5_000_000),
+  timeoutMs: z.literal(900_000),
+});
+
+export type ContextualReviewPolicy = z.infer<
+  typeof ContextualReviewPolicySchema
+>;
+
 export async function loadScannerPolicy(
   path: string,
 ): Promise<ScannerPolicyV2> {
@@ -91,4 +105,12 @@ export async function loadScannerPolicy(
 
 export async function loadScannerPins(path: string): Promise<ScannerPins> {
   return ScannerPinsSchema.parse(JSON.parse(await readFile(path, "utf8")));
+}
+
+export async function loadContextualReviewPolicy(
+  path: string,
+): Promise<ContextualReviewPolicy> {
+  return ContextualReviewPolicySchema.parse(
+    JSON.parse(await readFile(path, "utf8")),
+  );
 }

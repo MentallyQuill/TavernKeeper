@@ -52,17 +52,65 @@ function lineNumber(content: string, index: number) {
   return content.slice(0, Math.max(0, index)).split("\n").length;
 }
 
+function containsSecretLiteral(value: string) {
+  return secretPatterns.some((pattern) => {
+    pattern.lastIndex = 0;
+    return pattern.test(value);
+  });
+}
+
+function sensitiveSource(expression: string) {
+  return (
+    containsSecretLiteral(expression) ||
+    /\bprocess\.env(?:\.|\[)|\bdocument\.cookie\b|\b(?:localStorage|sessionStorage)\.getItem\s*\(/iu.test(
+      expression,
+    ) ||
+    /\b(?:get|read|load|resolve)[A-Za-z0-9_$]*(?:apiKey|accessToken|authToken|token|secret|password|credential)[A-Za-z0-9_$]*\s*\(/iu.test(
+      expression,
+    )
+  );
+}
+
+function relatedNetworkMatch(content: string) {
+  const sources = new Map<string, number>();
+  const assignments =
+    /\b(?:const|let|var)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*([^;\r\n]+)/gu;
+  for (const match of content.matchAll(assignments)) {
+    const identifier = match[1];
+    const expression = match[2];
+    if (identifier && expression && sensitiveSource(expression))
+      sources.set(identifier, match.index);
+  }
+
+  const networkCalls =
+    /\b(?:fetch|XMLHttpRequest|WebSocket|axios\.(?:get|post|put)|https?\.request)\s*\(/giu;
+  for (const match of content.matchAll(networkCalls)) {
+    const start = match.index;
+    const semicolon = content.indexOf(";", start);
+    const end =
+      semicolon === -1
+        ? Math.min(content.length, start + 2_000)
+        : semicolon + 1;
+    const call = content.slice(start, end);
+    if (sensitiveSource(call)) return match;
+    if (
+      [...sources].some(
+        ([identifier, sourceIndex]) =>
+          sourceIndex < start &&
+          new RegExp(`\\b${identifier.replace(/[$]/gu, "\\$")}\\b`, "u").test(
+            call,
+          ),
+      )
+    )
+      return match;
+  }
+  return null;
+}
+
 function scanCredentialExfiltration(file: StaticSourceFile): Finding[] {
   const content = file.content ?? "";
-  const credentialSource =
-    /process\.env|localStorage|document\.cookie|authorization|api[_-]?key|token/iu.test(
-      content,
-    );
-  const networkMatch =
-    /\b(?:fetch|XMLHttpRequest|WebSocket|axios\.(?:get|post|put)|https?\.request)\s*\(/iu.exec(
-      content,
-    );
-  if (!credentialSource || !networkMatch) return [];
+  const networkMatch = relatedNetworkMatch(content);
+  if (!networkMatch) return [];
   return [
     finding({
       ruleId: "credential-exfiltration",

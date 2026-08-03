@@ -4,7 +4,7 @@ import {
   isDirectExecution,
   runJsonCli,
 } from "./io.js";
-import { parseReportIndex } from "../contracts/reports.js";
+import { parseReportIndexV5 } from "../contracts/reports-v5.js";
 import { parseTargetManifest } from "../contracts/targets.js";
 import { parseOperationsState } from "../operations/state.js";
 import { planBatch } from "../queue/backlog.js";
@@ -29,7 +29,7 @@ export function buildReconcileMatrix({
   scannerPolicyVersion: string;
 }) {
   const manifest = parseTargetManifest(manifestInput);
-  const index = parseReportIndex(indexInput);
+  const index = parseReportIndexV5(indexInput);
   const state = parseOperationsState(stateInput);
   if (manifest.schema_version === 1) {
     return { include: [], remaining: 0, blocked: false };

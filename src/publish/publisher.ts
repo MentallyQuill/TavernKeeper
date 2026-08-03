@@ -11,13 +11,13 @@ import {
 import { dirname, join, resolve } from "node:path";
 
 import {
-  parseReportIndex,
-  ReportIndexEntryV4Schema,
-  ReportIndexV4Schema,
-  type ReportIndexEntryV4,
-  type ReportIndexV4,
-  type ScanReportV4,
-} from "../contracts/reports.js";
+  parseReportIndexV5,
+  ReportIndexEntryV5Schema,
+  ReportIndexV5Schema,
+  type ReportIndexEntryV5,
+  type ReportIndexV5,
+  type ScanReportV5,
+} from "../contracts/reports-v5.js";
 import {
   OperationsStateSchema,
   serializeOperationsState,
@@ -25,14 +25,14 @@ import {
 } from "../operations/state.js";
 import { recordSuccess } from "../operations/retry.js";
 import { renderHistoryHtml } from "./render-history.js";
-import { renderReportHtml } from "./render-report.js";
+import { renderReportV5Html } from "./render-report.js";
 import {
   historyPath,
   historyUrl,
   reportPath,
   reportUrl,
 } from "./report-path.js";
-import { sanitizeReportV4 } from "./sanitize.js";
+import { sanitizeReportV5 } from "./sanitize.js";
 
 export interface PublishCandidatesInput {
   root: string;
@@ -61,8 +61,8 @@ async function exists(path: string) {
 }
 
 function emptyIndex(generatedAt: string) {
-  return ReportIndexV4Schema.parse({
-    schema_version: 4,
+  return ReportIndexV5Schema.parse({
+    schema_version: 5,
     generated_at: generatedAt,
     reports: [],
   });
@@ -70,24 +70,29 @@ function emptyIndex(generatedAt: string) {
 
 async function readExistingIndex(path: string, generatedAt: string) {
   try {
-    return parseReportIndex(JSON.parse(await readFile(path, "utf8")));
+    return parseReportIndexV5(JSON.parse(await readFile(path, "utf8")));
   } catch (error) {
     if (isMissing(error)) return emptyIndex(generatedAt);
     throw error;
   }
 }
 
-export function projectReportToIndexV4(
-  report: ScanReportV4,
-): ReportIndexEntryV4 {
-  return ReportIndexEntryV4Schema.parse({
+export function projectReportToIndexV5(
+  report: ScanReportV5,
+): ReportIndexEntryV5 {
+  return ReportIndexEntryV5Schema.parse({
     report_id: report.report_id,
+    report_digest: report.report_digest,
     report_version: report.report_version,
     supersedes_report_id: report.supersedes_report_id,
     scanner_version: report.scanner_version,
     scanner_policy_version: report.scanner_policy_version,
     rule_catalog_version: report.rule_catalog_version,
     package_schema_version: report.package_schema_version,
+    contextual_review_policy_version: report.contextual_review_policy_version,
+    ecosystem_context_version: report.ecosystem_context_version,
+    prompt_version: report.prompt_version,
+    assessment_schema_version: report.assessment_schema_version,
     source_id: report.source_id,
     provider: report.provider,
     repository_id: report.repository_id,
@@ -95,9 +100,7 @@ export function projectReportToIndexV4(
     target_sha: report.target_sha,
     completed_at: report.completed_at,
     assessment_method: report.assessment_method,
-    result: report.result,
-    summary: report.summary,
-    finding_counts: report.finding_counts,
+    counts: report.counts,
     coverage: {
       history_commits: report.history.commits,
       inventory_files: report.coverage.inventory.files,
@@ -109,14 +112,16 @@ export function projectReportToIndexV4(
         ({ status }) => status === "not-applicable",
       ).length,
       evidence_validated:
-        report.coverage.evidence_validation.validated_findings,
+        report.coverage.evidence_validation.validated_candidates,
+      review_required: report.review_coverage.required,
+      review_completed: report.review_coverage.completed,
     },
     report_url: reportUrl(report),
     history_url: historyUrl(report),
   });
 }
 
-function preference(left: ReportIndexEntryV4, right: ReportIndexEntryV4) {
+function preference(left: ReportIndexEntryV5, right: ReportIndexEntryV5) {
   if (left.report_version !== right.report_version)
     return left.report_version - right.report_version;
   const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
@@ -124,49 +129,32 @@ function preference(left: ReportIndexEntryV4, right: ReportIndexEntryV4) {
 }
 
 function preferredIndex(
-  existing: ReportIndexV4,
-  reports: ScanReportV4[],
+  existing: ReportIndexV5,
+  reports: ScanReportV5[],
   generatedAt: string,
 ) {
-  const preferred = new Map<string, ReportIndexEntryV4>();
+  const preferred = new Map<string, ReportIndexEntryV5>();
   for (const entry of [
     ...existing.reports,
-    ...reports.map(projectReportToIndexV4),
+    ...reports.map(projectReportToIndexV5),
   ]) {
-    const key = [
-      entry.provider,
-      entry.repository_id,
-      entry.target_sha,
-      entry.scanner_policy_version,
-    ].join(":");
+    const key = `${entry.provider}:${entry.repository_id}`;
     const current = preferred.get(key);
     if (current === undefined || preference(entry, current) > 0)
       preferred.set(key, entry);
   }
-  return ReportIndexV4Schema.parse({
-    schema_version: 4,
+  return ReportIndexV5Schema.parse({
+    schema_version: 5,
     generated_at: generatedAt,
-    reports: [...preferred.values()].sort((left, right) =>
-      [
-        left.repository_id.toString().padStart(20, "0"),
-        left.target_sha,
-        left.scanner_policy_version,
-      ]
-        .join(":")
-        .localeCompare(
-          [
-            right.repository_id.toString().padStart(20, "0"),
-            right.target_sha,
-            right.scanner_policy_version,
-          ].join(":"),
-        ),
+    reports: [...preferred.values()].sort(
+      (left, right) => left.repository_id - right.repository_id,
     ),
   });
 }
 
 function completedState(
   input: OperationsState,
-  reports: ScanReportV4[],
+  reports: ScanReportV5[],
   generatedAt: string,
 ) {
   let state = OperationsStateSchema.parse(input);
@@ -219,7 +207,7 @@ async function readHistoryEntries(path: string) {
     const input = JSON.parse(await readFile(path, "utf8"));
     if (!Array.isArray(input))
       throw new Error("Report history must be an array.");
-    return input.map((entry) => ReportIndexEntryV4Schema.parse(entry));
+    return input.map((entry) => ReportIndexEntryV5Schema.parse(entry));
   } catch (error) {
     if (isMissing(error)) return [];
     throw error;
@@ -227,8 +215,8 @@ async function readHistoryEntries(path: string) {
 }
 
 function mergeHistory(
-  existing: ReportIndexEntryV4[],
-  additions: ReportIndexEntryV4[],
+  existing: ReportIndexEntryV5[],
+  additions: ReportIndexEntryV5[],
 ) {
   const reports = new Map(existing.map((entry) => [entry.report_id, entry]));
   for (const entry of additions) reports.set(entry.report_id, entry);
@@ -245,7 +233,7 @@ export async function publishCandidates({
   generatedAt,
 }: PublishCandidatesInput) {
   const root = resolve(rootInput);
-  const reports = candidates.map(sanitizeReportV4);
+  const reports = candidates.map(sanitizeReportV5);
   const relativePaths = reports.map(reportPath);
   if (new Set(relativePaths).size !== relativePaths.length)
     throw new Error("Duplicate immutable report path in publication batch.");
@@ -264,7 +252,7 @@ export async function publishCandidates({
   const state = completedState(stateInput, reports, generatedAt);
   const indexContents = `${JSON.stringify(index, null, 2)}\n`;
   const stateContents = serializeOperationsState(state);
-  const projected = reports.map(projectReportToIndexV4);
+  const projected = reports.map(projectReportToIndexV5);
   const repositoryIds = [
     ...new Set(reports.map(({ repository_id }) => repository_id)),
   ];
@@ -314,7 +302,7 @@ export async function publishCandidates({
         join(staged, "report.json"),
         `${JSON.stringify(report, null, 2)}\n`,
       );
-      await writeFile(join(staged, "index.html"), renderReportHtml(report));
+      await writeFile(join(staged, "index.html"), renderReportV5Html(report));
     }
     for (const [position, destination] of destinations.entries()) {
       await mkdir(dirname(destination), { recursive: true });
