@@ -174,6 +174,12 @@ export function renderReportV5Html(input: unknown) {
   const concerning = rendered.filter(
     ({ assessment }) => assessment.recommended_risk !== "low",
   );
+  const concerningObservations = report.observations.filter(
+    (observation) => observation.recommended_risk !== "low",
+  );
+  const relatedObservations = report.observations.filter(
+    (observation) => observation.recommended_risk === "low",
+  );
   const cautions = rendered.filter(
     ({ assessment }) => assessment.disposition === "minor_weakness",
   );
@@ -196,6 +202,26 @@ export function renderReportV5Html(input: unknown) {
         contextualFinding(report, candidate, assessment),
       )
       .join("\n");
+  const primaryFindings = [
+    ...concerning.map((item) => ({
+      id: item.candidate.candidate_id,
+      risk: item.assessment.recommended_risk,
+      html: contextualFinding(report, item.candidate, item.assessment),
+    })),
+    ...concerningObservations.map((observation) => ({
+      id: observation.observation_id,
+      risk: observation.recommended_risk,
+      html: contextualObservation(report, observation),
+    })),
+  ]
+    .sort((left, right) => {
+      const order = { high: 0, material: 1, low: 2 };
+      return (
+        order[left.risk] - order[right.risk] || left.id.localeCompare(right.id)
+      );
+    })
+    .map((item) => item.html)
+    .join("\n");
 
   return `<!doctype html>
 <html lang="en">
@@ -231,7 +257,7 @@ export function renderReportV5Html(input: unknown) {
 
     <section class="report-section" aria-labelledby="assessment-title">
       <h2 id="assessment-title">What this review found</h2>
-      ${concerning.length === 0 ? "<p>No material or high-risk item was identified.</p>" : reviewItems(concerning)}
+      ${primaryFindings.length === 0 ? "<p>No material or high-risk item was identified.</p>" : primaryFindings}
     ${cautions.length === 0 ? "" : `<h3>Minor cautions</h3>${reviewItems(cautions)}`}
     <details class="expected">
       <summary>Expected scanner matches (${escapeHtml(expected.length)})</summary>
@@ -239,7 +265,7 @@ export function renderReportV5Html(input: unknown) {
     </details>
     </section>
 
-    ${report.observations.length === 0 ? "" : `<section class="report-section"><h2>Related contextual observations</h2>${report.observations.map((observation) => contextualObservation(report, observation)).join("\n")}</section>`}
+    ${relatedObservations.length === 0 ? "" : `<section class="report-section"><h2>Related contextual observations</h2>${relatedObservations.map((observation) => contextualObservation(report, observation)).join("\n")}</section>`}
 
     <section class="report-section" aria-labelledby="coverage-title">
       <h2 id="coverage-title">Coverage and limitations</h2>
