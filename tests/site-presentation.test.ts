@@ -7,6 +7,7 @@ import {
   highestRisk,
   renderSiteHeader,
   shortSha,
+  SITE_STYLES,
 } from "../src/site/presentation.js";
 
 describe("public site presentation", () => {
@@ -34,5 +35,11 @@ describe("public site presentation", () => {
       'href="https://mentallyquill.github.io/TavernKeeper/#reports"',
     );
     expect(html).toContain('href="https://tavernary.org/"');
+  });
+
+  test("allows long repository names to wrap at narrow viewports", () => {
+    expect(SITE_STYLES).toMatch(
+      /h1,\s*h2,\s*h3\s*\{[^}]*overflow-wrap: anywhere;/s,
+    );
   });
 });

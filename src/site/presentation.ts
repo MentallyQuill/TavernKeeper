@@ -105,7 +105,11 @@ export const SITE_STYLES = `
   }
   h1,
   h2,
-  h3 { color: var(--text); line-height: 1.2; }
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
   h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
   h2 { margin-top: 0; font-size: 1.5rem; }
   .surface {
