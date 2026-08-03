@@ -15,12 +15,15 @@ import {
 } from "./ecosystem-context.js";
 
 type ProjectKind = "extension" | "frontend" | "preset";
-type FileRole =
+export type FileRole =
   | "production"
-  | "test_or_fixture"
+  | "test"
+  | "fixture"
   | "documentation"
   | "tooling"
-  | "generated_or_vendored";
+  | "generated"
+  | "vendored"
+  | "unknown";
 
 export interface EvidenceCandidate {
   candidate_id: string;
@@ -116,22 +119,22 @@ function classifyFileRole(path: string): FileRole {
   const normalized = path.toLowerCase();
   const segments = normalized.split("/");
   const filename = segments.at(-1) ?? normalized;
+  if (segments.some((part) => ["fixture", "fixtures"].includes(part)))
+    return "fixture";
   if (
-    segments.some((part) =>
-      ["test", "tests", "__tests__", "fixture", "fixtures"].includes(part),
-    ) ||
+    segments.some((part) => ["test", "tests", "__tests__"].includes(part)) ||
     /(?:^|\.)(?:test|spec)\.[^.]+$/u.test(filename)
   ) {
-    return "test_or_fixture";
+    return "test";
   }
+  if (segments.includes("vendor") || segments.includes("vendored"))
+    return "vendored";
   if (
-    segments.includes("vendor") ||
-    segments.includes("vendored") ||
     segments.includes("dist") ||
     segments.includes("build") ||
     filename.endsWith(".min.js")
   ) {
-    return "generated_or_vendored";
+    return "generated";
   }
   if (
     segments.includes("docs") ||

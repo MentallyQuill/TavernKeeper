@@ -26,6 +26,7 @@ import { publishCandidates } from "../../src/publish/publisher.js";
 import { reportPath } from "../../src/publish/report-path.js";
 import { buildSite } from "../../src/site/build-site.js";
 import type { ScannerRun } from "../../src/scanners/types.js";
+import { fixtureReportV5 } from "../helpers/v5-report.js";
 
 const repositoryRoot = dirname(
   dirname(dirname(fileURLToPath(import.meta.url))),
@@ -233,7 +234,7 @@ describe("in-process hostile-data safety and deterministic publication gate", ()
     temporaryRoots.push(publicationRoot);
     const published = await publishCandidates({
       root: publicationRoot,
-      candidates: [result.value.report],
+      candidates: [await fixtureReportV5()],
       state: initialOperationsState(completedAt),
       generatedAt: completedAt,
     });

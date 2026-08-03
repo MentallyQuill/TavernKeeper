@@ -1,105 +1,16 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import {
-  ReportIndexEntryV4Schema,
-  type ScanReportV4,
-} from "../src/contracts/reports.js";
-import {
-  initialOperationsState,
-  parseOperationsState,
-  serializeOperationsState,
-} from "../src/operations/state.js";
-import {
-  projectReportToIndexV4,
-  publishCandidates,
-} from "../src/publish/publisher.js";
-import { reportIdentity, reportPath } from "../src/publish/report-path.js";
+import { ReportIndexV5Schema } from "../src/contracts/reports-v5.js";
+import { initialOperationsState } from "../src/operations/state.js";
+import { publishCandidates } from "../src/publish/publisher.js";
+import { historyPath, reportPath } from "../src/publish/report-path.js";
+import { fixtureReportV5 } from "./helpers/v5-report.js";
 
 const roots: string[] = [];
-const generatedAt = "2026-08-02T15:00:00.000Z";
-
-async function fixtureReport(overrides: Partial<ScanReportV4> = {}) {
-  const raw = JSON.parse(
-    await readFile(
-      new URL("./fixtures/contracts/report.v4.valid.json", import.meta.url),
-      "utf8",
-    ),
-  ) as ScanReportV4;
-  const report = { ...raw, ...overrides };
-  return { ...report, report_id: reportIdentity(report) };
-}
-
-async function redReport(overrides: Partial<ScanReportV4> = {}) {
-  const raw = await fixtureReport();
-  const report = {
-    ...raw,
-    result: "red" as const,
-    summary: {
-      headline: "Reportable concerns detected",
-      detail:
-        "1 reportable concern met TavernKeeper's deterministic threshold.",
-    },
-    coverage: {
-      ...raw.coverage,
-      evidence_validation: {
-        status: "completed" as const,
-        validated_findings: 1,
-      },
-    },
-    finding_counts: {
-      total: 1,
-      reportable: 1,
-      informational: 0,
-      reportable_severity: { critical: 0, high: 1, medium: 0 },
-      severity: { critical: 0, high: 1, medium: 0, low: 0, info: 0 },
-      confidence: { high: 1, medium: 0, low: 0 },
-      policy_status: { reportable: 1, informational: 0 },
-      categories: [{ category: "credential-theft", count: 1 }],
-    },
-    findings: [
-      {
-        origin: "tavernkeeper",
-        rule_id: "credential-exfiltration",
-        category: "credential-theft",
-        severity: "high" as const,
-        confidence: "high" as const,
-        policy_status: "reportable" as const,
-        path: "src/index.ts",
-        line_start: 1,
-        line_end: 1,
-        evidence_sha: null,
-        title: "Credential access and network transmission in one file",
-        explanation:
-          "A credential source and an outbound network operation were detected in the same file.",
-        remediation:
-          "Review the data flow, remove unintended credential transmission, and restrict any required destination.",
-        fingerprint: "b".repeat(64),
-      },
-    ],
-    ...overrides,
-  };
-  return { ...report, report_id: reportIdentity(report) };
-}
-
-async function publicationRoot() {
-  const root = await mkdtemp(join(tmpdir(), "tavernkeeper-publisher-"));
-  roots.push(root);
-  await mkdir(join(root, "reports"), { recursive: true });
-  await mkdir(join(root, "operations"), { recursive: true });
-  await writeFile(
-    join(root, "reports", "index.json"),
-    `${JSON.stringify({ schema_version: 4, generated_at: generatedAt, reports: [] }, null, 2)}\n`,
-  );
-  await writeFile(
-    join(root, "operations", "state.json"),
-    serializeOperationsState(initialOperationsState(generatedAt)),
-  );
-  return root;
-}
 
 afterEach(async () => {
   await Promise.all(
@@ -107,123 +18,100 @@ afterEach(async () => {
   );
 });
 
-describe("serialized deterministic report publisher", () => {
-  test("publishes immutable V4 JSON and HTML with Tavernary's compact index fields", async () => {
-    const root = await publicationRoot();
-    const report = await fixtureReport();
-    const state = parseOperationsState({
-      ...initialOperationsState(generatedAt),
-      active_scans: [
-        {
-          source_id: report.source_id,
-          repository_id: report.repository_id,
-          target_sha: report.target_sha,
-          started_at: "2026-08-02T14:00:00.000Z",
-          run_id: "batch-1",
-        },
+async function root() {
+  const value = await mkdtemp(join(tmpdir(), "tavernkeeper-publisher-v5-"));
+  roots.push(value);
+  return value;
+}
+
+describe("atomic V5 publisher", () => {
+  test("publishes immutable contextual JSON, HTML, history, and preferred index", async () => {
+    const output = await root();
+    const report = await fixtureReportV5();
+    const generatedAt = "2026-08-02T12:30:00.000Z";
+
+    const published = await publishCandidates({
+      root: output,
+      candidates: [report],
+      state: initialOperationsState(generatedAt),
+      generatedAt,
+    });
+
+    const directory = join(output, ...reportPath(report).split("/"));
+    const stored = JSON.parse(
+      await readFile(join(directory, "report.json"), "utf8"),
+    );
+    expect(stored).toEqual(report);
+    expect(await readFile(join(directory, "index.html"), "utf8")).toContain(
+      "Contextual assessments",
+    );
+    expect(published.index).toMatchObject({
+      schema_version: 5,
+      reports: [
+        expect.objectContaining({
+          report_id: report.report_id,
+          report_digest: report.report_digest,
+        }),
       ],
     });
-    const published = await publishCandidates({
-      root,
-      candidates: [report],
-      state,
-      generatedAt,
-    });
-
-    const destination = join(root, ...reportPath(report).split("/"));
-    expect(
-      JSON.parse(await readFile(join(destination, "report.json"), "utf8")),
-    ).toEqual(report);
-    expect(await readFile(join(destination, "index.html"), "utf8")).toContain(
-      "TavernKeeper Scan Report",
-    );
-    expect(published.index.schema_version).toBe(4);
-    expect(published.index.reports).toHaveLength(1);
-    expect(
-      ReportIndexEntryV4Schema.parse(projectReportToIndexV4(report)),
-    ).toEqual(published.index.reports[0]);
-    expect(published.index.reports[0]).not.toHaveProperty("mode");
-    expect(published.index.reports[0]!.summary).toEqual(report.summary);
-    expect(published.state.active_scans).toEqual([]);
-  });
-
-  test("keeps a red forced-scan result in full history after a later teal correction", async () => {
-    const root = await publicationRoot();
-    const red = await redReport({ completed_at: "2026-08-02T14:00:00.000Z" });
-    const teal = await fixtureReport({
-      report_version: 2,
-      supersedes_report_id: red.report_id,
-      completed_at: "2026-08-02T15:00:00.000Z",
-    });
-    const published = await publishCandidates({
-      root,
-      candidates: [red, teal],
-      state: initialOperationsState(generatedAt),
-      generatedAt,
-    });
-
-    expect(published.index.reports).toHaveLength(1);
-    expect(published.index.reports[0]).toMatchObject({
-      report_id: teal.report_id,
-      result: "teal",
-      report_version: 2,
-    });
-    const historyRoot = join(root, "reports", "github", "42", "history");
-    const history = await readFile(join(historyRoot, "index.html"), "utf8");
-    expect(history).toContain("RED");
-    expect(history).toContain("TEAL");
-    expect(
-      JSON.parse(await readFile(join(historyRoot, "history.json"), "utf8")),
-    ).toHaveLength(2);
-  });
-
-  test("preserves preferred conclusions for older SHAs", async () => {
-    const root = await publicationRoot();
-    const oldReport = await fixtureReport();
-    const current = await fixtureReport({
-      target_sha: "f".repeat(40),
-      completed_at: "2026-08-02T16:00:00.000Z",
-    });
-    const published = await publishCandidates({
-      root,
-      candidates: [oldReport, current],
-      state: initialOperationsState(generatedAt),
-      generatedAt: "2026-08-02T16:05:00.000Z",
-    });
-    expect(published.index.reports.map(({ target_sha }) => target_sha)).toEqual(
-      [oldReport.target_sha, current.target_sha],
-    );
-  });
-
-  test("rejects an immutable-path collision", async () => {
-    const root = await publicationRoot();
-    const report = await fixtureReport();
-    const state = initialOperationsState(generatedAt);
-    await publishCandidates({ root, candidates: [report], state, generatedAt });
+    expect(published.index.reports[0]).not.toHaveProperty("result");
+    expect(ReportIndexV5Schema.parse(published.index)).toEqual(published.index);
     await expect(
-      publishCandidates({ root, candidates: [report], state, generatedAt }),
-    ).rejects.toThrow(/immutable report path already exists/iu);
+      access(join(output, ...historyPath(report).split("/"), "history.json")),
+    ).resolves.toBeUndefined();
   });
 
-  test("prevalidates a mixed V4 batch before writing any candidate", async () => {
-    const root = await publicationRoot();
-    const valid = await fixtureReport();
-    const unsafeBase = await fixtureReport({ report_version: 2 });
-    const unsafe = { ...unsafeBase, model_review: {} };
+  test("keeps only the newest report per repository in the preferred index", async () => {
+    const output = await root();
+    const first = await fixtureReportV5();
+    const second = await fixtureReportV5({
+      report_version: 2,
+      completed_at: "2026-08-03T12:00:00.000Z",
+      supersedes_report_id: first.report_id,
+    });
+    const state = initialOperationsState("2026-08-02T12:30:00.000Z");
+    await publishCandidates({
+      root: output,
+      candidates: [first],
+      state,
+      generatedAt: "2026-08-02T12:30:00.000Z",
+    });
+    const published = await publishCandidates({
+      root: output,
+      candidates: [second],
+      state,
+      generatedAt: "2026-08-03T12:30:00.000Z",
+    });
+
+    expect(published.index.reports).toEqual([
+      expect.objectContaining({
+        report_id: second.report_id,
+        report_version: 2,
+      }),
+    ]);
+    const history = JSON.parse(
+      await readFile(
+        join(output, ...historyPath(first).split("/"), "history.json"),
+        "utf8",
+      ),
+    ) as unknown[];
+    expect(history).toHaveLength(2);
+  });
+
+  test("prevalidates a mixed batch before writing any immutable candidate", async () => {
+    const output = await root();
+    const report = await fixtureReportV5();
+
     await expect(
       publishCandidates({
-        root,
-        candidates: [valid, unsafe],
-        state: initialOperationsState(generatedAt),
-        generatedAt,
+        root: output,
+        candidates: [report, { ...report, raw_model_response: "hidden" }],
+        state: initialOperationsState("2026-08-02T12:30:00.000Z"),
+        generatedAt: "2026-08-02T12:30:00.000Z",
       }),
-    ).rejects.toThrow(/public report rejected/iu);
+    ).rejects.toThrow(/schema/iu);
     await expect(
-      readFile(join(root, ...reportPath(valid).split("/"), "report.json")),
+      access(join(output, ...reportPath(report).split("/"))),
     ).rejects.toMatchObject({ code: "ENOENT" });
-    const index = JSON.parse(
-      await readFile(join(root, "reports", "index.json"), "utf8"),
-    ) as { reports: unknown[] };
-    expect(index.reports).toEqual([]);
   });
 });

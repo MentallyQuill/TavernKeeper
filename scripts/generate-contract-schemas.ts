@@ -6,9 +6,9 @@ import { z, type ZodType } from "zod";
 import { format } from "prettier";
 
 import {
-  ReportIndexV4Schema,
-  ScanReportV4Schema,
-} from "../src/contracts/reports.js";
+  ReportIndexV5Schema,
+  ScanReportV5Schema,
+} from "../src/contracts/reports-v5.js";
 import { TargetManifestV2Schema } from "../src/contracts/targets.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -26,16 +26,16 @@ const contracts: Array<{
     schema: TargetManifestV2Schema,
   },
   {
-    file: "scan-report.v4.schema.json",
-    id: "https://mentallyquill.github.io/TavernKeeper/schemas/scan-report.v4.schema.json",
-    title: "TavernKeeper V4 deterministic scan report",
-    schema: ScanReportV4Schema,
+    file: "scan-report.v5.schema.json",
+    id: "https://mentallyquill.github.io/TavernKeeper/schemas/scan-report.v5.schema.json",
+    title: "TavernKeeper V5 contextual scan report",
+    schema: ScanReportV5Schema,
   },
   {
-    file: "report-index.v4.schema.json",
-    id: "https://mentallyquill.github.io/TavernKeeper/schemas/report-index.v4.schema.json",
-    title: "TavernKeeper V4 deterministic preferred report index",
-    schema: ReportIndexV4Schema,
+    file: "report-index.v5.schema.json",
+    id: "https://mentallyquill.github.io/TavernKeeper/schemas/report-index.v5.schema.json",
+    title: "TavernKeeper V5 contextual preferred report index",
+    schema: ReportIndexV5Schema,
   },
 ];
 
