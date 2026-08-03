@@ -57,8 +57,13 @@ export interface NormalizedFindingInput {
   remediation?: string;
 }
 
-export function normalizeFinding(input: NormalizedFindingInput): Finding {
-  const fingerprint = createHash("sha256")
+export function findingFingerprint(
+  input: Pick<
+    NormalizedFindingInput,
+    "origin" | "ruleId" | "path" | "lineStart" | "lineEnd" | "evidenceSha"
+  >,
+) {
+  return createHash("sha256")
     .update(
       JSON.stringify([
         input.origin,
@@ -70,9 +75,24 @@ export function normalizeFinding(input: NormalizedFindingInput): Finding {
       ]),
     )
     .digest("hex");
+}
+
+export function normalizeFinding(input: NormalizedFindingInput): Finding {
+  const ruleId = input.ruleId
+    .trim()
+    .replace(/[^A-Za-z0-9._:-]+/gu, "-")
+    .replace(/^[^A-Za-z0-9]+/u, "")
+    .slice(0, 120);
+  if (ruleId.length === 0)
+    throw new ScannerError(
+      "MALFORMED_SCANNER_OUTPUT",
+      "system",
+      "Scanner finding rule ID is invalid.",
+    );
+  const fingerprint = findingFingerprint({ ...input, ruleId });
   return FindingSchema.parse({
     origin: input.origin,
-    rule_id: input.ruleId,
+    rule_id: ruleId,
     category: input.category,
     severity: input.severity,
     confidence: input.confidence,
@@ -86,7 +106,6 @@ export function normalizeFinding(input: NormalizedFindingInput): Finding {
       ? {}
       : { remediation: input.remediation }),
     fingerprint,
-    disposition: "active",
   });
 }
 

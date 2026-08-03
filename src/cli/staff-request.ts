@@ -4,7 +4,6 @@ import { TargetV2Schema } from "../contracts/targets.js";
 
 export const StaffScanRequestSchema = z.strictObject({
   repository_id: z.number().int().positive(),
-  mode: z.literal("deep"),
 });
 
 export const TargetedScanHintSchema = z.strictObject({
@@ -21,7 +20,6 @@ export function validateTargetedScanHint(input: unknown) {
 
 export const ScanRequestSchema = TargetV2Schema.extend({
   reason: z.enum(["new", "changed", "retry", "policy", "staff"]),
-  mode: z.enum(["standard", "deep"]),
   report_version: z.number().int().positive(),
   supersedes_report_id: z
     .string()

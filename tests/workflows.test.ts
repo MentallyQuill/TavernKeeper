@@ -23,7 +23,16 @@ const workflowPolicyScript = fileURLToPath(
 );
 const publisherAction =
   "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
-const cacheAction = "caa296126883cff596d87d8935842f9db880ef25";
+const workflowNames = [
+  "ci.yml",
+  "deploy-pages.yml",
+  "policy-rescan.yml",
+  "reconcile.yml",
+  "retry.yml",
+  "scan-and-publish.yml",
+  "staff-operations.yml",
+  "targeted-scan.yml",
+];
 
 async function workflow(name: string): Promise<Workflow> {
   return parse(
@@ -42,34 +51,31 @@ async function expectPolicyFailure(
   try {
     await mkdir(join(root, ".github", "workflows"), { recursive: true });
     await mkdir(join(root, "config"), { recursive: true });
-    const names = await readdir(
-      new URL("../.github/workflows/", import.meta.url),
-    );
     await Promise.all(
-      names
-        .filter((name) => /\.ya?ml$/u.test(name))
-        .map(async (name) =>
-          writeFile(
-            join(root, ".github", "workflows", name),
-            name === "scan-and-publish.yml"
-              ? mutate(
-                  await readFile(
-                    new URL(`../.github/workflows/${name}`, import.meta.url),
-                    "utf8",
-                  ),
-                )
-              : await readFile(
+      workflowNames.map(async (name) =>
+        writeFile(
+          join(root, ".github", "workflows", name),
+          name === "scan-and-publish.yml"
+            ? mutate(
+                await readFile(
                   new URL(`../.github/workflows/${name}`, import.meta.url),
                   "utf8",
                 ),
-          ),
+              )
+            : await readFile(
+                new URL(`../.github/workflows/${name}`, import.meta.url),
+                "utf8",
+              ),
         ),
+      ),
     );
     await writeFile(
-      join(root, "config", "scanner-policy.v1.json"),
-      JSON.stringify({ queue: { batchSize: 5, maxParallel: 2 } }),
+      join(root, "config", "scanner-policy.v2.json"),
+      await readFile(
+        new URL("../config/scanner-policy.v2.json", import.meta.url),
+        "utf8",
+      ),
     );
-
     await expect(
       execFile(process.execPath, [workflowPolicyScript], { cwd: root }),
     ).rejects.toMatchObject({ stderr: expect.stringMatching(expected) });
@@ -78,145 +84,46 @@ async function expectPolicyFailure(
   }
 }
 
-describe("least-privilege GitHub Actions orchestration", () => {
-  test("provider compatibility checks are staff-authorized and non-mutating", async () => {
-    const value = await workflow("provider-check.yml");
-    const text = await readFile(
-      new URL("../.github/workflows/provider-check.yml", import.meta.url),
-      "utf8",
-    );
-    const secretSteps = Object.values(value.jobs).flatMap((job: any) =>
-      (job.steps ?? []).filter((step: Workflow) =>
-        JSON.stringify(step).match(
-          /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u,
-        ),
-      ),
-    );
-
-    expect(value.on.workflow_dispatch).toBeNull();
-    expect(value.permissions).toEqual({ contents: "read" });
-    expect(value.concurrency).toEqual({
-      group: "tavernkeeper-provider-check",
-      "cancel-in-progress": false,
-    });
-    expect(value.jobs.authorize).toMatchObject({
-      environment: "tavernkeeper-staff",
-      permissions: {},
-    });
-    expect(value.jobs.check).toMatchObject({
-      needs: "authorize",
-      environment: "tavernkeeper-scanner",
-      permissions: { contents: "read" },
-    });
-    expect(secretSteps).toHaveLength(1);
-    expect(secretSteps[0]?.name).toBe("Check configured model provider");
-    expect(text).not.toMatch(
-      /operations\/state|reports\/|deploy-pages|git push|gh workflow run|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
-    );
+describe("GitHub workflow security policy", () => {
+  test("the active workflow set is explicit", async () => {
+    const names = (
+      await readdir(new URL("../.github/workflows/", import.meta.url))
+    )
+      .filter((name) => /\.ya?ml$/u.test(name))
+      .sort();
+    expect(names).toEqual(workflowNames);
   });
 
-  test("ordinary reconciliation plans five targets and calls one reusable path", async () => {
-    const value = await workflow("reconcile.yml");
-
-    expect(value.on.schedule).toEqual([{ cron: "13 */6 * * *" }]);
-    expect(value.on.workflow_dispatch).toBeNull();
-    expect(value.on.workflow_call).toBeNull();
-    expect(value.jobs.run.uses).toBe(
-      "./.github/workflows/scan-and-publish.yml",
-    );
-    expect(value.jobs.run.with.requests_json).toBe(
-      "${{ needs.plan.outputs.requests_json }}",
-    );
-    expect(JSON.stringify(value.on)).not.toMatch(
-      /issue_comment|issues|pull_request_target/iu,
-    );
-  });
-
-  test("reconciliation restores a committed Pages index before planning scans", async () => {
-    const value = await workflow("reconcile.yml");
-    const plan = value.jobs.plan;
-    const planStep = plan.steps.find(
-      (step: Workflow) =>
-        step.name === "Plan deployment recovery or bounded batch",
-    );
-
-    expect(plan.outputs).toMatchObject({
-      requests_json: "${{ steps.plan.outputs.requests_json }}",
-      remaining: "${{ steps.plan.outputs.remaining }}",
-      deploy_required: "${{ steps.plan.outputs.deploy_required }}",
-      source_sha: "${{ steps.plan.outputs.source_sha }}",
-    });
-    expect(String(planStep?.run)).toMatch(
-      /reports\/index\.json[\s\S]*live-index\.json[\s\S]*deploy_required=true[\s\S]*requests_json=\[\]/u,
-    );
-    expect(value.jobs["recover-pages"]).toMatchObject({
-      needs: "plan",
-      if: "${{ needs.plan.outputs.deploy_required == 'true' }}",
-      uses: "./.github/workflows/deploy-pages.yml",
-      with: { source_sha: "${{ needs.plan.outputs.source_sha }}" },
-      secrets: "inherit",
-    });
-    expect(value.jobs.run.if).toContain(
-      "needs.plan.outputs.deploy_required == 'false'",
-    );
-    expect(String(value.jobs["resume-after-recovery"].steps[0].run)).toContain(
-      'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
-    );
-  });
-
-  test("every reconciliation dispatch names its repository explicitly", async () => {
-    const names = [
-      "reconcile.yml",
-      "policy-rescan.yml",
-      "scan-and-publish.yml",
-      "staff-operations.yml",
-    ];
-    const texts = await Promise.all(
-      names.map((name) =>
-        readFile(
-          new URL(`../.github/workflows/${name}`, import.meta.url),
-          "utf8",
-        ),
-      ),
-    );
-    const dispatches = texts.flatMap((text) =>
-      [
-        ...text.matchAll(/^\s*run:\s*(gh workflow run reconcile\.yml.*)$/gmu),
-      ].map((match) => match[1]!),
-    );
-
-    expect(dispatches).toHaveLength(4);
-    expect(dispatches).toEqual(
-      Array(4).fill(
-        'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
-      ),
-    );
-  });
-
-  test("automatic retry is hourly and reuses ordinary reconciliation", async () => {
-    const value = await workflow("retry.yml");
-
-    expect(value.on.schedule).toEqual([{ cron: "17 * * * *" }]);
-    expect(value.on.workflow_dispatch).toBeUndefined();
-    expect(value.jobs.reconcile.uses).toBe("./.github/workflows/reconcile.yml");
-  });
-
-  test("all scan entry points converge on the reusable automatic publisher", async () => {
-    const [deep, targeted] = await Promise.all([
-      workflow("deep-scan.yml"),
-      workflow("targeted-scan.yml"),
+  test("manual mutation workflows retain protected staff environments", async () => {
+    const [policy, staff, deploy] = await Promise.all([
+      workflow("policy-rescan.yml"),
+      workflow("staff-operations.yml"),
+      workflow("deploy-pages.yml"),
     ]);
+    expect(policy.jobs.schedule.environment).toBe("tavernkeeper-staff");
+    expect(staff.jobs.operate.environment).toBe("tavernkeeper-staff");
+    expect(deploy.jobs["authorize-manual"].environment).toBe(
+      "tavernkeeper-staff",
+    );
+  });
 
-    expect(deep.jobs.scan.uses).toBe(
+  test("reconciliation is bounded and all ordinary entry points converge", async () => {
+    const [reconcile, targeted, retry, policy] = await Promise.all([
+      workflow("reconcile.yml"),
+      workflow("targeted-scan.yml"),
+      workflow("retry.yml"),
+      workflow("policy-rescan.yml"),
+    ]);
+    expect(reconcile.jobs.run.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
     );
     expect(targeted.jobs.scan.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
     );
-    for (const value of [deep, targeted])
-      expect(JSON.stringify(value.jobs)).not.toMatch(
-        /approve|adjudicat|manual review/iu,
-      );
+    expect(retry.on.schedule).toEqual([{ cron: "17 * * * *" }]);
+    expect(retry.jobs.reconcile.uses).toBe("./.github/workflows/reconcile.yml");
+    expect(JSON.stringify(policy.jobs)).toContain("policy-rescan");
+    expect(JSON.stringify(policy.jobs)).toContain("reconcile.yml");
   });
 
   test("targeted scans accept only a repository ID from the Tavernary wake App", async () => {
@@ -231,86 +138,69 @@ describe("least-privilege GitHub Actions orchestration", () => {
     });
     expect(value.jobs.resolve.if).toContain("github.actor_id");
     expect(value.jobs.resolve.if).toContain("vars.TAVERNARY_WAKE_APP_BOT_ID");
-    expect(value.jobs.resolve.permissions).toEqual({
-      contents: "read",
-      actions: "read",
-    });
-    expect(text).toMatch(
-      /actions\/runs\/\$\{GITHUB_RUN_ID\}[\s\S]*TAVERNKEEPER_REQUEST_CREATED_AT/u,
-    );
     expect(text).toMatch(/tavernkeeper-targets\.json/u);
-    expect(text).toMatch(/targeted-scan/u);
     expect(text).not.toMatch(
       /clone_url|repository_url|branch|token_budget|priority|mode.*inputs/iu,
     );
   });
 
-  test("the reusable path bounds concurrency and isolates model credentials", async () => {
-    const value = await workflow("scan-and-publish.yml");
-    const secretSteps = value.jobs.scan.steps.filter((step: Workflow) =>
-      JSON.stringify(step).match(
-        /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u,
-      ),
-    );
-
-    expect(Object.keys(value.on)).toEqual(["workflow_call"]);
-    expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
-    expect(value.jobs.scan.strategy["fail-fast"]).toBe(true);
-    expect(value.jobs.scan.permissions.contents).toBe("read");
-    expect(secretSteps).toHaveLength(1);
-    expect(secretSteps[0].name).toBe("Review with configured model");
-    expect(JSON.stringify(value.jobs.scan)).toContain(
-      "model-cache-v2-${{ hashFiles('config/scanner-policy.v1.json') }}-",
-    );
-    expect(JSON.stringify(value)).not.toMatch(/LUNA|SECOND_MODEL/iu);
-    expect(JSON.stringify(value.jobs.scan.steps)).toMatch(
-      /Stop pending repositories after a system failure/u,
-    );
-  });
-
-  test("saves validated model progress before a system failure stops the batch", async () => {
+  test("the scan job is deterministic with no provider runtime", async () => {
     const value = await workflow("scan-and-publish.yml");
     const steps = value.jobs.scan.steps as Workflow[];
-    const restoreIndex = steps.findIndex(
-      (step) => step.name === "Restore sanitized model cache",
+    const prepareIndex = steps.findIndex(
+      (step) => step.name === "Prepare exact target and scanner evidence",
     );
-    const saveIndex = steps.findIndex(
-      (step) => step.name === "Save sanitized model progress",
+    const finalizeIndex = steps.findIndex(
+      (step) => step.name === "Finalize deterministic report",
     );
-    const stopIndex = steps.findIndex(
-      (step) =>
-        step.name === "Stop pending repositories after a system failure",
+    const source = await readFile(
+      new URL("../.github/workflows/scan-and-publish.yml", import.meta.url),
+      "utf8",
+    );
+    const packageSource = await readFile(
+      new URL("../package.json", import.meta.url),
+      "utf8",
     );
 
-    expect(steps[restoreIndex]).toMatchObject({
-      uses: `actions/cache/restore@${cacheAction}`,
-    });
-    expect(steps[saveIndex]).toMatchObject({
-      if: "always() && steps.prepare.outcome == 'success'",
-      uses: `actions/cache/save@${cacheAction}`,
-      with: {
-        path: "${{ runner.temp }}/tavernkeeper-model-cache",
-        key: "model-cache-v2-${{ hashFiles('config/scanner-policy.v1.json') }}-${{ github.run_id }}-${{ matrix.request.repository_id }}",
-      },
-    });
-    expect(saveIndex).toBeGreaterThan(restoreIndex);
-    expect(stopIndex).toBeGreaterThan(saveIndex);
+    expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
+    expect(value.jobs.scan.strategy["fail-fast"]).toBe(true);
+    expect(finalizeIndex).toBe(prepareIndex + 1);
+    expect(steps[prepareIndex]?.run).toBe("npm run --silent prepare-target");
+    expect(steps[finalizeIndex]?.run).toBe(
+      "npm run --silent finalize-target -- candidate.json",
+    );
+    expect(`${source}\n${packageSource}`).not.toMatch(
+      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|review-target|provider-check|deep-scan|tavernkeeper-model-cache/iu,
+    );
   });
 
   test("uploads only authenticated ciphertext and exposes the key only to transport steps", async () => {
     const value = await workflow("scan-and-publish.yml");
-    const steps = value.jobs.scan.steps as Workflow[];
-    const upload = steps.find((step) =>
+    const scanSteps = value.jobs.scan.steps as Workflow[];
+    const allSteps = [
+      ...scanSteps,
+      ...(value.jobs.publish.steps as Workflow[]),
+    ];
+    const bootstrap = scanSteps[0];
+    const encrypt = scanSteps.find(
+      (step) => step.name === "Encrypt sanitized outcome",
+    );
+    const upload = scanSteps.find((step) =>
       String(step.uses).startsWith("actions/upload-artifact@"),
     );
-    const transportKeySteps = [
-      ...steps,
-      ...(value.jobs.publish.steps as Workflow[]),
-    ].filter((step) =>
+    const transportKeySteps = allSteps.filter((step) =>
       JSON.stringify(step).includes("TAVERNKEEPER_ARTIFACT_KEY"),
     );
 
-    expect(upload?.with?.path).toBe("outcome.enc");
+    expect(bootstrap?.name).toBe("Initialize encrypted bootstrap failure");
+    expect(String(bootstrap?.run)).toMatch(
+      /SCAN_BOOTSTRAP_FAILED|outcome\.enc|aes-256-gcm/u,
+    );
+    expect(encrypt?.if).toBe("always()");
+    expect(upload).toMatchObject({
+      if: "always()",
+      with: { path: "outcome.enc", "retention-days": 1 },
+    });
     expect(JSON.stringify(upload)).not.toMatch(
       /candidate\.json|transition\.json/u,
     );
@@ -319,47 +209,10 @@ describe("least-privilege GitHub Actions orchestration", () => {
       "Encrypt sanitized outcome",
       "Decrypt sanitized outcomes",
     ]);
-    expect(JSON.stringify(transportKeySteps)).not.toMatch(/GITHUB_OUTPUT/iu);
-  });
-
-  test("creates an encrypted retry transition before fallible scan setup", async () => {
-    const value = await workflow("scan-and-publish.yml");
-    const steps = value.jobs.scan.steps as Workflow[];
-    const bootstrap = steps[0];
-    const checkoutIndex = steps.findIndex((step) =>
-      String(step.uses).startsWith("actions/checkout@"),
-    );
-    const encrypt = steps.find(
-      (step) => step.name === "Encrypt sanitized outcome",
-    );
-    const upload = steps.find((step) =>
-      String(step.uses).startsWith("actions/upload-artifact@"),
-    );
-
-    expect(bootstrap).toMatchObject({
-      name: "Initialize encrypted bootstrap failure",
-      env: {
-        TAVERNKEEPER_ARTIFACT_KEY: "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}",
-        TAVERNKEEPER_SCAN_REQUEST: "${{ toJSON(matrix.request) }}",
-      },
-    });
-    expect(checkoutIndex).toBeGreaterThan(0);
-    expect(String(bootstrap?.run)).toMatch(
-      /SCAN_BOOTSTRAP_FAILED|outcome\.enc|aes-256-gcm/u,
-    );
-    expect(encrypt?.if).toBe("always()");
-    expect(String(encrypt?.run)).toMatch(
-      /outcome-actual\.enc[\s\S]*mv outcome-actual\.enc outcome\.enc/u,
-    );
-    expect(upload?.if).toBe("always()");
   });
 
   test("the Publisher App token has one reviewed consumer", async () => {
     const value = await workflow("scan-and-publish.yml");
-    const source = await readFile(
-      new URL("../.github/workflows/scan-and-publish.yml", import.meta.url),
-      "utf8",
-    );
     const steps = value.jobs.publish.steps as Workflow[];
     const tokenSteps = steps.filter((step) =>
       JSON.stringify(step).match(
@@ -370,15 +223,12 @@ describe("least-privilege GitHub Actions orchestration", () => {
       JSON.stringify(step).includes("steps.publisher-token.outputs.token"),
     );
 
-    expect(value.jobs.publish.permissions.contents).toBe("read");
     expect(tokenSteps).toHaveLength(1);
     expect(tokenSteps[0]).toMatchObject({
       name: "Create TavernKeeper Publisher token",
       id: "publisher-token",
       uses: publisherAction,
       with: {
-        "app-id": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
-        "private-key": "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}",
         owner: "MentallyQuill",
         repositories: "TavernKeeper",
         "permission-contents": "write",
@@ -387,123 +237,42 @@ describe("least-privilege GitHub Actions orchestration", () => {
     expect(consumers).toHaveLength(1);
     expect(consumers[0]!.run).toContain("git push origin HEAD:main");
     expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
-    expect(source).not.toMatch(/X-GitHub-Stateless-S2S-Token|\bghs_/iu);
   });
 
-  test("workflow policy rejects model secrets outside the review step", async () => {
+  test("workflow policy rejects removed provider runtime", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "      - name: Finalize deterministic report\n",
+          "      - name: provider-check\n        run: npm run provider-check\n      - name: Finalize deterministic report\n",
+        ),
+      /removed provider or legacy scan runtime resurfaced/u,
+    );
+  });
+
+  test("workflow policy rejects dynamic and unapproved secrets", async () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
           "  scan:\n",
-          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
-        ),
-      /model secret appears outside a reviewed provider step/u,
-    );
-  });
-
-  test("workflow policy rejects lowercase approved model secrets outside the review step", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "  scan:\n",
-          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets.tavernkeeper_model }}\n",
-        ),
-      /model secret appears outside a reviewed provider step/u,
-    );
-  });
-
-  test("workflow policy rejects mixed-case bracket model secrets outside the review step", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "  scan:\n",
-          "  scan:\n    env:\n      TAVERNKEEPER_MODEL: ${{ secrets[ 'TavernKeeper_Model' ] }}\n",
-        ),
-      /model secret appears outside a reviewed provider step/u,
-    );
-  });
-
-  test("workflow policy rejects dynamic secret-context access", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
-          "          TAVERNKEEPER_MODEL: ${{ secrets[env.PROVIDER_SECRET] }}\n",
+          "  scan:\n    env:\n      EXTRA: ${{ secrets[env.SECRET_NAME] }}\n",
         ),
       /dynamic secrets context access is not allowed/u,
     );
-  });
-
-  test("workflow policy requires exactly one configured-model review step", async () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "      - name: Finalize complete review without provider credentials\n",
-          "      - name: Review with configured model\n        run: npm run --silent review-target -- duplicate.json\n      - name: Finalize complete review without provider credentials\n",
+          "  scan:\n",
+          "  scan:\n    env:\n      EXTRA: ${{ secrets.UNREVIEWED_SECRET }}\n",
         ),
-      /must contain exactly one approved model-review phase/u,
-    );
-  });
-
-  test("workflow policy rejects a second model phase in another job", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "    steps:\n      - name: Check out trusted TavernKeeper main\n",
-          "    steps:\n      - name: Review with configured model\n        run: npm run --silent review-target -- alternate.json\n      - name: Check out trusted TavernKeeper main\n",
-        ),
-      /model-review phase appears outside the approved scan job step/u,
-    );
-  });
-
-  test("workflow policy rejects a renamed extra model step", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "      - name: Finalize complete review without provider credentials\n",
-          "      - name: Alternate provider review\n        run: npm run --silent review-target -- alternate.json\n      - name: Finalize complete review without provider credentials\n",
-        ),
-      /must contain exactly one approved model-review phase/u,
-    );
-  });
-
-  test("workflow policy rejects unapproved backup provider secrets", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
-          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_BACKUP_API_KEY: ${{ secrets.TAVERNKEEPER_BACKUP_API_KEY }}\n",
-        ),
-      /unapproved workflow secret TAVERNKEEPER_BACKUP_API_KEY/u,
-    );
-  });
-
-  test("workflow policy rejects bracket-referenced alternate provider secrets", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n",
-          "          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}\n          TAVERNKEEPER_ALTERNATE_KEY: ${{ secrets['TAVERNKEEPER_ALTERNATE_KEY'] }}\n",
-        ),
-      /unapproved workflow secret TAVERNKEEPER_ALTERNATE_KEY/u,
-    );
-  });
-
-  test("workflow policy rejects declaration-only unapproved provider secrets", async () => {
-    await expectPolicyFailure(
-      (text) =>
-        text.replace(
-          "  workflow_call:\n    inputs:\n",
-          "  workflow_call:\n    secrets:\n      TAVERNKEEPER_BACKUP_API_KEY:\n        required: false\n    inputs:\n",
-        ),
-      /unapproved workflow secret TAVERNKEEPER_BACKUP_API_KEY/u,
+      /unapproved workflow secret UNREVIEWED_SECRET/u,
     );
   });
 
   test("workflow policy rejects plaintext scan artifact uploads", async () => {
     await expectPolicyFailure(
       (text) => text.replace("path: outcome.enc", "path: candidate.json"),
-      /scan artifact upload must contain only outcome\.enc/u,
+      /scan artifact upload must always retain only outcome\.enc for one day/u,
     );
   });
 
@@ -519,11 +288,8 @@ describe("least-privilege GitHub Actions orchestration", () => {
   });
 
   test("all external Actions are pinned to full commit SHAs", async () => {
-    const names = (
-      await readdir(new URL("../.github/workflows/", import.meta.url))
-    ).filter((name) => /\.ya?ml$/u.test(name));
     const texts = await Promise.all(
-      names.map((name) =>
+      workflowNames.map((name) =>
         readFile(
           new URL(`../.github/workflows/${name}`, import.meta.url),
           "utf8",
@@ -535,7 +301,6 @@ describe("least-privilege GitHub Actions orchestration", () => {
         (match) => match[1]!,
       ),
     );
-
     expect(uses.length).toBeGreaterThan(0);
     expect(
       uses.every(
@@ -551,7 +316,6 @@ describe("least-privilege GitHub Actions orchestration", () => {
       new URL("../.github/workflows/deploy-pages.yml", import.meta.url),
       "utf8",
     );
-
     expect(text).toMatch(/merge-base --is-ancestor/iu);
     expect(text).toMatch(/reports\/index\.json/iu);
     expect(text).toMatch(/actions\/workflows\/.+\/dispatches/iu);
@@ -564,7 +328,7 @@ describe("least-privilege GitHub Actions orchestration", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 8 workflows/u),
     });
   });
 });

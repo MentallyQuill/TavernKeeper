@@ -1,30 +1,52 @@
 # TavernKeeper
 
-TavernKeeper performs advisory, exact-commit security scans for public GitHub repositories listed by [Tavernary](https://tavernary.org). It combines deterministic security tools with a required, configurable OpenAI-compatible model review, then publishes immutable, sanitized reports through GitHub Pages.
+TavernKeeper performs advisory, exact-commit security scans for public GitHub
+repositories listed by [Tavernary](https://tavernary.org). It runs a fixed,
+versioned deterministic scanner policy and publishes immutable, sanitized
+reports through GitHub Pages.
 
-TavernKeeper does **not** certify that software is safe. A teal result means only that every required deterministic scanner, every private text chunk review, and the single repository synthesis completed for the named commit without a confirmed review-level concern. A red result means the completed scan confirmed at least one review-level concern. Tavernary derives orange, gray, and unsupported presentation states locally.
+TavernKeeper does **not** certify that software is safe. A teal result means
+only that every required scanner completed for the named commit without a
+medium-or-higher finding at medium-or-higher confidence. A red result means
+the completed scan produced at least one such finding. Tavernary derives
+orange, gray, and unsupported presentation states locally.
 
 ## Safety boundary
 
-Target repositories are treated as hostile data:
+Target repositories are hostile data:
 
-- TavernKeeper checks out one validated GitHub repository ID and exact SHA in a disposable GitHub-hosted runner.
-- It never installs target dependencies or runs target scripts, builds, tests, hooks, Actions, macros, containers, or executables. Malcontent itself runs as trusted scanner infrastructure in a digest-pinned, network-disabled, read-only container; target containers are never run.
-- It inventories without following links and rejects unsafe or ambiguous paths.
-- Required deterministic coverage cannot be silently skipped.
-- Model review covers the complete eligible current-tree corpus: every selected text segment receives a private review, then one strict JSON synthesis considers all validated chunk recaps, observations, and sanitized tool results.
-- Any incomplete scanner, model, quota, token, validation, or publication operation produces no report.
-- Published JSON and HTML contain normalized findings and coverage totals, not source excerpts, raw payloads, credentials, or local paths.
+- TavernKeeper checks out one validated GitHub repository ID and exact SHA in a
+  disposable GitHub-hosted runner.
+- It never installs target dependencies or runs target scripts, builds, tests,
+  hooks, Actions, macros, containers, or executables.
+- It inventories without following links and rejects unsafe or ambiguous
+  paths.
+- It runs TavernKeeper-owned rules plus digest-pinned Gitleaks, Opengrep,
+  OSV-Scanner, zizmor, and Malcontent adapters when applicable.
+- Required coverage cannot be silently skipped. Any incomplete scanner,
+  validation, or publication operation produces no report.
+- Published JSON and HTML contain normalized findings and coverage totals, not
+  source excerpts, raw payloads, credentials, or runner-local paths.
 
 ## Operation
 
-Tavernary owns the exact-SHA target manifest and the mapping from GitHub repositories to cards. TavernKeeper owns scan policy, backlog/retry state, immutable automated reports, and its Pages site. Input-free GitHub App wake-ups reduce latency in both directions; scheduled reconciliation repairs missed wake-ups.
+Tavernary owns the exact-SHA target manifest and the mapping from GitHub
+repositories to cards. TavernKeeper owns scan policy, backlog and retry state,
+immutable automated reports, and its Pages site. Input-free GitHub App wake-ups
+reduce latency in both directions; scheduled reconciliation repairs missed
+wake-ups.
 
-Three single-repository GitHub Apps keep authority separate. Each bridge App can dispatch Actions only in its one destination repository. The dedicated `TavernKeeper Publisher` App is installed only on TavernKeeper and can write repository contents but cannot dispatch Actions. Protected mutation jobs create short-lived Publisher installation tokens; TavernKeeper's workflow-local token remains contents-read.
+Only Tavernary staff can initiate a targeted scan, through Tavernary's
+exact-GitHub-URL action. TavernKeeper accepts only the authorized wake App's
+repository-ID hint and resolves the repository again from Tavernary's public
+manifest. Public Issues do not trigger scans. Automatic work is limited to five
+repositories per batch and two concurrent repositories. System failures retry
+at T+1, T+2, and T+3 hours before TavernKeeper notifies staff and remains
+stopped. A degraded report is never published.
 
-Only Tavernary staff can initiate targeted standard scans, through Tavernary's exact-GitHub-URL action; TavernKeeper accepts only the authorized wake App's repository-ID hint. Public Issues do not trigger scan workflows. Automatic work is limited to five repositories per batch and two concurrent repositories. A repository-scoped invalid model response receives up to three immediate attempts. A remaining system/provider failure pauses normal scanning; delayed retries run at T+1, T+2, and T+3 hours from the initial failure, and the circuit breaker remains stopped after exhaustion until staff explicitly resume it. TavernKeeper never publishes a reduced-coverage report.
-
-The initial rollout is intentionally staff-paused in `operations/state.json`. See [operations](docs/operations.md), [architecture](docs/architecture.md), and [rule documentation](docs/rules.md).
+The initial rollout is staff-paused in `operations/state.json`. See
+[operations](docs/operations.md), [architecture](docs/architecture.md), and
+[rule documentation](docs/rules.md).
 
 ## Local verification
 
@@ -37,10 +59,20 @@ npm run test:e2e
 npm run build
 ```
 
-Scanner binaries used in Actions are version- and digest-pinned in `config/scanners.v1.json`. `npm run workflows:check` separately enforces trigger, permission, action-pin, model-secret placement, Publisher-token placement, checkout authentication, batch-size, and concurrency policy.
+Scanner binaries used in Actions are version- and digest-pinned in
+`config/scanners.v1.json`. `npm run workflows:check` separately enforces
+triggers, permissions, action pins, secret placement, Publisher-token
+placement, checkout authentication, batch size, concurrency, and the direct
+deterministic prepare-to-finalize path.
 
-`npm run test:e2e` is an in-process hostile-data safety and publication gate. It exercises real inventory, classification, static-rule, redaction, chunking, authenticated artifact transport, and publication behavior against hostile fixtures, but deliberately replaces Git history, external scanner adapters, exact-HEAD verification, and provider transport with deterministic doubles. Unit and contract tests cover those scanner adapters and model transport. Real pinned tools, provider behavior, and an exact validated checkout SHA are release and live-canary gates, not claims made by the fixture suite.
+`npm run test:e2e` is an in-process hostile-data safety and publication gate.
+It exercises inventory, classification, static rules, scan packaging,
+authenticated artifact transport, V4 reporting, and publication against
+hostile fixtures. Git history, external scanner adapters, and exact-HEAD
+verification use deterministic test doubles; the real digest-pinned tools and
+an exact validated checkout SHA remain release and live-canary gates.
 
 ## License
 
-TavernKeeper is licensed under the GNU Affero General Public License v3.0. See `LICENSE`.
+TavernKeeper is licensed under the GNU Affero General Public License v3.0. See
+`LICENSE`.

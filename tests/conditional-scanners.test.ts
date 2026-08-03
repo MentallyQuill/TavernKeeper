@@ -316,7 +316,7 @@ describe("conditional scanner adapters", () => {
       findings: [
         expect.objectContaining({
           origin: "malcontent",
-          rule_id: "execution/download-and-execute",
+          rule_id: "execution-download-and-execute",
           category: "binary-analysis",
           severity: "high",
           confidence: "high",

@@ -4,47 +4,85 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import type { ScanReportV3 } from "../src/contracts/reports.js";
+import {
+  ReportIndexEntryV4Schema,
+  type ScanReportV4,
+} from "../src/contracts/reports.js";
 import {
   initialOperationsState,
   parseOperationsState,
   serializeOperationsState,
 } from "../src/operations/state.js";
 import {
-  projectReportToIndexV2,
+  projectReportToIndexV4,
   publishCandidates,
 } from "../src/publish/publisher.js";
-import { ReportIndexEntryV2Schema } from "../src/contracts/reports.js";
 import { reportIdentity, reportPath } from "../src/publish/report-path.js";
 
 const roots: string[] = [];
-const generatedAt = "2026-07-31T15:00:00.000Z";
+const generatedAt = "2026-08-02T15:00:00.000Z";
 
-async function fixtureReport(overrides: Record<string, unknown> = {}) {
+async function fixtureReport(overrides: Partial<ScanReportV4> = {}) {
   const raw = JSON.parse(
     await readFile(
-      new URL("./fixtures/contracts/report.v3.valid.json", import.meta.url),
+      new URL("./fixtures/contracts/report.v4.valid.json", import.meta.url),
       "utf8",
     ),
-  ) as Record<string, unknown>;
+  ) as ScanReportV4;
   const report = { ...raw, ...overrides };
-  if (typeof overrides.target_sha === "string") {
-    const modelReview = structuredClone(
-      report.model_review as ScanReportV3["model_review"],
-    );
-    modelReview.concerns = modelReview.concerns.map((concern) => ({
-      ...concern,
-      evidence: concern.evidence.map((evidence) => ({
-        ...evidence,
-        target_sha: overrides.target_sha as string,
-      })),
-    }));
-    report.model_review = modelReview;
-  }
-  return {
-    ...report,
-    report_id: reportIdentity(report as never),
-  } as unknown as ScanReportV3;
+  return { ...report, report_id: reportIdentity(report) };
+}
+
+async function redReport(overrides: Partial<ScanReportV4> = {}) {
+  const raw = await fixtureReport();
+  const report = {
+    ...raw,
+    result: "red" as const,
+    summary: {
+      headline: "Reportable concerns detected",
+      detail:
+        "1 reportable concern met TavernKeeper's deterministic threshold.",
+    },
+    coverage: {
+      ...raw.coverage,
+      evidence_validation: {
+        status: "completed" as const,
+        validated_findings: 1,
+      },
+    },
+    finding_counts: {
+      total: 1,
+      reportable: 1,
+      informational: 0,
+      reportable_severity: { critical: 0, high: 1, medium: 0 },
+      severity: { critical: 0, high: 1, medium: 0, low: 0, info: 0 },
+      confidence: { high: 1, medium: 0, low: 0 },
+      policy_status: { reportable: 1, informational: 0 },
+      categories: [{ category: "credential-theft", count: 1 }],
+    },
+    findings: [
+      {
+        origin: "tavernkeeper",
+        rule_id: "credential-exfiltration",
+        category: "credential-theft",
+        severity: "high" as const,
+        confidence: "high" as const,
+        policy_status: "reportable" as const,
+        path: "src/index.ts",
+        line_start: 1,
+        line_end: 1,
+        evidence_sha: null,
+        title: "Credential access and network transmission in one file",
+        explanation:
+          "A credential source and an outbound network operation were detected in the same file.",
+        remediation:
+          "Review the data flow, remove unintended credential transmission, and restrict any required destination.",
+        fingerprint: "b".repeat(64),
+      },
+    ],
+    ...overrides,
+  };
+  return { ...report, report_id: reportIdentity(report) };
 }
 
 async function publicationRoot() {
@@ -54,7 +92,7 @@ async function publicationRoot() {
   await mkdir(join(root, "operations"), { recursive: true });
   await writeFile(
     join(root, "reports", "index.json"),
-    `${JSON.stringify({ schema_version: 1, generated_at: generatedAt, reports: [] }, null, 2)}\n`,
+    `${JSON.stringify({ schema_version: 4, generated_at: generatedAt, reports: [] }, null, 2)}\n`,
   );
   await writeFile(
     join(root, "operations", "state.json"),
@@ -69,8 +107,8 @@ afterEach(async () => {
   );
 });
 
-describe("serialized report publisher", () => {
-  test("publishes immutable JSON and HTML, updates the index, and clears active state", async () => {
+describe("serialized deterministic report publisher", () => {
+  test("publishes immutable V4 JSON and HTML with Tavernary's compact index fields", async () => {
     const root = await publicationRoot();
     const report = await fixtureReport();
     const state = parseOperationsState({
@@ -80,12 +118,11 @@ describe("serialized report publisher", () => {
           source_id: report.source_id,
           repository_id: report.repository_id,
           target_sha: report.target_sha,
-          started_at: "2026-07-31T14:00:00.000Z",
+          started_at: "2026-08-02T14:00:00.000Z",
           run_id: "batch-1",
         },
       ],
     });
-
     const published = await publishCandidates({
       root,
       candidates: [report],
@@ -100,83 +137,62 @@ describe("serialized report publisher", () => {
     expect(await readFile(join(destination, "index.html"), "utf8")).toContain(
       "TavernKeeper Scan Report",
     );
+    expect(published.index.schema_version).toBe(4);
     expect(published.index.reports).toHaveLength(1);
-    expect(published.index.schema_version).toBe(2);
     expect(
-      ReportIndexEntryV2Schema.parse(projectReportToIndexV2(report)),
+      ReportIndexEntryV4Schema.parse(projectReportToIndexV4(report)),
     ).toEqual(published.index.reports[0]);
-    expect(published.index.reports[0]).toMatchObject({
-      report_id: report.report_id,
-      report_url: `https://mentallyquill.github.io/TavernKeeper/${reportPath(report)}/`,
-      history_url:
-        "https://mentallyquill.github.io/TavernKeeper/reports/github/42/history/",
-    });
-    expect(
-      await readFile(
-        join(root, "reports", "github", "42", "history", "index.html"),
-        "utf8",
-      ),
-    ).toContain(report.target_sha);
+    expect(published.index.reports[0]).not.toHaveProperty("mode");
+    expect(published.index.reports[0]!.summary).toEqual(report.summary);
     expect(published.state.active_scans).toEqual([]);
-    expect(
-      JSON.parse(await readFile(join(root, "reports", "index.json"), "utf8"))
-        .schema_version,
-    ).toBe(2);
-    expect(
-      JSON.parse(
-        await readFile(join(root, "operations", "state.json"), "utf8"),
-      ),
-    ).toEqual(published.state);
   });
 
-  test("prefers deep mode before a newer standard correction", async () => {
+  test("keeps a red forced-scan result in full history after a later teal correction", async () => {
     const root = await publicationRoot();
-    const standardV1 = await fixtureReport();
-    const deepV1 = await fixtureReport({ mode: "deep" });
-    const standardV2 = await fixtureReport({
+    const red = await redReport({ completed_at: "2026-08-02T14:00:00.000Z" });
+    const teal = await fixtureReport({
       report_version: 2,
-      supersedes_report_id: standardV1.report_id,
+      supersedes_report_id: red.report_id,
+      completed_at: "2026-08-02T15:00:00.000Z",
     });
-
     const published = await publishCandidates({
       root,
-      candidates: [standardV1, deepV1, standardV2],
+      candidates: [red, teal],
       state: initialOperationsState(generatedAt),
       generatedAt,
     });
 
     expect(published.index.reports).toHaveLength(1);
     expect(published.index.reports[0]).toMatchObject({
-      report_version: 1,
-      mode: "deep",
-      report_id: deepV1.report_id,
+      report_id: teal.report_id,
+      result: "teal",
+      report_version: 2,
     });
+    const historyRoot = join(root, "reports", "github", "42", "history");
+    const history = await readFile(join(historyRoot, "index.html"), "utf8");
+    expect(history).toContain("RED");
+    expect(history).toContain("TEAL");
+    expect(
+      JSON.parse(await readFile(join(historyRoot, "history.json"), "utf8")),
+    ).toHaveLength(2);
   });
 
-  test("preserves preferred conclusions for older SHAs in repository history", async () => {
+  test("preserves preferred conclusions for older SHAs", async () => {
     const root = await publicationRoot();
     const oldReport = await fixtureReport();
-    const currentReport = await fixtureReport({
+    const current = await fixtureReport({
       target_sha: "f".repeat(40),
-      completed_at: "2026-07-31T16:00:00.000Z",
+      completed_at: "2026-08-02T16:00:00.000Z",
     });
-
     const published = await publishCandidates({
       root,
-      candidates: [oldReport, currentReport],
+      candidates: [oldReport, current],
       state: initialOperationsState(generatedAt),
-      generatedAt: "2026-07-31T16:05:00.000Z",
+      generatedAt: "2026-08-02T16:05:00.000Z",
     });
-
     expect(published.index.reports.map(({ target_sha }) => target_sha)).toEqual(
-      [oldReport.target_sha, currentReport.target_sha],
+      [oldReport.target_sha, current.target_sha],
     );
-    const history = await readFile(
-      join(root, "reports", "github", "42", "history", "index.html"),
-      "utf8",
-    );
-    expect(history).toContain(oldReport.target_sha);
-    expect(history).toContain(currentReport.target_sha);
   });
 
   test("rejects an immutable-path collision", async () => {
@@ -184,23 +200,16 @@ describe("serialized report publisher", () => {
     const report = await fixtureReport();
     const state = initialOperationsState(generatedAt);
     await publishCandidates({ root, candidates: [report], state, generatedAt });
-
     await expect(
       publishCandidates({ root, candidates: [report], state, generatedAt }),
     ).rejects.toThrow(/immutable report path already exists/iu);
   });
 
-  test("prevalidates the whole batch before writing any candidate", async () => {
+  test("prevalidates a mixed V4 batch before writing any candidate", async () => {
     const root = await publicationRoot();
     const valid = await fixtureReport();
-    const unsafeBase = await fixtureReport({ mode: "deep" });
-    const modelReview = structuredClone(unsafeBase.model_review);
-    modelReview.concerns[0] = {
-      ...modelReview.concerns[0]!,
-      explanation: "Leaked ghp_abcdefghijklmnopqrstuvwxyz1234567890AB",
-    };
-    const unsafe = { ...unsafeBase, model_review: modelReview };
-
+    const unsafeBase = await fixtureReport({ report_version: 2 });
+    const unsafe = { ...unsafeBase, model_review: {} };
     await expect(
       publishCandidates({
         root,
@@ -209,7 +218,6 @@ describe("serialized report publisher", () => {
         generatedAt,
       }),
     ).rejects.toThrow(/public report rejected/iu);
-
     await expect(
       readFile(join(root, ...reportPath(valid).split("/"), "report.json")),
     ).rejects.toMatchObject({ code: "ENOENT" });

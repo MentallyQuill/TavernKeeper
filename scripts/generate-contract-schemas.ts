@@ -6,8 +6,8 @@ import { z, type ZodType } from "zod";
 import { format } from "prettier";
 
 import {
-  ReportIndexV2Schema,
-  ScanReportV2Schema,
+  ReportIndexV4Schema,
+  ScanReportV4Schema,
 } from "../src/contracts/reports.js";
 import { TargetManifestV2Schema } from "../src/contracts/targets.js";
 
@@ -26,16 +26,16 @@ const contracts: Array<{
     schema: TargetManifestV2Schema,
   },
   {
-    file: "scan-report.v2.schema.json",
-    id: "https://mentallyquill.github.io/TavernKeeper/schemas/scan-report.v2.schema.json",
-    title: "TavernKeeper V2 complete automated scan report",
-    schema: ScanReportV2Schema,
+    file: "scan-report.v4.schema.json",
+    id: "https://mentallyquill.github.io/TavernKeeper/schemas/scan-report.v4.schema.json",
+    title: "TavernKeeper V4 deterministic scan report",
+    schema: ScanReportV4Schema,
   },
   {
-    file: "report-index.v2.schema.json",
-    id: "https://mentallyquill.github.io/TavernKeeper/schemas/report-index.v2.schema.json",
-    title: "TavernKeeper V2 preferred report index",
-    schema: ReportIndexV2Schema,
+    file: "report-index.v4.schema.json",
+    id: "https://mentallyquill.github.io/TavernKeeper/schemas/report-index.v4.schema.json",
+    title: "TavernKeeper V4 deterministic preferred report index",
+    schema: ReportIndexV4Schema,
   },
 ];
 

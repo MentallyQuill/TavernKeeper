@@ -27,89 +27,14 @@ describe("safe CLI error diagnostics", () => {
     ).toEqual({ code: "CLI_FAILED", scope: "system" });
   });
 
-  test("retains only allowlisted model response diagnostics", () => {
+  test("does not preserve provider-shaped diagnostic fields", () => {
     expect(
       safeCliErrorRecord({
-        code: "MODEL_INVALID_RESPONSE",
-        scope: "system",
-        diagnostic: "output_limit",
-      }),
-    ).toEqual({
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "system",
-      diagnostic: "output_limit",
-    });
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_INVALID_RESPONSE",
-        scope: "repository",
-        diagnostic: "review_inconclusive",
-      }),
-    ).toEqual({
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
-      diagnostic: "review_inconclusive",
-    });
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_INVALID_RESPONSE",
-        scope: "system",
-        diagnostic: "role_schema_analyzer",
-      }),
-    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "system" });
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_INVALID_RESPONSE",
+        code: "SCANNER_FAILED",
         scope: "system",
         diagnostic: "provider output that must never be logged",
-      }),
-    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "system" });
-  });
-
-  test.each([
-    "chunk_review_cache",
-    "chunk_review_empty",
-    "chunk_review_identity",
-    "chunk_review_size",
-    "synthesis_evidence",
-    "synthesis_identity",
-    "synthesis_inconclusive",
-    "synthesis_schema",
-  ])("retains repository-review diagnostic %s", (diagnostic) => {
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_INVALID_RESPONSE",
-        scope: "repository",
-        diagnostic,
-      }),
-    ).toEqual({
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
-      diagnostic,
-    });
-  });
-
-  test("retains only an error-range provider HTTP status", () => {
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_PROVIDER",
-        scope: "system",
         httpStatus: 413,
       }),
-    ).toEqual({ code: "MODEL_PROVIDER", scope: "system", http_status: 413 });
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_PROVIDER",
-        scope: "system",
-        httpStatus: "secret-bearing provider text",
-      }),
-    ).toEqual({ code: "MODEL_PROVIDER", scope: "system" });
-    expect(
-      safeCliErrorRecord({
-        code: "MODEL_PROVIDER",
-        scope: "system",
-        httpStatus: 200,
-      }),
-    ).toEqual({ code: "MODEL_PROVIDER", scope: "system" });
+    ).toEqual({ code: "SCANNER_FAILED", scope: "system" });
   });
 });

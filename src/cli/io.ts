@@ -3,7 +3,6 @@ import { readFile, rename, rm, writeFile } from "node:fs/promises";
 import { pathToFileURL } from "node:url";
 
 import { ScannerComponents } from "../scanners/types.js";
-import { ModelResponseDiagnostics } from "../model/openai-compatible-client.js";
 
 export async function readJsonFile(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8"));
@@ -58,8 +57,6 @@ export function safeCliErrorRecord(error: unknown): {
   code: string;
   scope: "repository" | "system";
   component?: (typeof ScannerComponents)[number];
-  diagnostic?: (typeof ModelResponseDiagnostics)[number];
-  http_status?: number;
 } {
   const candidateCode =
     error !== null &&
@@ -86,30 +83,10 @@ export function safeCliErrorRecord(error: unknown): {
   const component = ScannerComponents.find(
     (value) => value === candidateComponent,
   );
-  const candidateDiagnostic =
-    error !== null && typeof error === "object" && "diagnostic" in error
-      ? error.diagnostic
-      : undefined;
-  const diagnostic = ModelResponseDiagnostics.find(
-    (value) => value === candidateDiagnostic,
-  );
-  const candidateHttpStatus =
-    error !== null && typeof error === "object" && "httpStatus" in error
-      ? error.httpStatus
-      : undefined;
-  const httpStatus =
-    typeof candidateHttpStatus === "number" &&
-    Number.isInteger(candidateHttpStatus) &&
-    candidateHttpStatus >= 400 &&
-    candidateHttpStatus <= 599
-      ? candidateHttpStatus
-      : undefined;
   return {
     code,
     scope,
     ...(component === undefined ? {} : { component }),
-    ...(diagnostic === undefined ? {} : { diagnostic }),
-    ...(httpStatus === undefined ? {} : { http_status: httpStatus }),
   };
 }
 
