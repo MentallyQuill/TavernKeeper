@@ -31,12 +31,12 @@ the orange scan mark rendered from the canonical SVG.
 
 ## Site integration
 
-The shared HTML presentation layer declares the icon family with relative
-URLs so the same generated markup works at the root, report, and history
-paths of the GitHub Pages project site. The metadata includes the SVG icon,
-ICO fallback, 32px and 16px PNG fallbacks, Apple touch icon, and 192/512px
-PNG icons. The static-site builder copies the allowlisted asset directory
-into every generated Pages artifact.
+The shared HTML presentation layer declares the icon family with
+site-root-absolute URLs so the same generated markup works at the root,
+report, and history paths of the GitHub Pages project site. The metadata
+includes the SVG icon, ICO fallback, 32px and 16px PNG fallbacks, Apple touch
+icon, and 192/512px PNG icons. The static-site builder copies the allowlisted
+asset directory into every generated Pages artifact.
 
 ## Verification
 
