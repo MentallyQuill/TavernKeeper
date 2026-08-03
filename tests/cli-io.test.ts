@@ -43,12 +43,12 @@ describe("safe CLI error diagnostics", () => {
       safeCliErrorRecord({
         code: "MODEL_INVALID_RESPONSE",
         scope: "repository",
-        diagnostic: "assessment_schema",
+        diagnostic: "assessment_developer_action",
       }),
     ).toEqual({
       code: "MODEL_INVALID_RESPONSE",
       scope: "repository",
-      diagnostic: "assessment_schema",
+      diagnostic: "assessment_developer_action",
     });
 
     expect(

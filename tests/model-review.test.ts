@@ -38,12 +38,6 @@ describe("OpenAI-compatible contextual-review transport", () => {
       maxOutputTokens: 8_192,
       systemContent: "Trusted review policy.",
       userContent: "Delimited untrusted evidence.",
-      responseJsonSchema: {
-        type: "object",
-        properties: { status: { const: "complete" } },
-        required: ["status"],
-        additionalProperties: false,
-      },
       fetchImpl,
       resolveAddresses: async () => ["104.21.10.20"],
     });
@@ -68,19 +62,7 @@ describe("OpenAI-compatible contextual-review transport", () => {
       stream: false,
       temperature: 0,
       max_tokens: 8_192,
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "tavernkeeper_contextual_assessment",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: { status: { const: "complete" } },
-            required: ["status"],
-            additionalProperties: false,
-          },
-        },
-      },
+      response_format: { type: "json_object" },
     });
     expect(result).toMatchObject({
       content: '{"status":"complete"}',
@@ -97,12 +79,6 @@ describe("OpenAI-compatible contextual-review transport", () => {
       maxOutputTokens: 1_000,
       systemContent: "System",
       userContent: "User",
-      responseJsonSchema: {
-        type: "object",
-        properties: { status: { const: "complete" } },
-        required: ["status"],
-        additionalProperties: false,
-      },
       fetchImpl: async () =>
         new Response(
           JSON.stringify({
@@ -135,11 +111,6 @@ describe("OpenAI-compatible contextual-review transport", () => {
       maxOutputTokens: 100,
       systemContent: "System",
       userContent: "User",
-      responseJsonSchema: {
-        type: "object",
-        properties: {},
-        additionalProperties: false,
-      },
     };
     await expect(
       requestTextCompletion({

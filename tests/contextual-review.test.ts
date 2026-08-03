@@ -244,7 +244,7 @@ describe("contextual evidence review", () => {
     ).rejects.toMatchObject({
       code: "MODEL_INVALID_RESPONSE",
       scope: "repository",
-      diagnostic: "assessment_schema",
+      diagnostic: "assessment_developer_action",
     });
   });
 

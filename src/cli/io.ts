@@ -5,7 +5,18 @@ import { pathToFileURL } from "node:url";
 import { ScannerComponents } from "../scanners/types.js";
 
 const SafeModelResponseDiagnostics = [
+  "assessment_candidate_id",
+  "assessment_confidence",
+  "assessment_developer_action",
+  "assessment_disposition",
+  "assessment_evidence_ids",
+  "assessment_exploitability",
+  "assessment_impact",
+  "assessment_layman_explanation",
+  "assessment_locations",
+  "assessment_recommended_risk",
   "assessment_schema",
+  "assessment_technical_explanation",
   "observation_schema",
   "output_limit",
   "response_content",

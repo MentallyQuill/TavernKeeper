@@ -38,11 +38,6 @@ type RequestCompletion = (
   request: TextCompletionRequest,
 ) => Promise<ModelCompletionResult>;
 
-const ContextualReviewJsonSchema = z.toJSONSchema(
-  ContextualReviewResponseSchema,
-  { target: "draft-7" },
-);
-
 export interface ContextualReviewProvider {
   endpoint: string;
   apiKey: string;
@@ -201,10 +196,27 @@ function parseReviewResponse(content: string) {
     extractSingleJsonObject(content),
   );
   if (!parsed.success) {
-    const root = parsed.error.issues[0]?.path[0];
+    const path = parsed.error.issues[0]?.path ?? [];
+    const root = path[0];
+    const field = path[2];
+    const assessmentFields = {
+      candidate_id: "assessment_candidate_id",
+      evidence_ids: "assessment_evidence_ids",
+      disposition: "assessment_disposition",
+      impact: "assessment_impact",
+      exploitability: "assessment_exploitability",
+      confidence: "assessment_confidence",
+      recommended_risk: "assessment_recommended_risk",
+      technical_explanation: "assessment_technical_explanation",
+      layman_explanation: "assessment_layman_explanation",
+      developer_action: "assessment_developer_action",
+      locations: "assessment_locations",
+    } as const;
     const diagnostic =
       root === "assessments"
-        ? "assessment_schema"
+        ? typeof field === "string" && field in assessmentFields
+          ? assessmentFields[field as keyof typeof assessmentFields]
+          : "assessment_schema"
         : root === "observations"
           ? "observation_schema"
           : "review_schema";
@@ -289,7 +301,6 @@ async function reviewGroup(
         timeoutMs: spec.policy.timeoutMs,
         systemContent: prompt.systemContent,
         userContent: prompt.userContent,
-        responseJsonSchema: ContextualReviewJsonSchema,
         ...(spec.provider.fetchImpl === undefined
           ? {}
           : { fetchImpl: spec.provider.fetchImpl }),

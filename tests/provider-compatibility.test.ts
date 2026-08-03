@@ -67,16 +67,7 @@ describe("model provider contextual compatibility check", () => {
       Authorization: "Bearer test-key",
     });
     const body = JSON.parse(String(request[1]?.body));
-    expect(body.response_format).toMatchObject({
-      type: "json_schema",
-      json_schema: {
-        name: "tavernkeeper_contextual_assessment",
-        strict: true,
-        schema: {
-          oneOf: expect.any(Array),
-        },
-      },
-    });
+    expect(body.response_format).toEqual({ type: "json_object" });
     for (const candidateId of candidateIds)
       expect(body.messages[1].content).toContain(candidateId);
   });
