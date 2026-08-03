@@ -145,9 +145,7 @@ describe("Scan Package V1", () => {
 
     const invalidLines = structuredClone(valid);
     invalidLines.findings[0]!.line_end = 0;
-    expect(() => validateScanPackageEvidence(invalidLines)).toThrow(
-      /line/iu,
-    );
+    expect(() => validateScanPackageEvidence(invalidLines)).toThrow(/line/iu);
 
     const changedFingerprint = structuredClone(valid);
     changedFingerprint.findings[0]!.fingerprint = "d".repeat(64);

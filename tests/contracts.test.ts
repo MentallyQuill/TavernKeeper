@@ -14,6 +14,7 @@ import {
   ScanReportSchema,
   ScanReportV2Schema,
   ScanReportV3Schema,
+  ScanReportV4Schema,
 } from "../src/contracts/reports.js";
 import {
   parseTargetManifest,
@@ -191,6 +192,19 @@ describe("public contracts", () => {
     );
 
     expect(ScanReportV3Schema.parse(fixture)).toEqual(fixture);
+  });
+
+  test("accepts a strict deterministic V4 report", async () => {
+    const fixture = JSON.parse(
+      await readFile(
+        new URL("./fixtures/contracts/report.v4.valid.json", import.meta.url),
+        "utf8",
+      ),
+    );
+
+    expect(ScanReportV4Schema.parse(fixture)).toEqual(fixture);
+    expect(fixture).not.toHaveProperty("mode");
+    expect(fixture).not.toHaveProperty("prompt_policy_version");
   });
 
   test("derives V3 color and counts only from validated model concerns", async () => {

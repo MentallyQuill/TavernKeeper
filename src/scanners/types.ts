@@ -60,12 +60,7 @@ export interface NormalizedFindingInput {
 export function findingFingerprint(
   input: Pick<
     NormalizedFindingInput,
-    | "origin"
-    | "ruleId"
-    | "path"
-    | "lineStart"
-    | "lineEnd"
-    | "evidenceSha"
+    "origin" | "ruleId" | "path" | "lineStart" | "lineEnd" | "evidenceSha"
   >,
 ) {
   return createHash("sha256")

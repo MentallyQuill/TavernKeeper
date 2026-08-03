@@ -4,15 +4,8 @@ import { z } from "zod";
 
 import type { InventoryClassification } from "../inventory/classify.js";
 import type { Inventory } from "../inventory/inventory-handler.js";
-import {
-  findingFingerprint,
-  type ScannerRun,
-} from "../scanners/types.js";
-import {
-  ConfidenceSchema,
-  SeveritySchema,
-  type Finding,
-} from "./reports.js";
+import { findingFingerprint, type ScannerRun } from "../scanners/types.js";
+import { ConfidenceSchema, SeveritySchema, type Finding } from "./reports.js";
 import { FullShaSchema, TargetSchema, type Target } from "./targets.js";
 
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
@@ -190,8 +183,7 @@ export function validateScanPackageEvidence(input: unknown): ScanPackageV1 {
     0,
   );
   if (
-    scanPackage.inventory.totals.files !==
-      scanPackage.inventory.files.length ||
+    scanPackage.inventory.totals.files !== scanPackage.inventory.files.length ||
     scanPackage.inventory.totals.bytes !== inventoryBytes
   )
     throw new Error("Scan Package inventory count is inconsistent.");
@@ -228,7 +220,9 @@ export function validateScanPackageEvidence(input: unknown): ScanPackageV1 {
   );
   for (const finding of scanPackage.findings) {
     if (!inventoryPaths.has(finding.path))
-      throw new Error(`Scan Package finding path is not inventoried: ${finding.path}`);
+      throw new Error(
+        `Scan Package finding path is not inventoried: ${finding.path}`,
+      );
     const expectedTool = expectedToolForOrigin(finding.origin);
     if (expectedTool === undefined || !completedTools.has(expectedTool))
       throw new Error(
