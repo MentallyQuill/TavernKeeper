@@ -59,12 +59,6 @@ export function buildTargetedMatrix({
         active.repository_id === target.repository_id &&
         active.target_sha === target.target_sha,
     ) ||
-    state.retries.some(
-      (retry) =>
-        retry.repository_id === target.repository_id &&
-        retry.target_sha === target.target_sha &&
-        !retry.exhausted,
-    ) ||
     matchingReports.some(
       ({ completed_at }) => Date.parse(completed_at) >= requestCreatedAtMs,
     )

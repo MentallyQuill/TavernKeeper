@@ -216,7 +216,7 @@ describe("JSON-only orchestration CLIs", () => {
     ]);
   });
 
-  test("coalesces a targeted request into an already recorded retry", () => {
+  test("lets a staff-targeted request override an already recorded retry", () => {
     const targetValue = target(42);
     const matrix = buildTargetedMatrix({
       manifest: {
@@ -249,7 +249,14 @@ describe("JSON-only orchestration CLIs", () => {
       requestCreatedAt: now,
     });
 
-    expect(matrix).toEqual({ include: [], coalesced: true });
+    expect(matrix.coalesced).toBe(false);
+    expect(matrix.include).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        report_version: 1,
+        supersedes_report_id: null,
+      }),
+    ]);
   });
 
   test("targeted scans reject IDs absent from the public V2 manifest", () => {
