@@ -43,7 +43,7 @@ describe("atomic V5 publisher", () => {
     );
     expect(stored).toEqual(report);
     expect(await readFile(join(directory, "index.html"), "utf8")).toContain(
-      "Contextual assessments",
+      "What this review found",
     );
     expect(published.index).toMatchObject({
       schema_version: 5,

@@ -4,7 +4,10 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
+import { projectReportToIndexV5 } from "../src/publish/publisher.js";
+import { historyPath, reportPath } from "../src/publish/report-path.js";
 import { buildSite } from "../src/site/build-site.js";
+import { fixtureReportV5 } from "./helpers/v5-report.js";
 
 const roots: string[] = [];
 
@@ -43,18 +46,32 @@ describe("Pages site allowlist", () => {
         (path) => mkdir(join(root, ...path.split("/")), { recursive: true }),
       ),
     );
-    await writeFile(join(root, "reports", "index.json"), "{}\n");
-    await mkdir(join(root, "reports", "github", "42", "sha", "2", "1"), {
-      recursive: true,
-    });
+    const report = await fixtureReportV5();
+    const entry = projectReportToIndexV5(report);
+    const reportDirectory = join(root, ...reportPath(report).split("/"));
+    const historyDirectory = join(root, ...historyPath(report).split("/"));
+    await Promise.all([
+      mkdir(reportDirectory, { recursive: true }),
+      mkdir(historyDirectory, { recursive: true }),
+    ]);
     await writeFile(
-      join(root, "reports", "github", "42", "sha", "2", "1", "report.json"),
-      '{"schema_version":4}\n',
+      join(root, "reports", "index.json"),
+      `${JSON.stringify({
+        schema_version: 5,
+        generated_at: "2026-08-03T12:00:00.000Z",
+        reports: [entry],
+      })}\n`,
     );
     await writeFile(
-      join(root, "reports", "github", "42", "sha", "2", "1", "index.html"),
-      "<!doctype html>\n",
+      join(reportDirectory, "report.json"),
+      `${JSON.stringify(report)}\n`,
     );
+    await writeFile(join(reportDirectory, "index.html"), "old report html\n");
+    await writeFile(
+      join(historyDirectory, "history.json"),
+      `${JSON.stringify([entry])}\n`,
+    );
+    await writeFile(join(historyDirectory, "index.html"), "old history html\n");
     await writeFile(join(root, "schemas", "report.json"), "{}\n");
     await writeFile(join(root, "docs", "rules", "rule.md"), "# Rule\n");
     await writeFile(join(root, "src", "secret.ts"), "scanner source\n");
@@ -64,18 +81,42 @@ describe("Pages site allowlist", () => {
 
     const result = await buildSite({ root, output });
 
-    expect(result.files).toEqual([
-      ".nojekyll",
-      "index.html",
-      "reports/github/42/sha/2/1/index.html",
-      "reports/github/42/sha/2/1/report.json",
-      "reports/index.json",
-      "rules/rule.md",
-      "schemas/report.json",
-    ]);
-    expect(await readFile(join(output, "reports", "index.json"), "utf8")).toBe(
-      "{}\n",
+    expect(result.files).toContain("assets/report-search.js");
+    expect(result.files).toContain(`${reportPath(report)}/index.html`);
+    expect(result.files).toContain(`${historyPath(report)}/index.html`);
+
+    const landing = await readFile(join(output, "index.html"), "utf8");
+    expect(landing).toContain(
+      "Technical security reports for Tavernary projects",
     );
+    expect(landing).toContain('id="reports"');
+    expect(landing).toContain('data-report-search="true"');
+    expect(landing).toContain(report.repository);
+    expect(landing).toContain(
+      "No material or high-risk concern was identified",
+    );
+    expect(landing).toContain("bounded candidate context");
+    expect(landing).toContain(
+      "does not run dependencies, scripts, builds, tests, Actions, or target executables",
+    );
+    expect(landing).not.toContain("Report ID");
+
+    const reportHtml = await readFile(
+      join(output, ...reportPath(report).split("/"), "index.html"),
+      "utf8",
+    );
+    expect(reportHtml).toContain("TavernKeeper Scan Report");
+    expect(reportHtml).not.toContain("old report html");
+    const historyHtml = await readFile(
+      join(output, ...historyPath(report).split("/"), "index.html"),
+      "utf8",
+    );
+    expect(historyHtml).toContain("TavernKeeper Scan History");
+    expect(historyHtml).not.toContain("old history html");
+
+    expect(
+      await readFile(join(output, "reports", "index.json"), "utf8"),
+    ).toContain('"schema_version":5');
     await expect(
       readFile(join(output, "src", "secret.ts")),
     ).rejects.toMatchObject({ code: "ENOENT" });

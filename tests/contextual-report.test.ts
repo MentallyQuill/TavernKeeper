@@ -161,23 +161,59 @@ function validReport() {
   );
 }
 
-function reportWithObservation() {
+function reportWithObservation(
+  risk: "low" | "material" | "high" = "low",
+  candidateRisk: "material" | "high" | null = null,
+) {
+  const disposition =
+    risk === "high"
+      ? "credible_malicious_behavior"
+      : risk === "material"
+        ? "material_vulnerability"
+        : "minor_weakness";
+  const assessments =
+    candidateRisk === null
+      ? review.assessments
+      : review.assessments.map((assessment) => ({
+          ...assessment,
+          disposition:
+            candidateRisk === "high"
+              ? ("credible_malicious_behavior" as const)
+              : ("material_vulnerability" as const),
+          impact:
+            candidateRisk === "high" ? ("high" as const) : ("medium" as const),
+          exploitability:
+            candidateRisk === "high"
+              ? ("readily_exploitable" as const)
+              : ("plausible" as const),
+          recommended_risk: candidateRisk,
+          technical_explanation: "The candidate requires attention.",
+          layman_explanation: "This scanner match requires attention.",
+          developer_action: "Review this behavior before release.",
+        }));
   return buildContextualReport(
     {
       scanPackage,
       evidenceGroups: [group],
       review: {
         ...review,
+        assessments,
         observations: [
           {
             observation_id: "d".repeat(64),
             related_candidate_ids: [finding.fingerprint],
             evidence_ids: [finding.fingerprint],
-            disposition: "minor_weakness",
-            impact: "low",
-            exploitability: "unlikely",
+            disposition,
+            impact:
+              risk === "high" ? "high" : risk === "material" ? "medium" : "low",
+            exploitability:
+              risk === "high"
+                ? "readily_exploitable"
+                : risk === "material"
+                  ? "plausible"
+                  : "unlikely",
             confidence: "medium",
-            recommended_risk: "low",
+            recommended_risk: risk,
             title: "Related request handling",
             technical_explanation:
               "The same request path could expose endpoint details in logs.",
@@ -255,9 +291,13 @@ describe("contextual V5 reports", () => {
     const report = reportWithObservation();
     const html = renderReportV5Html(report);
 
-    expect(html).toContain("Contextual assessments");
+    expect(html).toContain("What this review found");
     expect(html).toContain("This request appears to be expected.");
     expect(html).toContain("Expected scanner matches");
+    expect(html).toContain("Related contextual observations");
+    expect(html.indexOf("Related contextual observations")).toBeLessThan(
+      html.indexOf("Related request handling"),
+    );
     expect(html).toContain(
       `https://github.com/owner/repo/blob/${targetSha}/src/index.ts#L2`,
     );
@@ -267,6 +307,30 @@ describe("contextual V5 reports", () => {
     expect(html).toContain("default-src &#39;none&#39;");
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/safety certification/iu);
+  });
+
+  test.each(["material", "high"] as const)(
+    "surfaces a %s observation in the primary findings without a contradictory all-clear",
+    (risk) => {
+      const html = renderReportV5Html(reportWithObservation(risk));
+
+      expect(html).not.toContain(
+        "<p>No material or high-risk item was identified.</p>",
+      );
+      expect(html.indexOf("What this review found")).toBeLessThan(
+        html.indexOf("Related request handling"),
+      );
+      expect(html).toContain(`<strong>${risk} risk</strong>`);
+      expect(html).not.toContain("Related contextual observations");
+    },
+  );
+
+  test("orders high observations before material candidate findings", () => {
+    const html = renderReportV5Html(reportWithObservation("high", "material"));
+
+    expect(html.indexOf("Related request handling")).toBeLessThan(
+      html.indexOf("OpenGrep reported network-call"),
+    );
   });
 
   test("rejects contextual observations linked to an unknown candidate", () => {
