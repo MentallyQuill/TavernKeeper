@@ -259,7 +259,7 @@ describe("evidence context builder", () => {
       (_, index) => `callEndpoint(${index + 1});`,
     ).join("\n");
     await writeFile(join(root, "noisy.ts"), source);
-    const findings = Array.from({ length: 65 }, (_, index) =>
+    const findings = Array.from({ length: 17 }, (_, index) =>
       normalizeFinding({
         origin: "opengrep",
         ruleId: "network-call",
@@ -302,15 +302,15 @@ describe("evidence context builder", () => {
       },
     });
 
-    expect(groups).toHaveLength(2);
-    expect(groups.every((item) => item.candidates.length <= 64)).toBe(true);
-    expect(groups.flatMap((item) => item.candidates)).toHaveLength(65);
+    expect(groups).toHaveLength(3);
+    expect(groups.every((item) => item.candidates.length <= 8)).toBe(true);
+    expect(groups.flatMap((item) => item.candidates)).toHaveLength(17);
     expect(
       new Set(
         groups.flatMap((item) =>
           item.candidates.map((candidate) => candidate.candidate_id),
         ),
       ).size,
-    ).toBe(65);
+    ).toBe(17);
   });
 });
