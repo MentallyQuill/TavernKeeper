@@ -55,6 +55,8 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
     expect(prompt.systemContent).toMatch(/expected_behavior/iu);
     expect(prompt.systemContent).toMatch(/untrusted data/iu);
+    expect(prompt.systemContent).toMatch(/do not call .* safe/iu);
+    expect(prompt.systemContent).toMatch(/do not quote code/iu);
     expect(prompt.systemContent).not.toContain(injection);
     expect(prompt.userContent).toContain(injection);
     expect(prompt.userContent).toContain(groupId);
