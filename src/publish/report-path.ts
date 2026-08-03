@@ -2,29 +2,30 @@ import { createHash } from "node:crypto";
 
 import { z } from "zod";
 
-import { ScanModeSchema } from "../contracts/reports.js";
 import { FullShaSchema } from "../contracts/targets.js";
 
-const ReportIdentityInputSchema = z.strictObject({
+const ReportPathIdentitySchema = z.strictObject({
   provider: z.literal("github"),
   repository_id: z.number().int().positive(),
   target_sha: FullShaSchema,
   scanner_policy_version: z
     .string()
     .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u),
-  mode: ScanModeSchema,
   report_version: z.number().int().positive(),
 });
 
-type ReportIdentityInput = z.input<typeof ReportIdentityInputSchema>;
+type ReportIdentityInput = z.input<typeof ReportPathIdentitySchema> & {
+  schema_version?: unknown;
+  report_id?: string;
+  [key: string]: unknown;
+};
 
 function identityFields(report: ReportIdentityInput) {
-  return ReportIdentityInputSchema.parse({
+  return ReportPathIdentitySchema.parse({
     provider: report.provider,
     repository_id: report.repository_id,
     target_sha: report.target_sha,
     scanner_policy_version: report.scanner_policy_version,
-    mode: report.mode,
     report_version: report.report_version,
   });
 }
@@ -41,19 +42,12 @@ function canonicalValue(value: unknown): unknown {
 }
 
 export function reportIdentity(report: ReportIdentityInput) {
-  if (
-    "schema_version" in report &&
-    (report as ReportIdentityInput & { schema_version?: unknown })
-      .schema_version === 3
-  ) {
-    const body = { ...(report as unknown as Record<string, unknown>) };
-    delete body.report_id;
-    return createHash("sha256")
-      .update(JSON.stringify(canonicalValue(body)))
-      .digest("hex");
-  }
+  if (report.schema_version !== 4)
+    throw new Error("Report identity requires the V4 report contract.");
+  const body = { ...(report as unknown as Record<string, unknown>) };
+  delete body.report_id;
   return createHash("sha256")
-    .update(JSON.stringify(identityFields(report)))
+    .update(JSON.stringify(canonicalValue(body)))
     .digest("hex");
 }
 
@@ -65,7 +59,6 @@ export function reportPath(report: ReportIdentityInput) {
     String(identity.repository_id),
     identity.target_sha,
     identity.scanner_policy_version,
-    identity.mode,
     String(identity.report_version),
   ].join("/");
 }

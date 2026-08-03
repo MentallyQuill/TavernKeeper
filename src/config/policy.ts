@@ -29,32 +29,12 @@ const scannerPolicyShape = {
   }),
 };
 
-export const ScannerPolicySchema = z.strictObject({
-  version: z.literal("1"),
-  ...scannerPolicyShape,
-  model: z.strictObject({
-    protocol: z.literal("openai-compatible-chat-completions"),
-    chunkBytes: z.literal(524_288),
-    chunkOverlapBytes: z.literal(8_192),
-    maxChunkReviewCharacters: z.literal(12_000),
-    chunkReviewPolicy: z.literal("chunk-review-v2"),
-    synthesisPolicy: z.literal("repository-synthesis-v2"),
-  }),
-});
-
-export type ScannerPolicy = z.infer<typeof ScannerPolicySchema>;
-
 export const ScannerPolicyV2Schema = z.strictObject({
   version: z.literal("2"),
   ...scannerPolicyShape,
 });
 
 export type ScannerPolicyV2 = z.infer<typeof ScannerPolicyV2Schema>;
-
-const AnyScannerPolicySchema = z.discriminatedUnion("version", [
-  ScannerPolicySchema,
-  ScannerPolicyV2Schema,
-]);
 
 export const ScannerPinsSchema = z.strictObject({
   gitleaks: z.strictObject({
@@ -103,14 +83,10 @@ export const ScannerPinsSchema = z.strictObject({
 
 export type ScannerPins = z.infer<typeof ScannerPinsSchema>;
 
-export function loadScannerPolicy(
-  path: "config/scanner-policy.v2.json",
-): Promise<ScannerPolicyV2>;
-export function loadScannerPolicy(path: string): Promise<ScannerPolicy>;
 export async function loadScannerPolicy(
   path: string,
-): Promise<ScannerPolicy | ScannerPolicyV2> {
-  return AnyScannerPolicySchema.parse(JSON.parse(await readFile(path, "utf8")));
+): Promise<ScannerPolicyV2> {
+  return ScannerPolicyV2Schema.parse(JSON.parse(await readFile(path, "utf8")));
 }
 
 export async function loadScannerPins(path: string): Promise<ScannerPins> {

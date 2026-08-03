@@ -1,6 +1,10 @@
 import { join } from "node:path";
 
-import { loadScannerPins, loadScannerPolicy } from "../config/policy.js";
+import {
+  loadScannerPins,
+  loadScannerPolicy,
+  ScannerPolicyV2Schema,
+} from "../config/policy.js";
 import { prepareTargetSession } from "../orchestrator/session.js";
 import { ProcessCommandRunner } from "../process/command-runner.js";
 import { isDirectExecution, requiredEnvironment, runJsonCli } from "./io.js";
@@ -11,8 +15,10 @@ async function main() {
     JSON.parse(requiredEnvironment(process.env, "TAVERNKEEPER_SCAN_REQUEST")),
   );
   const repositoryRoot = process.cwd();
-  const policy = await loadScannerPolicy(
-    join(repositoryRoot, "config", "scanner-policy.v1.json"),
+  const policy = ScannerPolicyV2Schema.parse(
+    await loadScannerPolicy(
+      join(repositoryRoot, "config", "scanner-policy.v2.json"),
+    ),
   );
   const pins = await loadScannerPins(
     join(repositoryRoot, "config", "scanners.v1.json"),
@@ -36,10 +42,9 @@ async function main() {
     preparedAt: new Date().toISOString(),
     scannerVersion: "0.1.0",
     scannerPolicyVersion: policy.version,
-    promptPolicyVersion: "repository-review-v2",
+    ruleCatalogVersion: "1",
     reportVersion: request.report_version,
     supersedesReportId: request.supersedes_report_id,
-    mode: request.mode,
     policy,
     pins,
     rulesRoot: join(repositoryRoot, "rules", "opengrep"),
@@ -49,7 +54,7 @@ async function main() {
   return {
     status: "prepared",
     session_id: prepared.prepared.session_id,
-    chunks: prepared.prepared.chunks.length,
+    findings: prepared.prepared.findings.length,
   };
 }
 

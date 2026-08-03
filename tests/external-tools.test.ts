@@ -55,7 +55,7 @@ const baseSpec = {
   structuralFiles: [],
   runner,
   policy: {
-    version: "1" as const,
+    version: "2" as const,
     queue: { batchSize: 5 as const, maxParallel: 2 as const },
     history: { maxCommits: 20 as const },
     inventory: {
@@ -69,14 +69,6 @@ const baseSpec = {
     commands: {
       timeoutMs: 2_700_000 as const,
       maxOutputBytes: 104_857_600 as const,
-    },
-    model: {
-      protocol: "openai-compatible-chat-completions" as const,
-      chunkBytes: 524_288 as const,
-      chunkOverlapBytes: 8_192 as const,
-      maxChunkReviewCharacters: 12_000 as const,
-      chunkReviewPolicy: "chunk-review-v2" as const,
-      synthesisPolicy: "repository-synthesis-v2" as const,
     },
     retry: { hoursFromInitialFailure: [1, 2, 3] as [1, 2, 3] },
   },

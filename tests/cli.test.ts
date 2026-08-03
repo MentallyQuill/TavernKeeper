@@ -25,27 +25,52 @@ function target(repositoryId: number) {
   };
 }
 
-async function indexedReport(
+function indexedReport(
   targetValue: ReturnType<typeof target>,
   completedAt: string,
 ) {
-  const raw = JSON.parse(
-    await readFile(
-      new URL("./fixtures/contracts/index.v2.valid.json", import.meta.url),
-      "utf8",
-    ),
-  ) as { reports: Array<Record<string, unknown>> };
   return {
-    ...raw.reports[0],
-    report_id: String(raw.reports[0]!.report_id),
+    report_id: targetValue.repository_id.toString(16).padStart(64, "0"),
+    report_version: 1,
+    supersedes_report_id: null,
+    scanner_version: "1.0.0",
+    scanner_policy_version: "2",
+    rule_catalog_version: "1",
+    package_schema_version: 1,
     source_id: targetValue.source_id,
+    provider: "github" as const,
     repository_id: targetValue.repository_id,
     repository: targetValue.repository,
     target_sha: targetValue.target_sha,
     completed_at: completedAt,
+    assessment_method: "deterministic-static-analysis" as const,
+    result: "teal" as const,
+    summary: {
+      headline: "No reportable concerns detected",
+      detail:
+        "All required scanners completed, and no finding met the reportable threshold.",
+    },
+    finding_counts: {
+      total: 0,
+      reportable: 0,
+      informational: 0,
+      reportable_severity: { critical: 0, high: 0, medium: 0 },
+      severity: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
+      confidence: { high: 0, medium: 0, low: 0 },
+      policy_status: { reportable: 0, informational: 0 },
+      categories: [],
+    },
+    coverage: {
+      history_commits: 1,
+      inventory_files: 1,
+      inventory_bytes: 1,
+      tools_completed: 4,
+      tools_not_applicable: 3,
+      evidence_validated: 0,
+    },
     report_url:
       "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
-      `${targetValue.repository_id}/${targetValue.target_sha}/1/standard/1/`,
+      `${targetValue.repository_id}/${targetValue.target_sha}/2/1/`,
     history_url:
       "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
       `${targetValue.repository_id}/history/`,
@@ -62,24 +87,23 @@ describe("JSON-only orchestration CLIs", () => {
           target(index + 1),
         ),
       },
-      index: { schema_version: 2, generated_at: now, reports: [] },
+      index: { schema_version: 4, generated_at: now, reports: [] },
       state: initialOperationsState(now),
       now,
-      scannerPolicyVersion: "1",
+      scannerPolicyVersion: "2",
     });
 
     expect(matrix.include).toHaveLength(5);
     expect(matrix.remaining).toBe(3);
     expect(matrix.include[0]).toMatchObject({
       repository_id: 1,
-      mode: "standard",
       report_version: 1,
       supersedes_report_id: null,
       reason: "new",
     });
   });
 
-  test("targeted scans derive a standard request from repository ID and live V2 data", () => {
+  test("targeted scans derive one deterministic request from repository ID and live V4 data", () => {
     const targetValue = target(42);
     const matrix = buildTargetedMatrix({
       manifest: {
@@ -87,10 +111,10 @@ describe("JSON-only orchestration CLIs", () => {
         generated_at: now,
         repositories: [targetValue],
       },
-      index: { schema_version: 2, generated_at: now, reports: [] },
+      index: { schema_version: 4, generated_at: now, reports: [] },
       state: initialOperationsState(now),
       repositoryId: 42,
-      scannerPolicyVersion: "1",
+      scannerPolicyVersion: "2",
       requestCreatedAt: now,
     });
 
@@ -101,7 +125,6 @@ describe("JSON-only orchestration CLIs", () => {
         repository: "owner/repo-42",
         target_sha: targetValue.target_sha,
         reason: "staff",
-        mode: "standard",
         report_version: 1,
       }),
     ]);
@@ -115,7 +138,7 @@ describe("JSON-only orchestration CLIs", () => {
         generated_at: now,
         repositories: [targetValue],
       },
-      index: { schema_version: 2, generated_at: now, reports: [] },
+      index: { schema_version: 4, generated_at: now, reports: [] },
       state: {
         ...initialOperationsState(now),
         active_scans: [
@@ -129,7 +152,7 @@ describe("JSON-only orchestration CLIs", () => {
         ],
       },
       repositoryId: 42,
-      scannerPolicyVersion: "1",
+      scannerPolicyVersion: "2",
       requestCreatedAt: now,
     });
 
@@ -138,17 +161,17 @@ describe("JSON-only orchestration CLIs", () => {
 
   test("coalesces a queued request completed after the workflow was created", async () => {
     const targetValue = target(42);
-    const report = await indexedReport(targetValue, "2026-07-31T18:05:00.000Z");
+    const report = indexedReport(targetValue, "2026-07-31T18:05:00.000Z");
     const matrix = buildTargetedMatrix({
       manifest: {
         schema_version: 2,
         generated_at: now,
         repositories: [targetValue],
       },
-      index: { schema_version: 2, generated_at: now, reports: [report] },
+      index: { schema_version: 4, generated_at: now, reports: [report] },
       state: initialOperationsState(now),
       repositoryId: 42,
-      scannerPolicyVersion: "1",
+      scannerPolicyVersion: "2",
       requestCreatedAt: now,
     });
 
@@ -157,17 +180,17 @@ describe("JSON-only orchestration CLIs", () => {
 
   test("allows an intentional forced rescan requested after the prior report", async () => {
     const targetValue = target(42);
-    const report = await indexedReport(targetValue, "2026-07-31T17:55:00.000Z");
+    const report = indexedReport(targetValue, "2026-07-31T17:55:00.000Z");
     const matrix = buildTargetedMatrix({
       manifest: {
         schema_version: 2,
         generated_at: now,
         repositories: [targetValue],
       },
-      index: { schema_version: 2, generated_at: now, reports: [report] },
+      index: { schema_version: 4, generated_at: now, reports: [report] },
       state: initialOperationsState(now),
       repositoryId: 42,
-      scannerPolicyVersion: "1",
+      scannerPolicyVersion: "2",
       requestCreatedAt: now,
     });
 
@@ -189,7 +212,7 @@ describe("JSON-only orchestration CLIs", () => {
         generated_at: now,
         repositories: [targetValue],
       },
-      index: { schema_version: 2, generated_at: now, reports: [] },
+      index: { schema_version: 4, generated_at: now, reports: [] },
       state: {
         ...initialOperationsState(now),
         retries: [
@@ -199,7 +222,7 @@ describe("JSON-only orchestration CLIs", () => {
             repository: targetValue.repository,
             target_sha: targetValue.target_sha,
             error_fingerprint: "a".repeat(64),
-            error_code: "MODEL_QUOTA",
+            error_code: "SCANNER_TIMEOUT",
             scope: "system",
             initial_failed_at: now,
             last_failed_at: now,
@@ -210,7 +233,7 @@ describe("JSON-only orchestration CLIs", () => {
         ],
       },
       repositoryId: 42,
-      scannerPolicyVersion: "1",
+      scannerPolicyVersion: "2",
       requestCreatedAt: now,
     });
 
@@ -221,10 +244,10 @@ describe("JSON-only orchestration CLIs", () => {
     expect(() =>
       buildTargetedMatrix({
         manifest: { schema_version: 2, generated_at: now, repositories: [] },
-        index: { schema_version: 2, generated_at: now, reports: [] },
+        index: { schema_version: 4, generated_at: now, reports: [] },
         state: initialOperationsState(now),
         repositoryId: 42,
-        scannerPolicyVersion: "1",
+        scannerPolicyVersion: "2",
         requestCreatedAt: now,
       }),
     ).toThrow(/not in Tavernary's V2 manifest/iu);
@@ -234,23 +257,24 @@ describe("JSON-only orchestration CLIs", () => {
     expect(
       buildReconcileMatrix({
         manifest: { schema_version: 1, generated_at: now, repositories: [] },
-        index: { schema_version: 1, generated_at: now, reports: [] },
+        index: { schema_version: 4, generated_at: now, reports: [] },
         state: initialOperationsState(now),
         now,
-        scannerPolicyVersion: "1",
+        scannerPolicyVersion: "2",
       }),
     ).toMatchObject({ include: [], remaining: 0 });
   });
 
-  test("staff scan requests accept repository identity and reject spend/config injection", () => {
-    expect(
-      validateStaffScanRequest({ repository_id: 42, mode: "deep" }),
-    ).toEqual({ repository_id: 42, mode: "deep" });
+  test("staff scan requests accept only repository identity", () => {
+    expect(validateStaffScanRequest({ repository_id: 42 })).toEqual({
+      repository_id: 42,
+    });
     for (const forbidden of [
-      { repository_id: 42, mode: "deep", model: "attacker/model" },
-      { repository_id: 42, mode: "deep", token_budget: 1_000_000 },
-      { repository_id: 42, mode: "deep", clone_url: "https://example.test/x" },
-      { repository_id: 42, mode: "deep", command: "curl attacker" },
+      { repository_id: 42, mode: "deep" },
+      { repository_id: 42, model: "attacker/model" },
+      { repository_id: 42, token_budget: 1_000_000 },
+      { repository_id: 42, clone_url: "https://example.test/x" },
+      { repository_id: 42, command: "curl attacker" },
     ])
       expect(() => validateStaffScanRequest(forbidden)).toThrow();
   });

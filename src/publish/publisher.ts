@@ -12,11 +12,11 @@ import { dirname, join, resolve } from "node:path";
 
 import {
   parseReportIndex,
-  ReportIndexEntryV2Schema,
-  ReportIndexV2Schema,
-  type ReportIndexEntryV2,
-  type ReportIndexV2,
-  type ScanReportV3,
+  ReportIndexEntryV4Schema,
+  ReportIndexV4Schema,
+  type ReportIndexEntryV4,
+  type ReportIndexV4,
+  type ScanReportV4,
 } from "../contracts/reports.js";
 import {
   OperationsStateSchema,
@@ -32,7 +32,7 @@ import {
   reportPath,
   reportUrl,
 } from "./report-path.js";
-import { sanitizeReportV3 } from "./sanitize.js";
+import { sanitizeReportV4 } from "./sanitize.js";
 
 export interface PublishCandidatesInput {
   root: string;
@@ -60,50 +60,43 @@ async function exists(path: string) {
   }
 }
 
+function emptyIndex(generatedAt: string) {
+  return ReportIndexV4Schema.parse({
+    schema_version: 4,
+    generated_at: generatedAt,
+    reports: [],
+  });
+}
+
 async function readExistingIndex(path: string, generatedAt: string) {
   try {
-    const parsed = parseReportIndex(JSON.parse(await readFile(path, "utf8")));
-    if (parsed.schema_version === 1) {
-      if (parsed.reports.length !== 0) {
-        throw new Error("Populated V1 report indexes cannot migrate to V2.");
-      }
-      return ReportIndexV2Schema.parse({
-        schema_version: 2,
-        generated_at: generatedAt,
-        reports: [],
-      });
-    }
-    return parsed;
+    return parseReportIndex(JSON.parse(await readFile(path, "utf8")));
   } catch (error) {
-    if (isMissing(error)) {
-      return ReportIndexV2Schema.parse({
-        schema_version: 2,
-        generated_at: generatedAt,
-        reports: [],
-      });
-    }
+    if (isMissing(error)) return emptyIndex(generatedAt);
     throw error;
   }
 }
 
-export function projectReportToIndexV2(
-  report: ScanReportV3,
-): ReportIndexEntryV2 {
-  return ReportIndexEntryV2Schema.parse({
+export function projectReportToIndexV4(
+  report: ScanReportV4,
+): ReportIndexEntryV4 {
+  return ReportIndexEntryV4Schema.parse({
     report_id: report.report_id,
     report_version: report.report_version,
     supersedes_report_id: report.supersedes_report_id,
     scanner_version: report.scanner_version,
     scanner_policy_version: report.scanner_policy_version,
-    prompt_policy_version: report.prompt_policy_version,
+    rule_catalog_version: report.rule_catalog_version,
+    package_schema_version: report.package_schema_version,
     source_id: report.source_id,
     provider: report.provider,
     repository_id: report.repository_id,
     repository: report.repository,
     target_sha: report.target_sha,
     completed_at: report.completed_at,
-    mode: report.mode,
+    assessment_method: report.assessment_method,
     result: report.result,
+    summary: report.summary,
     finding_counts: report.finding_counts,
     coverage: {
       history_commits: report.history.commits,
@@ -115,31 +108,30 @@ export function projectReportToIndexV2(
       tools_not_applicable: report.coverage.tools.filter(
         ({ status }) => status === "not-applicable",
       ).length,
-      model_chunks: report.coverage.model.completed_chunks,
+      evidence_validated:
+        report.coverage.evidence_validation.validated_findings,
     },
     report_url: reportUrl(report),
     history_url: historyUrl(report),
   });
 }
 
-function preference(left: ReportIndexEntryV2, right: ReportIndexEntryV2) {
-  if (left.mode !== right.mode) return left.mode === "deep" ? 1 : -1;
-  if (left.report_version !== right.report_version) {
+function preference(left: ReportIndexEntryV4, right: ReportIndexEntryV4) {
+  if (left.report_version !== right.report_version)
     return left.report_version - right.report_version;
-  }
   const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
   return time === 0 ? left.report_id.localeCompare(right.report_id) : time;
 }
 
 function preferredIndex(
-  existing: ReportIndexV2,
-  reports: ScanReportV3[],
+  existing: ReportIndexV4,
+  reports: ScanReportV4[],
   generatedAt: string,
 ) {
-  const preferred = new Map<string, ReportIndexEntryV2>();
+  const preferred = new Map<string, ReportIndexEntryV4>();
   for (const entry of [
     ...existing.reports,
-    ...reports.map((report) => projectReportToIndexV2(report)),
+    ...reports.map(projectReportToIndexV4),
   ]) {
     const key = [
       entry.provider,
@@ -148,12 +140,11 @@ function preferredIndex(
       entry.scanner_policy_version,
     ].join(":");
     const current = preferred.get(key);
-    if (current === undefined || preference(entry, current) > 0) {
+    if (current === undefined || preference(entry, current) > 0)
       preferred.set(key, entry);
-    }
   }
-  return ReportIndexV2Schema.parse({
-    schema_version: 2,
+  return ReportIndexV4Schema.parse({
+    schema_version: 4,
     generated_at: generatedAt,
     reports: [...preferred.values()].sort((left, right) =>
       [
@@ -175,11 +166,11 @@ function preferredIndex(
 
 function completedState(
   input: OperationsState,
-  reports: ScanReportV3[],
+  reports: ScanReportV4[],
   generatedAt: string,
 ) {
   let state = OperationsStateSchema.parse(input);
-  for (const report of reports) {
+  for (const report of reports)
     state = recordSuccess(
       state,
       {
@@ -192,7 +183,6 @@ function completedState(
       },
       generatedAt,
     );
-  }
   return state;
 }
 
@@ -224,6 +214,30 @@ async function readOptional(path: string) {
   }
 }
 
+async function readHistoryEntries(path: string) {
+  try {
+    const input = JSON.parse(await readFile(path, "utf8"));
+    if (!Array.isArray(input))
+      throw new Error("Report history must be an array.");
+    return input.map((entry) => ReportIndexEntryV4Schema.parse(entry));
+  } catch (error) {
+    if (isMissing(error)) return [];
+    throw error;
+  }
+}
+
+function mergeHistory(
+  existing: ReportIndexEntryV4[],
+  additions: ReportIndexEntryV4[],
+) {
+  const reports = new Map(existing.map((entry) => [entry.report_id, entry]));
+  for (const entry of additions) reports.set(entry.report_id, entry);
+  return [...reports.values()].sort((left, right) => {
+    const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
+    return time || left.report_id.localeCompare(right.report_id);
+  });
+}
+
 export async function publishCandidates({
   root: rootInput,
   candidates,
@@ -231,20 +245,17 @@ export async function publishCandidates({
   generatedAt,
 }: PublishCandidatesInput) {
   const root = resolve(rootInput);
-  const reports = candidates.map((candidate) => sanitizeReportV3(candidate));
-  const relativePaths = reports.map((report) => reportPath(report));
-  if (new Set(relativePaths).size !== relativePaths.length) {
+  const reports = candidates.map(sanitizeReportV4);
+  const relativePaths = reports.map(reportPath);
+  if (new Set(relativePaths).size !== relativePaths.length)
     throw new Error("Duplicate immutable report path in publication batch.");
-  }
 
   const destinations = relativePaths.map((path) =>
     join(root, ...path.split("/")),
   );
-  for (const destination of destinations) {
-    if (await exists(destination)) {
+  for (const destination of destinations)
+    if (await exists(destination))
       throw new Error(`Immutable report path already exists: ${destination}`);
-    }
-  }
 
   const indexPath = join(root, "reports", "index.json");
   const statePath = join(root, "operations", "state.json");
@@ -253,34 +264,48 @@ export async function publishCandidates({
   const state = completedState(stateInput, reports, generatedAt);
   const indexContents = `${JSON.stringify(index, null, 2)}\n`;
   const stateContents = serializeOperationsState(state);
+  const projected = reports.map(projectReportToIndexV4);
   const repositoryIds = [
     ...new Set(reports.map(({ repository_id }) => repository_id)),
   ];
-  const histories = repositoryIds.map((repositoryId) => {
-    const entries = index.reports.filter(
-      ({ repository_id }) => repository_id === repositoryId,
-    );
-    const relative = historyPath(entries[0]!);
-    return {
-      path: join(root, ...relative.split("/"), "index.html"),
-      contents: renderHistoryHtml(entries),
-    };
-  });
+  const histories = await Promise.all(
+    repositoryIds.map(async (repositoryId) => {
+      const representative = reports.find(
+        (report) => report.repository_id === repositoryId,
+      )!;
+      const directory = join(root, ...historyPath(representative).split("/"));
+      const jsonPath = join(directory, "history.json");
+      const previous = await readHistoryEntries(jsonPath);
+      const fallback = existingIndex.reports.filter(
+        (entry) => entry.repository_id === repositoryId,
+      );
+      const entries = mergeHistory(
+        previous.length === 0 ? fallback : previous,
+        projected.filter((entry) => entry.repository_id === repositoryId),
+      );
+      return {
+        htmlPath: join(directory, "index.html"),
+        jsonPath,
+        html: renderHistoryHtml(entries),
+        json: `${JSON.stringify(entries, null, 2)}\n`,
+      };
+    }),
+  );
 
   await mkdir(root, { recursive: true });
   const stagingRoot = await mkdtemp(join(root, ".tavernkeeper-publish-"));
   const moved: string[] = [];
   const originalIndex = await readOptional(indexPath);
   const originalState = await readOptional(statePath);
-  const originalHistories = await Promise.all(
-    histories.map(async (history) => ({
-      path: history.path,
-      contents: await readOptional(history.path),
-    })),
+  const historyOriginals = await Promise.all(
+    histories.flatMap((history) =>
+      [history.htmlPath, history.jsonPath].map(async (path) => ({
+        path,
+        contents: await readOptional(path),
+      })),
+    ),
   );
-  let indexReplaced = false;
-  let stateReplaced = false;
-  const replacedHistories: string[] = [];
+  const replaced: string[] = [];
   try {
     for (const [position, report] of reports.entries()) {
       const staged = join(stagingRoot, ...relativePaths[position]!.split("/"));
@@ -291,27 +316,33 @@ export async function publishCandidates({
       );
       await writeFile(join(staged, "index.html"), renderReportHtml(report));
     }
-
     for (const [position, destination] of destinations.entries()) {
       await mkdir(dirname(destination), { recursive: true });
-      const staged = join(stagingRoot, ...relativePaths[position]!.split("/"));
-      await rename(staged, destination);
+      await rename(
+        join(stagingRoot, ...relativePaths[position]!.split("/")),
+        destination,
+      );
       moved.push(destination);
     }
     for (const history of histories) {
-      await atomicReplace(history.path, history.contents);
-      replacedHistories.push(history.path);
+      await atomicReplace(history.htmlPath, history.html);
+      replaced.push(history.htmlPath);
+      await atomicReplace(history.jsonPath, history.json);
+      replaced.push(history.jsonPath);
     }
     await atomicReplace(statePath, stateContents);
-    stateReplaced = true;
+    replaced.push(statePath);
     await atomicReplace(indexPath, indexContents);
-    indexReplaced = true;
+    replaced.push(indexPath);
   } catch (error) {
-    if (indexReplaced) await restore(indexPath, originalIndex);
-    if (stateReplaced) await restore(statePath, originalState);
-    for (const path of replacedHistories) {
-      const original = originalHistories.find((item) => item.path === path)!;
-      await restore(path, original.contents);
+    for (const path of replaced.reverse()) {
+      const original =
+        path === indexPath
+          ? originalIndex
+          : path === statePath
+            ? originalState
+            : historyOriginals.find((item) => item.path === path)!.contents;
+      await restore(path, original);
     }
     await Promise.all(
       moved.map((destination) =>

@@ -1,19 +1,23 @@
+import { join } from "node:path";
+
+import { verifyExactHead } from "../git/checkout.js";
 import { finalizePreparedSession } from "../orchestrator/session.js";
-import {
-  isDirectExecution,
-  readJsonFile,
-  requiredEnvironment,
-  runJsonCli,
-} from "./io.js";
+import { ProcessCommandRunner } from "../process/command-runner.js";
+import { isDirectExecution, requiredEnvironment, runJsonCli } from "./io.js";
 
 async function main() {
-  const reviewPath = process.argv[2] ?? "review.json";
-  const output = process.argv[3] ?? "candidate.json";
+  const output = process.argv[2] ?? "candidate.json";
+  const checkoutRoot = requiredEnvironment(
+    process.env,
+    "TAVERNKEEPER_CHECKOUT_ROOT",
+  );
+  const runner = new ProcessCommandRunner();
   const result = await finalizePreparedSession({
     sessionRoot: requiredEnvironment(process.env, "TAVERNKEEPER_SESSION_ROOT"),
-    review: await readJsonFile(reviewPath),
     output,
     completedAt: new Date().toISOString(),
+    verifyHead: (expectedSha) =>
+      verifyExactHead(join(checkoutRoot), expectedSha, runner),
   });
   return { status: result.status };
 }

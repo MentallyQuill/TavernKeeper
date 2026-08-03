@@ -27,9 +27,8 @@ async function exists(path: string) {
 
 async function main() {
   const candidatePath = process.argv[2] ?? "candidate.json";
-  const reviewPath = process.argv[3] ?? "review.json";
-  const output = process.argv[4] ?? "transition.json";
-  const errorPath = process.argv[5] ?? "phase-error.json";
+  const output = process.argv[3] ?? "transition.json";
+  const errorPath = process.argv[4] ?? "phase-error.json";
   const request = ScanRequestSchema.parse(
     JSON.parse(requiredEnvironment(process.env, "TAVERNKEEPER_SCAN_REQUEST")),
   );
@@ -45,12 +44,6 @@ async function main() {
   let transition;
   if (await exists(candidatePath)) {
     transition = { schema_version: 1, status: "completed", target, at };
-  } else if (
-    (await exists(reviewPath)) &&
-    ((await readJsonFile(reviewPath)) as { status?: unknown }).status ===
-      "obsolete"
-  ) {
-    transition = { schema_version: 1, status: "obsolete", target, at };
   } else {
     const phaseError = (await exists(errorPath))
       ? PhaseErrorSchema.parse(await readJsonFile(errorPath))

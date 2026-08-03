@@ -24,36 +24,15 @@ describe("Pages site allowlist", () => {
       ),
     );
     await writeFile(join(root, "reports", "index.json"), "{}\n");
-    await mkdir(
-      join(root, "reports", "github", "42", "sha", "1", "standard", "1"),
-      { recursive: true },
+    await mkdir(join(root, "reports", "github", "42", "sha", "2", "1"), {
+      recursive: true,
+    });
+    await writeFile(
+      join(root, "reports", "github", "42", "sha", "2", "1", "report.json"),
+      '{"schema_version":4}\n',
     );
     await writeFile(
-      join(
-        root,
-        "reports",
-        "github",
-        "42",
-        "sha",
-        "1",
-        "standard",
-        "1",
-        "report.json",
-      ),
-      '{"schema_version":3}\n',
-    );
-    await writeFile(
-      join(
-        root,
-        "reports",
-        "github",
-        "42",
-        "sha",
-        "1",
-        "standard",
-        "1",
-        "index.html",
-      ),
+      join(root, "reports", "github", "42", "sha", "2", "1", "index.html"),
       "<!doctype html>\n",
     );
     await writeFile(join(root, "schemas", "report.json"), "{}\n");
@@ -68,8 +47,8 @@ describe("Pages site allowlist", () => {
     expect(result.files).toEqual([
       ".nojekyll",
       "index.html",
-      "reports/github/42/sha/1/standard/1/index.html",
-      "reports/github/42/sha/1/standard/1/report.json",
+      "reports/github/42/sha/2/1/index.html",
+      "reports/github/42/sha/2/1/report.json",
       "reports/index.json",
       "rules/rule.md",
       "schemas/report.json",

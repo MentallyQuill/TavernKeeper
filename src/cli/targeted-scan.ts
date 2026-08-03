@@ -34,8 +34,6 @@ export function buildTargetedMatrix({
 }) {
   const manifest = requireTargetManifestV2(parseTargetManifest(manifestInput));
   const index = parseReportIndex(indexInput);
-  if (index.schema_version !== 2)
-    throw new Error("TavernKeeper report index version 2 is not published.");
   const state = parseOperationsState(stateInput);
   const target = manifest.repositories.find(
     ({ repository_id }) => repository_id === repositoryId,
@@ -51,10 +49,9 @@ export function buildTargetedMatrix({
     ({ repository_id }) => repository_id === target.repository_id,
   );
   const matchingReports = previous.filter(
-    ({ target_sha, scanner_policy_version, mode }) =>
+    ({ target_sha, scanner_policy_version }) =>
       target_sha === target.target_sha &&
-      scanner_policy_version === scannerPolicyVersion &&
-      mode === "standard",
+      scanner_policy_version === scannerPolicyVersion,
   );
   if (
     state.active_scans.some(
@@ -80,7 +77,6 @@ export function buildTargetedMatrix({
   const request = ScanRequestSchema.parse({
     ...target,
     reason: "staff",
-    mode: "standard",
     report_version: (prior?.report_version ?? 0) + 1,
     supersedes_report_id: prior?.report_id ?? null,
     previous_report_shas: [
@@ -104,7 +100,7 @@ async function main() {
     index,
     state,
     repositoryId: hint.repository_id,
-    scannerPolicyVersion: "1",
+    scannerPolicyVersion: "2",
     requestCreatedAt: requiredEnvironment(
       process.env,
       "TAVERNKEEPER_REQUEST_CREATED_AT",

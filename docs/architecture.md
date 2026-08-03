@@ -1,53 +1,93 @@
 # Architecture
 
-The canonical cross-repository design is maintained in Tavernary at `docs/superpowers/specs/2026-07-31-tavernkeeper-cross-repository-security-design.md`. This document is the TavernKeeper operator summary. [`development-rules.md`](development-rules.md) defines the mandatory automation boundary.
+The canonical cross-repository design is maintained in Tavernary at
+`docs/superpowers/specs/2026-07-31-tavernkeeper-cross-repository-security-design.md`.
+This document is the TavernKeeper operator summary.
+[`development-rules.md`](development-rules.md) defines the mandatory automation
+boundary.
 
 ## Repository responsibilities
 
-Tavernary is authoritative for catalog eligibility, GitHub repository identity, the current healthy head SHA, the public target manifest, card mapping, report import, freshness, and presentation. TavernKeeper is authoritative for scan policy, exact-SHA acquisition, deterministic and model review, queue and retry state, finding normalization, automated validation, immutable publication and history, staff incidents, deep scans, and policy rescans.
+Tavernary is authoritative for catalog eligibility, GitHub repository identity,
+the current healthy head SHA, the public target manifest, card mapping, report
+import, freshness, and presentation. TavernKeeper is authoritative for scan
+policy, exact-SHA acquisition, deterministic evaluation, queue and retry state,
+finding normalization, immutable publication and history, staff incidents, and
+policy rescans.
 
-The wake-up event in either direction contains no target, scan mode, budget, clone URL, model, or report URL. It only asks the destination to reconcile its own public input. Each side also reconciles on a six-hour schedule.
+The wake-up event in either direction carries no target, budget, clone URL, or
+report URL. It only asks the destination to reconcile its own public input.
+Each side also reconciles on a six-hour schedule.
 
-The two wake Apps are Actions-only bridges installed on one destination repository apiece. A third App, `TavernKeeper Publisher`, is installed only on TavernKeeper with contents write and mandatory metadata read. It cannot wake Tavernary or continue a scan batch. Mutation jobs obtain a short-lived Publisher token from the protected `tavernkeeper-scanner` or `tavernkeeper-staff` environment; any local continuation dispatch is a separate Actions-only step using the repository-local token.
+The two wake Apps are Actions-only bridges installed on one destination
+repository apiece. A third App, `TavernKeeper Publisher`, is installed only on
+TavernKeeper with contents write. Protected mutation jobs mint a short-lived
+Publisher token; continuation dispatches use a separate Actions-only token.
 
 ```text
 Tavernary target manifest (repository ID + exact SHA)
-  -> input-free Actions wake or scheduled reconciliation
+  -> input-free wake or scheduled reconciliation
   -> TavernKeeper derives at most 5 pending targets
   -> at most 2 disposable scan jobs run concurrently
-  -> exact checkout, full inventory, required scanners
-  -> redacted private text review for every eligible chunk
-  -> one strict JSON repository synthesis
-  -> deterministic evidence validation and result derivation
+  -> exact checkout and portable-path inventory
+  -> history, TavernKeeper rules, and all applicable pinned scanners
+  -> normalized evidence and deterministic Scan Package digest
+  -> fixed severity/confidence policy and fixed-template summaries
   -> authenticated encrypted candidate handoff
-  -> serialized validation and immutable publication
+  -> serialized V4 validation and immutable publication/history
   -> verified TavernKeeper Pages report index
-  -> input-free Actions wake
-  -> Tavernary validates/imports summaries and rebuilds cards
+  -> input-free Tavernary wake
+  -> Tavernary validates summaries and rebuilds cards
 ```
 
 ## Trust and execution boundaries
 
-Repository content is untrusted data. Checkout URLs are derived from the validated GitHub repository name; arbitrary clone URLs are not accepted. Git hooks, credential helpers, LFS smudging, submodules, recursive clones, local protocols, and interactive prompts are disabled. Target dependencies, scripts, actions, builds, tests, containers, and executables are never run. The trusted Malcontent scanner runs in its official linux-amd64 image pinned by immutable digest, with networking disabled, a read-only root filesystem, all capabilities dropped, no-new-privileges, and only the target checkout mounted read-only.
+Repository content is untrusted data. Checkout URLs are derived from the
+validated GitHub repository name; arbitrary clone URLs are not accepted. Git
+hooks, credential helpers, LFS smudging, submodules, recursive clones, local
+protocols, and interactive prompts are disabled. Target dependencies, scripts,
+Actions, builds, tests, containers, and executables are never run.
 
-Inventory establishes portable path safety and byte/file coverage before expensive work. Deterministic tools receive TavernKeeper-owned rules and configuration. Raw target data stays in disposable runner storage. Model credentials are injected only into the one configured-model review step. The initial production configuration uses NanoGPT with `deepseek/deepseek-v4-flash-0731:thinking`; the endpoint and model identifier remain runtime configuration rather than architecture.
+Inventory establishes path and byte coverage before scanning. TavernKeeper's
+rules and every external adapter operate on the checkout as data. The trusted
+Malcontent image is digest-pinned, network-disabled, read-only, capability-free,
+and receives only a read-only target mount. Raw target data remains in
+disposable runner storage.
 
-The configured model reviews the complete eligible current-tree corpus, split into deterministic byte-bounded text chunks with stable evidence IDs. Each chunk returns bounded private prose. Production requests omit the optional OpenAI-compatible `max_tokens` field so the configured provider and model govern their own output capacity; model transport receives the same 45-minute request window as other scanner commands. TavernKeeper still bounds accepted recap characters and response bytes and rejects incomplete finish states. After every chunk and scanner completes, one repository synthesis receives the complete set of validated chunk recaps, observations, and sanitized tool results and must return the strict assessment JSON contract. The former multi-role review chain has been removed; tool findings remain independently visible and are never disposed of by model prose.
-
-Private cache entries contain only a validated chunk result or final synthesis plus content-addressed identity metadata and usage/completion metadata. Validated chunk progress is saved before a later system failure stops the batch, allowing a large repository to resume without treating partial progress as a publishable report. Cache keys bind the endpoint origin, model identifier, policy versions, prompt/stage digest, and input digests. Raw source chunks, prompts, credentials, and raw provider responses never enter the cache or a public report.
+The complete normalized evidence set becomes Scan Package V1. Package and
+policy digests bind every report to its evidence and rule versions. Result
+derivation is fixed: red requires at least one medium-or-higher finding at
+medium-or-higher confidence; otherwise the completed result is teal. Concise
+public explanations and remediation are selected from versioned rule templates,
+not generated text.
 
 ## Atomic reporting
 
-Every applicable deterministic scanner must complete. Every eligible selected source path must appear in the chunk plan. Every private chunk review and the one repository synthesis must complete. Deterministic validation must prove every cited path, line range, content mapping, fingerprint, and scanned SHA. The exact target SHA is rechecked immediately before model use. A quota, token, provider, tool, malformed-output, coverage, evidence, schema, redaction, or publication failure yields no candidate.
+Every applicable deterministic scanner must complete. Evidence validation must
+prove cited paths, line ranges, fingerprints, content mappings, coverage, and
+the scanned SHA. TavernKeeper rechecks exact HEAD before finalization. A tool,
+coverage, evidence, schema, sanitizer, or publication failure yields no
+candidate and enters the retry path.
 
-Reports are addressed by provider, immutable GitHub repository ID, exact SHA, scanner-policy version, mode, and report version. Matrix jobs encrypt sanitized outcomes before the one-day artifact handoff; plaintext target content, model traffic, and scan handoffs are never uploaded. A serialized publisher decrypts in ephemeral storage, prevalidates the whole batch, writes report JSON and script-free HTML plus repository history to immutable paths, updates the preferred V2 index, and rolls back partial writes on failure.
+Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
+scanner-policy version, and report version. Matrix jobs encrypt sanitized
+outcomes before a one-day artifact handoff. A serialized publisher decrypts in
+ephemeral storage, prevalidates the whole batch, writes immutable V4 JSON and
+script-free HTML plus repository history, updates the preferred V4 index, and
+rolls back partial writes on failure.
 
-Every direct write to `main` uses the dedicated Publisher App. Checkout credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and Publisher authentication failure stops the mutation with no fallback. TavernKeeper's main ruleset requires a pull request and the `check` CI status for ordinary actors, blocks deletion and non-fast-forward updates, and grants the only direct-write bypass to the Publisher App Integration actor.
+Every direct write to `main` uses the dedicated Publisher App. Checkout
+credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and
+Publisher authentication failure stops the mutation with no fallback.
 
 ## Public states
 
-- `teal`: complete policy with no confirmed medium-or-higher finding at medium-or-higher confidence.
-- `red`: complete policy with at least one such confirmed finding.
-- Orange, gray, and dark teal are Tavernary presentation states for outdated-clean, eligible-unscanned/unavailable, and unsupported sources.
+- `teal`: complete policy with no qualifying finding.
+- `red`: complete policy with at least one medium-or-higher finding at
+  medium-or-higher confidence.
+- Orange, gray, and dark teal are Tavernary presentation states for
+  outdated-clean, eligible-unscanned or unavailable, and unsupported sources.
 
-Teal means only that the completed policy found no confirmed review-level concern at that commit. It never means safe, trusted, verified, or certified. Scan results never hide, quarantine, rank, or delist Tavernary projects automatically.
+Teal means only that the completed policy found no qualifying concern at that
+commit. It never means safe, trusted, verified, or certified. Scan results never
+hide, quarantine, rank, or delist Tavernary projects automatically.

@@ -1,23 +1,17 @@
 import { describe, expect, test } from "vitest";
 
-import type { ScannerPolicy } from "../src/config/policy.js";
-import { ScanReportV3Schema } from "../src/contracts/reports.js";
+import type { ScannerPolicyV2 } from "../src/config/policy.js";
+import { ScanReportV4Schema } from "../src/contracts/reports.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
-import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
-import { ModelRequestError } from "../src/model/openai-compatible-client.js";
 import {
   scanRepository,
   type ScanDependencies,
   type ScanRepositorySpec,
 } from "../src/orchestrator/scan-handler.js";
 import type { CommandRunner } from "../src/process/command-runner.js";
-import { ScannerError, type ScannerRun } from "../src/scanners/types.js";
+import { normalizeFinding, type ScannerRun } from "../src/scanners/types.js";
 
 const targetSha = "a".repeat(40);
-const helloHash =
-  "5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03";
-const unselectedHash =
-  "033d67aa2f93fa6a46495bf89d759a6721b7ef4f0c8b1aa13212784e357d51a3";
 const sourceFile = {
   path: "README.md",
   bytes: 6,
@@ -30,8 +24,8 @@ const inventory: Inventory = {
   totals: { files: 1, bytes: 6 },
   totalBytes: 6,
 };
-const policy: ScannerPolicy = {
-  version: "1",
+const policy: ScannerPolicyV2 = {
+  version: "2",
   queue: { batchSize: 5, maxParallel: 2 },
   history: { maxCommits: 20 },
   inventory: {
@@ -43,14 +37,6 @@ const policy: ScannerPolicy = {
     maxCompressionRatio: 200,
   },
   commands: { timeoutMs: 2_700_000, maxOutputBytes: 104_857_600 },
-  model: {
-    protocol: "openai-compatible-chat-completions",
-    chunkBytes: 524_288,
-    chunkOverlapBytes: 8_192,
-    maxChunkReviewCharacters: 12_000,
-    chunkReviewPolicy: "chunk-review-v2",
-    synthesisPolicy: "repository-synthesis-v2",
-  },
   retry: { hoursFromInitialFailure: [1, 2, 3] },
 };
 const runner: CommandRunner = {
@@ -59,23 +45,41 @@ const runner: CommandRunner = {
   },
 };
 
-const scannerRuns: ScannerRun[] = (
-  [
-    ["tavernkeeper-static", "1"],
-    ["gitleaks", "8.30.1"],
-    ["opengrep", "1.26.0"],
-    ["osv-scanner", "2.4.0"],
-    ["zizmor", "1.28.0"],
-    ["malcontent", "1.25.7"],
-  ] as const
-).map(([name, version]) => ({
-  name,
-  version,
-  status: ["osv-scanner", "zizmor", "malcontent"].includes(name)
-    ? "not-applicable"
-    : "completed",
-  findings: [],
-}));
+function finding() {
+  return normalizeFinding({
+    origin: "tavernkeeper",
+    ruleId: "credential-exfiltration",
+    category: "credential-theft",
+    severity: "high",
+    confidence: "high",
+    path: sourceFile.path,
+    lineStart: 1,
+    lineEnd: 1,
+    evidenceSha: null,
+    title: "Ignored scanner title",
+    explanation: "Ignored scanner prose",
+  });
+}
+
+function scannerRuns(withFinding = false): ScannerRun[] {
+  return (
+    [
+      ["tavernkeeper-static", "2"],
+      ["gitleaks", "8.30.1"],
+      ["opengrep", "1.26.0"],
+      ["osv-scanner", "2.4.0"],
+      ["zizmor", "1.28.0"],
+      ["malcontent", "1.25.7"],
+    ] as const
+  ).map(([name, version]) => ({
+    name,
+    version,
+    status: ["osv-scanner", "zizmor", "malcontent"].includes(name)
+      ? "not-applicable"
+      : "completed",
+    findings: withFinding && name === "tavernkeeper-static" ? [finding()] : [],
+  }));
+}
 
 function spec(): ScanRepositorySpec {
   return {
@@ -90,13 +94,12 @@ function spec(): ScanRepositorySpec {
     },
     root: inventory.root,
     previousReportShas: [],
-    completedAt: "2026-07-31T12:05:00.000Z",
+    completedAt: "2026-08-02T12:05:00.000Z",
     scannerVersion: "1.0.0",
-    scannerPolicyVersion: "1",
-    promptPolicyVersion: "repository-review-v2",
+    scannerPolicyVersion: "2",
+    ruleCatalogVersion: "1",
     reportVersion: 1,
     supersedesReportId: null,
-    mode: "standard",
     policy,
     pins: {
       gitleaks: { version: "8.30.1" },
@@ -107,16 +110,10 @@ function spec(): ScanRepositorySpec {
     },
     rulesRoot: "C:/trusted/rules/opengrep",
     runner,
-    model: {
-      endpoint: "https://provider.example/v1/chat/completions",
-      apiKey: "test-key",
-      identifier: "vendor/model-test",
-      cache: new InMemoryModelChunkCache(),
-    },
   };
 }
 
-function dependencies(): ScanDependencies {
+function dependencies(withFinding = false): ScanDependencies {
   return {
     inventory: async () => ({ ok: true, value: inventory }),
     classify: () => ({
@@ -136,131 +133,51 @@ function dependencies(): ScanDependencies {
     }),
     history: async () => ({
       ok: true,
-      value: {
-        baseSha: null,
-        historyCommits: 1,
-        changedPaths: [sourceFile.path],
-      },
+      value: { baseSha: null, historyCommits: 1, changedPaths: [] },
     }),
-    structuralScan: async () => [],
-    scanners: async () => scannerRuns,
-    loadCorpus: async () => [{ ...sourceFile, content: "hello\n" }],
-    chunk: () => [
-      {
-        id: "c".repeat(64),
-        bytes: 6,
-        content_hashes: [helloHash],
-        segments: [
-          {
-            path: sourceFile.path,
-            line_start: 1,
-            line_end: 1,
-            content: "hello\n",
-            bytes: 6,
-            overlap_bytes: 0,
-            content_hash: helloHash,
-            source_sha256: sourceFile.sha256,
-          },
-        ],
-      },
-    ],
+    structuralScan: async () => (withFinding ? [finding()] : []),
+    scanners: async () => scannerRuns(withFinding),
     verifyHead: async () => ({ ok: true, value: targetSha }),
-    review: async () => ({
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-      model: "vendor/model-test",
-      completedChunkIds: ["c".repeat(64)],
-      synthesis: {
-        assessment: "no_concerning_evidence" as const,
-        recap: "The completed review found no review-level concern.",
-        concerns: [],
-      },
-      stageCompletion: {
-        chunkReview: { required: 1, completed: 1 },
-        synthesis: { required: 1 as const, completed: 1 as const },
-      },
-      cacheHits: 0,
-      cacheMisses: 2,
-      usage: {
-        inputTokens: 100,
-        outputTokens: 20,
-        cacheReadTokens: 10,
-        reasoningTokens: 5,
-      },
-    }),
   };
 }
 
-describe("atomic repository scan", () => {
-  test("returns one schema-valid candidate only after complete coverage", async () => {
+describe("atomic deterministic repository scan", () => {
+  test("returns one schema-valid V4 candidate after complete scanner coverage", async () => {
     const result = await scanRepository(spec(), dependencies());
 
     expect(result).toMatchObject({
       ok: true,
       value: {
         report: {
+          schema_version: 4,
+          assessment_method: "deterministic-static-analysis",
           result: "teal",
-          coverage: {
-            model: {
-              status: "completed",
-              input_chunks: 1,
-              completed_chunks: 1,
-            },
-          },
         },
       },
     });
     expect(
-      result.ok && ScanReportV3Schema.safeParse(result.value.report).success,
+      result.ok && ScanReportV4Schema.safeParse(result.value.report).success,
     ).toBe(true);
-    expect(result.ok && result.value.report.tool_results).toEqual([
-      { name: "inventory", version: "1.0.0", status: "completed", signals: [] },
-      ...scannerRuns.map(({ name, version, status }) => ({
-        name,
-        version,
-        status,
-        signals: [],
-      })),
-    ]);
-    expect(result.ok && result.value.report.model_review).toEqual({
-      assessment: "no_concerning_evidence",
-      recap: "The completed review found no review-level concern.",
-      concerns: [],
-    });
-    expect(result.ok && result.value.report.finding_counts).toMatchObject({
-      total: 0,
-      actionable: 0,
-      disposition: { confirmed: 0, not_supported: 0, inconclusive: 0 },
-    });
+    expect(JSON.stringify(result)).not.toMatch(/model|prompt_policy|mode/iu);
   });
 
-  test("rejects unsafe synthesized public content before returning a direct candidate", async () => {
-    const unsafeDependencies = dependencies();
-    const review = unsafeDependencies.review;
-    unsafeDependencies.review = async (reviewSpec) => ({
-      ...(await review(reviewSpec)),
-      synthesis: {
-        assessment: "no_concerning_evidence" as const,
-        recap: '<img src=x onerror="alert(1)">',
-        concerns: [],
+  test("derives red from deterministic scanner findings", async () => {
+    const result = await scanRepository(spec(), dependencies(true));
+    expect(result).toMatchObject({
+      ok: true,
+      value: {
+        report: {
+          result: "red",
+          finding_counts: { reportable: 1 },
+        },
       },
     });
-
-    const result = await scanRepository(spec(), unsafeDependencies);
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: { code: "REPORT_INVALID", scope: "system" },
-    });
-    expect("value" in result).toBe(false);
   });
 
   test("canonicalizes scanner coverage order", async () => {
-    const reversedDependencies = dependencies();
-    reversedDependencies.scanners = async () => [...scannerRuns].reverse();
-
-    const result = await scanRepository(spec(), reversedDependencies);
-
+    const reversed = dependencies();
+    reversed.scanners = async () => scannerRuns().reverse();
+    const result = await scanRepository(spec(), reversed);
     expect(
       result.ok
         ? result.value.report.coverage.tools.map(({ name }) => name)
@@ -276,231 +193,35 @@ describe("atomic repository scan", () => {
     ]);
   });
 
-  test("rejects missing model configuration before repository work", async () => {
-    const unconfigured = spec();
-    unconfigured.model.apiKey = null;
-    let inventoryCalled = false;
-    const untouchedDependencies = dependencies();
-    untouchedDependencies.inventory = async () => {
-      inventoryCalled = true;
-      return { ok: true, value: inventory };
-    };
-
-    const result = await scanRepository(unconfigured, untouchedDependencies);
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: { code: "INVALID_SCAN_SPEC", scope: "system" },
-    });
-    expect(inventoryCalled).toBe(false);
-  });
-
-  test("publishes no candidate when inventory totals are internally inconsistent", async () => {
-    const unsafeDependencies = dependencies();
-    unsafeDependencies.inventory = async () => ({
-      ok: true,
-      value: {
-        ...inventory,
-        totals: { files: 0, bytes: 0 },
-        totalBytes: 0,
-      },
-    });
-
-    const result = await scanRepository(spec(), unsafeDependencies);
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: { code: "INVENTORY_INVALID", scope: "system" },
-    });
-    expect("value" in result).toBe(false);
-  });
-
-  test("publishes no candidate when classification does not partition inventory", async () => {
-    const unsafeDependencies = dependencies();
-    const classify = unsafeDependencies.classify;
-    unsafeDependencies.classify = (classifiedInventory) => ({
-      ...classify(classifiedInventory),
-      firstPartyText: [
-        sourceFile,
-        {
-          path: "ghost.ts",
-          bytes: 10,
-          sha256: "8".repeat(64),
-          kind: "text",
-        },
-      ],
-    });
-
-    const result = await scanRepository(spec(), unsafeDependencies);
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: { code: "CLASSIFICATION_INVALID", scope: "system" },
-    });
-    expect("value" in result).toBe(false);
-  });
-
-  test("publishes no candidate when a chunk contains unselected source", async () => {
-    const unsafeDependencies = dependencies();
-    unsafeDependencies.chunk = () => [
-      {
-        id: "c".repeat(64),
-        bytes: 18,
-        content_hashes: [helloHash, unselectedHash],
-        segments: [
-          {
-            path: sourceFile.path,
-            line_start: 1,
-            line_end: 1,
-            content: "hello\n",
-            bytes: 6,
-            overlap_bytes: 0,
-            content_hash: helloHash,
-            source_sha256: sourceFile.sha256,
-          },
-          {
-            path: "vendor/secret.ts",
-            line_start: 1,
-            line_end: 1,
-            content: "unselected\n",
-            bytes: 11,
-            overlap_bytes: 0,
-            content_hash: unselectedHash,
-            source_sha256: "f".repeat(64),
-          },
-        ],
-      },
-    ];
-
-    const result = await scanRepository(spec(), unsafeDependencies);
-
-    expect(result).toMatchObject({
-      ok: false,
-      error: { code: "MODEL_INVALID_RESPONSE", scope: "repository" },
-    });
-    expect("value" in result).toBe(false);
-  });
-
-  test("returns no value for scanner, model, or candidate failures", async () => {
-    const cases: Array<{
-      name: string;
-      expectedCode: string;
-      expectedScope: "repository" | "system";
-      mutate(dependencies: ScanDependencies): void;
-    }> = [
-      {
-        name: "missing required tool",
-        expectedCode: "SCANNER_UNAVAILABLE",
-        expectedScope: "system",
-        mutate(deps) {
-          deps.scanners = async () => {
-            throw new ScannerError(
-              "SCANNER_UNAVAILABLE",
-              "system",
-              "OpenGrep could not be started.",
-            );
-          };
-        },
-      },
-      {
-        name: "malformed coverage set",
-        expectedCode: "SCANNER_FAILED",
-        expectedScope: "system",
-        mutate(deps) {
-          deps.scanners = async () => scannerRuns.slice(0, -1);
-        },
-      },
-      {
-        name: "scanner version mismatch",
-        expectedCode: "SCANNER_FAILED",
-        expectedScope: "system",
-        mutate(deps) {
-          deps.scanners = async () =>
-            scannerRuns.map((run) =>
-              run.name === "gitleaks"
-                ? { ...run, version: "unexpected-version" }
-                : run,
-            );
-        },
-      },
-      {
-        name: "model quota",
-        expectedCode: "MODEL_QUOTA",
-        expectedScope: "system",
-        mutate(deps) {
-          deps.review = async () => {
-            throw new ModelRequestError(
-              "MODEL_QUOTA",
-              "system",
-              "Configured model quota is unavailable.",
-            );
-          };
-        },
-      },
-      {
-        name: "incomplete model coverage",
-        expectedCode: "MODEL_INVALID_RESPONSE",
-        expectedScope: "repository",
-        mutate(deps) {
-          const complete = deps.review;
-          deps.review = async (reviewSpec) => ({
-            ...(await complete(reviewSpec)),
-            completedChunkIds: [],
-          });
-        },
-      },
-      {
-        name: "schema-invalid candidate",
-        expectedCode: "REPORT_INVALID",
-        expectedScope: "system",
-        mutate(deps) {
-          const complete = deps.review;
-          deps.review = async (reviewSpec) => ({
-            ...(await complete(reviewSpec)),
-            synthesis: {
-              assessment: "concerning" as const,
-              recap: "The review found one repository-level concern.",
-              concerns: [
-                {
-                  id: "8".repeat(64),
-                  fingerprint: "9".repeat(64),
-                  title: "Invalid path",
-                  category: "credential-theft",
-                  severity: "high",
-                  confidence: "high",
-                  explanation: "This finding must fail report validation.",
-                  evidence_ids: ["source-000001"],
-                  evidence: [
-                    {
-                      evidenceId: "source-000001",
-                      kind: "source" as const,
-                      path: "../outside.ts",
-                      lineStart: 1,
-                      lineEnd: 1,
-                      targetSha,
-                      contentDigest: helloHash,
-                    },
-                  ],
-                },
-              ],
-            },
-          });
-        },
-      },
-    ];
-
-    for (const failureCase of cases) {
-      const failingDependencies = dependencies();
-      failureCase.mutate(failingDependencies);
-      const result = await scanRepository(spec(), failingDependencies);
-      expect(result, failureCase.name).toMatchObject({
-        ok: false,
-        error: {
-          code: failureCase.expectedCode,
-          scope: failureCase.expectedScope,
-        },
+  test.each([
+    ["inventory totals", "INVENTORY_INVALID"],
+    ["classification partition", "CLASSIFICATION_INVALID"],
+    ["required scanner", "SCANNER_FAILED"],
+    ["exact checkout head", "HEAD_MISMATCH"],
+  ])("publishes no candidate when %s is incomplete", async (kind, code) => {
+    const broken = dependencies();
+    if (kind === "inventory totals")
+      broken.inventory = async () => ({
+        ok: true,
+        value: { ...inventory, totals: { files: 0, bytes: 0 }, totalBytes: 0 },
       });
-      expect("value" in result, failureCase.name).toBe(false);
+    if (kind === "classification partition") {
+      const classify = broken.classify;
+      broken.classify = (value) => ({
+        ...classify(value),
+        firstPartyText: [sourceFile, { ...sourceFile, path: "ghost.ts" }],
+      });
     }
+    if (kind === "required scanner")
+      broken.scanners = async () => scannerRuns().slice(0, -1);
+    if (kind === "exact checkout head")
+      broken.verifyHead = async () => ({
+        ok: false,
+        error: { code: "HEAD_MISMATCH", message: "Head changed." },
+      });
+
+    const result = await scanRepository(spec(), broken);
+    expect(result).toMatchObject({ ok: false, error: { code } });
+    expect("value" in result).toBe(false);
   });
 });

@@ -10,12 +10,11 @@ const publisherAction =
   "actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349";
 const publisherToken = "${{ steps.publisher-token.outputs.token }}";
 const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
+
 const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
-  "deep-scan.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
-  "provider-check.yml": ["workflow_dispatch"],
   "reconcile.yml": [
     "repository_dispatch",
     "schedule",
@@ -27,20 +26,11 @@ const allowedTriggers = {
   "staff-operations.yml": ["workflow_dispatch"],
   "targeted-scan.yml": ["workflow_dispatch"],
 };
+
 const permissionProfiles = {
   "ci.yml": {
     workflow: { contents: "read" },
     jobs: { check: undefined, "scanner-toolchain": undefined },
-  },
-  "deep-scan.yml": {
-    workflow: {
-      contents: "read",
-      issues: "write",
-      pages: "write",
-      "id-token": "write",
-      actions: "write",
-    },
-    jobs: { resolve: { contents: "read" }, scan: undefined },
   },
   "deploy-pages.yml": {
     workflow: { contents: "read", pages: "write", "id-token": "write" },
@@ -49,10 +39,6 @@ const permissionProfiles = {
   "policy-rescan.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: { schedule: { contents: "read", actions: "write" } },
-  },
-  "provider-check.yml": {
-    workflow: { contents: "read" },
-    jobs: { authorize: {}, check: { contents: "read" } },
   },
   "reconcile.yml": {
     workflow: {
@@ -112,12 +98,8 @@ const permissionProfiles = {
     },
   },
 };
-const protectedManual = new Set([
-  "deep-scan.yml",
-  "policy-rescan.yml",
-  "provider-check.yml",
-  "staff-operations.yml",
-]);
+
+const protectedManual = new Set(["policy-rescan.yml", "staff-operations.yml"]);
 const mutationJobs = {
   "policy-rescan.yml": { job: "schedule", environment: "tavernkeeper-staff" },
   "scan-and-publish.yml": {
@@ -129,13 +111,7 @@ const mutationJobs = {
     environment: "tavernkeeper-staff",
   },
 };
-const modelProviderSecretNames = new Set([
-  "TAVERNKEEPER_API_ENDPOINT",
-  "TAVERNKEEPER_API_KEY",
-  "TAVERNKEEPER_MODEL",
-]);
 const approvedWorkflowSecretNames = new Set([
-  ...modelProviderSecretNames,
   "TAVERNKEEPER_ARTIFACT_KEY",
   "TAVERNKEEPER_PUBLISHER_APP_ID",
   "TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY",
@@ -147,16 +123,8 @@ const publisherSecretPattern =
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
 const sensitiveInputPattern =
   /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
-const modelProviderSecretSteps = {
-  "provider-check.yml": {
-    job: "check",
-    step: "Check configured model provider",
-  },
-  "scan-and-publish.yml": {
-    job: "scan",
-    step: "Review with configured model",
-  },
-};
+const forbiddenRuntimePattern =
+  /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|review-target|provider-check|deep-scan|tavernkeeper-model-cache|scanner-policy\.v1\.json/iu;
 
 function fail(file, message) {
   failures.push(`${file}: ${message}`);
@@ -257,10 +225,7 @@ function checkPermissions(file, workflow) {
   if (!same(workflow.permissions, expected.workflow))
     fail(file, "root permissions changed from the reviewed profile");
   const jobs = workflow.jobs ?? {};
-  if (
-    JSON.stringify(Object.keys(jobs).sort()) !==
-    JSON.stringify(Object.keys(expected.jobs).sort())
-  ) {
+  if (!same(Object.keys(jobs).sort(), Object.keys(expected.jobs).sort())) {
     fail(file, "job set changed from the reviewed permission profile");
     return;
   }
@@ -285,27 +250,9 @@ function checkSecretPlacement(file, workflow) {
   const { references, dynamicAccesses } = workflowSecretReferences(workflow);
   for (const _access of dynamicAccesses)
     fail(file, "dynamic secrets context access is not allowed");
-  for (const { name, path } of references) {
-    if (!approvedWorkflowSecretNames.has(name)) {
+  for (const { name } of references)
+    if (!approvedWorkflowSecretNames.has(name))
       fail(file, `unapproved workflow secret ${name}`);
-      continue;
-    }
-    if (!modelProviderSecretNames.has(name)) continue;
-    const approved = modelProviderSecretSteps[file];
-    const stepIndex = path[3];
-    const step = Number.isInteger(stepIndex)
-      ? workflow.jobs?.[path[1]]?.steps?.[stepIndex]
-      : undefined;
-    const reviewedProviderStep =
-      path[0] === "jobs" &&
-      path[1] === approved?.job &&
-      path[2] === "steps" &&
-      path[4] === "env" &&
-      path[5] === name &&
-      step?.name === approved?.step;
-    if (!reviewedProviderStep)
-      fail(file, "model secret appears outside a reviewed provider step");
-  }
 
   for (const location of locationsMatching(workflow, artifactSecretPattern)) {
     const joined = location.path.join(".");
@@ -326,30 +273,23 @@ function checkSecretPlacement(file, workflow) {
   }
 }
 
-function checkModelReviewPhase(file, workflow) {
+function checkDeterministicRuntime(file, workflow) {
+  if (forbiddenRuntimePattern.test(JSON.stringify(workflow)))
+    fail(file, "removed provider or legacy scan runtime resurfaced");
   if (file !== "scan-and-publish.yml") return;
-  const phases = [];
-  for (const [jobName, job] of Object.entries(workflow.jobs ?? {}))
-    for (const step of job?.steps ?? [])
-      if (
-        step?.name === "Review with configured model" ||
-        String(step?.run ?? "").includes("review-target") ||
-        workflowSecretReferences(step).references.some(({ name }) =>
-          modelProviderSecretNames.has(name),
-        )
-      )
-        phases.push({ jobName, step });
-
-  if (phases.some(({ jobName }) => jobName !== "scan"))
-    fail(file, "model-review phase appears outside the approved scan job step");
-  const approved = phases.filter(
-    ({ jobName, step }) =>
-      jobName === "scan" &&
-      step?.name === "Review with configured model" &&
-      step?.run === "npm run --silent review-target -- review.json",
+  const steps = workflow.jobs?.scan?.steps ?? [];
+  const prepareIndex = steps.findIndex(
+    (step) =>
+      step?.name === "Prepare exact target and scanner evidence" &&
+      step?.run === "npm run --silent prepare-target",
   );
-  if (phases.length !== 1 || approved.length !== 1)
-    fail(file, "must contain exactly one approved model-review phase");
+  const finalizeIndex = steps.findIndex(
+    (step) =>
+      step?.name === "Finalize deterministic report" &&
+      step?.run === "npm run --silent finalize-target -- candidate.json",
+  );
+  if (prepareIndex < 0 || finalizeIndex !== prepareIndex + 1)
+    fail(file, "deterministic prepare must flow directly into finalization");
 }
 
 function checkEncryptedHandoff(file, workflow) {
@@ -369,8 +309,16 @@ function checkEncryptedHandoff(file, workflow) {
       typeof step?.uses === "string" &&
       step.uses.startsWith("actions/upload-artifact@"),
   );
-  if (uploads.length !== 1 || uploads[0]?.with?.path !== "outcome.enc")
-    fail(file, "scan artifact upload must contain only outcome.enc");
+  if (
+    uploads.length !== 1 ||
+    uploads[0]?.if !== "always()" ||
+    uploads[0]?.with?.path !== "outcome.enc" ||
+    uploads[0]?.with?.["retention-days"] !== 1
+  )
+    fail(
+      file,
+      "scan artifact upload must always retain only outcome.enc for one day",
+    );
   const encrypt = steps.find(
     (step) => step?.name === "Encrypt sanitized outcome",
   );
@@ -465,7 +413,7 @@ function checkPublisherBoundary(file, workflow) {
 function checkTargetedAuthority(file, workflow) {
   if (file !== "targeted-scan.yml") return;
   const inputs = Object.keys(workflow.on?.workflow_dispatch?.inputs ?? {});
-  if (JSON.stringify(inputs) !== JSON.stringify(["repository_id"]))
+  if (!same(inputs, ["repository_id"]))
     fail(file, "targeted workflow accepts more than repository_id");
   const condition = workflow.jobs?.resolve?.if ?? "";
   if (
@@ -494,6 +442,12 @@ function checkScannerToolchain(file, workflow) {
 const names = (await readdir(workflowRoot))
   .filter((name) => /\.ya?ml$/u.test(name))
   .sort();
+if (!same(names, Object.keys(allowedTriggers).sort()))
+  fail(
+    ".github/workflows",
+    "workflow file set changed from the reviewed allowlist",
+  );
+
 for (const file of names) {
   let workflow;
   try {
@@ -509,26 +463,20 @@ for (const file of names) {
   checkPermissions(file, workflow);
   checkPins(file, workflow);
   checkSecretPlacement(file, workflow);
-  checkModelReviewPhase(file, workflow);
+  checkDeterministicRuntime(file, workflow);
   checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
   checkTargetedAuthority(file, workflow);
   checkScannerToolchain(file, workflow);
 }
 
-const policy = JSON.parse(
-  await readFile(join(root, "config", "scanner-policy.v1.json"), "utf8"),
-);
+const policyFile = "config/scanner-policy.v2.json";
+const policy = JSON.parse(await readFile(join(root, policyFile), "utf8"));
+if (policy.version !== "2") fail(policyFile, "policy version must remain 2");
 if (policy.queue?.batchSize !== 5)
-  fail(
-    "config/scanner-policy.v1.json",
-    "queue batchSize must remain exactly 5",
-  );
+  fail(policyFile, "queue batchSize must remain exactly 5");
 if (policy.queue?.maxParallel !== 2)
-  fail(
-    "config/scanner-policy.v1.json",
-    "queue maxParallel must remain exactly 2",
-  );
+  fail(policyFile, "queue maxParallel must remain exactly 2");
 
 if (failures.length > 0) {
   for (const failure of failures) process.stderr.write(`${failure}\n`);

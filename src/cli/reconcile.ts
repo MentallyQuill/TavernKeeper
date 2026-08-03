@@ -31,7 +31,7 @@ export function buildReconcileMatrix({
   const manifest = parseTargetManifest(manifestInput);
   const index = parseReportIndex(indexInput);
   const state = parseOperationsState(stateInput);
-  if (manifest.schema_version === 1 || index.schema_version === 1) {
+  if (manifest.schema_version === 1) {
     return { include: [], remaining: 0, blocked: false };
   }
   const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
@@ -48,7 +48,6 @@ export function buildReconcileMatrix({
     return ScanRequestSchema.parse({
       ...targetMetadata.get(target.repository_id),
       reason,
-      mode: "standard",
       report_version: 1,
       supersedes_report_id: null,
       previous_report_shas: previousShas,
@@ -68,7 +67,7 @@ async function main() {
     index: indexInput,
     state: stateInput,
     now: new Date().toISOString(),
-    scannerPolicyVersion: "1",
+    scannerPolicyVersion: "2",
   });
   return planned;
 }

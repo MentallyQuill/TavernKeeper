@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 
 import type {
-  ReportIndexEntryV2,
-  ReportIndexV2,
+  ReportIndexEntryV4,
+  ReportIndexV4,
 } from "../src/contracts/reports.js";
 import type { TargetManifestV2, TargetV2 } from "../src/contracts/targets.js";
 import {
@@ -46,8 +46,8 @@ function manifest(repositories: TargetV2[]): TargetManifestV2 {
   };
 }
 
-const emptyIndex: ReportIndexV2 = {
-  schema_version: 2,
+const emptyIndex: ReportIndexV4 = {
+  schema_version: 4,
   generated_at: now,
   reports: [],
 };
@@ -61,28 +61,35 @@ function runningState(overrides: Partial<OperationsState> = {}) {
 }
 
 function report(targetValue: TargetV2, targetSha = targetValue.target_sha) {
-  const entry: ReportIndexEntryV2 = {
+  const entry: ReportIndexEntryV4 = {
     report_id: targetValue.repository_id.toString(16).padStart(64, "0"),
     report_version: 1,
     supersedes_report_id: null,
     scanner_version: "1.0.0",
-    scanner_policy_version: "1",
-    prompt_policy_version: "1",
+    scanner_policy_version: "2",
+    rule_catalog_version: "1",
+    package_schema_version: 1,
     source_id: targetValue.source_id,
     provider: "github",
     repository_id: targetValue.repository_id,
     repository: targetValue.repository,
     target_sha: targetSha,
     completed_at: "2026-07-30T12:00:00.000Z",
-    mode: "standard",
+    assessment_method: "deterministic-static-analysis",
     result: "teal",
+    summary: {
+      headline: "No reportable concerns detected",
+      detail:
+        "All required scanners completed, and no finding met the reportable threshold.",
+    },
     finding_counts: {
       total: 0,
-      actionable: 0,
-      actionable_severity: { critical: 0, high: 0, medium: 0 },
+      reportable: 0,
+      informational: 0,
+      reportable_severity: { critical: 0, high: 0, medium: 0 },
       severity: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
       confidence: { high: 0, medium: 0, low: 0 },
-      disposition: { confirmed: 0, not_supported: 0, inconclusive: 0 },
+      policy_status: { reportable: 0, informational: 0 },
       categories: [],
     },
     coverage: {
@@ -91,11 +98,11 @@ function report(targetValue: TargetV2, targetSha = targetValue.target_sha) {
       inventory_bytes: 1,
       tools_completed: 3,
       tools_not_applicable: 3,
-      model_chunks: 1,
+      evidence_validated: 0,
     },
     report_url:
       `https://mentallyquill.github.io/TavernKeeper/reports/github/` +
-      `${targetValue.repository_id}/${targetSha}/1/standard/1/`,
+      `${targetValue.repository_id}/${targetSha}/2/1/`,
     history_url:
       "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
       `${targetValue.repository_id}/history/`,
@@ -271,7 +278,7 @@ describe("derived scan backlog", () => {
 
   test("skips targets already covered at the current SHA and policy", () => {
     const covered = target(30, { top30: true });
-    const index: ReportIndexV2 = {
+    const index: ReportIndexV4 = {
       ...emptyIndex,
       reports: [report(covered)],
     };

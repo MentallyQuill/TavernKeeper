@@ -1,20 +1,16 @@
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import { loadScannerPolicy } from "../src/config/policy.js";
-import { ScanReportV3Schema } from "../src/contracts/reports.js";
-import { InMemoryModelChunkCache } from "../src/model/chunk-cache.js";
-import { chunkCorpus } from "../src/model/chunker.js";
+import { ScanReportV4Schema } from "../src/contracts/reports.js";
 import {
   finalizePreparedSession,
   PreparedSessionSchema,
   preparedSessionIdentity,
-  reviewPreparedSession,
 } from "../src/orchestrator/session.js";
+import { findingFingerprint } from "../src/scanners/types.js";
 
 const roots: string[] = [];
 const targetSha = "a".repeat(40);
@@ -25,47 +21,36 @@ afterEach(async () => {
   );
 });
 
-async function preparedSession({
-  content = "line\n".repeat(12),
-  chunkBytes = 524_288,
-  overlapBytes = 8_192,
-  findingLine = 1,
-}: {
-  content?: string;
-  chunkBytes?: number;
-  overlapBytes?: number;
-  findingLine?: number;
-} = {}) {
+async function preparedSession(options: { omitTool?: boolean } = {}) {
   const root = await mkdtemp(join(tmpdir(), "tavernkeeper-session-"));
   roots.push(root);
-  await mkdir(join(root, "chunks"));
-  const chunks = chunkCorpus(
-    [
-      {
-        path: "src/index.ts",
-        bytes: Buffer.byteLength(content),
-        sha256: "d".repeat(64),
-        kind: "text",
-        content,
-      },
-    ],
+  const findingIdentity = {
+    origin: "tavernkeeper",
+    ruleId: "credential-exfiltration",
+    path: "src/index.ts",
+    lineStart: 1,
+    lineEnd: 1,
+    evidenceSha: null,
+  };
+  const tools = [
+    { name: "inventory", version: "1.0.0", status: "completed" as const },
+    { name: "tavernkeeper-static", version: "2", status: "completed" as const },
+    { name: "gitleaks", version: "8.30.1", status: "completed" as const },
+    { name: "opengrep", version: "1.26.0", status: "completed" as const },
     {
-      chunkBytes,
-      overlapBytes,
-      promptPolicyVersion: "repository-review-v2",
-      scannerPolicyVersion: "1",
+      name: "osv-scanner",
+      version: "2.4.0",
+      status: "not-applicable" as const,
     },
-  );
-  await Promise.all(
-    chunks.map((chunk, index) =>
-      writeFile(
-        join(root, "chunks", `${index.toString().padStart(6, "0")}.json`),
-        JSON.stringify(chunk),
-      ),
-    ),
-  );
+    { name: "zizmor", version: "1.28.0", status: "not-applicable" as const },
+    {
+      name: "malcontent",
+      version: "1.25.7",
+      status: "not-applicable" as const,
+    },
+  ];
   const base = {
-    schema_version: 3 as const,
+    schema_version: 4 as const,
     target: {
       source_id: "github-42",
       provider: "github" as const,
@@ -75,19 +60,31 @@ async function preparedSession({
       canonical_url: "https://github.com/owner/repo",
     },
     project_kinds: ["extension"] as const,
-    prepared_at: "2026-07-31T15:00:00.000Z",
+    prepared_at: "2026-08-02T15:00:00.000Z",
     scanner_version: "1.0.0",
-    scanner_policy_version: "1",
-    prompt_policy_version: "repository-review-v2",
+    scanner_policy_version: "2",
+    rule_catalog_version: "1",
     report_version: 1,
     supersedes_report_id: null,
-    mode: "standard" as const,
-    history: { base_sha: null, commits: 20 },
+    history: { base_sha: null, commits: 1 },
     inventory: {
-      files: 1,
-      bytes: Buffer.byteLength(content),
-      eligible_text_files: 1,
-      eligible_text_bytes: Buffer.byteLength(content),
+      root: "repository",
+      totals: { files: 1, bytes: 12 },
+      files: [
+        {
+          path: "src/index.ts",
+          bytes: 12,
+          sha256: "b".repeat(64),
+          kind: "text" as const,
+          likely_minified: false,
+          executable: false,
+        },
+      ],
+    },
+    classification: {
+      first_party_text_paths: ["src/index.ts"],
+      applicability: { osv: false, zizmor: false, malcontent: false },
+      scanner_input_paths: { osv: [], zizmor: [], malcontent: [] },
       excluded: {
         dependency_lockfiles: { files: 0, bytes: 0 },
         vendored_dependencies: { files: 0, bytes: 0 },
@@ -99,386 +96,131 @@ async function preparedSession({
         unsafe_entries: { files: 0, bytes: 0 },
       },
     },
-    tools: [
-      { name: "inventory", version: "1.0.0", status: "completed" as const },
-      {
-        name: "tavernkeeper-static",
-        version: "1",
-        status: "completed" as const,
-      },
-    ],
-    deterministic_findings: [
+    tools: options.omitTool ? tools.slice(0, -1) : tools,
+    findings: [
       {
         origin: "tavernkeeper",
-        rule_id: "credential-exfiltration",
+        rule_id: findingIdentity.ruleId,
         category: "credential-theft",
         severity: "high" as const,
         confidence: "high" as const,
-        path: "src/index.ts",
-        line_start: findingLine,
-        line_end: findingLine,
+        path: findingIdentity.path,
+        line_start: 1,
+        line_end: 1,
         evidence_sha: null,
-        title: "Credential access and network transmission in one file",
-        explanation:
-          "Credential source and outbound network sink appear in the same file.",
-        fingerprint: "b".repeat(64),
-        disposition: "active" as const,
+        title: "Ignored scanner title",
+        explanation: "Ignored scanner prose",
+        fingerprint: findingFingerprint(findingIdentity),
       },
     ],
-    selected_files: [
-      {
-        path: "src/index.ts",
-        bytes: Buffer.byteLength(content),
-        sha256: "d".repeat(64),
-      },
-    ],
-    chunks: chunks.map((chunk, index) => ({
-      id: chunk.id,
-      file: `chunks/${index.toString().padStart(6, "0")}.json`,
-      bytes: chunk.bytes,
-      content_hashes: chunk.content_hashes,
-      paths: ["src/index.ts"],
-    })),
   };
-  const prepared = PreparedSessionSchema.parse({
+  const prepared = {
     ...base,
     session_id: preparedSessionIdentity(base),
-  });
+  };
   await writeFile(
     join(root, "prepared.json"),
     `${JSON.stringify(prepared, null, 2)}\n`,
   );
-  return { root, prepared, chunks };
+  return { root, prepared };
 }
 
-function completionDoubles(calls: string[]) {
-  const complete = (content: string) => ({
-    content,
-    usage: {
-      inputTokens: 10,
-      outputTokens: 2,
-      cacheReadTokens: 0,
-      reasoningTokens: 1,
-    },
-    completionId: `completion-${calls.length}`,
-    endpointOrigin: "https://provider.example",
-    provider: "provider.example",
-  });
-  return {
-    text: async () => {
-      calls.push("text");
-      return complete("No review-level concern appears in this chunk.");
-    },
-    structured: async () => {
-      calls.push("synthesis");
-      return complete(
-        JSON.stringify({
-          assessment: "no_concerning_evidence",
-          recap: "The completed review found no review-level concern.",
-          concerns: [],
-        }),
-      );
-    },
-  };
-}
-
-describe("ephemeral split scan session", () => {
-  test("binds a later-file finding to the chunk containing its exact line", async () => {
-    const { root, prepared, chunks } = await preparedSession({
-      content: Array.from(
-        { length: 12 },
-        (_, index) => `line-${String(index + 1).padStart(2, "0")}\n`,
-      ).join(""),
-      chunkBytes: 32,
-      overlapBytes: 0,
-      findingLine: 10,
-    });
-    expect(chunks.length).toBeGreaterThan(1);
-    const containingChunk = chunks.find((chunk) =>
-      chunk.segments.some(
-        (segment) => segment.line_start <= 10 && segment.line_end >= 10,
-      ),
-    );
-    expect(containingChunk).toBeDefined();
-    const observedEvidence: unknown[] = [];
-    const calls: string[] = [];
-    const completions = completionDoubles(calls);
-    const policy = await loadScannerPolicy(
-      fileURLToPath(
-        new URL("../config/scanner-policy.v1.json", import.meta.url),
-      ),
-    );
-
-    await reviewPreparedSession({
-      sessionRoot: root,
-      manifest: {
-        schema_version: 2,
-        generated_at: "2026-07-31T15:30:00.000Z",
-        repositories: [
-          {
-            ...prepared.target,
-            project_kinds: ["extension"],
-            catalog_priority: {
-              top_30: false,
-              first_cataloged_at: "2026-07-01T00:00:00.000Z",
-            },
-          },
-        ],
-      },
-      endpoint: "https://provider.example/v1/chat/completions",
-      apiKey: "test-key",
-      model: "vendor/model-test",
-      policy,
-      cache: new InMemoryModelChunkCache(),
-      requestTextCompletion: (async (request: { userContent: string }) => {
-        const input = JSON.parse(request.userContent) as any;
-        observedEvidence.push(...input.tool_evidence);
-        return completions.text();
-      }) as never,
-      requestStructuredCompletion: completions.structured as never,
-      verifyHead: async () => ({ ok: true, value: targetSha }),
-    });
-
-    expect(observedEvidence).toEqual([
-      expect.objectContaining({
-        path: "src/index.ts",
-        line_start: 10,
-        line_end: 10,
-        id: "tool-000001",
-        source_id: expect.stringMatching(/^source-[0-9]{6}$/u),
-        target_sha: targetSha,
-      }),
-    ]);
-  });
-
-  test("streams every chunk through model review and finalizes a complete candidate", async () => {
-    const { root, prepared } = await preparedSession();
-    const calls: string[] = [];
-    const completions = completionDoubles(calls);
-    const policy = await loadScannerPolicy(
-      fileURLToPath(
-        new URL("../config/scanner-policy.v1.json", import.meta.url),
-      ),
-    );
-    const review = await reviewPreparedSession({
-      sessionRoot: root,
-      manifest: {
-        schema_version: 2,
-        generated_at: "2026-07-31T15:30:00.000Z",
-        repositories: [
-          {
-            ...prepared.target,
-            project_kinds: ["extension"],
-            catalog_priority: {
-              top_30: false,
-              first_cataloged_at: "2026-07-01T00:00:00.000Z",
-            },
-          },
-        ],
-      },
-      endpoint: "https://provider.example/v1/chat/completions",
-      apiKey: "test-key",
-      model: "vendor/model-test",
-      policy,
-      cache: new InMemoryModelChunkCache(),
-      requestTextCompletion: completions.text as never,
-      requestStructuredCompletion: completions.structured as never,
-      verifyHead: async () => ({ ok: true, value: targetSha }),
-    });
-
-    expect(calls).toEqual(["text", "synthesis"]);
-    expect(review).toMatchObject({
-      schema_version: 3,
-      stage_completion: {
-        chunk_review: { required: 1, completed: 1 },
-        synthesis: { required: 1, completed: 1 },
-      },
-    });
-    expect(JSON.stringify(review)).not.toMatch(/segments|content|test-key/iu);
-    const output = join(root, "..", `candidate-${Date.now()}.json`);
+describe("two-phase deterministic scan session", () => {
+  test("finalizes complete scanner evidence directly into a V4 candidate", async () => {
+    const { root } = await preparedSession();
+    const output = join(tmpdir(), `candidate-${Date.now()}.json`);
+    roots.push(output);
     const finalized = await finalizePreparedSession({
       sessionRoot: root,
-      review,
       output,
-      completedAt: "2026-07-31T16:00:00.000Z",
-    });
-
-    expect(finalized.status).toBe("completed");
-    expect(
-      finalized.status === "completed" &&
-        ScanReportV3Schema.safeParse(finalized.candidate.report).success,
-    ).toBe(true);
-    if (finalized.status !== "completed")
-      throw new Error("Expected candidate.");
-    expect(finalized.candidate.report).toMatchObject({
-      result: "teal",
-      model_review: {
-        assessment: "no_concerning_evidence",
-        recap: "The completed review found no review-level concern.",
-        concerns: [],
-      },
-      finding_counts: {
-        total: 0,
-        actionable: 0,
-        disposition: { confirmed: 0, not_supported: 0, inconclusive: 0 },
-      },
-      tool_results: expect.arrayContaining([
-        expect.objectContaining({
-          name: "tavernkeeper-static",
-          status: "completed",
-          signals: [
-            expect.objectContaining({ rule_id: "credential-exfiltration" }),
-          ],
-        }),
-      ]),
-    });
-    await expect(readFile(join(root, "prepared.json"))).rejects.toMatchObject({
-      code: "ENOENT",
-    });
-    await rm(output, { force: true });
-  });
-
-  test("rejects unsafe public synthesis while finalizing a prepared candidate", async () => {
-    const { root, prepared } = await preparedSession();
-    const calls: string[] = [];
-    const completions = completionDoubles(calls);
-    const policy = await loadScannerPolicy(
-      fileURLToPath(
-        new URL("../config/scanner-policy.v1.json", import.meta.url),
-      ),
-    );
-    const review = await reviewPreparedSession({
-      sessionRoot: root,
-      manifest: {
-        schema_version: 2,
-        generated_at: "2026-07-31T15:30:00.000Z",
-        repositories: [
-          {
-            ...prepared.target,
-            project_kinds: ["extension"],
-            catalog_priority: {
-              top_30: false,
-              first_cataloged_at: "2026-07-01T00:00:00.000Z",
-            },
-          },
-        ],
-      },
-      endpoint: "https://provider.example/v1/chat/completions",
-      apiKey: "test-key",
-      model: "vendor/model-test",
-      policy,
-      cache: new InMemoryModelChunkCache(),
-      requestTextCompletion: completions.text as never,
-      requestStructuredCompletion: (async () => ({
-        ...(await completions.structured()),
-        content: JSON.stringify({
-          assessment: "no_concerning_evidence",
-          recap: '<img src=x onerror="alert(1)">',
-          concerns: [],
-        }),
-      })) as never,
+      completedAt: "2026-08-02T16:00:00.000Z",
       verifyHead: async () => ({ ok: true, value: targetSha }),
     });
-    const output = join(root, "..", `unsafe-candidate-${Date.now()}.json`);
 
+    expect(finalized).toMatchObject({
+      status: "completed",
+      candidate: { report: { schema_version: 4, result: "red" } },
+    });
+    expect(
+      finalized.status === "completed" &&
+        ScanReportV4Schema.safeParse(finalized.candidate.report).success,
+    ).toBe(true);
+    expect(JSON.stringify(finalized)).not.toMatch(/model|prompt|mode/iu);
+    expect(JSON.parse(await readFile(output, "utf8"))).toEqual(
+      finalized.status === "completed" ? finalized.candidate : null,
+    );
+  });
+
+  test("publishes the acquired SHA without consulting a newer manifest", async () => {
+    const { root } = await preparedSession();
+    const output = join(tmpdir(), `advanced-candidate-${Date.now()}.json`);
+    roots.push(output);
+    const finalized = await finalizePreparedSession({
+      sessionRoot: root,
+      output,
+      completedAt: "2026-08-02T16:00:00.000Z",
+      verifyHead: async () => ({ ok: true, value: targetSha }),
+    });
+    expect(finalized).toMatchObject({
+      status: "completed",
+      candidate: { report: { target_sha: targetSha } },
+    });
+  });
+
+  test.each([
+    ["head mismatch", false],
+    ["missing required tool", true],
+  ])("writes no candidate after %s", async (kind, omitTool) => {
+    const { root } = await preparedSession({ omitTool });
+    const output = join(tmpdir(), `rejected-candidate-${Date.now()}.json`);
+    roots.push(output);
     await expect(
       finalizePreparedSession({
         sessionRoot: root,
-        review,
         output,
-        completedAt: "2026-07-31T16:00:00.000Z",
+        completedAt: "2026-08-02T16:00:00.000Z",
+        verifyHead: async () =>
+          kind === "head mismatch"
+            ? { ok: false as const, error: { code: "HEAD_MISMATCH" } }
+            : { ok: true as const, value: targetSha },
       }),
-    ).rejects.toThrow(/public report rejected/iu);
+    ).rejects.toThrow();
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  test("abandons an obsolete target before any model review call", async () => {
+  test("detects prepared-session evidence tampering", async () => {
     const { root, prepared } = await preparedSession();
-    const calls: string[] = [];
-    const completions = completionDoubles(calls);
-    const policy = await loadScannerPolicy(
-      fileURLToPath(
-        new URL("../config/scanner-policy.v1.json", import.meta.url),
-      ),
+    const tampered = structuredClone(prepared);
+    tampered.findings[0]!.fingerprint = "f".repeat(64);
+    tampered.session_id = preparedSessionIdentity(tampered);
+    await writeFile(
+      join(root, "prepared.json"),
+      `${JSON.stringify(tampered, null, 2)}\n`,
     );
-
-    const review = await reviewPreparedSession({
-      sessionRoot: root,
-      manifest: {
-        schema_version: 2,
-        generated_at: "2026-07-31T15:30:00.000Z",
-        repositories: [
-          {
-            ...prepared.target,
-            target_sha: "c".repeat(40),
-            project_kinds: ["extension"],
-            catalog_priority: {
-              top_30: false,
-              first_cataloged_at: "2026-07-01T00:00:00.000Z",
-            },
-          },
-        ],
-      },
-      endpoint: "https://provider.example/v1/chat/completions",
-      apiKey: "test-key",
-      model: "vendor/model-test",
-      policy,
-      cache: new InMemoryModelChunkCache(),
-      requestTextCompletion: completions.text as never,
-      requestStructuredCompletion: completions.structured as never,
-      verifyHead: async () => ({ ok: true, value: targetSha }),
-    });
-
-    expect(review).toEqual({
-      schema_version: 3,
-      session_id: prepared.session_id,
-      status: "obsolete",
-      reason: "target-advanced",
-    });
-    expect(calls).toEqual([]);
+    const output = join(tmpdir(), `tampered-candidate-${Date.now()}.json`);
+    roots.push(output);
+    await expect(
+      finalizePreparedSession({
+        sessionRoot: root,
+        output,
+        completedAt: "2026-08-02T16:00:00.000Z",
+        verifyHead: async () => ({ ok: true, value: targetSha }),
+      }),
+    ).rejects.toThrow(/fingerprint/iu);
+    await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  test("finishes the exact prepared SHA when the target advances after review starts", async () => {
-    const { root, prepared } = await preparedSession();
-    const calls: string[] = [];
-    const completions = completionDoubles(calls);
-    const policy = await loadScannerPolicy(
-      fileURLToPath(
-        new URL("../config/scanner-policy.v1.json", import.meta.url),
-      ),
-    );
-    const currentManifest = {
-      schema_version: 2 as const,
-      generated_at: "2026-07-31T15:30:00.000Z",
-      repositories: [
-        {
-          ...prepared.target,
-          project_kinds: ["extension"] as const,
-          catalog_priority: {
-            top_30: false,
-            first_cataloged_at: "2026-07-01T00:00:00.000Z",
-          },
-        },
-      ],
-    };
-
-    const review = await reviewPreparedSession({
-      sessionRoot: root,
-      manifest: currentManifest,
-      endpoint: "https://provider.example/v1/chat/completions",
-      apiKey: "test-key",
-      model: "vendor/model-test",
-      policy,
-      cache: new InMemoryModelChunkCache(),
-      requestTextCompletion: (async () => {
-        currentManifest.repositories[0]!.target_sha = "c".repeat(40);
-        return completions.text();
-      }) as never,
-      requestStructuredCompletion: completions.structured as never,
-      verifyHead: async () => ({ ok: true, value: targetSha }),
-    });
-
-    expect(review).toMatchObject({ status: "completed" });
-    expect(calls).toEqual(["text", "synthesis"]);
+  test("prepared persistence rejects model-era fields", async () => {
+    const { prepared } = await preparedSession();
+    expect(
+      PreparedSessionSchema.safeParse({ ...prepared, unexpected_field: {} })
+        .success,
+    ).toBe(false);
+    expect(
+      PreparedSessionSchema.safeParse({
+        ...prepared,
+        prompt_policy_version: "x",
+      }).success,
+    ).toBe(false);
   });
 });

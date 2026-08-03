@@ -78,10 +78,21 @@ export function findingFingerprint(
 }
 
 export function normalizeFinding(input: NormalizedFindingInput): Finding {
-  const fingerprint = findingFingerprint(input);
+  const ruleId = input.ruleId
+    .trim()
+    .replace(/[^A-Za-z0-9._:-]+/gu, "-")
+    .replace(/^[^A-Za-z0-9]+/u, "")
+    .slice(0, 120);
+  if (ruleId.length === 0)
+    throw new ScannerError(
+      "MALFORMED_SCANNER_OUTPUT",
+      "system",
+      "Scanner finding rule ID is invalid.",
+    );
+  const fingerprint = findingFingerprint({ ...input, ruleId });
   return FindingSchema.parse({
     origin: input.origin,
-    rule_id: input.ruleId,
+    rule_id: ruleId,
     category: input.category,
     severity: input.severity,
     confidence: input.confidence,
@@ -95,7 +106,6 @@ export function normalizeFinding(input: NormalizedFindingInput): Finding {
       ? {}
       : { remediation: input.remediation }),
     fingerprint,
-    disposition: "active",
   });
 }
 

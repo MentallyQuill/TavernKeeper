@@ -7,9 +7,7 @@ import { format } from "prettier";
 
 import {
   ReportIndexV4Schema,
-  ReportIndexV2Schema,
   ScanReportV4Schema,
-  ScanReportV2Schema,
 } from "../src/contracts/reports.js";
 import { TargetManifestV2Schema } from "../src/contracts/targets.js";
 
@@ -26,18 +24,6 @@ const contracts: Array<{
     id: "https://tavernary.org/schemas/tavernkeeper-targets.v2.schema.json",
     title: "TavernKeeper V2 scan target manifest",
     schema: TargetManifestV2Schema,
-  },
-  {
-    file: "scan-report.v2.schema.json",
-    id: "https://mentallyquill.github.io/TavernKeeper/schemas/scan-report.v2.schema.json",
-    title: "TavernKeeper V2 complete automated scan report",
-    schema: ScanReportV2Schema,
-  },
-  {
-    file: "report-index.v2.schema.json",
-    id: "https://mentallyquill.github.io/TavernKeeper/schemas/report-index.v2.schema.json",
-    title: "TavernKeeper V2 preferred report index",
-    schema: ReportIndexV2Schema,
   },
   {
     file: "scan-report.v4.schema.json",

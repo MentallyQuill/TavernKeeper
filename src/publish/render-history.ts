@@ -1,6 +1,6 @@
 import {
-  ReportIndexEntryV2Schema,
-  type ReportIndexEntryV2,
+  ReportIndexEntryV4Schema,
+  type ReportIndexEntryV4,
 } from "../contracts/reports.js";
 
 const CSP = [
@@ -17,31 +17,23 @@ function escapeHtml(value: string | number) {
   return String(value).replace(
     /[&<>"']/gu,
     (character) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[character]!,
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        character
+      ]!,
   );
 }
 
-function compareHistory(left: ReportIndexEntryV2, right: ReportIndexEntryV2) {
+function compareHistory(left: ReportIndexEntryV4, right: ReportIndexEntryV4) {
   const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
-  return time !== 0
-    ? time
-    : left.target_sha.localeCompare(right.target_sha) ||
-        left.report_id.localeCompare(right.report_id);
+  return time !== 0 ? time : left.report_id.localeCompare(right.report_id);
 }
 
 export function renderHistoryHtml(input: readonly unknown[]) {
   const reports = input
-    .map((entry) => ReportIndexEntryV2Schema.parse(entry))
+    .map((entry) => ReportIndexEntryV4Schema.parse(entry))
     .sort(compareHistory);
-  if (reports.length === 0) {
+  if (reports.length === 0)
     throw new Error("Repository history requires at least one report.");
-  }
   const repository = reports[0]!.repository;
   const repositoryId = reports[0]!.repository_id;
   if (
@@ -50,14 +42,14 @@ export function renderHistoryHtml(input: readonly unknown[]) {
         report.repository_id !== repositoryId ||
         report.repository !== repository,
     )
-  ) {
+  )
     throw new Error("Repository history entries must share one identity.");
-  }
   const conclusions = reports
     .map(
       (report) => `<li class="result result-${escapeHtml(report.result)}">
         <a href="${escapeHtml(report.report_url)}" rel="noopener noreferrer"><strong>${escapeHtml(report.result.toUpperCase())}</strong> at <code>${escapeHtml(report.target_sha)}</code></a>
-        <span>${escapeHtml(report.completed_at)} &middot; ${escapeHtml(report.mode)} &middot; policy ${escapeHtml(report.scanner_policy_version)}</span>
+        <span>${escapeHtml(report.completed_at)} &middot; policy ${escapeHtml(report.scanner_policy_version)} &middot; ${escapeHtml(report.finding_counts.reportable)} reportable</span>
+        <p>${escapeHtml(report.summary.headline)}</p>
       </li>`,
     )
     .join("\n");
@@ -75,7 +67,7 @@ export function renderHistoryHtml(input: readonly unknown[]) {
     ol { list-style: none; padding: 0; }
     .result { border: 1px solid #353a44; border-left: .4rem solid currentColor; background: #191c22; padding: 1rem; margin-block: .75rem; display: grid; gap: .35rem; }
     .result-teal { color: #56d8c9; } .result-red { color: #ff6b63; }
-    .result span { color: #bcc2cc; }
+    .result span, .result p { color: #bcc2cc; margin: 0; }
   </style>
 </head>
 <body>

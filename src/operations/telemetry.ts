@@ -1,49 +1,39 @@
 import { z } from "zod";
 
-const UsageSchema = z.strictObject({
-  inputTokens: z.number().int().nonnegative(),
-  outputTokens: z.number().int().nonnegative(),
-  cacheReadTokens: z.number().int().nonnegative(),
-  reasoningTokens: z.number().int().nonnegative(),
-});
-
-// Frozen V2 telemetry projection only. The production role chain was removed;
-// current scan/report completion is tracked as chunk review plus synthesis.
-const RoleCompletionSchema = z.strictObject({
-  required: z.number().int().nonnegative(),
-  completed: z.number().int().nonnegative(),
-});
+const CountSchema = z.number().int().nonnegative();
+const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
+const VersionSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u);
 
 const ScanTelemetrySchema = z.strictObject({
   repositoryId: z.number().int().positive(),
   outcome: z.enum(["completed", "repository-failed", "system-failed"]),
-  chunks: z.number().int().nonnegative(),
-  roles: z.strictObject({
-    analyzer: RoleCompletionSchema,
-    challenger: RoleCompletionSchema,
-    arbiter: RoleCompletionSchema,
+  packageDigest: DigestSchema.nullable(),
+  result: z.enum(["teal", "red"]).nullable(),
+  findings: CountSchema,
+  inventory: z.strictObject({ files: CountSchema, bytes: CountSchema }),
+  tools: z.strictObject({
+    completed: CountSchema,
+    notApplicable: CountSchema,
+    failed: CountSchema,
   }),
-  usage: UsageSchema,
 });
 
 const QueueTelemetrySchema = z.strictObject({
-  desired: z.number().int().nonnegative(),
-  pending: z.number().int().nonnegative(),
-  active: z.number().int().nonnegative(),
-  retrying: z.number().int().nonnegative(),
-  blocked: z.number().int().nonnegative(),
-  superseded: z.number().int().nonnegative(),
+  desired: CountSchema,
+  pending: CountSchema,
+  active: CountSchema,
+  retrying: CountSchema,
+  blocked: CountSchema,
+  superseded: CountSchema,
   oldestPendingAt: z.iso.datetime().nullable(),
 });
 
 const ScannerTelemetrySchema = z.strictObject({
   name: z.string().regex(/^[a-z0-9][a-z0-9-]{0,79}$/u),
-  version: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u),
+  version: VersionSchema,
   status: z.enum(["completed", "not-applicable", "failed"]),
-  runtimeMs: z.number().int().nonnegative(),
+  runtimeMs: CountSchema,
 });
-
-const VersionSchema = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u);
 
 const TelemetryInputSchema = z.strictObject({
   runId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/u),
@@ -52,10 +42,6 @@ const TelemetryInputSchema = z.strictObject({
   queue: QueueTelemetrySchema,
   scans: z.array(ScanTelemetrySchema),
   scanners: z.array(ScannerTelemetrySchema),
-  cache: z.strictObject({
-    hits: z.number().int().nonnegative(),
-    misses: z.number().int().nonnegative(),
-  }),
   retry: z
     .strictObject({
       scope: z.enum(["repository", "system"]),
@@ -74,7 +60,8 @@ const TelemetryInputSchema = z.strictObject({
     contract: VersionSchema,
     scanner: VersionSchema,
     scannerPolicy: VersionSchema,
-    promptPolicy: VersionSchema,
+    ruleCatalog: VersionSchema,
+    packageSchema: z.number().int().positive(),
   }),
 });
 
@@ -84,20 +71,6 @@ export function buildTelemetry(input: z.input<typeof TelemetryInputSchema>) {
   const completed = Date.parse(parsed.completedAt);
   if (completed < started)
     throw new Error("Telemetry completion precedes start.");
-  const usage = parsed.scans.reduce(
-    (totals, scan) => ({
-      inputTokens: totals.inputTokens + scan.usage.inputTokens,
-      outputTokens: totals.outputTokens + scan.usage.outputTokens,
-      cacheReadTokens: totals.cacheReadTokens + scan.usage.cacheReadTokens,
-      reasoningTokens: totals.reasoningTokens + scan.usage.reasoningTokens,
-    }),
-    {
-      inputTokens: 0,
-      outputTokens: 0,
-      cacheReadTokens: 0,
-      reasoningTokens: 0,
-    },
-  );
   const scanCounts = {
     completed: parsed.scans.filter(({ outcome }) => outcome === "completed")
       .length,
@@ -113,22 +86,24 @@ export function buildTelemetry(input: z.input<typeof TelemetryInputSchema>) {
     parsed.queue.oldestPendingAt === null
       ? null
       : Math.max(0, completed - Date.parse(parsed.queue.oldestPendingAt));
+  const { oldestPendingAt: _oldestPendingAt, ...queueCounts } = parsed.queue;
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     runId: parsed.runId,
     startedAt: parsed.startedAt,
     completedAt: parsed.completedAt,
     durationMs,
-    queue: {
-      desired: parsed.queue.desired,
-      pending: parsed.queue.pending,
-      active: parsed.queue.active,
-      retrying: parsed.queue.retrying,
-      blocked: parsed.queue.blocked,
-      superseded: parsed.queue.superseded,
-      oldestPendingAgeMs,
-    },
+    queue: { ...queueCounts, oldestPendingAgeMs },
     scans: scanCounts,
+    scanResults: parsed.scans.map((scan) => ({
+      repositoryId: scan.repositoryId,
+      outcome: scan.outcome,
+      packageDigest: scan.packageDigest,
+      result: scan.result,
+      findings: scan.findings,
+      inventory: scan.inventory,
+      tools: scan.tools,
+    })),
     throughput: {
       completedPerHour:
         durationMs === 0 ? 0 : scanCounts.completed / (durationMs / 3_600_000),
@@ -136,49 +111,8 @@ export function buildTelemetry(input: z.input<typeof TelemetryInputSchema>) {
     scanners: [...parsed.scanners].sort((left, right) =>
       left.name.localeCompare(right.name),
     ),
-    model: {
-      chunks: parsed.scans.reduce((total, scan) => total + scan.chunks, 0),
-      roles: Object.fromEntries(
-        (["analyzer", "challenger", "arbiter"] as const).map((role) => [
-          role,
-          parsed.scans.reduce(
-            (totals, scan) => ({
-              required: totals.required + scan.roles[role].required,
-              completed: totals.completed + scan.roles[role].completed,
-            }),
-            { required: 0, completed: 0 },
-          ),
-        ]),
-      ) as Record<
-        "analyzer" | "challenger" | "arbiter",
-        { required: number; completed: number }
-      >,
-      usage,
-    },
-    cache: parsed.cache,
     retry: parsed.retry,
     publication: parsed.publication,
     versions: parsed.versions,
   } as const;
-}
-
-export function allowanceWarnings({
-  used,
-  allowance,
-}: {
-  used: number;
-  allowance: number;
-}) {
-  if (
-    !Number.isFinite(used) ||
-    !Number.isFinite(allowance) ||
-    used < 0 ||
-    allowance <= 0
-  )
-    throw new Error("Allowance accounting is invalid.");
-  const percentage = (used / allowance) * 100;
-  if (percentage >= 90) return [90] as const;
-  if (percentage >= 75) return [75] as const;
-  if (percentage >= 50) return [50] as const;
-  return [] as const;
 }
