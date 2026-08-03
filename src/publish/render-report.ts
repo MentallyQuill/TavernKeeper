@@ -1,30 +1,47 @@
 import type { ScanReportV5 } from "../contracts/reports-v5.js";
+import {
+  assessmentSummary,
+  escapeHtml,
+  formatPublicDate,
+  highestRisk,
+  renderSiteHeader,
+  shortSha,
+  SCRIPT_FREE_CSP,
+  SITE_ROOT,
+  SITE_STYLES,
+  TAVERNARY_URL,
+} from "../site/presentation.js";
 import { sanitizeReportV5 } from "./sanitize.js";
 
-const TAVERNARY_URL = "https://tavernary.org/";
-const CSP = [
-  "default-src 'none'",
-  "style-src 'unsafe-inline'",
-  "img-src 'none'",
-  "connect-src 'none'",
-  "font-src 'none'",
-  "media-src 'none'",
-  "object-src 'none'",
-  "frame-src 'none'",
-  "base-uri 'none'",
-  "form-action 'none'",
-  "frame-ancestors 'none'",
-].join("; ");
-
-function escapeHtml(value: string | number) {
-  return String(value).replace(
-    /[&<>"']/gu,
-    (character) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
-        character
-      ]!,
-  );
-}
+const REPORT_STYLES = `
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+`;
 
 function link(url: string, label: string) {
   return `<a href="${escapeHtml(url)}" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
@@ -141,6 +158,9 @@ function contextualObservation(
 export function renderReportV5Html(input: unknown) {
   const report = sanitizeReportV5(input);
   const commitUrl = `${report.canonical_url}/commit/${report.target_sha}`;
+  const historyUrl = `${SITE_ROOT}reports/github/${report.repository_id}/history/`;
+  const risk = highestRisk(report.counts.recommended_risk);
+  const summary = assessmentSummary(report.counts.recommended_risk);
   const assessmentByCandidate = new Map(
     report.assessments.map((assessment) => [
       assessment.candidate_id,
@@ -182,64 +202,83 @@ export function renderReportV5Html(input: unknown) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="${escapeHtml(CSP)}">
-  <title>TavernKeeper contextual report &middot; ${escapeHtml(report.repository)}</title>
-  <style>
-    :root { color-scheme: dark; font-family: ui-sans-serif, system-ui, sans-serif; background: #111318; color: #ecedf0; }
-    body { max-width: 62rem; margin: 0 auto; padding: 2rem 1rem 4rem; line-height: 1.55; }
-    a { color: #91c9ff; } code { overflow-wrap: anywhere; }
-    header, section { border: 1px solid #353a44; background: #191c22; padding: 1.25rem; margin-block: 1rem; }
-    h1, h2, h3 { line-height: 1.2; } h1 { margin-top: 0; }
-    dl { display: grid; grid-template-columns: minmax(9rem, auto) 1fr; gap: .45rem 1rem; }
-    dt { color: #aeb4bf; } dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
-    .finding { border-left: .3rem solid #56d8c9; border-top: 1px solid #3a3f49; padding: 1rem; margin-top: 1rem; background: #15181e; }
-    .risk-material { border-left-color: #f0a24a; } .risk-high { border-left-color: #ff6b63; }
-    .label { color: #cdd2da; } summary { cursor: pointer; font-weight: 650; }
-    .expected { margin-top: 1rem; } .limitations { color: #c1c6cf; }
-    footer { color: #aeb4bf; margin-top: 2rem; }
-  </style>
+  <meta name="description" content="Advisory TavernKeeper scan report for ${escapeHtml(report.repository)} at commit ${escapeHtml(shortSha(report.target_sha))}.">
+  <meta http-equiv="Content-Security-Policy" content="${escapeHtml(SCRIPT_FREE_CSP)}">
+  <title>TavernKeeper scan report &middot; ${escapeHtml(report.repository)}</title>
+  <style>${SITE_STYLES}${REPORT_STYLES}</style>
 </head>
 <body>
-  <header>
-    <h1>TavernKeeper Scan Report</h1>
-    <p>${link(report.canonical_url, report.repository)}</p>
-    <dl>
-      <dt>Commit</dt><dd>${link(commitUrl, report.target_sha)}</dd>
-      <dt>Completed</dt><dd>${escapeHtml(report.completed_at)}</dd>
-      <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
-      <dt>Reviewer</dt><dd>${escapeHtml(report.contextual_reviewer.provider)} &middot; ${escapeHtml(report.contextual_reviewer.model)}</dd>
-      <dt>Report</dt><dd><code>${escapeHtml(report.report_id)}</code></dd>
-    </dl>
-    <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
-  </header>
+  ${renderSiteHeader()}
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1>${link(report.canonical_url, report.repository)}</h1>
+      <p class="report-identity-line">
+        <span>Commit ${link(commitUrl, shortSha(report.target_sha))}</span>
+        <span>Reviewed <time datetime="${escapeHtml(report.completed_at)}">${escapeHtml(formatPublicDate(report.completed_at))}</time></span>
+      </p>
+    </header>
 
-  <section>
-    <h2>Contextual assessments</h2>
-    <p>${escapeHtml(report.counts.recommended_risk.high)} high danger &middot; ${escapeHtml(report.counts.recommended_risk.material)} material concern &middot; ${escapeHtml(report.counts.recommended_risk.low)} low concern</p>
-    ${concerning.length === 0 ? "<p>No material or high-danger item was identified.</p>" : reviewItems(concerning)}
+    <section class="assessment-summary surface risk-mark risk-${risk}" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">${escapeHtml(summary)}</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>${escapeHtml(report.counts.recommended_risk.high)} high</span>
+        <span>${escapeHtml(report.counts.recommended_risk.material)} material</span>
+        <span>${escapeHtml(report.counts.recommended_risk.low)} low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      ${concerning.length === 0 ? "<p>No material or high-risk item was identified.</p>" : reviewItems(concerning)}
     ${cautions.length === 0 ? "" : `<h3>Minor cautions</h3>${reviewItems(cautions)}`}
     <details class="expected">
       <summary>Expected scanner matches (${escapeHtml(expected.length)})</summary>
       ${expected.length === 0 ? "<p>None.</p>" : reviewItems(expected)}
     </details>
-  </section>
+    </section>
 
-  ${report.observations.length === 0 ? "" : `<section><h2>Related contextual observations</h2>${report.observations.map((observation) => contextualObservation(report, observation)).join("\n")}</section>`}
+    ${report.observations.length === 0 ? "" : `<section class="report-section"><h2>Related contextual observations</h2>${report.observations.map((observation) => contextualObservation(report, observation)).join("\n")}</section>`}
 
-  <section>
-    <h2>Coverage and limitations</h2>
-    <dl>
-      <dt>History</dt><dd>${escapeHtml(report.history.commits)} commit${report.history.commits === 1 ? "" : "s"}</dd>
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
       <dt>Inventory</dt><dd>${escapeHtml(report.coverage.inventory.files)} files &middot; ${escapeHtml(report.coverage.inventory.bytes)} bytes</dd>
       <dt>Contextual coverage</dt><dd>${escapeHtml(report.review_coverage.completed)} of ${escapeHtml(report.review_coverage.required)} candidates assessed</dd>
-    </dl>
-    <h3>Tools</h3>
-    <ul>${report.coverage.tools.map((tool) => `<li>${escapeHtml(tool.name)} ${escapeHtml(tool.version)} &mdash; ${escapeHtml(tool.status)}</li>`).join("")}</ul>
-    <h3>Limitations</h3>
-    <ul class="limitations">${report.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-  </section>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools">${report.coverage.tools.map((tool) => `<li>${escapeHtml(tool.name)} ${escapeHtml(tool.version)} &mdash; ${escapeHtml(tool.status)}</li>`).join("")}</ul>
+      <h3>Limitations</h3>
+      <ul class="limitations">${report.limitations.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </section>
 
-  <footer><p>${link(TAVERNARY_URL, "Return to Tavernary")}</p></footer>
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd>${link(commitUrl, report.target_sha)}</dd>
+        <dt>Completed</dt><dd><time datetime="${escapeHtml(report.completed_at)}">${escapeHtml(formatPublicDate(report.completed_at))}</time></dd>
+        <dt>History depth</dt><dd>${escapeHtml(report.history.commits)} commit${report.history.commits === 1 ? "" : "s"}</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>${escapeHtml(report.contextual_reviewer.provider)} &middot; ${escapeHtml(report.contextual_reviewer.model)}</dd>
+        <dt>Scanner</dt><dd>${escapeHtml(report.scanner_version)}</dd>
+        <dt>Scanner policy</dt><dd>${escapeHtml(report.scanner_policy_version)}</dd>
+        <dt>Rule catalog</dt><dd>${escapeHtml(report.rule_catalog_version)}</dd>
+        <dt>Contextual policy</dt><dd>${escapeHtml(report.contextual_review_policy_version)}</dd>
+        <dt>Ecosystem context</dt><dd>${escapeHtml(report.ecosystem_context_version)}</dd>
+        <dt>Prompt</dt><dd>${escapeHtml(report.prompt_version)}</dd>
+        <dt>Assessment schema</dt><dd>${escapeHtml(report.assessment_schema_version)}</dd>
+        <dt>Review usage</dt><dd>${escapeHtml(report.review_usage.input_tokens)} input &middot; ${escapeHtml(report.review_usage.output_tokens)} output &middot; ${escapeHtml(report.review_usage.cache_read_tokens)} cache read &middot; ${escapeHtml(report.review_usage.reasoning_tokens)} reasoning tokens</dd>
+        <dt>Report</dt><dd><code>${escapeHtml(report.report_id)}</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      ${link(historyUrl, "View scan history")}
+      ${link(SITE_ROOT, "Browse reports")}
+      ${link(TAVERNARY_URL, "Return to Tavernary")}
+    </footer>
+  </main>
 </body>
 </html>
 `;
