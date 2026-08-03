@@ -87,6 +87,8 @@ const group: EvidenceContextGroup = {
   file_role: "production",
   target_sha: targetSha,
   evidence_sha: targetSha,
+  source_bytes: 24,
+  source_sha256: sourceFile.sha256,
   ecosystem_context_version: "sillytavern-community-v1",
   ecosystem_context: "Trusted ecosystem context.",
   candidates: [

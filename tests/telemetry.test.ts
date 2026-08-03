@@ -21,8 +21,18 @@ function input() {
         repositoryId: 42,
         outcome: "completed" as const,
         packageDigest: "a".repeat(64),
-        result: "red" as const,
-        findings: 2,
+        candidates: 2,
+        assessments: 2,
+        observations: 1,
+        recommendedRisk: { low: 1, material: 1, high: 1 },
+        review: {
+          provider: "nano-gpt.com",
+          model: "deepseek/deepseek-v4-flash-0731:thinking",
+          inputTokens: 12_000,
+          outputTokens: 1_200,
+          cacheReadTokens: 0,
+          reasoningTokens: 800,
+        },
         inventory: { files: 120, bytes: 48_000 },
         tools: { completed: 5, notApplicable: 2, failed: 0 },
       },
@@ -42,17 +52,21 @@ function input() {
       tavernaryWakeAt: "2026-08-02T12:30:00.000Z",
     },
     versions: {
-      contract: "4",
+      contract: "5" as const,
       scanner: "1.0.0",
       scannerPolicy: "2",
       ruleCatalog: "1",
       packageSchema: 1,
+      contextualReviewPolicy: "1",
+      ecosystemContext: "sillytavern-community-v1",
+      prompt: "contextual-review-v1",
+      assessmentSchema: "contextual-assessment-v1",
     },
   };
 }
 
 describe("deterministic scan telemetry", () => {
-  test("records package, scanner, inventory, result, and publication facts", () => {
+  test("records package, contextual review, inventory, and publication facts", () => {
     const telemetry = buildTelemetry(input());
     expect(telemetry).toMatchObject({
       schemaVersion: 2,
@@ -61,24 +75,43 @@ describe("deterministic scan telemetry", () => {
         {
           repositoryId: 42,
           packageDigest: "a".repeat(64),
-          result: "red",
-          findings: 2,
+          candidates: 2,
+          assessments: 2,
+          observations: 1,
+          recommendedRisk: { low: 1, material: 1, high: 1 },
+          review: {
+            provider: "nano-gpt.com",
+            model: "deepseek/deepseek-v4-flash-0731:thinking",
+            inputTokens: 12_000,
+          },
           inventory: { files: 120, bytes: 48_000 },
           tools: { completed: 5, notApplicable: 2, failed: 0 },
         },
       ],
       throughput: { completedPerHour: 2 },
       publication: { reportCommit: "b".repeat(40) },
-      versions: { scannerPolicy: "2", ruleCatalog: "1", packageSchema: 1 },
+      versions: {
+        contract: "5",
+        scannerPolicy: "2",
+        contextualReviewPolicy: "1",
+        packageSchema: 1,
+      },
     });
     expect(JSON.stringify(telemetry)).not.toMatch(
-      /model|usage|cache|prompt|chunk|token|api[_-]?key|credential/iu,
+      /api[_-]?key|credential|raw_response/iu,
     );
   });
 
-  test("strictly rejects former model and cache telemetry", () => {
-    expect(() => buildTelemetry({ ...input(), model: {} } as never)).toThrow();
-    expect(() => buildTelemetry({ ...input(), cache: {} } as never)).toThrow();
+  test("strictly rejects raw model data and incomplete review coverage", () => {
+    expect(() =>
+      buildTelemetry({ ...input(), rawResponse: {} } as never),
+    ).toThrow();
+    expect(() =>
+      buildTelemetry({
+        ...input(),
+        scans: [{ ...input().scans[0]!, assessments: 1 }],
+      } as never),
+    ).toThrow();
     expect(() =>
       buildTelemetry({
         ...input(),

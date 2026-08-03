@@ -4,11 +4,13 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import { ScanReportV4Schema } from "../src/contracts/reports.js";
+import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
 import {
   finalizePreparedSession,
+  evidenceContextIdentity,
   PreparedSessionSchema,
   preparedSessionIdentity,
+  reviewPreparedSession,
 } from "../src/orchestrator/session.js";
 import { findingFingerprint } from "../src/scanners/types.js";
 
@@ -50,7 +52,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     },
   ];
   const base = {
-    schema_version: 4 as const,
+    schema_version: 5 as const,
     target: {
       source_id: "github-42",
       provider: "github" as const,
@@ -122,12 +124,124 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     join(root, "prepared.json"),
     `${JSON.stringify(prepared, null, 2)}\n`,
   );
+  const groups = [
+    {
+      group_id: "c".repeat(64),
+      repository: prepared.target.repository,
+      project_kinds: [...prepared.project_kinds],
+      path: findingIdentity.path,
+      file_role: "production" as const,
+      target_sha: targetSha,
+      evidence_sha: targetSha,
+      source_bytes: 12,
+      source_sha256: "b".repeat(64),
+      ecosystem_context_version: "sillytavern-community-v1" as const,
+      ecosystem_context: "Trusted ecosystem context.",
+      candidates: [
+        {
+          candidate_id: prepared.findings[0]!.fingerprint,
+          evidence_id: prepared.findings[0]!.fingerprint,
+          origin: prepared.findings[0]!.origin,
+          rule_id: prepared.findings[0]!.rule_id,
+          category: prepared.findings[0]!.category,
+          scanner_severity: prepared.findings[0]!.severity,
+          scanner_confidence: prepared.findings[0]!.confidence,
+          title: prepared.findings[0]!.title,
+          explanation: prepared.findings[0]!.explanation,
+          line_start: 1,
+          line_end: 1,
+        },
+      ],
+      context: {
+        imports: "",
+        source: "     1 | sendCredential();",
+        project_purpose: "An extension fixture.",
+      },
+    },
+  ];
+  await writeFile(
+    join(root, "evidence-context.json"),
+    `${JSON.stringify(
+      {
+        schema_version: 1,
+        session_id: prepared.session_id,
+        evidence_digest: evidenceContextIdentity({
+          session_id: prepared.session_id,
+          groups,
+        }),
+        groups,
+      },
+      null,
+      2,
+    )}\n`,
+  );
   return { root, prepared };
 }
 
-describe("two-phase deterministic scan session", () => {
-  test("finalizes complete scanner evidence directly into a V4 candidate", async () => {
-    const { root } = await preparedSession();
+async function completeReview(root: string) {
+  return reviewPreparedSession({
+    sessionRoot: root,
+    provider: {
+      endpoint: "https://provider.example/v1/chat/completions",
+      apiKey: "test-key",
+      model: "configured/model:thinking",
+      resolveAddresses: async () => ["93.184.216.34"],
+      requestCompletion: async (request) => {
+        const evidence = JSON.parse(
+          request.userContent.slice(
+            request.userContent.indexOf("{"),
+            request.userContent.lastIndexOf("}") + 1,
+          ),
+        ) as {
+          candidates: Array<{ candidate_id: string; evidence_id: string }>;
+          path: string;
+        };
+        return {
+          completionId: "completion-session",
+          endpointOrigin: "https://provider.example",
+          provider: "provider.example",
+          content: JSON.stringify({
+            status: "complete",
+            assessments: evidence.candidates.map((candidate) => ({
+              candidate_id: candidate.candidate_id,
+              evidence_ids: [candidate.evidence_id],
+              disposition: "minor_weakness",
+              impact: "low",
+              exploitability: "unlikely",
+              confidence: "medium",
+              recommended_risk: "low",
+              technical_explanation: "The flow should be hardened.",
+              layman_explanation: "This behavior deserves a small caution.",
+              developer_action: "Document the destination.",
+              locations: [{ path: evidence.path, line_start: 1, line_end: 1 }],
+            })),
+            observations: [],
+          }),
+          usage: {
+            inputTokens: 100,
+            outputTokens: 50,
+            cacheReadTokens: 0,
+            reasoningTokens: 10,
+          },
+        };
+      },
+    },
+    policy: {
+      version: "1",
+      promptVersion: "contextual-review-v1",
+      schemaVersion: "contextual-assessment-v1",
+      maxImmediateAttempts: 3,
+      maxOutputTokens: 32_768,
+      maxResponseBytes: 5_000_000,
+      timeoutMs: 900_000,
+    },
+  });
+}
+
+describe("three-phase contextual scan session", () => {
+  test("requires validated review before producing one V5 candidate", async () => {
+    const { root, prepared } = await preparedSession();
+    await completeReview(root);
     const output = join(tmpdir(), `candidate-${Date.now()}.json`);
     roots.push(output);
     const finalized = await finalizePreparedSession({
@@ -139,13 +253,25 @@ describe("two-phase deterministic scan session", () => {
 
     expect(finalized).toMatchObject({
       status: "completed",
-      candidate: { report: { schema_version: 4, result: "red" } },
+      candidate: {
+        report: {
+          schema_version: 5,
+          assessment_method: "deterministic-evidence-contextual-review",
+          review_coverage: { required: 1, completed: 1 },
+        },
+      },
     });
     expect(
       finalized.status === "completed" &&
-        ScanReportV4Schema.safeParse(finalized.candidate.report).success,
+        ScanReportV5Schema.safeParse(finalized.candidate.report).success,
     ).toBe(true);
-    expect(JSON.stringify(finalized)).not.toMatch(/model|prompt|mode/iu);
+    expect(finalized.candidate.report.contextual_reviewer.model).toBe(
+      "configured/model:thinking",
+    );
+    expect(JSON.stringify(prepared)).not.toMatch(
+      /sendCredential|model|prompt/iu,
+    );
+    expect(JSON.stringify(finalized)).not.toMatch(/completion-session/iu);
     expect(JSON.parse(await readFile(output, "utf8"))).toEqual(
       finalized.status === "completed" ? finalized.candidate : null,
     );
@@ -153,6 +279,7 @@ describe("two-phase deterministic scan session", () => {
 
   test("publishes the acquired SHA without consulting a newer manifest", async () => {
     const { root } = await preparedSession();
+    await completeReview(root);
     const output = join(tmpdir(), `advanced-candidate-${Date.now()}.json`);
     roots.push(output);
     const finalized = await finalizePreparedSession({
@@ -172,6 +299,7 @@ describe("two-phase deterministic scan session", () => {
     ["missing required tool", true],
   ])("writes no candidate after %s", async (kind, omitTool) => {
     const { root } = await preparedSession({ omitTool });
+    if (!omitTool) await completeReview(root);
     const output = join(tmpdir(), `rejected-candidate-${Date.now()}.json`);
     roots.push(output);
     await expect(
@@ -188,8 +316,24 @@ describe("two-phase deterministic scan session", () => {
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  test("writes no candidate when contextual review is missing", async () => {
+    const { root } = await preparedSession();
+    const output = join(tmpdir(), `missing-review-${Date.now()}.json`);
+    roots.push(output);
+    await expect(
+      finalizePreparedSession({
+        sessionRoot: root,
+        output,
+        completedAt: "2026-08-02T16:00:00.000Z",
+        verifyHead: async () => ({ ok: true, value: targetSha }),
+      }),
+    ).rejects.toThrow();
+    await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   test("detects prepared-session evidence tampering", async () => {
     const { root, prepared } = await preparedSession();
+    await completeReview(root);
     const tampered = structuredClone(prepared);
     tampered.findings[0]!.fingerprint = "f".repeat(64);
     tampered.session_id = preparedSessionIdentity(tampered);
@@ -210,7 +354,7 @@ describe("two-phase deterministic scan session", () => {
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  test("classifies deterministic report finalization failures without exposing evidence", async () => {
+  test("classifies contextual report finalization failures without exposing evidence", async () => {
     const { root, prepared } = await preparedSession();
     const unsafeRuleId = `github_pat_${"x".repeat(20)}`;
     prepared.findings[0]!.rule_id = unsafeRuleId;
@@ -227,6 +371,24 @@ describe("two-phase deterministic scan session", () => {
       join(root, "prepared.json"),
       `${JSON.stringify(prepared, null, 2)}\n`,
     );
+    const evidence = JSON.parse(
+      await readFile(join(root, "evidence-context.json"), "utf8"),
+    );
+    evidence.session_id = prepared.session_id;
+    evidence.groups[0].candidates[0].candidate_id =
+      prepared.findings[0]!.fingerprint;
+    evidence.groups[0].candidates[0].evidence_id =
+      prepared.findings[0]!.fingerprint;
+    evidence.groups[0].candidates[0].rule_id = unsafeRuleId;
+    evidence.evidence_digest = evidenceContextIdentity({
+      session_id: evidence.session_id,
+      groups: evidence.groups,
+    });
+    await writeFile(
+      join(root, "evidence-context.json"),
+      `${JSON.stringify(evidence, null, 2)}\n`,
+    );
+    await completeReview(root);
     const output = join(tmpdir(), `invalid-report-${Date.now()}.json`);
     roots.push(output);
 
@@ -244,7 +406,7 @@ describe("two-phase deterministic scan session", () => {
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
-  test("prepared persistence rejects model-era fields", async () => {
+  test("prepared persistence remains source-free and rejects review fields", async () => {
     const { prepared } = await preparedSession();
     expect(
       PreparedSessionSchema.safeParse({ ...prepared, unexpected_field: {} })
@@ -253,7 +415,7 @@ describe("two-phase deterministic scan session", () => {
     expect(
       PreparedSessionSchema.safeParse({
         ...prepared,
-        prompt_policy_version: "x",
+        contextual_review: {},
       }).success,
     ).toBe(false);
   });

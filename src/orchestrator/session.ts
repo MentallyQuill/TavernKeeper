@@ -16,14 +16,29 @@ import {
   buildScanPackage,
   RequiredScanPackageTools,
 } from "../contracts/scan-package.js";
-import { FindingSchema, ScanReportV4Schema } from "../contracts/reports.js";
+import { FindingSchema } from "../contracts/reports.js";
+import { ScanReportV5Schema } from "../contracts/reports-v5.js";
 import { FullShaSchema, TargetSchema } from "../contracts/targets.js";
+import {
+  buildEvidenceContextGroups,
+  EvidenceContextGroupsSchema,
+  extractHistoricalEvidenceSources,
+  type EvidenceContextGroup,
+} from "../context/evidence-context.js";
 import { checkoutExactTarget } from "../git/checkout.js";
 import { planHistory } from "../git/history.js";
 import { classifyInventory } from "../inventory/classify.js";
 import { inventoryRepository } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
-import { buildDeterministicReport } from "../report/deterministic-report.js";
+import {
+  CompletedContextualReviewSchema,
+  reviewEvidenceGroups,
+  type ContextualReviewPolicy,
+  type ContextualReviewProvider,
+  type ReviewEvidenceGroupsSpec,
+} from "../model/contextual-review.js";
+import { sanitizeReportV5 } from "../publish/sanitize.js";
+import { buildContextualReport } from "../report/contextual-report.js";
 import {
   runApplicableScanners,
   type ScannerExecutables,
@@ -80,7 +95,7 @@ const PathListSchema = z
     "Prepared paths must be unique and sorted.",
   );
 const PreparedSessionObjectSchema = z.strictObject({
-  schema_version: z.literal(4),
+  schema_version: z.literal(5),
   session_id: DigestSchema,
   target: TargetSchema,
   project_kinds: z.array(z.enum(["extension", "frontend", "preset"])).min(1),
@@ -124,6 +139,20 @@ const PreparedSessionObjectSchema = z.strictObject({
 });
 
 type PreparedSession = z.infer<typeof PreparedSessionObjectSchema>;
+
+const EvidenceContextBundleObjectSchema = z.strictObject({
+  schema_version: z.literal(1),
+  session_id: DigestSchema,
+  evidence_digest: DigestSchema,
+  groups: EvidenceContextGroupsSchema,
+});
+
+const ReviewBundleSchema = z.strictObject({
+  schema_version: z.literal(1),
+  session_id: DigestSchema,
+  evidence_digest: DigestSchema,
+  review: CompletedContextualReviewSchema,
+});
 
 function runtimeInventory(prepared: PreparedSession) {
   return {
@@ -248,6 +277,15 @@ export function preparedSessionIdentity(input: Record<string, unknown>) {
   );
   return createHash("sha256")
     .update(JSON.stringify(canonicalValue(parsed)))
+    .digest("hex");
+}
+
+export function evidenceContextIdentity(input: {
+  session_id: string;
+  groups: readonly EvidenceContextGroup[];
+}) {
+  return createHash("sha256")
+    .update(JSON.stringify(canonicalValue(input)))
     .digest("hex");
 }
 
@@ -415,8 +453,11 @@ export async function prepareTargetSession({
       malcontent: pins.malcontent.version,
     });
     const orderedRuns = canonicalScannerRuns(scannerRuns);
+    const findings = orderedRuns
+      .flatMap(({ findings }) => findings)
+      .sort((left, right) => left.fingerprint.localeCompare(right.fingerprint));
     const withoutIdentity = {
-      schema_version: 4 as const,
+      schema_version: 5 as const,
       target,
       project_kinds: [...projectKinds].sort(),
       prepared_at: preparedAt,
@@ -471,21 +512,46 @@ export async function prepareTargetSession({
           status,
         })),
       ],
-      findings: orderedRuns
-        .flatMap(({ findings }) => findings)
-        .sort((left, right) =>
-          left.fingerprint.localeCompare(right.fingerprint),
-        ),
+      findings,
     };
     const prepared = PreparedSessionSchema.parse({
       ...withoutIdentity,
       session_id: preparedSessionIdentity(withoutIdentity),
+    });
+    const historicalSources = await extractHistoricalEvidenceSources({
+      checkoutRoot,
+      targetSha: target.target_sha,
+      findings,
+      runner,
+      maxFileBytes: policy.inventory.maxFileBytes,
+    });
+    const groups = await buildEvidenceContextGroups({
+      checkoutRoot,
+      target,
+      projectKinds,
+      findings,
+      inventory,
+      historicalSources,
+    });
+    const evidenceBundle = EvidenceContextBundleObjectSchema.parse({
+      schema_version: 1,
+      session_id: prepared.session_id,
+      evidence_digest: evidenceContextIdentity({
+        session_id: prepared.session_id,
+        groups,
+      }),
+      groups,
     });
     await mkdir(sessionRoot, { recursive: true });
     sessionCreated = true;
     await writeFile(
       resolve(sessionRoot, "prepared.json"),
       `${JSON.stringify(prepared, null, 2)}\n`,
+      { flag: "wx" },
+    );
+    await writeFile(
+      resolve(sessionRoot, "evidence-context.json"),
+      `${JSON.stringify(evidenceBundle, null, 2)}\n`,
       { flag: "wx" },
     );
     return { prepared, checkoutRoot, sessionRoot };
@@ -504,6 +570,38 @@ async function loadPrepared(sessionRoot: string) {
   if (prepared.session_id !== preparedSessionIdentity(prepared))
     throw new Error("Prepared session identity does not match its contents.");
   return prepared;
+}
+
+async function loadEvidenceContext(
+  sessionRoot: string,
+  prepared: PreparedSession,
+) {
+  const bundle = EvidenceContextBundleObjectSchema.parse(
+    JSON.parse(
+      await readFile(resolve(sessionRoot, "evidence-context.json"), "utf8"),
+    ),
+  );
+  if (
+    bundle.session_id !== prepared.session_id ||
+    bundle.evidence_digest !==
+      evidenceContextIdentity({
+        session_id: bundle.session_id,
+        groups: bundle.groups,
+      })
+  )
+    throw new Error("Evidence context identity does not match the session.");
+  const candidateIds = bundle.groups.flatMap((group) =>
+    group.candidates.map((candidate) => candidate.candidate_id),
+  );
+  if (
+    candidateIds.length !== prepared.findings.length ||
+    new Set(candidateIds).size !== candidateIds.length ||
+    prepared.findings.some(
+      (finding) => !candidateIds.includes(finding.fingerprint),
+    )
+  )
+    throw new Error("Evidence context does not cover prepared findings.");
+  return bundle;
 }
 
 function safeSessionRoot(sessionRoot: string) {
@@ -528,6 +626,36 @@ async function writeExclusive(path: string, value: unknown) {
   }
 }
 
+export async function reviewPreparedSession({
+  sessionRoot: sessionRootInput,
+  provider,
+  policy,
+  expandContext,
+}: {
+  sessionRoot: string;
+  provider: ContextualReviewProvider;
+  policy: ContextualReviewPolicy;
+  expandContext?: ReviewEvidenceGroupsSpec["expandContext"];
+}) {
+  const sessionRoot = safeSessionRoot(sessionRootInput);
+  const prepared = await loadPrepared(sessionRoot);
+  const evidence = await loadEvidenceContext(sessionRoot, prepared);
+  const review = await reviewEvidenceGroups({
+    groups: evidence.groups,
+    provider,
+    policy,
+    ...(expandContext === undefined ? {} : { expandContext }),
+  });
+  const bundle = ReviewBundleSchema.parse({
+    schema_version: 1,
+    session_id: prepared.session_id,
+    evidence_digest: evidence.evidence_digest,
+    review,
+  });
+  await writeExclusive(resolve(sessionRoot, "review.json"), bundle);
+  return { status: "reviewed" as const, review };
+}
+
 export async function finalizePreparedSession({
   sessionRoot: sessionRootInput,
   output,
@@ -545,7 +673,7 @@ export async function finalizePreparedSession({
   >;
 }): Promise<{
   status: "completed";
-  candidate: { report: z.infer<typeof ScanReportV4Schema> };
+  candidate: { report: z.infer<typeof ScanReportV5Schema> };
 }> {
   const sessionRoot = safeSessionRoot(sessionRootInput);
   const destination = resolve(output);
@@ -556,6 +684,19 @@ export async function finalizePreparedSession({
     throw new Error("Candidate output must be outside the ephemeral session.");
   const prepared = await loadPrepared(sessionRoot);
   try {
+    const evidence = await loadEvidenceContext(sessionRoot, prepared);
+    const reviewBundle = ReviewBundleSchema.parse(
+      JSON.parse(await readFile(resolve(sessionRoot, "review.json"), "utf8")),
+    );
+    if (
+      reviewBundle.session_id !== prepared.session_id ||
+      reviewBundle.evidence_digest !== evidence.evidence_digest
+    )
+      throw new ScanPhaseError(
+        "CONTEXTUAL_REVIEW_INVALID",
+        "system",
+        "Contextual review does not match prepared evidence.",
+      );
     const verified = await verifyHead(prepared.target.target_sha);
     if (!verified.ok || verified.value !== prepared.target.target_sha)
       throw new ScanPhaseError(
@@ -576,20 +717,32 @@ export async function finalizePreparedSession({
         "Prepared scanner evidence could not be finalized.",
       );
     }
-    let report: z.infer<typeof ScanReportV4Schema>;
+    let report: z.infer<typeof ScanReportV5Schema>;
     try {
-      report = buildDeterministicReport(scanPackage, {
-        targetSha: prepared.target.target_sha,
-        completedAt,
-        reportVersion: prepared.report_version,
-        supersedesReportId: prepared.supersedes_report_id,
-      });
+      report = sanitizeReportV5(
+        buildContextualReport(
+          {
+            scanPackage,
+            review: reviewBundle.review,
+            evidenceGroups: evidence.groups,
+          },
+          {
+            targetSha: prepared.target.target_sha,
+            completedAt,
+            reportVersion: prepared.report_version,
+            supersedesReportId: prepared.supersedes_report_id,
+            limitations: [
+              "This advisory review cannot prove the absence of unknown behavior.",
+            ],
+          },
+        ),
+      );
     } catch (error) {
       if (error instanceof ScanPhaseError) throw error;
       throw new ScanPhaseError(
         "REPORT_FINALIZATION_FAILED",
         "system",
-        "Deterministic report construction failed.",
+        "Contextual report construction failed.",
       );
     }
     const candidate = { report };

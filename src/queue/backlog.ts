@@ -1,7 +1,7 @@
 import {
-  ReportIndexV4Schema,
-  type ReportIndexV4,
-} from "../contracts/reports.js";
+  ReportIndexV5Schema,
+  type ReportIndexV5,
+} from "../contracts/reports-v5.js";
 import {
   TargetManifestV2Schema,
   type TargetManifestV2,
@@ -68,13 +68,13 @@ function effectiveRank(
 
 export function planBatch(
   manifestInput: TargetManifestV2,
-  indexInput: ReportIndexV4,
+  indexInput: ReportIndexV5,
   stateInput: OperationsState,
   now: string,
   scannerPolicyVersion = "2",
 ): BatchPlan {
   const manifest = TargetManifestV2Schema.parse(manifestInput);
-  const index = ReportIndexV4Schema.parse(indexInput);
+  const index = ReportIndexV5Schema.parse(indexInput);
   const state = OperationsStateSchema.parse(stateInput);
   const nowMs = Date.parse(now);
   if (!Number.isFinite(nowMs)) throw new Error("Backlog time is invalid.");

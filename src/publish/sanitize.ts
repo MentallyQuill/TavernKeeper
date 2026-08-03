@@ -1,4 +1,3 @@
-import { ScanReportV4Schema, type ScanReportV4 } from "../contracts/reports.js";
 import {
   ScanReportV5Schema,
   type ScanReportV5,
@@ -40,20 +39,13 @@ function normalizedPath(path: string[]) {
 }
 
 function isApprovedUrlPath(path: string[]) {
-  return [
-    "canonical_url",
-    "findings.*.reference_url",
-    "candidates.*.reference_url",
-  ].includes(normalizedPath(path));
+  return ["canonical_url", "candidates.*.reference_url"].includes(
+    normalizedPath(path),
+  );
 }
 
 function isNarrativePath(path: string[]) {
   return [
-    "findings.*.title",
-    "findings.*.explanation",
-    "findings.*.remediation",
-    "summary.headline",
-    "summary.detail",
     "candidates.*.title",
     "candidates.*.explanation",
     "candidates.*.remediation",
@@ -105,16 +97,6 @@ function inspectValue(value: unknown, path: string[] = []) {
   if (value !== null && typeof value === "object")
     for (const [key, item] of Object.entries(value))
       inspectValue(item, [...path, key]);
-}
-
-export function sanitizeReportV4(input: unknown): ScanReportV4 {
-  const parsed = ScanReportV4Schema.safeParse(input);
-  if (!parsed.success) reject("schema or derived V4 fields are invalid.");
-  const report = parsed.data;
-  if (report.report_id !== reportIdentity(report))
-    reject("report identity does not match immutable fields.");
-  inspectValue(report);
-  return report;
 }
 
 export function sanitizeReportV5(input: unknown): ScanReportV5 {

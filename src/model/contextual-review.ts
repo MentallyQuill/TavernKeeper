@@ -1,5 +1,8 @@
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
+import { z } from "zod";
 import {
+  ContextualAssessmentSchema,
+  ContextualObservationSchema,
   ContextualReviewResponseSchema,
   type ContextualAssessment,
   type ContextualObservation,
@@ -44,19 +47,69 @@ export interface ContextualReviewProvider {
   resolveAddresses?: (hostname: string) => Promise<string[]>;
 }
 
-export interface CompletedContextualReview {
-  policy_version: "1";
-  prompt_version: typeof CONTEXTUAL_PROMPT_VERSION;
-  schema_version: typeof CONTEXTUAL_SCHEMA_VERSION;
-  model: string;
-  provider: string;
-  endpoint_origin: string;
-  coverage: { required: number; completed: number };
-  assessments: ContextualAssessment[];
-  observations: ContextualObservation[];
-  usage: ModelUsage;
-  completion_ids: string[];
-}
+const CountSchema = z.number().int().nonnegative();
+export const CompletedContextualReviewSchema = z
+  .strictObject({
+    policy_version: z.literal("1"),
+    prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
+    schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
+    model: z.string().trim().min(1).max(200),
+    provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
+    endpoint_origin: z.url(),
+    coverage: z.strictObject({ required: CountSchema, completed: CountSchema }),
+    assessments: z.array(ContextualAssessmentSchema),
+    observations: z.array(ContextualObservationSchema),
+    usage: z.strictObject({
+      inputTokens: CountSchema,
+      outputTokens: CountSchema,
+      cacheReadTokens: CountSchema,
+      reasoningTokens: CountSchema,
+    }),
+    completion_ids: z.array(
+      z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u),
+    ),
+  })
+  .superRefine((review, context) => {
+    let endpoint: URL;
+    try {
+      endpoint = new URL(review.endpoint_origin);
+    } catch {
+      return;
+    }
+    if (
+      endpoint.origin !== review.endpoint_origin ||
+      endpoint.protocol !== "https:" ||
+      endpoint.hostname !== review.provider
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["endpoint_origin"],
+        message: "Review provider identity must match its HTTPS origin.",
+      });
+    const candidateIds = review.assessments.map(
+      (assessment) => assessment.candidate_id,
+    );
+    if (
+      review.coverage.completed !== review.assessments.length ||
+      review.coverage.required !== review.coverage.completed ||
+      new Set(candidateIds).size !== candidateIds.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["coverage"],
+        message: "Persisted contextual review coverage must be complete.",
+      });
+    if (new Set(review.completion_ids).size !== review.completion_ids.length)
+      context.addIssue({
+        code: "custom",
+        path: ["completion_ids"],
+        message: "Completion identities must be unique.",
+      });
+  });
+
+export type CompletedContextualReview = z.infer<
+  typeof CompletedContextualReviewSchema
+>;
 
 export interface ReviewEvidenceGroupsSpec {
   groups: readonly EvidenceContextGroup[];
@@ -363,7 +416,7 @@ export async function reviewEvidenceGroups(
       "repository",
       "Contextual observation identities must be unique.",
     );
-  return {
+  return CompletedContextualReviewSchema.parse({
     policy_version: "1",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,
     schema_version: CONTEXTUAL_SCHEMA_VERSION,
@@ -375,5 +428,5 @@ export async function reviewEvidenceGroups(
     observations,
     usage,
     completion_ids: completionIds,
-  };
+  });
 }

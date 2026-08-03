@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
 
 import type {
-  ReportIndexEntryV4,
-  ReportIndexV4,
-} from "../src/contracts/reports.js";
+  ReportIndexEntryV5,
+  ReportIndexV5,
+} from "../src/contracts/reports-v5.js";
 import type { TargetManifestV2, TargetV2 } from "../src/contracts/targets.js";
 import {
   initialOperationsState,
@@ -46,8 +46,8 @@ function manifest(repositories: TargetV2[]): TargetManifestV2 {
   };
 }
 
-const emptyIndex: ReportIndexV4 = {
-  schema_version: 4,
+const emptyIndex: ReportIndexV5 = {
+  schema_version: 5,
   generated_at: now,
   reports: [],
 };
@@ -61,36 +61,46 @@ function runningState(overrides: Partial<OperationsState> = {}) {
 }
 
 function report(targetValue: TargetV2, targetSha = targetValue.target_sha) {
-  const entry: ReportIndexEntryV4 = {
-    report_id: targetValue.repository_id.toString(16).padStart(64, "0"),
+  const reportId = targetValue.repository_id.toString(16).padStart(64, "0");
+  const entry: ReportIndexEntryV5 = {
+    report_id: reportId,
+    report_digest: reportId,
     report_version: 1,
     supersedes_report_id: null,
     scanner_version: "1.0.0",
     scanner_policy_version: "2",
     rule_catalog_version: "1",
     package_schema_version: 1,
+    contextual_review_policy_version: "1",
+    ecosystem_context_version: "sillytavern-community-v1",
+    prompt_version: "contextual-review-v1",
+    assessment_schema_version: "contextual-assessment-v1",
     source_id: targetValue.source_id,
     provider: "github",
     repository_id: targetValue.repository_id,
     repository: targetValue.repository,
     target_sha: targetSha,
     completed_at: "2026-07-30T12:00:00.000Z",
-    assessment_method: "deterministic-static-analysis",
-    result: "teal",
-    summary: {
-      headline: "No reportable concerns detected",
-      detail:
-        "All required scanners completed, and no finding met the reportable threshold.",
-    },
-    finding_counts: {
-      total: 0,
-      reportable: 0,
-      informational: 0,
-      reportable_severity: { critical: 0, high: 0, medium: 0 },
-      severity: { critical: 0, high: 0, medium: 0, low: 0, info: 0 },
+    assessment_method: "deterministic-evidence-contextual-review",
+    counts: {
+      candidates: 0,
+      assessments: 0,
+      observations: 0,
+      items: 0,
+      disposition: {
+        expected_behavior: 0,
+        minor_weakness: 0,
+        material_vulnerability: 0,
+        credible_malicious_behavior: 0,
+      },
+      impact: { none: 0, low: 0, medium: 0, high: 0, critical: 0 },
+      exploitability: {
+        unlikely: 0,
+        plausible: 0,
+        readily_exploitable: 0,
+      },
       confidence: { high: 0, medium: 0, low: 0 },
-      policy_status: { reportable: 0, informational: 0 },
-      categories: [],
+      recommended_risk: { low: 0, material: 0, high: 0 },
     },
     coverage: {
       history_commits: 1,
@@ -99,10 +109,12 @@ function report(targetValue: TargetV2, targetSha = targetValue.target_sha) {
       tools_completed: 3,
       tools_not_applicable: 3,
       evidence_validated: 0,
+      review_required: 0,
+      review_completed: 0,
     },
     report_url:
       `https://mentallyquill.github.io/TavernKeeper/reports/github/` +
-      `${targetValue.repository_id}/${targetSha}/2/1/`,
+      `${targetValue.repository_id}/${targetSha}/2/${reportId}/`,
     history_url:
       "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
       `${targetValue.repository_id}/history/`,
@@ -278,7 +290,7 @@ describe("derived scan backlog", () => {
 
   test("skips targets already covered at the current SHA and policy", () => {
     const covered = target(30, { top30: true });
-    const index: ReportIndexV4 = {
+    const index: ReportIndexV5 = {
       ...emptyIndex,
       reports: [report(covered)],
     };

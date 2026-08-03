@@ -1,4 +1,4 @@
-import { parseReportIndex } from "../contracts/reports.js";
+import { parseReportIndexV5 } from "../contracts/reports-v5.js";
 import {
   parseTargetManifest,
   requireTargetManifestV2,
@@ -33,7 +33,7 @@ export function buildTargetedMatrix({
   requestCreatedAt: string;
 }) {
   const manifest = requireTargetManifestV2(parseTargetManifest(manifestInput));
-  const index = parseReportIndex(indexInput);
+  const index = parseReportIndexV5(indexInput);
   const state = parseOperationsState(stateInput);
   const target = manifest.repositories.find(
     ({ repository_id }) => repository_id === repositoryId,

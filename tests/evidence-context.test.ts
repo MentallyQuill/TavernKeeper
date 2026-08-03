@@ -5,7 +5,11 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
-import { buildEvidenceContextGroups } from "../src/context/evidence-context.js";
+import {
+  buildEvidenceContextGroups,
+  EvidenceContextGroupsSchema,
+  expandEvidenceContextGroup,
+} from "../src/context/evidence-context.js";
 import { normalizeFinding } from "../src/scanners/types.js";
 
 const roots: string[] = [];
@@ -104,8 +108,11 @@ describe("evidence context builder", () => {
       path: "client.ts",
       file_role: "production",
       target_sha: "a".repeat(40),
+      source_bytes: Buffer.byteLength(source),
+      source_sha256: createHash("sha256").update(source).digest("hex"),
       ecosystem_context_version: "sillytavern-community-v1",
     });
+    expect(EvidenceContextGroupsSchema.parse(groups)).toEqual(groups);
     expect(groups[0]?.candidates).toHaveLength(2);
     expect(groups[0]?.context.source).toContain(
       "export async function sendRequest",
@@ -116,6 +123,66 @@ describe("evidence context builder", () => {
     expect(groups[0]?.context.project_purpose).toContain("Lore Helper");
     expect(JSON.stringify(groups[0]?.context)).not.toContain(secret);
     expect(groups[0]?.context.source).toContain("[REDACTED_SECRET:");
+  });
+
+  test("expands source context without changing evidence identity", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-expand-context-"));
+    roots.push(root);
+    const source = Array.from(
+      { length: 500 },
+      (_, index) => `const value${index + 1} = ${index + 1};`,
+    ).join("\n");
+    await writeFile(join(root, "large.ts"), source);
+    const finding = normalizeFinding({
+      origin: "opengrep",
+      ruleId: "network-call",
+      category: "network-access",
+      severity: "medium",
+      confidence: "medium",
+      path: "large.ts",
+      lineStart: 250,
+      lineEnd: 250,
+      evidenceSha: null,
+      title: "Network request",
+      explanation: "The file makes a network request.",
+    });
+    const groups = await buildEvidenceContextGroups({
+      checkoutRoot: root,
+      target: {
+        source_id: "github-44",
+        provider: "github",
+        repository_id: 44,
+        repository: "owner/large-project",
+        canonical_url: "https://github.com/owner/large-project",
+        target_sha: "d".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "large.ts",
+            bytes: Buffer.byteLength(source),
+            sha256: createHash("sha256").update(source).digest("hex"),
+            kind: "text",
+          },
+        ],
+        totals: { files: 1, bytes: Buffer.byteLength(source) },
+        totalBytes: Buffer.byteLength(source),
+      },
+    });
+    const initial = groups[0]!;
+    const expanded = expandEvidenceContextGroup(initial, source, 1);
+
+    expect(expanded.group_id).toBe(initial.group_id);
+    expect(expanded.candidates).toEqual(initial.candidates);
+    expect(expanded.context.source.length).toBeGreaterThan(
+      initial.context.source.length,
+    );
+    expect(() =>
+      expandEvidenceContextGroup(initial, `${source}tampered`, 1),
+    ).toThrow(/changed/iu);
   });
 
   test("uses supplied historical source for a history finding", async () => {

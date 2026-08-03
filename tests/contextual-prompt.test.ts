@@ -26,6 +26,8 @@ describe("SillyTavern ecosystem context", () => {
       file_role: "production",
       target_sha: "b".repeat(40),
       evidence_sha: "b".repeat(40),
+      source_bytes: 1,
+      source_sha256: "d".repeat(64),
       ecosystem_context_version: ECOSYSTEM_CONTEXT_VERSION,
       ecosystem_context: ecosystemContext(),
       candidates: [

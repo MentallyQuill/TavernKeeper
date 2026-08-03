@@ -1,7 +1,10 @@
 import { describe, expect, test, vi } from "vitest";
 
 import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
-import { reviewEvidenceGroups } from "../src/model/contextual-review.js";
+import {
+  CompletedContextualReviewSchema,
+  reviewEvidenceGroups,
+} from "../src/model/contextual-review.js";
 import {
   ModelRequestError,
   type ModelCompletionResult,
@@ -31,6 +34,8 @@ function group(
     file_role: "production",
     target_sha: "d".repeat(40),
     evidence_sha: "d".repeat(40),
+    source_bytes: 1,
+    source_sha256: "e".repeat(64),
     ecosystem_context_version: "sillytavern-community-v1",
     ecosystem_context: "Trusted ecosystem context.",
     candidates: candidateIds.map((candidateId, index) => ({
@@ -122,6 +127,13 @@ describe("contextual evidence review", () => {
     expect(requestCompletion).toHaveBeenCalledTimes(2);
     expect(result.coverage).toEqual({ required: 3, completed: 3 });
     expect(result.assessments.map((item) => item.candidate_id)).toEqual(ids);
+    expect(CompletedContextualReviewSchema.parse(result)).toEqual(result);
+    expect(
+      CompletedContextualReviewSchema.safeParse({
+        ...result,
+        raw_response: "must never persist",
+      }).success,
+    ).toBe(false);
   });
 
   test("accepts one fenced JSON object from a non-strict provider", async () => {

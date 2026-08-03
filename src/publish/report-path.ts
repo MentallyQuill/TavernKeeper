@@ -4,17 +4,7 @@ import { z } from "zod";
 
 import { FullShaSchema } from "../contracts/targets.js";
 
-const ReportPathIdentityV4Schema = z.strictObject({
-  provider: z.literal("github"),
-  repository_id: z.number().int().positive(),
-  target_sha: FullShaSchema,
-  scanner_policy_version: z
-    .string()
-    .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u),
-  report_version: z.number().int().positive(),
-});
-
-const ReportPathIdentityV5Schema = z.strictObject({
+const ReportPathIdentitySchema = z.strictObject({
   provider: z.literal("github"),
   repository_id: z.number().int().positive(),
   target_sha: FullShaSchema,
@@ -29,7 +19,6 @@ type ReportIdentityInput = {
   repository_id: unknown;
   target_sha?: unknown;
   scanner_policy_version?: unknown;
-  report_version?: unknown;
   schema_version?: unknown;
   report_id?: string;
   report_digest?: string;
@@ -37,21 +26,15 @@ type ReportIdentityInput = {
 };
 
 function identityFields(report: ReportIdentityInput) {
-  return report.schema_version === 5
-    ? ReportPathIdentityV5Schema.parse({
-        provider: report.provider,
-        repository_id: report.repository_id,
-        target_sha: report.target_sha,
-        scanner_policy_version: report.scanner_policy_version,
-        report_id: report.report_id,
-      })
-    : ReportPathIdentityV4Schema.parse({
-        provider: report.provider,
-        repository_id: report.repository_id,
-        target_sha: report.target_sha,
-        scanner_policy_version: report.scanner_policy_version,
-        report_version: report.report_version,
-      });
+  if (report.schema_version !== 5)
+    throw new Error("Report path requires the V5 report contract.");
+  return ReportPathIdentitySchema.parse({
+    provider: report.provider,
+    repository_id: report.repository_id,
+    target_sha: report.target_sha,
+    scanner_policy_version: report.scanner_policy_version,
+    report_id: report.report_id,
+  });
 }
 
 function canonicalValue(value: unknown): unknown {
@@ -66,11 +49,11 @@ function canonicalValue(value: unknown): unknown {
 }
 
 export function reportIdentity(report: ReportIdentityInput) {
-  if (report.schema_version !== 4 && report.schema_version !== 5)
-    throw new Error("Report identity requires a supported report contract.");
+  if (report.schema_version !== 5)
+    throw new Error("Report identity requires the V5 report contract.");
   const body = { ...(report as unknown as Record<string, unknown>) };
   delete body.report_id;
-  if (report.schema_version === 5) delete body.report_digest;
+  delete body.report_digest;
   return createHash("sha256")
     .update(JSON.stringify(canonicalValue(body)))
     .digest("hex");
@@ -78,22 +61,13 @@ export function reportIdentity(report: ReportIdentityInput) {
 
 export function reportPath(report: ReportIdentityInput) {
   const identity = identityFields(report);
-  if ("report_id" in identity)
-    return [
-      "reports",
-      identity.provider,
-      String(identity.repository_id),
-      identity.target_sha,
-      identity.scanner_policy_version,
-      identity.report_id,
-    ].join("/");
   return [
     "reports",
     identity.provider,
     String(identity.repository_id),
     identity.target_sha,
     identity.scanner_policy_version,
-    String(identity.report_version),
+    identity.report_id,
   ].join("/");
 }
 
