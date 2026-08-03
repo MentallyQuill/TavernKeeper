@@ -31,7 +31,6 @@ export interface TextCompletionRequest extends ProviderConnectivityRequest {
   maxOutputTokens: number;
   systemContent: string;
   userContent: string;
-  responseJsonSchema: Readonly<Record<string, unknown>>;
   maxResponseBytes?: number;
 }
 
@@ -46,7 +45,18 @@ export type ModelRequestErrorCode =
   | "MODEL_CONTEXT_INCOMPLETE";
 
 export type ModelResponseDiagnostic =
+  | "assessment_candidate_id"
+  | "assessment_confidence"
+  | "assessment_developer_action"
+  | "assessment_disposition"
+  | "assessment_evidence_ids"
+  | "assessment_exploitability"
+  | "assessment_impact"
+  | "assessment_layman_explanation"
+  | "assessment_locations"
+  | "assessment_recommended_risk"
   | "assessment_schema"
+  | "assessment_technical_explanation"
   | "observation_schema"
   | "output_limit"
   | "response_content"
@@ -424,14 +434,7 @@ export async function requestTextCompletion(
         stream: false,
         temperature: 0,
         max_tokens: request.maxOutputTokens,
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "tavernkeeper_contextual_assessment",
-            strict: true,
-            schema: request.responseJsonSchema,
-          },
-        },
+        response_format: { type: "json_object" },
       }),
     });
   } catch {

@@ -24,9 +24,9 @@ protected provider compatibility check. They are absent from acquisition,
 scanners, finalization, artifacts, publication, and telemetry. A model change
 must pass `provider-check.yml` against the complete contextual response schema
 before production scanning resumes. TavernKeeper requests the standard
-OpenAI-compatible strict `json_schema` response format, then independently
-validates the exact local schema, evidence identity, and complete candidate
-coverage. Do not add automatic model fallback.
+OpenAI-compatible `json_object` response format, then independently validates
+the exact local schema, evidence identity, and complete candidate coverage. Do
+not add automatic model fallback.
 
 The shared workflow encrypts the sanitized candidate and transition envelope
 with AES-256-GCM before upload, removes the plaintext handoff, retains the
