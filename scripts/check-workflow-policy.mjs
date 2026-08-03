@@ -8,6 +8,10 @@ const workflowRoot = join(root, ".github", "workflows");
 const failures = [];
 const publisherAction =
   "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
+const uploadArtifactAction =
+  "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a";
+const downloadArtifactAction =
+  "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const publisherToken = "${{ steps.publisher-token.outputs.token }}";
 const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
@@ -367,6 +371,7 @@ function checkEncryptedHandoff(file, workflow) {
   );
   if (
     uploads.length !== 1 ||
+    uploads[0]?.uses !== uploadArtifactAction ||
     uploads[0]?.if !== "always()" ||
     uploads[0]?.with?.path !== "outcome.enc" ||
     uploads[0]?.with?.["retention-days"] !== 1
@@ -375,6 +380,13 @@ function checkEncryptedHandoff(file, workflow) {
       file,
       "scan artifact upload must always retain only outcome.enc for one day",
     );
+  const downloads = (workflow.jobs?.publish?.steps ?? []).filter(
+    (step) =>
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/download-artifact@"),
+  );
+  if (downloads.length !== 1 || downloads[0]?.uses !== downloadArtifactAction)
+    fail(file, "artifact actions must retain the reviewed Node 24 pins");
   const encrypt = steps.find(
     (step) => step?.name === "Encrypt sanitized outcome",
   );
@@ -526,9 +538,9 @@ for (const file of names) {
   checkScannerToolchain(file, workflow);
 }
 
-const policyFile = "config/scanner-policy.v2.json";
+const policyFile = "config/scanner-policy.v3.json";
 const policy = JSON.parse(await readFile(join(root, policyFile), "utf8"));
-if (policy.version !== "2") fail(policyFile, "policy version must remain 2");
+if (policy.version !== "3") fail(policyFile, "policy version must remain 3");
 if (policy.queue?.batchSize !== 5)
   fail(policyFile, "queue batchSize must remain exactly 5");
 if (policy.queue?.maxParallel !== 2)

@@ -94,7 +94,7 @@ async function main() {
     index,
     state,
     repositoryId: hint.repository_id,
-    scannerPolicyVersion: "2",
+    scannerPolicyVersion: "3",
     requestCreatedAt: requiredEnvironment(
       process.env,
       "TAVERNKEEPER_REQUEST_CREATED_AT",

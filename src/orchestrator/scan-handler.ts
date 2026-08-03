@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { lstat, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ScannerPolicyV2 } from "../config/policy.js";
+import type { ScannerPolicyV3 } from "../config/policy.js";
 import {
   buildScanPackage,
   type ScanPackageV1,
@@ -46,7 +46,7 @@ export interface ScanRepositorySpec {
   scannerVersion: string;
   scannerPolicyVersion: string;
   ruleCatalogVersion: string;
-  policy: ScannerPolicyV2;
+  policy: ScannerPolicyV3;
   pins: ScannerVersionPins;
   rulesRoot: string;
   runner: CommandRunner;
@@ -297,7 +297,7 @@ export async function scanRepository(
       !target.success ||
       spec.projectKinds.length === 0 ||
       spec.scannerPolicyVersion !== spec.policy.version ||
-      spec.policy.version !== "2" ||
+      spec.policy.version !== "3" ||
       spec.ruleCatalogVersion !== "1"
     )
       return failure(

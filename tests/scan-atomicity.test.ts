@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { ScannerPolicyV2 } from "../src/config/policy.js";
+import type { ScannerPolicyV3 } from "../src/config/policy.js";
 import { ScanPackageV1Schema } from "../src/contracts/scan-package.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
 import {
@@ -24,8 +24,8 @@ const inventory: Inventory = {
   totals: { files: 1, bytes: 6 },
   totalBytes: 6,
 };
-const policy: ScannerPolicyV2 = {
-  version: "2",
+const policy: ScannerPolicyV3 = {
+  version: "3",
   queue: { batchSize: 5, maxParallel: 2 },
   history: { maxCommits: 20 },
   inventory: {
@@ -64,7 +64,7 @@ function finding() {
 function scannerRuns(withFinding = false): ScannerRun[] {
   return (
     [
-      ["tavernkeeper-static", "2"],
+      ["tavernkeeper-static", "3"],
       ["gitleaks", "8.30.1"],
       ["opengrep", "1.26.0"],
       ["osv-scanner", "2.4.0"],
@@ -95,7 +95,7 @@ function spec(): ScanRepositorySpec {
     root: inventory.root,
     previousReportShas: [],
     scannerVersion: "1.0.0",
-    scannerPolicyVersion: "2",
+    scannerPolicyVersion: "3",
     ruleCatalogVersion: "1",
     policy,
     pins: {

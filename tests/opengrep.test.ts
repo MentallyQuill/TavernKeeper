@@ -18,7 +18,10 @@ class OpenGrepRunner implements CommandRunner {
   calls: Array<{ command: string; args: string[]; options: CommandOptions }> =
     [];
 
-  constructor(private readonly stdout: string) {}
+  constructor(
+    private readonly stdout: string,
+    private readonly exitCode = 0,
+  ) {}
 
   async run(
     command: string,
@@ -28,12 +31,12 @@ class OpenGrepRunner implements CommandRunner {
     this.calls.push({ command, args, options });
     return {
       ok: true,
-      value: { exitCode: 0, stdout: this.stdout, stderr: "" },
+      value: { exitCode: this.exitCode, stdout: this.stdout, stderr: "" },
     };
   }
 }
 
-function resultJson(path = "src/index.ts") {
+function resultJson(path = "src/index.ts", errors: unknown[] = []) {
   return JSON.stringify({
     version: "1.26.0",
     results: [
@@ -57,7 +60,7 @@ function resultJson(path = "src/index.ts") {
         },
       },
     ],
-    errors: [],
+    errors,
     paths: { scanned: ["src/index.ts"] },
   });
 }
@@ -203,6 +206,103 @@ describe("OpenGrep adapter", () => {
       run.findings.every((finding) => FindingSchema.safeParse(finding).success),
     ).toBe(true);
     expect(JSON.stringify(run.findings)).not.toContain(seedSecret);
+  });
+
+  test.each([
+    {
+      name: "other syntax error",
+      diagnostic: {
+        code: 2,
+        level: "warn",
+        type: "Other syntax error",
+        message: "Unexpected token Memprof",
+        path: "public/lib/epub.min.js",
+      },
+    },
+    {
+      name: "partial parsing",
+      diagnostic: {
+        code: 3,
+        level: "warn",
+        type: ["PartialParsing", [{ line: 1, column: 1 }]],
+        message: "Partially parsed bundled JavaScript",
+        path: "public/lib/pdf.min.mjs",
+      },
+    },
+  ])(
+    "preserves findings with the approved $name warning",
+    async ({ diagnostic }) => {
+      const runner = new OpenGrepRunner(
+        resultJson("src/index.ts", [diagnostic]),
+      );
+
+      const run = await runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      });
+
+      expect(run.status).toBe("completed");
+      expect(run.findings).toHaveLength(1);
+      expect(run.findings[0]?.path).toBe("src/index.ts");
+    },
+  );
+
+  test.each([
+    {
+      name: "unknown warning code",
+      diagnostic: { code: 4, level: "warn", type: "Other syntax error" },
+    },
+    {
+      name: "recognized diagnostic at error level",
+      diagnostic: { code: 2, level: "error", type: "Other syntax error" },
+    },
+    {
+      name: "malformed partial-parsing type",
+      diagnostic: { code: 3, level: "warn", type: "PartialParsing" },
+    },
+    {
+      name: "missing diagnostic level",
+      diagnostic: { code: 3, type: ["PartialParsing", []] },
+    },
+  ])("rejects a $name diagnostic", async ({ diagnostic }) => {
+    const runner = new OpenGrepRunner(resultJson("src/index.ts", [diagnostic]));
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "system",
+      component: "opengrep",
+    });
+  });
+
+  test("rejects a nonzero scanner exit even when JSON contains only approved warnings", async () => {
+    const runner = new OpenGrepRunner(
+      resultJson("src/index.ts", [
+        { code: 2, level: "warn", type: "Other syntax error" },
+      ]),
+      2,
+    );
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "system",
+      component: "opengrep",
+    });
   });
 
   test("rejects malformed scanner output", async () => {

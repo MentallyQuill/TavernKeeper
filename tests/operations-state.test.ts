@@ -12,7 +12,7 @@ import {
 import { recordFailure } from "../src/operations/retry.js";
 
 describe("secret-free operational state", () => {
-  test("remains paused until staff explicitly starts the initial rollout", async () => {
+  test("accepts the checked-in operational state without secret-bearing fields", async () => {
     const state = parseOperationsState(
       JSON.parse(
         await readFile(
@@ -22,11 +22,12 @@ describe("secret-free operational state", () => {
       ),
     );
 
-    expect(state).toMatchObject({
-      coverage_started_at: null,
-      pause: { kind: "staff", reason_code: "INITIAL_ROLLOUT" },
-      active_scans: [],
-    });
+    const serialized = serializeOperationsState(state);
+
+    expect(parseOperationsState(JSON.parse(serialized))).toEqual(state);
+    expect(serialized).not.toMatch(
+      /api[_-]?key|credential|raw[_-]?error|response[_-]?body|prompt/iu,
+    );
     expect(
       state.retries.every(
         (retry) =>

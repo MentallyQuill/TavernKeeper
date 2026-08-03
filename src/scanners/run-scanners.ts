@@ -1,4 +1,4 @@
-import type { ScannerPins, ScannerPolicyV2 } from "../config/policy.js";
+import type { ScannerPins, ScannerPolicyV3 } from "../config/policy.js";
 import type { Finding } from "../contracts/reports.js";
 import type { InventoryClassification } from "../inventory/classify.js";
 import type { CommandRunner } from "../process/command-runner.js";
@@ -29,7 +29,7 @@ export interface ApplicableScannerSpec {
   structuralFiles: StaticSourceFile[];
   structuralFindings?: Finding[];
   runner: CommandRunner;
-  policy: ScannerPolicyV2;
+  policy: ScannerPolicyV3;
   pins: ScannerVersionPins;
   rulesRoot: string;
   executables?: Partial<ScannerExecutables>;

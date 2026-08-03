@@ -31,10 +31,26 @@ const OpenGrepFindingSchema = z.looseObject({
   end: z.looseObject({ line: z.number().int().positive() }),
   extra: z.looseObject({ metadata: MetadataSchema }),
 });
+const OpenGrepDiagnosticSchema = z.looseObject({
+  code: z.number().int(),
+  level: z.string(),
+  type: z.unknown(),
+});
 const OpenGrepReportSchema = z.looseObject({
   results: z.array(OpenGrepFindingSchema).max(100_000),
   errors: z.array(z.unknown()).max(10_000),
 });
+
+function isToleratedParserWarning(value: unknown) {
+  const parsed = OpenGrepDiagnosticSchema.safeParse(value);
+  if (!parsed.success || parsed.data.level !== "warn") return false;
+  if (parsed.data.code === 2) return parsed.data.type === "Other syntax error";
+  return (
+    parsed.data.code === 3 &&
+    Array.isArray(parsed.data.type) &&
+    parsed.data.type[0] === "PartialParsing"
+  );
+}
 
 function normalizePath(root: string, value: string) {
   const repositoryRoot = resolve(root);
@@ -71,7 +87,7 @@ function parseReport(root: string, stdout: string) {
       "opengrep",
     );
   }
-  if (report.errors.length > 0)
+  if (!report.errors.every(isToleratedParserWarning))
     throw new ScannerError(
       "SCANNER_FAILED",
       "system",
