@@ -31,6 +31,7 @@ export interface TextCompletionRequest extends ProviderConnectivityRequest {
   maxOutputTokens: number;
   systemContent: string;
   userContent: string;
+  responseJsonSchema: Readonly<Record<string, unknown>>;
   maxResponseBytes?: number;
 }
 
@@ -423,7 +424,14 @@ export async function requestTextCompletion(
         stream: false,
         temperature: 0,
         max_tokens: request.maxOutputTokens,
-        response_format: { type: "json_object" },
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "tavernkeeper_contextual_assessment",
+            strict: true,
+            schema: request.responseJsonSchema,
+          },
+        },
       }),
     });
   } catch {

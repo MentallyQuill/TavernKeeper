@@ -4,9 +4,40 @@ import { EvidenceContextGroupSchema } from "../context/evidence-context.js";
 import { reviewEvidenceGroups } from "./contextual-review.js";
 import type { ProviderConnectivityRequest } from "./openai-compatible-client.js";
 
-const candidateId = "c".repeat(64);
-const source =
-  "The setting is named apiKey; never paste a real credential here.\n";
+const candidateIds = ["c", "d", "e", "f"].map((value) => value.repeat(64));
+const source = [
+  "The setting is named apiKey; never paste a real credential here.",
+  "The word fetch describes how an extension may contact its configured model.",
+  "The word eval appears here only as an example of behavior to avoid.",
+  "The phrase install script appears in this documentation compatibility fixture.",
+  "",
+].join("\n");
+const fixtureCandidates = [
+  {
+    origin: "gitleaks",
+    rule_id: "documentation-credential-keyword",
+    category: "credential-exposure",
+    title: "Credential keyword in documentation",
+  },
+  {
+    origin: "opengrep",
+    rule_id: "documentation-network-keyword",
+    category: "network-access",
+    title: "Network keyword in documentation",
+  },
+  {
+    origin: "opengrep",
+    rule_id: "documentation-eval-keyword",
+    category: "dynamic-execution",
+    title: "Dynamic-execution keyword in documentation",
+  },
+  {
+    origin: "malcontent",
+    rule_id: "documentation-install-keyword",
+    category: "install-hook",
+    title: "Install-hook keyword in documentation",
+  },
+] as const;
 
 export async function checkModelProviderCompatibility(
   request: ProviderConnectivityRequest,
@@ -23,25 +54,30 @@ export async function checkModelProviderCompatibility(
     source_sha256: createHash("sha256").update(source).digest("hex"),
     ecosystem_context_version: "sillytavern-community-v1",
     ecosystem_context: "Trusted ecosystem context.",
-    candidates: [
-      {
+    candidates: fixtureCandidates.map((candidate, index) => {
+      const candidateId = candidateIds[index]!;
+      return {
         candidate_id: candidateId,
         evidence_id: candidateId,
-        origin: "gitleaks",
-        rule_id: "documentation-credential-keyword",
-        category: "credential-exposure",
+        origin: candidate.origin,
+        rule_id: candidate.rule_id,
+        category: candidate.category,
         scanner_severity: "low",
         scanner_confidence: "low",
-        title: "Credential keyword in documentation",
+        title: candidate.title,
         explanation:
-          "A credential-related keyword appears in explanatory documentation.",
-        line_start: 1,
-        line_end: 1,
-      },
-    ],
+          "A security-related keyword appears in explanatory documentation.",
+        line_start: index + 1,
+        line_end: index + 1,
+      };
+    }),
     context: {
       imports: "",
-      source: `     1 | ${source.trimEnd()}`,
+      source: source
+        .trimEnd()
+        .split("\n")
+        .map((line, index) => `${String(index + 1).padStart(6)} | ${line}`)
+        .join("\n"),
       project_purpose:
         "A benign compatibility fixture for TavernKeeper contextual review.",
     },
@@ -69,7 +105,10 @@ export async function checkModelProviderCompatibility(
       timeoutMs: request.timeoutMs ?? 60_000,
     },
   });
-  if (review.coverage.required !== 1 || review.coverage.completed !== 1)
+  if (
+    review.coverage.required !== candidateIds.length ||
+    review.coverage.completed !== candidateIds.length
+  )
     throw new Error("Provider compatibility review coverage is incomplete.");
   return {
     status: "passed" as const,
