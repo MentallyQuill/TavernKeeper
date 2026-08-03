@@ -13,7 +13,7 @@ function preserveNewlines(value: string, replacement: string) {
 const literalPatterns = [
   /\bgh[pousr]_[A-Za-z0-9_]{20,}\b/gu,
   /\bgithub_pat_[A-Za-z0-9_]{20,}\b/gu,
-  /\bsk-[A-Za-z0-9_-]{20,}\b/gu,
+  /\bsk-[A-Za-z0-9_-]{16,}\b/gu,
   /\bAKIA[0-9A-Z]{16}\b/gu,
   /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/gu,
 ] as const;
@@ -25,6 +25,11 @@ export function redactSource(source: string): string {
   );
   redacted = redacted.replace(
     /(\b(?:api[_-]?key|access[_-]?token|auth[_-]?token|client[_-]?secret|password|private[_-]?key)\b\s*[:=]\s*["'])([^"'\r\n]{12,})(["'])/giu,
+    (_match, prefix: string, secret: string, suffix: string) =>
+      `${prefix}${marker(secret)}${suffix}`,
+  );
+  redacted = redacted.replace(
+    /(\b(?:api[_ -]?key|token|secret|password)\s*[:=]\s*["']?)([A-Za-z0-9_./+=-]{8,})(["']?)/giu,
     (_match, prefix: string, secret: string, suffix: string) =>
       `${prefix}${marker(secret)}${suffix}`,
   );
