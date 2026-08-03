@@ -4,6 +4,18 @@ import { pathToFileURL } from "node:url";
 
 import { ScannerComponents } from "../scanners/types.js";
 
+const SafeModelResponseDiagnostics = [
+  "assessment_schema",
+  "observation_schema",
+  "output_limit",
+  "response_content",
+  "response_envelope",
+  "response_json",
+  "response_size",
+  "response_usage",
+  "review_schema",
+] as const;
+
 export async function readJsonFile(path: string): Promise<unknown> {
   return JSON.parse(await readFile(path, "utf8"));
 }
@@ -57,6 +69,7 @@ export function safeCliErrorRecord(error: unknown): {
   code: string;
   scope: "repository" | "system";
   component?: (typeof ScannerComponents)[number];
+  diagnostic?: (typeof SafeModelResponseDiagnostics)[number];
 } {
   const candidateCode =
     error !== null &&
@@ -83,10 +96,18 @@ export function safeCliErrorRecord(error: unknown): {
   const component = ScannerComponents.find(
     (value) => value === candidateComponent,
   );
+  const diagnostic = SafeModelResponseDiagnostics.find(
+    (value) =>
+      error !== null &&
+      typeof error === "object" &&
+      "diagnostic" in error &&
+      value === error.diagnostic,
+  );
   return {
     code,
     scope,
     ...(component === undefined ? {} : { component }),
+    ...(diagnostic === undefined ? {} : { diagnostic }),
   };
 }
 

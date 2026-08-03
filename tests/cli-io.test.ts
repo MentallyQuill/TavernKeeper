@@ -37,4 +37,26 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({ code: "SCANNER_FAILED", scope: "system" });
   });
+
+  test("preserves only an allowlisted model-response stage", () => {
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "repository",
+        diagnostic: "assessment_schema",
+      }),
+    ).toEqual({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "assessment_schema",
+    });
+
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_INVALID_RESPONSE",
+        scope: "repository",
+        diagnostic: "secret-bearing provider output",
+      }),
+    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
+  });
 });

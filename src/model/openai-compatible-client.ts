@@ -45,10 +45,13 @@ export type ModelRequestErrorCode =
   | "MODEL_CONTEXT_INCOMPLETE";
 
 export type ModelResponseDiagnostic =
+  | "assessment_schema"
+  | "observation_schema"
   | "output_limit"
   | "response_content"
   | "response_envelope"
   | "response_json"
+  | "review_schema"
   | "response_size"
   | "response_usage";
 
@@ -420,6 +423,7 @@ export async function requestTextCompletion(
         stream: false,
         temperature: 0,
         max_tokens: request.maxOutputTokens,
+        response_format: { type: "json_object" },
       }),
     });
   } catch {

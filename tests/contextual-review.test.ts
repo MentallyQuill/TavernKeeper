@@ -206,6 +206,48 @@ describe("contextual evidence review", () => {
     expect(result.coverage).toEqual({ required: 1, completed: 1 });
   });
 
+  test("classifies a schema-invalid assessment without exposing model text", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-invalid-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [
+          {
+            ...assessment(ids[0]!, current.path, 2),
+            developer_action: "",
+          },
+        ],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy: { ...policy, maxImmediateAttempts: 1 },
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      diagnostic: "assessment_schema",
+    });
+  });
+
   test("expands requested context instead of treating uncertainty as low risk", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async () => ({
