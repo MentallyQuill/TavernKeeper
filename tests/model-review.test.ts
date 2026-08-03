@@ -62,6 +62,7 @@ describe("OpenAI-compatible contextual-review transport", () => {
       stream: false,
       temperature: 0,
       max_tokens: 8_192,
+      response_format: { type: "json_object" },
     });
     expect(result).toMatchObject({
       content: '{"status":"complete"}',

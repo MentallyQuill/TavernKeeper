@@ -195,13 +195,21 @@ function parseReviewResponse(content: string) {
   const parsed = ContextualReviewResponseSchema.safeParse(
     extractSingleJsonObject(content),
   );
-  if (!parsed.success)
+  if (!parsed.success) {
+    const root = parsed.error.issues[0]?.path[0];
+    const diagnostic =
+      root === "assessments"
+        ? "assessment_schema"
+        : root === "observations"
+          ? "observation_schema"
+          : "review_schema";
     throw new ModelRequestError(
       "MODEL_INVALID_RESPONSE",
       "repository",
       "Contextual reviewer returned an invalid assessment schema.",
-      "response_json",
+      diagnostic,
     );
+  }
   return parsed.data;
 }
 

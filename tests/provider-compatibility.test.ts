@@ -67,7 +67,7 @@ describe("model provider contextual compatibility check", () => {
       Authorization: "Bearer test-key",
     });
     const body = JSON.parse(String(request[1]?.body));
-    expect(body).not.toHaveProperty("response_format");
+    expect(body.response_format).toEqual({ type: "json_object" });
     expect(body.messages[1].content).toContain(candidateId);
   });
 
