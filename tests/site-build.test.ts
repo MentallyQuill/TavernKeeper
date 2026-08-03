@@ -28,6 +28,7 @@ describe("Pages site allowlist", () => {
     for (const invalidReportId of [
       "2f5195e3ee9ec8ad2cdde525d07f3cba546a4c128f45bcabbae53e2238de679d",
       "7053d5db805d0853b3f5c30b7b1a0f4bad50b64a70fd1b3de474f91d0447237b",
+      "42ed790bc16eb4a70965c61918fbd7d611b593f667f4c639f60f6f9b04d9875f",
     ]) {
       expect(index).not.toContain(invalidReportId);
       expect(publishedFiles.files.join("\n")).not.toContain(invalidReportId);
