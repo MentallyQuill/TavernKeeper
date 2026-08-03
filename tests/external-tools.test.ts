@@ -23,7 +23,7 @@ function classification(
   applicability: InventoryClassification["applicability"],
 ): InventoryClassification {
   return {
-    modelEligible: [],
+    firstPartyText: [],
     applicability,
     scannerInputs: { osv: [], zizmor: [], malcontent: [] },
     excluded: {

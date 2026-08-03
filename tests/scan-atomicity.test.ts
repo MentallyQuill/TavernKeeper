@@ -120,7 +120,7 @@ function dependencies(): ScanDependencies {
   return {
     inventory: async () => ({ ok: true, value: inventory }),
     classify: () => ({
-      modelEligible: [sourceFile],
+      firstPartyText: [sourceFile],
       applicability: { osv: false, zizmor: false, malcontent: false },
       scannerInputs: { osv: [], zizmor: [], malcontent: [] },
       excluded: {
@@ -320,7 +320,7 @@ describe("atomic repository scan", () => {
     const classify = unsafeDependencies.classify;
     unsafeDependencies.classify = (classifiedInventory) => ({
       ...classify(classifiedInventory),
-      modelEligible: [
+      firstPartyText: [
         sourceFile,
         {
           path: "ghost.ts",

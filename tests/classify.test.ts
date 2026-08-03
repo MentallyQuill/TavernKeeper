@@ -48,7 +48,7 @@ describe("inventory classification", () => {
       ]),
     );
 
-    expect(classification.modelEligible.map((entry) => entry.path)).toEqual([
+    expect(classification.firstPartyText.map((entry) => entry.path)).toEqual([
       "src/index.ts",
     ]);
     expect(classification.excluded).toMatchObject({

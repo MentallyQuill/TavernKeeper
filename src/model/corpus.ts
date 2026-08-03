@@ -22,7 +22,7 @@ export function selectModelCorpus({
 }: {
   classification: InventoryClassification;
 }): InventoryFile[] {
-  return classification.modelEligible.toSorted((left, right) =>
+  return classification.firstPartyText.toSorted((left, right) =>
     comparePath(left.path, right.path),
   );
 }

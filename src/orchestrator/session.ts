@@ -401,7 +401,7 @@ export async function prepareTargetSession({
       );
     const structuralFindings = await scanStructuralFiles(
       checkoutRoot,
-      classification.modelEligible,
+      classification.firstPartyText,
     );
     const scannerRuns = await runApplicableScanners({
       root: checkoutRoot,
@@ -463,7 +463,7 @@ export async function prepareTargetSession({
         chunkPosition += 1;
       }
     }
-    const eligibleTextBytes = classification.modelEligible.reduce(
+    const eligibleTextBytes = classification.firstPartyText.reduce(
       (total, file) => total + file.bytes,
       0,
     );
@@ -485,7 +485,7 @@ export async function prepareTargetSession({
       inventory: {
         files: inventory.totals.files,
         bytes: inventory.totals.bytes,
-        eligible_text_files: classification.modelEligible.length,
+        eligible_text_files: classification.firstPartyText.length,
         eligible_text_bytes: eligibleTextBytes,
         excluded: classification.excluded,
       },

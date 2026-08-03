@@ -2,8 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { z } from "zod";
 
-export const ScannerPolicySchema = z.strictObject({
-  version: z.literal("1"),
+const scannerPolicyShape = {
   queue: z.strictObject({
     batchSize: z.literal(5),
     maxParallel: z.literal(2),
@@ -21,6 +20,18 @@ export const ScannerPolicySchema = z.strictObject({
     timeoutMs: z.literal(2_700_000),
     maxOutputBytes: z.literal(104_857_600),
   }),
+  retry: z.strictObject({
+    hoursFromInitialFailure: z.tuple([
+      z.literal(1),
+      z.literal(2),
+      z.literal(3),
+    ]),
+  }),
+};
+
+export const ScannerPolicySchema = z.strictObject({
+  version: z.literal("1"),
+  ...scannerPolicyShape,
   model: z.strictObject({
     protocol: z.literal("openai-compatible-chat-completions"),
     chunkBytes: z.literal(524_288),
@@ -29,16 +40,21 @@ export const ScannerPolicySchema = z.strictObject({
     chunkReviewPolicy: z.literal("chunk-review-v2"),
     synthesisPolicy: z.literal("repository-synthesis-v2"),
   }),
-  retry: z.strictObject({
-    hoursFromInitialFailure: z.tuple([
-      z.literal(1),
-      z.literal(2),
-      z.literal(3),
-    ]),
-  }),
 });
 
 export type ScannerPolicy = z.infer<typeof ScannerPolicySchema>;
+
+export const ScannerPolicyV2Schema = z.strictObject({
+  version: z.literal("2"),
+  ...scannerPolicyShape,
+});
+
+export type ScannerPolicyV2 = z.infer<typeof ScannerPolicyV2Schema>;
+
+const AnyScannerPolicySchema = z.discriminatedUnion("version", [
+  ScannerPolicySchema,
+  ScannerPolicyV2Schema,
+]);
 
 export const ScannerPinsSchema = z.strictObject({
   gitleaks: z.strictObject({
@@ -87,8 +103,14 @@ export const ScannerPinsSchema = z.strictObject({
 
 export type ScannerPins = z.infer<typeof ScannerPinsSchema>;
 
-export async function loadScannerPolicy(path: string): Promise<ScannerPolicy> {
-  return ScannerPolicySchema.parse(JSON.parse(await readFile(path, "utf8")));
+export function loadScannerPolicy(
+  path: "config/scanner-policy.v2.json",
+): Promise<ScannerPolicyV2>;
+export function loadScannerPolicy(path: string): Promise<ScannerPolicy>;
+export async function loadScannerPolicy(
+  path: string,
+): Promise<ScannerPolicy | ScannerPolicyV2> {
+  return AnyScannerPolicySchema.parse(JSON.parse(await readFile(path, "utf8")));
 }
 
 export async function loadScannerPins(path: string): Promise<ScannerPins> {

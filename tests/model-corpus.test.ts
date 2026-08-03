@@ -19,7 +19,7 @@ function file(path: string): InventoryFile {
 }
 
 const classification: InventoryClassification = {
-  modelEligible: [file("b.ts"), file("README.md"), file("a.ts")],
+  firstPartyText: [file("b.ts"), file("README.md"), file("a.ts")],
   applicability: { osv: false, zizmor: false, malcontent: false },
   scannerInputs: { osv: [], zizmor: [], malcontent: [] },
   excluded: {
@@ -76,7 +76,7 @@ describe("model corpus selection", () => {
 
     expect(standardSelected).toEqual(deepSelected);
     expect(standardSelected).toEqual(
-      classification.modelEligible.toSorted(compareExpectedPath),
+      classification.firstPartyText.toSorted(compareExpectedPath),
     );
   });
 

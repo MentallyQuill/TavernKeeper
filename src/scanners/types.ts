@@ -57,8 +57,18 @@ export interface NormalizedFindingInput {
   remediation?: string;
 }
 
-export function normalizeFinding(input: NormalizedFindingInput): Finding {
-  const fingerprint = createHash("sha256")
+export function findingFingerprint(
+  input: Pick<
+    NormalizedFindingInput,
+    | "origin"
+    | "ruleId"
+    | "path"
+    | "lineStart"
+    | "lineEnd"
+    | "evidenceSha"
+  >,
+) {
+  return createHash("sha256")
     .update(
       JSON.stringify([
         input.origin,
@@ -70,6 +80,10 @@ export function normalizeFinding(input: NormalizedFindingInput): Finding {
       ]),
     )
     .digest("hex");
+}
+
+export function normalizeFinding(input: NormalizedFindingInput): Finding {
+  const fingerprint = findingFingerprint(input);
   return FindingSchema.parse({
     origin: input.origin,
     rule_id: input.ruleId,

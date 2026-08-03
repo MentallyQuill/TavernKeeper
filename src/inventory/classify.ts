@@ -19,7 +19,7 @@ export interface FileByteTotals {
 }
 
 export interface InventoryClassification {
-  modelEligible: InventoryFile[];
+  firstPartyText: InventoryFile[];
   applicability: {
     osv: boolean;
     zizmor: boolean;
@@ -138,7 +138,7 @@ export function classifyInventory(
   const excluded = Object.fromEntries(
     excludedCategories.map((category) => [category, { files: 0, bytes: 0 }]),
   ) as Record<ExcludedCategory, FileByteTotals>;
-  const modelEligible: InventoryFile[] = [];
+  const firstPartyText: InventoryFile[] = [];
   const scannerInputs: InventoryClassification["scannerInputs"] = {
     osv: [],
     zizmor: [],
@@ -152,7 +152,7 @@ export function classifyInventory(
       excluded[category].files += 1;
       excluded[category].bytes += file.bytes;
     } else if (file.kind === "text") {
-      modelEligible.push(file);
+      firstPartyText.push(file);
     }
 
     if (osvFiles.has(name)) scannerInputs.osv.push(file);
@@ -163,7 +163,7 @@ export function classifyInventory(
   }
 
   return {
-    modelEligible,
+    firstPartyText,
     applicability: {
       osv: scannerInputs.osv.length > 0,
       zizmor: scannerInputs.zizmor.length > 0,

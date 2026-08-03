@@ -249,7 +249,7 @@ export function classificationIsConsistent(
     inventory.files.map((file) => [file.path, file]),
   );
   const eligiblePaths = new Set<string>();
-  for (const file of classification.modelEligible) {
+  for (const file of classification.firstPartyText) {
     const inventoried = inventoryByPath.get(file.path);
     if (
       eligiblePaths.has(file.path) ||
@@ -268,12 +268,12 @@ export function classificationIsConsistent(
     }),
     { files: 0, bytes: 0 },
   );
-  const eligibleBytes = classification.modelEligible.reduce(
+  const eligibleBytes = classification.firstPartyText.reduce(
     (total, file) => total + file.bytes,
     0,
   );
   if (
-    excluded.files + classification.modelEligible.length !==
+    excluded.files + classification.firstPartyText.length !==
       inventory.totals.files ||
     excluded.bytes + eligibleBytes !== inventory.totals.bytes
   )
@@ -542,7 +542,7 @@ function buildReport({
     })),
   ];
   const deterministicFindings = scannerRuns.flatMap(({ findings }) => findings);
-  const eligibleTextBytes = classification.modelEligible.reduce(
+  const eligibleTextBytes = classification.firstPartyText.reduce(
     (total, file) => total + file.bytes,
     0,
   );
@@ -569,7 +569,7 @@ function buildReport({
     inventory: {
       files: inventory.totals.files,
       bytes: inventory.totals.bytes,
-      eligible_text_files: classification.modelEligible.length,
+      eligible_text_files: classification.firstPartyText.length,
       eligible_text_bytes: eligibleTextBytes,
       excluded: classification.excluded,
     },
@@ -672,7 +672,7 @@ export async function scanRepository(
 
     const structuralFindings = await dependencies.structuralScan(
       spec.root,
-      classification.modelEligible,
+      classification.firstPartyText,
     );
     const scannerRuns = await dependencies.scanners({
       root: spec.root,

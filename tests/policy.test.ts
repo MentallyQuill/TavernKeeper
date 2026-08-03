@@ -4,6 +4,7 @@ import {
   loadScannerPins,
   loadScannerPolicy,
   ScannerPinsSchema,
+  ScannerPolicyV2Schema,
   ScannerPolicySchema,
 } from "../src/config/policy.js";
 
@@ -26,6 +27,18 @@ describe("versioned scanner policy", () => {
       chunkReviewPolicy: "chunk-review-v2",
       synthesisPolicy: "repository-synthesis-v2",
     });
+  });
+
+  test("loads deterministic V2 without any model policy", async () => {
+    const policy = await loadScannerPolicy("config/scanner-policy.v2.json");
+
+    expect(policy.version).toBe("2");
+    expect(policy.queue).toEqual({ batchSize: 5, maxParallel: 2 });
+    expect(policy.history.maxCommits).toBe(20);
+    expect(policy).not.toHaveProperty("model");
+    expect(
+      ScannerPolicyV2Schema.safeParse({ ...policy, model: {} }).success,
+    ).toBe(false);
   });
 
   test("loads exact reviewed scanner provenance pins", async () => {
