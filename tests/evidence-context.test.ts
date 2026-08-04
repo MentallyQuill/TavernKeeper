@@ -10,6 +10,7 @@ import {
   EvidenceContextGroupsSchema,
   expandEvidenceContextGroup,
 } from "../src/context/evidence-context.js";
+import { classifyFailure } from "../src/operations/failure.js";
 import { normalizeFinding } from "../src/scanners/types.js";
 
 const roots: string[] = [];
@@ -21,6 +22,60 @@ afterEach(async () => {
 });
 
 describe("evidence context builder", () => {
+  test("types a non-text scanner finding as target-local", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-binary-context-"));
+    roots.push(root);
+    const binary = Buffer.from([0, 1, 2, 3]);
+    await writeFile(join(root, "payload.bin"), binary);
+    const finding = normalizeFinding({
+      origin: "malcontent",
+      ruleId: "binary-payload",
+      category: "malware",
+      severity: "high",
+      confidence: "medium",
+      path: "payload.bin",
+      lineStart: null,
+      lineEnd: null,
+      evidenceSha: null,
+      title: "Binary payload",
+      explanation: "A scanner identified a binary payload.",
+    });
+
+    const error = await buildEvidenceContextGroups({
+      checkoutRoot: root,
+      target: {
+        source_id: "github-42",
+        provider: "github",
+        repository_id: 42,
+        repository: "owner/repo",
+        canonical_url: "https://github.com/owner/repo",
+        target_sha: "a".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "payload.bin",
+            bytes: binary.byteLength,
+            sha256: createHash("sha256").update(binary).digest("hex"),
+            kind: "binary",
+          },
+        ],
+        totals: { files: 1, bytes: binary.byteLength },
+        totalBytes: binary.byteLength,
+      },
+    }).catch((value: unknown) => value);
+
+    expect(classifyFailure(error)).toEqual({
+      code: "EVIDENCE_CONTEXT_UNSUPPORTED",
+      domain: "target",
+      component: "evidence-context",
+      diagnostic: "evidence_non_text",
+    });
+  });
+
   test("groups findings by file with project and enclosing source context", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-context-"));
     roots.push(root);

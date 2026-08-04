@@ -12,6 +12,7 @@ import {
   buildContextualReviewPrompt,
   CONTEXTUAL_PROMPT_VERSION,
   CONTEXTUAL_SCHEMA_VERSION,
+  type ContextualReviewRepair,
 } from "./contextual-prompt.js";
 import {
   ModelRequestError,
@@ -283,6 +284,7 @@ async function reviewGroup(
   completionIds: string[],
 ) {
   let group = initialGroup;
+  let repair: ContextualReviewRepair | undefined;
   let lastError: unknown;
   for (
     let attempt = 1;
@@ -290,7 +292,7 @@ async function reviewGroup(
     attempt += 1
   ) {
     try {
-      const prompt = buildContextualReviewPrompt(group);
+      const prompt = buildContextualReviewPrompt(group, repair);
       const request = spec.provider.requestCompletion ?? requestTextCompletion;
       const completion = await request({
         endpoint: spec.provider.endpoint,
@@ -376,6 +378,7 @@ async function reviewGroup(
             "Expanded context changed immutable evidence identity.",
           );
         group = expanded;
+        repair = undefined;
         continue;
       }
       return validateCompletedGroupReview(group, response);
@@ -383,6 +386,18 @@ async function reviewGroup(
       lastError = error;
       if (!retryable(error) || attempt === spec.policy.maxImmediateAttempts)
         throw error;
+      const nextRepair: ContextualReviewRepair = {
+        diagnostic:
+          error instanceof ModelRequestError && error.diagnostic !== undefined
+            ? error.diagnostic
+            : "review_schema",
+      };
+      if (
+        repair !== undefined &&
+        JSON.stringify(repair) === JSON.stringify(nextRepair)
+      )
+        throw error;
+      repair = nextRepair;
     }
   }
   throw lastError;

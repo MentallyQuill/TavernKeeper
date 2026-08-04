@@ -1,6 +1,7 @@
 import { TargetSchema, type Target } from "../contracts/targets.js";
 import {
   FailureDescriptorSchema,
+  failureFingerprint,
   type FailureDescriptor,
 } from "../operations/failure.js";
 import { scanRetryAt } from "../operations/retry-schedule.js";
@@ -147,6 +148,14 @@ export function rotateFailedTarget(
     last_failure: failure,
     last_failed_at: input.at,
     chronic: consecutiveFailures >= 5,
+    failure_history: [
+      ...(current.failure_history ?? []),
+      {
+        failed_at: input.at,
+        failure,
+        error_fingerprint: failureFingerprint(failure),
+      },
+    ].slice(-4),
   };
   const nextState = OperationsStateSchema.parse({
     ...state,

@@ -308,6 +308,23 @@ describe("GitHub workflow security policy", () => {
     expect(JSON.stringify(incident)).not.toMatch(/secrets\./u);
   });
 
+  test("reconciles chronic incidents by exact immutable target", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const reconcile = (value.jobs.publish.steps as Workflow[]).find(
+      (step) => step.name === "Reconcile secret-free operational incidents",
+    );
+
+    expect(reconcile?.run).toContain(".target_incident_key");
+    expect(reconcile?.run).toContain("Target incident key:");
+    expect(reconcile?.run).toContain(".failure_history");
+    expect(reconcile?.run).toContain("gh issue list --state all");
+    expect(reconcile?.run).toContain("gh issue reopen");
+    expect(reconcile?.run).toContain("gh issue close");
+    expect(reconcile?.run).not.toContain(
+      'gh issue list --state open --label scanner-operations --search "$repository_id $target in:body"',
+    );
+  });
+
   test("retry recovery remains manually dispatchable for operations", async () => {
     const value = await workflow("retry.yml");
     expect(value.on).toHaveProperty("workflow_dispatch");

@@ -111,7 +111,9 @@ The scheduler selects up to five due entries by ascending ticket and retains the
 - Once its cooldown expires, its old ticket makes it precede every later ticket.
 - Success removes the exact queue entry after its complete report is published.
 - Failure increments the counters, assigns the entry the current `next_ticket`, increments `next_ticket`, records a sanitized diagnostic, and assigns a capped cooldown based on the most recent failure.
+- The queue retains only the latest four sanitized failure descriptors and fingerprints. Raw stderr, source paths, excerpts, provider output, and rejected model prose are excluded.
 - The fifth consecutive failure marks the entry `chronic` and raises or updates a diagnostic incident. It remains queued and continues rotating forever.
+- A chronic target incident is keyed by repository ID plus exact target SHA, independently of the changing failure descriptor. Success, a replacement SHA, or recovery below chronic state closes that exact incident.
 - A newer target SHA clears the consecutive streak and cooldown because it is a different immutable scan target. Historical `total_failures` may remain for operations telemetry.
 
 ### Starvation argument
@@ -134,6 +136,8 @@ Failure classification determines whether recovery is target-local or whether a 
 - Only an explicit operator action may set `emergency_stop`. Resuming it is likewise explicit because it represents intentional operational control, not ordinary recovery.
 
 Diagnostics must preserve a sanitized phase and underlying error category. Generic or unrecognized system failures default to the shared circuit, not the security domain. Only explicitly classified authentication, configuration, identity, response-origin, and policy-integrity failures use the security domain.
+
+OpenGrep exposes bounded parser-syntax and rule-timeout categories, while unsupported non-text evidence context is target-local. A corrective contextual-model attempt receives only the rejected response-field category; the rejected response is not echoed, and an identical repeated category ends immediate retry.
 
 ## Independent Automation Loops
 

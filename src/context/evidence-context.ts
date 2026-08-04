@@ -241,6 +241,18 @@ const MAX_CANDIDATES_PER_GROUP = 8;
 const MAX_PURPOSE_CHARACTERS = 8_000;
 const MAX_IMPORT_CHARACTERS = 4_000;
 
+export class EvidenceContextError extends Error {
+  readonly code = "EVIDENCE_CONTEXT_UNSUPPORTED";
+  readonly scope = "repository";
+  readonly component = "evidence-context";
+  readonly diagnostic = "evidence_non_text";
+
+  constructor() {
+    super("A scanner finding requires unsupported non-text evidence context.");
+    this.name = "EvidenceContextError";
+  }
+}
+
 function digest(value: unknown) {
   return createHash("sha256").update(JSON.stringify(value)).digest("hex");
 }
@@ -261,8 +273,7 @@ async function readVerifiedText(
   root: string,
   file: InventoryFile,
 ): Promise<string> {
-  if (file.kind !== "text")
-    throw new Error(`Evidence file is not text: ${file.path}`);
+  if (file.kind !== "text") throw new EvidenceContextError();
   const contents = await readFile(absoluteInventoryPath(root, file.path));
   const sha256 = createHash("sha256").update(contents).digest("hex");
   if (contents.byteLength !== file.bytes || sha256 !== file.sha256) {

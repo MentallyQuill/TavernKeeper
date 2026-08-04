@@ -18,6 +18,20 @@ const SafeNonnegativeIntegerSchema = z
   .max(Number.MAX_SAFE_INTEGER);
 const FingerprintSchema = z.string().regex(/^[a-f0-9]{64}$/u);
 
+export const ScanFailureHistoryEntrySchema = z
+  .strictObject({
+    failed_at: z.iso.datetime(),
+    failure: FailureDescriptorSchema,
+    error_fingerprint: FingerprintSchema,
+  })
+  .refine(
+    (entry) => entry.error_fingerprint === failureFingerprint(entry.failure),
+    {
+      path: ["error_fingerprint"],
+      message: "Scan failure fingerprint must match its failure.",
+    },
+  );
+
 export const AutomaticRecoveryHoldSchema = z
   .strictObject({
     error_fingerprint: FingerprintSchema,
@@ -71,6 +85,11 @@ export const ScanQueueEntrySchema = z
     last_failure: FailureDescriptorSchema.nullable(),
     last_failed_at: z.iso.datetime().nullable(),
     chronic: z.boolean(),
+    failure_history: z
+      .array(ScanFailureHistoryEntrySchema)
+      .min(1)
+      .max(4)
+      .optional(),
     staff_requested: z.literal(true).optional(),
   })
   .superRefine((entry, context) => {
@@ -86,6 +105,26 @@ export const ScanQueueEntrySchema = z
         path: ["total_failures"],
         message: "Total failures cannot be below the current failure streak.",
       });
+    const history = entry.failure_history ?? [];
+    if (history.length > entry.consecutive_failures)
+      context.addIssue({
+        code: "custom",
+        path: ["failure_history"],
+        message: "Failure history cannot exceed the current failure streak.",
+      });
+    if (
+      history.some(
+        (failure, index) =>
+          index > 0 &&
+          Date.parse(history[index - 1]!.failed_at) >
+            Date.parse(failure.failed_at),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["failure_history"],
+        message: "Failure history must be chronological.",
+      });
     if (entry.chronic !== entry.consecutive_failures >= 5)
       context.addIssue({
         code: "custom",
@@ -97,7 +136,8 @@ export const ScanQueueEntrySchema = z
       if (
         entry.last_failure !== null ||
         entry.last_failed_at !== null ||
-        entry.not_before !== null
+        entry.not_before !== null ||
+        history.length > 0
       )
         context.addIssue({
           code: "custom",
@@ -113,6 +153,19 @@ export const ScanQueueEntrySchema = z
         code: "custom",
         path: ["last_failure"],
         message: "A failure streak requires its latest sanitized failure.",
+      });
+    const latestHistory = history.at(-1);
+    if (
+      latestHistory !== undefined &&
+      (latestHistory.failed_at !== entry.last_failed_at ||
+        entry.last_failure === null ||
+        latestHistory.error_fingerprint !==
+          failureFingerprint(entry.last_failure))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["failure_history"],
+        message: "Failure history must end with the latest failure.",
       });
     if (
       entry.not_before !== null &&

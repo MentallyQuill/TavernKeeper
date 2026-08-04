@@ -16,6 +16,7 @@ import {
   ScannerError,
   scannerExecutionError,
   type ScannerRun,
+  type ScannerDiagnostic,
 } from "./types.js";
 
 const MetadataSchema = z.looseObject({
@@ -50,6 +51,18 @@ function isToleratedParserWarning(value: unknown) {
     Array.isArray(parsed.data.type) &&
     parsed.data.type[0] === "PartialParsing"
   );
+}
+
+function failureDiagnostic(errors: unknown[]): ScannerDiagnostic | undefined {
+  const types = errors.flatMap((value) => {
+    const parsed = OpenGrepDiagnosticSchema.safeParse(value);
+    return parsed.success && typeof parsed.data.type === "string"
+      ? [parsed.data.type]
+      : [];
+  });
+  if (types.includes("Syntax error")) return "parser_syntax";
+  if (types.includes("Timeout")) return "rule_timeout";
+  return undefined;
 }
 
 function normalizePath(root: string, value: string) {
@@ -99,6 +112,7 @@ function parseReport(root: string, stdout: string, exitCode: number) {
       "system",
       "OpenGrep reported scan errors.",
       "opengrep",
+      failureDiagnostic(report.errors),
     );
   try {
     return report.results

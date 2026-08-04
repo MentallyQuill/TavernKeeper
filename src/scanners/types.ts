@@ -29,6 +29,7 @@ export const ScannerComponents = [
   "malcontent",
 ] as const;
 export type ScannerComponent = (typeof ScannerComponents)[number];
+export type ScannerDiagnostic = "parser_syntax" | "rule_timeout";
 
 export class ScannerError extends Error {
   constructor(
@@ -36,6 +37,7 @@ export class ScannerError extends Error {
     readonly scope: "repository" | "system",
     message: string,
     readonly component?: ScannerComponent,
+    readonly diagnostic?: ScannerDiagnostic,
   ) {
     super(message);
     this.name = "ScannerError";
