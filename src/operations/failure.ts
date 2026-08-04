@@ -13,6 +13,7 @@ export const FailureComponents = [
   "osv-scanner",
   "zizmor",
   "malcontent",
+  "evidence-context",
   "contextual-model",
   "finalization",
   "artifact-transport",
@@ -36,14 +37,17 @@ export const SafeFailureDiagnostics = [
   "assessment_recommended_risk",
   "assessment_schema",
   "assessment_technical_explanation",
+  "evidence_non_text",
   "observation_schema",
   "output_limit",
+  "parser_syntax",
   "response_content",
   "response_envelope",
   "response_json",
   "response_size",
   "response_usage",
   "review_schema",
+  "rule_timeout",
 ] as const;
 
 export const FailureDescriptorSchema = z.strictObject({
@@ -55,9 +59,13 @@ export const FailureDescriptorSchema = z.strictObject({
 
 export type FailureDescriptor = z.infer<typeof FailureDescriptorSchema>;
 
+export const TargetRetryModeSchema = z.enum(["automatic", "manual"]);
+export type TargetRetryMode = z.infer<typeof TargetRetryModeSchema>;
+
 const TargetSystemCodes = new Set([
   "CLASSIFICATION_INVALID",
   "CONTEXTUAL_REVIEW_INVALID",
+  "EVIDENCE_CONTEXT_UNSUPPORTED",
   "INVENTORY_INVALID",
   "MALFORMED_SCANNER_OUTPUT",
   "MODEL_CONTEXT_INCOMPLETE",
@@ -170,4 +178,18 @@ export function failureFingerprint(failure: FailureDescriptor) {
       ]),
     )
     .digest("hex");
+}
+
+export function retryModeForFailure(
+  failureInput: FailureDescriptor,
+): TargetRetryMode {
+  const failure = FailureDescriptorSchema.parse(failureInput);
+  if (failure.domain !== "target")
+    throw new Error("Retry mode requires a target failure.");
+  if (
+    failure.code === "SCANNER_TIMEOUT" ||
+    ["CHECKOUT_FAILED", "HISTORY_FAILED"].includes(failure.code)
+  )
+    return "automatic";
+  return "manual";
 }

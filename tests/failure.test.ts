@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   classifyFailure,
   failureFingerprint,
+  retryModeForFailure,
 } from "../src/operations/failure.js";
 
 describe("operation failure domains", () => {
@@ -77,5 +78,42 @@ describe("operation failure domains", () => {
 
     expect(failureFingerprint(opengrep)).not.toBe(failureFingerprint(gitleaks));
     expect(failureFingerprint(opengrep)).toMatch(/^[a-f0-9]{64}$/u);
+  });
+
+  test("keeps deterministic target failures manual", () => {
+    expect(
+      retryModeForFailure({
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+        diagnostic: "parser_syntax",
+      }),
+    ).toBe("manual");
+  });
+
+  test("keeps transient target failures automatic", () => {
+    expect(
+      retryModeForFailure({
+        code: "SCANNER_TIMEOUT",
+        domain: "target",
+        component: "opengrep",
+      }),
+    ).toBe("automatic");
+  });
+
+  test("preserves bounded scanner diagnostics", () => {
+    expect(
+      classifyFailure({
+        code: "SCANNER_FAILED",
+        scope: "system",
+        component: "opengrep",
+        diagnostic: "rule_timeout",
+      }),
+    ).toEqual({
+      code: "SCANNER_FAILED",
+      domain: "target",
+      component: "opengrep",
+      diagnostic: "rule_timeout",
+    });
   });
 });

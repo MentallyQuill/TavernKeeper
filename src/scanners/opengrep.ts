@@ -52,6 +52,18 @@ function isToleratedParserWarning(value: unknown) {
   );
 }
 
+function failureDiagnostic(errors: unknown[]) {
+  const diagnostics = errors.flatMap((value) => {
+    const parsed = OpenGrepDiagnosticSchema.safeParse(value);
+    return parsed.success ? [parsed.data] : [];
+  });
+  if (diagnostics.some(({ type }) => type === "Syntax error"))
+    return "parser_syntax" as const;
+  if (diagnostics.some(({ type }) => type === "Timeout"))
+    return "rule_timeout" as const;
+  return undefined;
+}
+
 function normalizePath(root: string, value: string) {
   const repositoryRoot = resolve(root);
   const candidate = isAbsolute(value)
@@ -99,6 +111,7 @@ function parseReport(root: string, stdout: string, exitCode: number) {
       "system",
       "OpenGrep reported scan errors.",
       "opengrep",
+      failureDiagnostic(report.errors),
     );
   try {
     return report.results

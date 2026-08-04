@@ -32,6 +32,18 @@ export type FileRole =
   | "vendored"
   | "unknown";
 
+export class EvidenceContextError extends Error {
+  readonly code = "EVIDENCE_CONTEXT_UNSUPPORTED";
+  readonly scope = "repository";
+  readonly component = "evidence-context";
+  readonly diagnostic = "evidence_non_text";
+
+  constructor() {
+    super("Evidence context requires a verified text file.");
+    this.name = "EvidenceContextError";
+  }
+}
+
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const FullShaSchema = z.string().regex(/^[0-9a-f]{40}$/u);
 const RepositoryPathSchema = z
@@ -262,7 +274,7 @@ async function readVerifiedText(
   file: InventoryFile,
 ): Promise<string> {
   if (file.kind !== "text")
-    throw new Error(`Evidence file is not text: ${file.path}`);
+    throw new EvidenceContextError();
   const contents = await readFile(absoluteInventoryPath(root, file.path));
   const sha256 = createHash("sha256").update(contents).digest("hex");
   if (contents.byteLength !== file.bytes || sha256 !== file.sha256) {
