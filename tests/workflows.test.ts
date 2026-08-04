@@ -395,6 +395,17 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("workflow policy rejects an alternate-syntax Publisher push", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          '            test "$push_succeeded" = "true"\n',
+          '            test "$push_succeeded" = "true"\n            git push origin \'HEAD:main\'\n',
+        ),
+      /Publisher-authenticated push must retain one canonical bounded retry block/u,
+    );
+  });
+
   test("all external Actions are pinned to full commit SHAs", async () => {
     const texts = await Promise.all(
       workflowNames.map((name) =>

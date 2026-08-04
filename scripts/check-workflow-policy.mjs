@@ -161,16 +161,24 @@ function fail(file, message) {
   failures.push(`${file}: ${message}`);
 }
 
-function containsCanonicalPublisherPush(run) {
+function containsOnlyCanonicalPublisherPush(run) {
   const lines = run.split("\n");
   const start = lines.findIndex(
     (line) => line.trim() === canonicalPublisherPushLines[0],
   );
   if (start < 0) return false;
   const indentation = /^\s*/u.exec(lines[start])?.[0] ?? "";
-  return canonicalPublisherPushLines.every(
+  const hasCanonicalBlock = canonicalPublisherPushLines.every(
     (line, index) => lines[start + index] === `${indentation}${line}`,
   );
+  if (!hasCanonicalBlock) return false;
+
+  lines.splice(start, canonicalPublisherPushLines.length);
+  const residualCommandShape = lines
+    .join("\n")
+    .replace(/[^a-z]/giu, "")
+    .toLowerCase();
+  return !residualCommandShape.includes("push");
 }
 
 function walk(value, visit, path = []) {
@@ -492,9 +500,7 @@ function checkPublisherBoundary(file, workflow) {
       "Publisher-authenticated push changed from the reviewed contract",
     );
   const pushRun = pushStep?.run ?? "";
-  const pushCommandCount =
-    pushRun.match(/git push origin HEAD:main/gu)?.length ?? 0;
-  if (pushCommandCount !== 1 || !containsCanonicalPublisherPush(pushRun))
+  if (!containsOnlyCanonicalPublisherPush(pushRun))
     fail(
       file,
       "Publisher-authenticated push must retain one canonical bounded retry block",
