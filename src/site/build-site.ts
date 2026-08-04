@@ -118,6 +118,7 @@ export async function buildSite({
     join(root, "reports"),
     join(root, "schemas"),
     join(root, "docs", "rules"),
+    join(root, "src", "site", "assets"),
   ];
   validateOutput(root, output, sources);
   const index = parseReportIndexV5(
@@ -130,6 +131,7 @@ export async function buildSite({
   await copyTree(sources[1]!, join(output, "schemas"));
   await copyTree(sources[2]!, join(output, "rules"));
   await mkdir(join(output, "assets"), { recursive: true });
+  await copyTree(sources[3]!, join(output, "assets"));
   await writeFile(join(output, "index.html"), renderLandingHtml(index));
   await writeFile(
     join(output, "assets", "report-search.js"),

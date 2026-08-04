@@ -5,6 +5,7 @@ import {
 import {
   assessmentSummary,
   escapeHtml,
+  FAVICON_LINKS,
   formatPublicDate,
   highestRisk,
   renderSiteHeader,
@@ -83,6 +84,7 @@ export function renderHistoryHtml(input: readonly unknown[]) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="TavernKeeper scan history for ${escapeHtml(repository)}.">
   <meta http-equiv="Content-Security-Policy" content="${escapeHtml(SCRIPT_FREE_CSP)}">
+  ${FAVICON_LINKS}
   <title>TavernKeeper scan history &middot; ${escapeHtml(repository)}</title>
   <style>${SITE_STYLES}${HISTORY_STYLES}</style>
 </head>
