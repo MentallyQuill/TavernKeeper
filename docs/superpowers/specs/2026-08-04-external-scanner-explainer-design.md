@@ -32,4 +32,3 @@ The scanner descriptions are static site copy in `src/site/render-landing.ts`; n
 - Run the focused site tests.
 - Run the project check and site build.
 - Inspect the generated HTML for the five links, the responsive scanner layout, and the existing advisory/limitations language.
-

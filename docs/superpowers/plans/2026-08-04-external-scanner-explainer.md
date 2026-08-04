@@ -22,9 +22,11 @@
 ### Task 1: Add landing-page scanner coverage assertions
 
 **Files:**
+
 - Modify: `tests/site-presentation.test.ts`
 
 **Interfaces:**
+
 - Consumes: `renderLandingHtml()` output and the existing `reports/index.json` fixture/helpers used by the site presentation tests.
 - Produces: Regression coverage proving the landing page exposes all five external scanner names, official repository URLs, and usage/limitation language.
 
@@ -85,10 +87,12 @@ git commit -m "test: cover external scanner explainer"
 ### Task 2: Render the external scanner explainer
 
 **Files:**
+
 - Modify: `src/site/render-landing.ts`
 - Test: `tests/site-presentation.test.ts`
 
 **Interfaces:**
+
 - Consumes: static scanner metadata, existing site styles, and `renderLandingHtml()`.
 - Produces: A responsive `#external-scanners` subsection with five linked scanner cards and preserved advisory boundaries.
 
@@ -102,7 +106,8 @@ const EXTERNAL_SCANNERS = [
     name: "Gitleaks",
     url: "https://github.com/gitleaks/gitleaks",
     what: "Searches source and repository history for exposed secrets and credential-like values.",
-    usage: "TavernKeeper runs the pinned scanner against the exact commit and its bounded history as data.",
+    usage:
+      "TavernKeeper runs the pinned scanner against the exact commit and its bounded history as data.",
   },
   // OpenGrep, OSV-Scanner, zizmor, and malcontent follow the same shape.
 ] as const;
@@ -115,7 +120,11 @@ Use wording that accurately distinguishes OSV-Scanner dependency inputs, zizmor 
 Add a small renderer for the metadata entries and insert it below the existing ordered steps. Use semantic markup:
 
 ```html
-<section class="scanner-section" id="external-scanners" aria-labelledby="scanner-title">
+<section
+  class="scanner-section"
+  id="external-scanners"
+  aria-labelledby="scanner-title"
+>
   <div class="section-heading">...</div>
   <div class="scanner-grid">...</div>
 </section>
@@ -171,4 +180,3 @@ Confirm the diff contains only the approved site copy, layout, and regression co
 git add -- src/site/render-landing.ts tests/site-presentation.test.ts
 git commit -m "feat: explain external scanner coverage"
 ```
-
