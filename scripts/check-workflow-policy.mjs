@@ -363,11 +363,12 @@ function checkContextualRuntime(file, workflow) {
     if (
       prepareIndex < 0 ||
       reviewIndex !== prepareIndex + 1 ||
-      finalizeIndex !== reviewIndex + 1
+      finalizeIndex !== reviewIndex + 1 ||
+      steps[reviewIndex]?.["timeout-minutes"] !== 16
     )
       fail(
         file,
-        "contextual review must separate preparation from V5 finalization",
+        "contextual review must remain bounded between preparation and V5 finalization",
       );
   }
   if (file === "provider-check.yml") {
