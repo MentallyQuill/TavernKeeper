@@ -83,14 +83,21 @@ still match supplied source context. Evidence validation proves cited paths,
 line ranges, identities, content mappings, coverage, and the scanned SHA.
 TavernKeeper rechecks exact HEAD before finalization. A tool, provider, context,
 review, quota, evidence, schema, sanitizer, or publication failure yields no
-report and enters the retry path.
+report for that repository and enters the retry path.
+
+Matrix targets finish independently. The serialized publisher pairs each
+completed transition with its own candidate, records every failed transition,
+and atomically publishes the complete successful subset. A peer failure never
+turns a completed report into degraded output and never causes that report to
+be discarded. System-scoped failures still engage the circuit breaker before a
+later ordinary batch can start.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Matrix jobs encrypt
 sanitized outcomes before a one-day artifact handoff. A serialized publisher
-decrypts in ephemeral storage, prevalidates the whole batch, writes immutable
-V5 JSON and script-free HTML plus repository history, updates the preferred V5
-index, and rolls back partial writes on failure.
+decrypts in ephemeral storage, prevalidates the whole successful subset, writes
+immutable V5 JSON and script-free HTML plus repository history, updates the
+preferred V5 index, and rolls back partial writes on failure.
 
 Every direct write to `main` uses the dedicated Publisher App. Checkout
 credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and

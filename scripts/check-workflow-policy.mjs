@@ -431,8 +431,55 @@ function checkEncryptedHandoff(file, workflow) {
     fail(file, "scan must atomically replace the bootstrap failure outcome");
   if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2)
     fail(file, "scan matrix must retain max-parallel: 2");
-  if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== true)
-    fail(file, "scan matrix must stop pending work after a system failure");
+  if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== false)
+    fail(file, "scan matrix must finish every selected repository");
+
+  const publishJob = workflow.jobs?.publish;
+  const publish = (publishJob?.steps ?? []).find(
+    (step) => step?.name === "Publish serialized batch",
+  );
+  const publishRun = publish?.run ?? "";
+  if (
+    publish?.id !== "publish" ||
+    publish?.shell !== "bash" ||
+    publish?.env?.TAVERNKEEPER_SCAN_REQUESTS !==
+      "${{ inputs.requests_json }}" ||
+    !publishRun.includes(
+      `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
+    ) ||
+    !publishRun.includes(
+      `system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"`,
+    ) ||
+    !publishRun.includes(
+      `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
+    ) ||
+    !publishRun.includes(
+      `printf 'system_failure=%s\\n' "$system_failure" >> "$GITHUB_OUTPUT"`,
+    ) ||
+    /echo .*jq/iu.test(publishRun) ||
+    publishJob?.outputs?.reports !== "${{ steps.publish.outputs.reports }}" ||
+    publishJob?.outputs?.system_failure !==
+      "${{ steps.publish.outputs.system_failure }}"
+  )
+    fail(
+      file,
+      "publisher must authenticate every decrypted outcome against the requested batch and expose typed routing outputs",
+    );
+
+  if (
+    workflow.jobs?.deploy?.if !==
+    "${{ always() && needs.publish.result == 'success' }}"
+  )
+    fail(file, "deployment must accept a successful mixed-batch publisher");
+
+  const continuation = workflow.jobs?.continue;
+  if (
+    !same(continuation?.needs, ["publish", "deploy"]) ||
+    !continuation?.if?.includes(
+      "needs.publish.outputs.system_failure != 'true'",
+    )
+  )
+    fail(file, "system failures must suppress ordinary batch continuation");
 }
 
 function checkPublisherBoundary(file, workflow) {

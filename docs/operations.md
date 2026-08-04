@@ -92,7 +92,8 @@ For every exact target, TavernKeeper:
    structured output, provider errors, and exhausted token or byte limits;
 6. revalidates exact HEAD and constructs the complete Technical Report V5;
 7. transports the sanitized candidate through authenticated encryption; and
-8. atomically publishes immutable JSON/HTML, history, and the preferred index.
+8. atomically publishes immutable JSON/HTML, history, and the preferred index
+   for every complete successful outcome in the batch.
 
 The model may classify candidate evidence as expected behavior, a minor
 weakness, a material vulnerability, or credible malicious behavior. It does
@@ -107,18 +108,21 @@ records `coverage_started_at`; later cycles preserve it. Never edit state
 concurrently with publication.
 
 System failures stop ordinary scanning and engage the circuit breaker. No
-degraded report is published. The initial attempt is followed by retries at
-T+1, T+2, and T+3 hours. No staff or owner notification is sent for
-intermediate failures. After the third delayed retry fails, TavernKeeper creates
-or updates one deduplicated `scanner-operations` Issue for TavernKeeper staff
-and remains stopped until staff fix the cause and explicitly resume.
-Repository-specific failures delay only that target. External project owners
-receive no operational-failure notification.
+degraded repository report is published. Every selected matrix target still
+finishes independently, and the serialized publisher retains complete reports
+from peer repositories while recording only unsuccessful targets for retry.
+The initial system-failure attempt is followed by retries at T+1, T+2, and T+3
+hours. No staff or owner notification is sent for intermediate failures. After
+the third delayed retry fails, TavernKeeper creates or updates one deduplicated
+`scanner-operations` Issue for TavernKeeper staff and remains stopped until
+staff fix the cause and explicitly resume. Repository-specific failures delay
+only that target. External project owners receive no operational-failure
+notification.
 
 Provider exhaustion, context insufficiency, invalid model output, and missing
 review coverage are failures, never permission to skip candidates, reduce the
-policy, switch models automatically, infer a low result, or publish a partial
-report.
+policy, switch models automatically, infer a low result, or publish an
+incomplete repository report.
 
 OpenGrep policy 3 treats only warning-level code 2 `Other syntax error` and
 warning-level code 3 `PartialParsing` tuple diagnostics as bounded parser
@@ -132,6 +136,10 @@ Before reactivation, remove the existing Wandlight and Recursion report trees
 and preferred-index entries, prove Tavernary has imported the empty state, and
 then scan each canary once under the new policy. Do not reset other repository
 history as part of this release gate.
+
+Batch scheduling, retention, or deployment-routing changes that do not alter
+scanner behavior or report output do not trigger the Wandlight and Recursion
+reset gate.
 
 ## Staff workflows
 
