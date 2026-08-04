@@ -77,7 +77,17 @@ jobs:
           git config user.email "tavernkeeper@users.noreply.github.com"
           git add operations/state.json
           git commit -m "chore(ops): apply staff queue operation"
-          git push origin HEAD:main
+          push_succeeded="false"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              push_succeeded="true"
+              break
+            fi
+            if [[ "$attempt" -lt 3 ]]; then
+              sleep "$((attempt * 15))"
+            fi
+          done
+          test "$push_succeeded" = "true"
       - name: Dispatch reconcile
         if: ${{ inputs.operation != 'pause' }}
         env:
