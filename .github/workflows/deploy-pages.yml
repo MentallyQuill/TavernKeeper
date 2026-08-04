@@ -6,6 +6,9 @@ on:
       source_sha:
         type: string
         required: true
+      automatic:
+        type: boolean
+        required: true
   workflow_dispatch:
     inputs:
       source_sha:
@@ -24,7 +27,7 @@ permissions:
 
 jobs:
   authorize-manual:
-    if: ${{ github.event_name == 'workflow_dispatch' }}
+    if: ${{ !inputs.automatic }}
     runs-on: ubuntu-latest
     environment: tavernkeeper-staff
     permissions: {}

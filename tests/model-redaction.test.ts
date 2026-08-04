@@ -24,4 +24,21 @@ describe("model source redaction", () => {
     expect(redacted).toContain("[REDACTED_SECRET:");
     expect(redacted.split("\n")).toHaveLength(source.split("\n").length);
   });
+
+  test("redacts generic secret assignments rejected by public reports", () => {
+    const source = [
+      "token: fixturetoken123",
+      "secret = fixturesecret456",
+      "api key: fixtureapikey789",
+      "password = fixturepassword123",
+    ].join("\n");
+
+    const redacted = redactSource(source);
+
+    expect(redacted).not.toContain("fixturetoken123");
+    expect(redacted).not.toContain("fixturesecret456");
+    expect(redacted).not.toContain("fixtureapikey789");
+    expect(redacted).not.toContain("fixturepassword123");
+    expect(redacted.match(/\[REDACTED_SECRET:/gu)).toHaveLength(4);
+  });
 });

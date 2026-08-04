@@ -2,21 +2,13 @@ import {
   ScanReportV5Schema,
   type ScanReportV5,
 } from "../contracts/reports-v5.js";
+import { redactSource } from "../model/redaction.js";
 import { reportIdentity } from "./report-path.js";
 
 const CONTROL_CHARACTER = /[\u0000-\u001f\u007f-\u009f]/u;
 const URL_LIKE = /\b(?:https?|ftp):\/\/|\bwww\./iu;
 const LOCAL_PATH =
   /(?:\b[A-Za-z]:[\\/]|(?:^|[\s"'(])\/(?:Users|home|tmp|var\/tmp|private\/tmp)\/)/u;
-const SECRET_SHAPED = [
-  /\bgithub_pat_[A-Za-z0-9_]{20,}\b/u,
-  /\bgh[pousr]_[A-Za-z0-9]{20,}\b/u,
-  /\bsk-[A-Za-z0-9_-]{16,}\b/u,
-  /\bAKIA[0-9A-Z]{16}\b/u,
-  /-----BEGIN [A-Z ]*PRIVATE KEY-----/u,
-  /\bBearer\s+[A-Za-z0-9._~+/-]{16,}=*/iu,
-  /\b(?:api[_ -]?key|token|secret|password)\s*[:=]\s*["']?[A-Za-z0-9_./+=-]{8,}/iu,
-];
 const SOURCE_SHAPED = [
   /```/u,
   /<\/?(?:script|style|iframe|object|embed)\b/iu,
@@ -73,7 +65,7 @@ function inspectString(value: string, path: string[]) {
     reject(`${field} contains an unapproved URL.`);
   if (narrative && LOCAL_PATH.test(value))
     reject(`${field} contains a local filesystem path.`);
-  if (SECRET_SHAPED.some((pattern) => pattern.test(value)))
+  if (redactSource(value) !== value)
     reject(`${field} contains secret-shaped output.`);
   if (narrative && SOURCE_SHAPED.some((pattern) => pattern.test(value)))
     reject(`${field} contains a source excerpt.`);

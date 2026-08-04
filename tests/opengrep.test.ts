@@ -283,27 +283,83 @@ describe("OpenGrep adapter", () => {
     });
   });
 
-  test("rejects a nonzero scanner exit even when JSON contains only approved warnings", async () => {
-    const runner = new OpenGrepRunner(
-      resultJson("src/index.ts", [
-        { code: 2, level: "warn", type: "Other syntax error" },
-      ]),
-      2,
-    );
+  test.each([
+    {
+      exitCode: 2,
+      diagnostic: { code: 2, level: "warn", type: "Other syntax error" },
+    },
+    {
+      exitCode: 3,
+      diagnostic: {
+        code: 3,
+        level: "warn",
+        type: ["PartialParsing", [{ line: 1, column: 1 }]],
+      },
+    },
+  ])(
+    "preserves findings when approved parser warnings produce exit $exitCode",
+    async ({ exitCode, diagnostic }) => {
+      const runner = new OpenGrepRunner(
+        resultJson("src/index.ts", [diagnostic]),
+        exitCode,
+      );
 
-    await expect(
-      runOpenGrep({
+      const run = await runOpenGrep({
         root: "C:/scan/repository",
         rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
         runner,
         version: "1.26.0",
-      }),
-    ).rejects.toMatchObject({
-      code: "SCANNER_FAILED",
-      scope: "system",
-      component: "opengrep",
-    });
-  });
+      });
+
+      expect(run.status).toBe("completed");
+      expect(run.findings).toHaveLength(1);
+    },
+  );
+
+  test.each([1, 4, 137])(
+    "rejects unexpected scanner exit %s even when JSON contains only approved warnings",
+    async (exitCode) => {
+      const runner = new OpenGrepRunner(
+        resultJson("src/index.ts", [
+          { code: 2, level: "warn", type: "Other syntax error" },
+        ]),
+        exitCode,
+      );
+
+      await expect(
+        runOpenGrep({
+          root: "C:/scan/repository",
+          rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+          runner,
+          version: "1.26.0",
+        }),
+      ).rejects.toMatchObject({
+        code: "SCANNER_FAILED",
+        scope: "system",
+        component: "opengrep",
+      });
+    },
+  );
+
+  test.each([2, 3])(
+    "rejects approved exit %s without a matching parser warning",
+    async (exitCode) => {
+      const runner = new OpenGrepRunner(resultJson("src/index.ts"), exitCode);
+
+      await expect(
+        runOpenGrep({
+          root: "C:/scan/repository",
+          rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+          runner,
+          version: "1.26.0",
+        }),
+      ).rejects.toMatchObject({
+        code: "SCANNER_FAILED",
+        scope: "system",
+        component: "opengrep",
+      });
+    },
+  );
 
   test("rejects malformed scanner output", async () => {
     const runner = new OpenGrepRunner(

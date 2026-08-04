@@ -75,7 +75,7 @@ function cleanText(value: string, maxLength: number) {
     .slice(0, maxLength);
 }
 
-function parseReport(root: string, stdout: string) {
+function parseReport(root: string, stdout: string, exitCode: number) {
   let report: z.infer<typeof OpenGrepReportSchema>;
   try {
     report = OpenGrepReportSchema.parse(JSON.parse(stdout));
@@ -87,7 +87,13 @@ function parseReport(root: string, stdout: string) {
       "opengrep",
     );
   }
-  if (!report.errors.every(isToleratedParserWarning))
+  const hasOnlyToleratedParserWarnings = report.errors.every(
+    isToleratedParserWarning,
+  );
+  const hasWarningBackedExit =
+    exitCode === 0 ||
+    ((exitCode === 2 || exitCode === 3) && report.errors.length > 0);
+  if (!hasWarningBackedExit || !hasOnlyToleratedParserWarnings)
     throw new ScannerError(
       "SCANNER_FAILED",
       "system",
@@ -164,7 +170,11 @@ export async function runOpenGrep({
     },
   );
   if (!result.ok) throw scannerExecutionError("opengrep", result.error.code);
-  if (result.value.exitCode !== 0)
+  if (
+    result.value.exitCode !== 0 &&
+    result.value.exitCode !== 2 &&
+    result.value.exitCode !== 3
+  )
     throw new ScannerError(
       "SCANNER_FAILED",
       "system",
@@ -175,6 +185,6 @@ export async function runOpenGrep({
     name: "opengrep",
     version,
     status: "completed",
-    findings: parseReport(root, result.value.stdout),
+    findings: parseReport(root, result.value.stdout, result.value.exitCode),
   };
 }

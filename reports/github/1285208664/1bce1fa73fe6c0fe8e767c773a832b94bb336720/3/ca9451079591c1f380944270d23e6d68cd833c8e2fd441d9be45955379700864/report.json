@@ -1,11 +1,11 @@
 {
   "schema_version": 5,
-  "report_id": "6c1e29d5430dd3dcb43f14c575e2c0a3aae62e1463eff0d402f0c15d9d37d260",
-  "report_digest": "6c1e29d5430dd3dcb43f14c575e2c0a3aae62e1463eff0d402f0c15d9d37d260",
+  "report_id": "ca9451079591c1f380944270d23e6d68cd833c8e2fd441d9be45955379700864",
+  "report_digest": "ca9451079591c1f380944270d23e6d68cd833c8e2fd441d9be45955379700864",
   "report_version": 1,
   "supersedes_report_id": null,
   "scanner_version": "0.1.0",
-  "scanner_policy_version": "2",
+  "scanner_policy_version": "3",
   "rule_catalog_version": "1",
   "package_schema_version": 1,
   "contextual_review_policy_version": "1",
@@ -18,15 +18,15 @@
   "repository": "MentallyQuill/Recursion",
   "canonical_url": "https://github.com/MentallyQuill/Recursion",
   "target_sha": "1bce1fa73fe6c0fe8e767c773a832b94bb336720",
-  "completed_at": "2026-08-03T10:32:31.505Z",
+  "completed_at": "2026-08-03T23:43:57.471Z",
   "assessment_method": "deterministic-evidence-contextual-review",
   "contextual_reviewer": {
     "provider": "nano-gpt.com",
     "model": "deepseek/deepseek-v4-flash-0731:thinking"
   },
   "review_usage": {
-    "input_tokens": 10292,
-    "output_tokens": 2136,
+    "input_tokens": 10290,
+    "output_tokens": 2421,
     "cache_read_tokens": 0,
     "reasoning_tokens": 0
   },
@@ -83,7 +83,7 @@
       },
       {
         "name": "tavernkeeper-static",
-        "version": "2",
+        "version": "3",
         "status": "completed"
       },
       {
@@ -206,8 +206,8 @@
       "exploitability": "unlikely",
       "confidence": "high",
       "recommended_risk": "low",
-      "technical_explanation": "The matched text is a test fixture string inside a developer test script. It contains a fake PEM header and placeholder values used to verify that provider-facing request data redacts multi-token secret assignments. No real private key material is present, and the file is tooling not shipped to users.",
-      "layman_explanation": "This is a fake private key string used in a test to make sure the extension hides secret-like text. It is not a real key and is not part of the extension users run.",
+      "technical_explanation": "The flagged text is a deliberately constructed test fixture inside a test script. It contains the literal string 'privateKeyPem=-----BEGIN PRIVATE KEY----- ABCDEF' as part of a redaction test that verifies provider-facing request data strips multi-token secret-like values. The value is not a real private key, is not loaded or used as a credential, and appears only in test assertions. Gitleaks matched the PEM header pattern, but the surrounding code and file role confirm this is a false positive.",
+      "layman_explanation": "This is a test file that checks whether the extension removes fake secret-looking text before sending data to a model provider. The 'private key' text is made up for testing, not a real credential.",
       "developer_action": "none",
       "locations": [
         {
@@ -227,8 +227,8 @@
       "exploitability": "unlikely",
       "confidence": "high",
       "recommended_risk": "low",
-      "technical_explanation": "The matched lines are part of the same test fixture, using a fake PEM header and placeholder key values in runId and snapshotHash fields to assert that redaction removes them from provider-facing payloads. This is intentional test data, not a credential.",
-      "layman_explanation": "This is another fake private key string in the same test. It exists only to check that secret-like text gets removed before being sent to the AI provider.",
+      "technical_explanation": "The flagged lines are part of the same redaction test fixture, using fake PEM-like strings such as '-----BEGIN PRIVATE KEY----- RUNKEY' and '-----BEGIN PRIVATE KEY----- HASHKEY' in run and snapshot fields. These values are intentionally included to assert that multi-token secret-like content is redacted from provider-facing request data. They are not real credentials and are not used outside the test.",
+      "layman_explanation": "The flagged lines are made-up secret-like text used to test that the extension hides such text before sending requests. No real private key is present.",
       "developer_action": "none",
       "locations": [
         {
@@ -248,8 +248,8 @@
       "exploitability": "unlikely",
       "confidence": "high",
       "recommended_risk": "low",
-      "technical_explanation": "The flagged lines are test fixtures inside a developer test script. They contain deliberately fake private key markers such as 'BEGIN PRIVATE KEY' followed by placeholder values like 'HASHKEY' and 'SNAPKEY'. The surrounding test code asserts that these placeholder secret values are redacted from provider-facing request payloads. No real private key material is present; the strings are synthetic inputs used to verify the project's redaction behavior.",
-      "layman_explanation": "This is a test file that checks whether the extension removes secret-looking text before sending data to a model provider. The flagged lines are made-up example secrets used for testing, not real credentials. Nothing harmful is happening.",
+      "technical_explanation": "The flagged text is a synthetic test fixture inside a tooling script. It uses a PEM-style marker with placeholder values such as ABCDEF, RUNKEY, HASHKEY, and SNAPKEY to verify that provider-facing request data redacts privateKeyPem-like secrets. No real private key material is present, the values are never used in a runtime code path, and the surrounding assertions confirm the redaction behavior rather than exposing credentials.",
+      "layman_explanation": "This is test data used to check that the extension scrubs secret-looking text before sending it to a model provider. The flagged lines contain fake placeholder keys, not real credentials.",
       "developer_action": "none",
       "locations": [
         {
@@ -269,8 +269,8 @@
       "exploitability": "unlikely",
       "confidence": "high",
       "recommended_risk": "low",
-      "technical_explanation": "The flagged lines are part of a test case that constructs a request with a fake private key placeholder ('BEGIN PRIVATE KEY' plus 'RUNKEY') and then verifies the redaction logic strips it from the provider-facing payload. The values are clearly synthetic test data, not real credentials, and the test asserts the secret-like content is removed. This is a legitimate test fixture for the project's stated goal of keeping provider secrets out of request data.",
-      "layman_explanation": "This is a test that makes sure the extension hides fake secret text before sending it to the AI provider. The flagged content is a made-up key used only for testing, so there is no real security problem.",
+      "technical_explanation": "The flagged lines are part of the same test fixture block in test-cards.mjs. They construct fake multiline reason, run, snapshot hash, and snapshot message strings containing PEM-style markers solely to assert that multi-token secret values are redacted from provider-facing request data. The values are placeholders, not real key material, and the script is developer tooling rather than shipped extension runtime code.",
+      "layman_explanation": "These lines are fake secret-looking strings written into a test to make sure the extension removes such text before sending requests. No real private key is involved.",
       "developer_action": "none",
       "locations": [
         {
@@ -281,37 +281,65 @@
       ]
     }
   ],
-  "observations": [],
+  "observations": [
+    {
+      "observation_id": "fb9f32f8995afade255675763af28e86959cd0d38b1da5c09163894ffce68154",
+      "related_candidate_ids": [
+        "25c67b5b26c4835717441a65ca1aa0323c3c5015d1b96234c654c02be2ae85b6",
+        "90f59db67502b1b36dedeb050f9b87f960847cc47bba98a0615f24a2d930f367"
+      ],
+      "evidence_ids": [
+        "25c67b5b26c4835717441a65ca1aa0323c3c5015d1b96234c654c02be2ae85b6",
+        "90f59db67502b1b36dedeb050f9b87f960847cc47bba98a0615f24a2d930f367"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "title": "Test fixture PEM markers flagged as private keys",
+      "technical_explanation": "Both gitleaks findings originate from deliberate PEM-style placeholder strings embedded in redaction tests. The test file verifies that privateKeyPem-like values are stripped from provider-facing payloads, so the presence of these markers is expected and does not indicate credential exposure.",
+      "layman_explanation": "A security scanner saw fake key-shaped text in a test file, but the text is intentionally fake and is used to confirm the extension hides such text properly.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "tools/scripts/test-cards.mjs",
+          "line_start": 744,
+          "line_end": 750
+        }
+      ]
+    }
+  ],
   "counts": {
     "candidates": 4,
     "assessments": 4,
-    "observations": 0,
-    "items": 4,
+    "observations": 1,
+    "items": 5,
     "disposition": {
-      "expected_behavior": 4,
+      "expected_behavior": 5,
       "minor_weakness": 0,
       "material_vulnerability": 0,
       "credible_malicious_behavior": 0
     },
     "impact": {
-      "none": 4,
+      "none": 5,
       "low": 0,
       "medium": 0,
       "high": 0,
       "critical": 0
     },
     "exploitability": {
-      "unlikely": 4,
+      "unlikely": 5,
       "plausible": 0,
       "readily_exploitable": 0
     },
     "confidence": {
       "low": 0,
       "medium": 0,
-      "high": 4
+      "high": 5
     },
     "recommended_risk": {
-      "low": 4,
+      "low": 5,
       "material": 0,
       "high": 0
     }
