@@ -36,12 +36,23 @@ function entryForTarget(target: Target, ticket: number): ScanQueueEntry {
   };
 }
 
+function parseTargetIdentity(target: Target) {
+  return TargetSchema.parse({
+    source_id: target.source_id,
+    provider: target.provider,
+    repository_id: target.repository_id,
+    repository: target.repository,
+    target_sha: target.target_sha,
+    canonical_url: target.canonical_url,
+  });
+}
+
 export function appendQueuedTarget(
   stateInput: OperationsState,
   targetInput: Target,
 ) {
   const state = OperationsStateSchema.parse(stateInput);
-  const target = TargetSchema.parse(targetInput);
+  const target = parseTargetIdentity(targetInput);
   const existing = state.scan_queue.entries.find(
     ({ repository_id }) => repository_id === target.repository_id,
   );
@@ -89,7 +100,7 @@ export function rotateFailedTarget(
   input: { target: Target; failure: FailureDescriptor; at: string },
 ) {
   let state = OperationsStateSchema.parse(stateInput);
-  const target = TargetSchema.parse(input.target);
+  const target = parseTargetIdentity(input.target);
   const failure = FailureDescriptorSchema.parse(input.failure);
   if (!Number.isFinite(Date.parse(input.at)))
     throw new Error("Queue failure time is invalid.");
@@ -148,7 +159,7 @@ export function replaceQueuedTargetSha(
   at: string,
 ) {
   const state = OperationsStateSchema.parse(stateInput);
-  const target = TargetSchema.parse(targetInput);
+  const target = parseTargetIdentity(targetInput);
   if (!Number.isFinite(Date.parse(at)))
     throw new Error("Queue replacement time is invalid.");
   const current = state.scan_queue.entries.find(
@@ -183,7 +194,7 @@ export function removeSuccessfulTarget(
   at: string,
 ) {
   const state = OperationsStateSchema.parse(stateInput);
-  const target = TargetSchema.parse(targetInput);
+  const target = parseTargetIdentity(targetInput);
   if (!Number.isFinite(Date.parse(at)))
     throw new Error("Queue success time is invalid.");
   return OperationsStateSchema.parse({
