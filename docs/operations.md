@@ -157,6 +157,14 @@ review coverage are failures, never permission to skip candidates, reduce the
 policy, switch models automatically, infer a low result, or publish an
 incomplete repository report.
 
+The contextual-review workflow step has a 16-minute outer timeout in addition
+to the model client's request policy. This guard covers a provider that returns
+headers but never closes its response stream. A timed-out step still reaches
+the always-run sanitized transition, encrypted publication, queue rotation,
+and continuation path; it cannot retain the global scan concurrency slot
+indefinitely. Source-level response-stream diagnostics and repair remain in the
+coordinated Scan Failure Resilience scope.
+
 OpenGrep policy 3 treats only warning-level code 2 `Other syntax error` and
 warning-level code 3 `PartialParsing` tuple diagnostics as bounded parser
 limitations. Valid findings remain eligible for contextual review when those

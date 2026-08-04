@@ -1,0 +1,231 @@
+{
+  "schema_version": 5,
+  "report_id": "e38e150788b8805eccc3c093457711a074d12f762a7454160512475b39a61789",
+  "report_digest": "e38e150788b8805eccc3c093457711a074d12f762a7454160512475b39a61789",
+  "report_version": 1,
+  "supersedes_report_id": null,
+  "scanner_version": "0.1.0",
+  "scanner_policy_version": "3",
+  "rule_catalog_version": "1",
+  "package_schema_version": 1,
+  "contextual_review_policy_version": "1",
+  "ecosystem_context_version": "sillytavern-community-v1",
+  "prompt_version": "contextual-review-v1",
+  "assessment_schema_version": "contextual-assessment-v1",
+  "source_id": "github-1125809015",
+  "provider": "github",
+  "repository_id": 1125809015,
+  "repository": "GetfroggyHoe/universal-immersion-engine",
+  "canonical_url": "https://github.com/GetfroggyHoe/universal-immersion-engine",
+  "target_sha": "d51c17548fa85fc667f9862f47b60f179065229e",
+  "completed_at": "2026-08-04T18:35:41.169Z",
+  "assessment_method": "deterministic-evidence-contextual-review",
+  "contextual_reviewer": {
+    "provider": "nano-gpt.com",
+    "model": "zai-org/glm-5.2:thinking"
+  },
+  "review_usage": {
+    "input_tokens": 10294,
+    "output_tokens": 1447,
+    "cache_read_tokens": 5960,
+    "reasoning_tokens": 0
+  },
+  "history": {
+    "base_sha": null,
+    "commits": 20
+  },
+  "coverage": {
+    "inventory": {
+      "files": 122,
+      "bytes": 2452009,
+      "first_party_text_files": 121,
+      "first_party_text_bytes": 2436337,
+      "excluded": {
+        "dependency_lockfiles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "vendored_dependencies": {
+          "files": 0,
+          "bytes": 0
+        },
+        "generated_bundles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "minified_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "binaries": {
+          "files": 1,
+          "bytes": 15672
+        },
+        "archives": {
+          "files": 0,
+          "bytes": 0
+        },
+        "oversized_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "unsafe_entries": {
+          "files": 0,
+          "bytes": 0
+        }
+      }
+    },
+    "tools": [
+      {
+        "name": "inventory",
+        "version": "0.1.0",
+        "status": "completed"
+      },
+      {
+        "name": "tavernkeeper-static",
+        "version": "3",
+        "status": "completed"
+      },
+      {
+        "name": "gitleaks",
+        "version": "8.30.1",
+        "status": "completed"
+      },
+      {
+        "name": "opengrep",
+        "version": "1.26.0",
+        "status": "completed"
+      },
+      {
+        "name": "osv-scanner",
+        "version": "2.4.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "zizmor",
+        "version": "1.28.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "malcontent",
+        "version": "1.25.7",
+        "status": "completed"
+      }
+    ],
+    "evidence_validation": {
+      "status": "completed",
+      "validated_candidates": 1
+    }
+  },
+  "review_coverage": {
+    "required": 1,
+    "completed": 1
+  },
+  "candidates": [
+    {
+      "candidate_id": "7655b9ceda8da57833eab6aa1f7fd5515d425cb523410cbe4e7baef1502fab8c",
+      "evidence_id": "7655b9ceda8da57833eab6aa1f7fd5515d425cb523410cbe4e7baef1502fab8c",
+      "origin": "opengrep",
+      "scanner_version": "1.26.0",
+      "rule_id": "tavernkeeper.dynamic-execution.javascript-eval",
+      "category": "dynamic-execution",
+      "scanner_severity": "medium",
+      "scanner_confidence": "high",
+      "path": "src/modules/phone.js",
+      "line_start": 1974,
+      "line_end": 1974,
+      "evidence_sha": "d51c17548fa85fc667f9862f47b60f179065229e",
+      "file_role": "production",
+      "title": "OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval",
+      "explanation": "OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.",
+      "remediation": "Review the matched code path and remove or constrain the flagged behavior when it is not required."
+    }
+  ],
+  "assessments": [
+    {
+      "candidate_id": "7655b9ceda8da57833eab6aa1f7fd5515d425cb523410cbe4e7baef1502fab8c",
+      "evidence_ids": [
+        "7655b9ceda8da57833eab6aa1f7fd5515d425cb523410cbe4e7baef1502fab8c"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "technical_explanation": "The Function constructor is used to evaluate a calculator expression. Before execution, the expression is normalized and validated against a strict whitelist regex that permits only digits, arithmetic operators, parentheses, decimal points, and whitespace. This prevents injection of arbitrary JavaScript. The expression is built from local calculator UI button presses, and the result is only accepted if it is a finite number. This is a standard and safe calculator implementation pattern.",
+      "layman_explanation": "This is a calculator feature that evaluates math expressions typed by the user. Before running the expression, it checks that it contains only numbers and math symbols, so no harmful code can sneak in. This is normal and expected for a calculator app.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "src/modules/phone.js",
+          "line_start": 1974,
+          "line_end": 1974
+        }
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "2ed9e31b45d4f2a73366877a6facfafe844e1eeeb0264b756102e6e302fe29c5",
+      "related_candidate_ids": [
+        "7655b9ceda8da57833eab6aa1f7fd5515d425cb523410cbe4e7baef1502fab8c"
+      ],
+      "evidence_ids": [
+        "7655b9ceda8da57833eab6aa1f7fd5515d425cb523410cbe4e7baef1502fab8c"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "title": "Calculator expression validation is effective",
+      "technical_explanation": "The regex at line 1972 restricts the evaluated string to digits, arithmetic operators, parentheses, decimal points, and whitespace only. This whitelist approach effectively prevents arbitrary code execution via the Function constructor on line 1974.",
+      "layman_explanation": "The calculator checks that only math characters are present before doing the calculation, which keeps it safe.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "src/modules/phone.js",
+          "line_start": 1972,
+          "line_end": 1974
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "candidates": 1,
+    "assessments": 1,
+    "observations": 1,
+    "items": 2,
+    "disposition": {
+      "expected_behavior": 2,
+      "minor_weakness": 0,
+      "material_vulnerability": 0,
+      "credible_malicious_behavior": 0
+    },
+    "impact": {
+      "none": 2,
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "exploitability": {
+      "unlikely": 2,
+      "plausible": 0,
+      "readily_exploitable": 0
+    },
+    "confidence": {
+      "low": 0,
+      "medium": 0,
+      "high": 2
+    },
+    "recommended_risk": {
+      "low": 2,
+      "material": 0,
+      "high": 0
+    }
+  },
+  "limitations": [
+    "This advisory review cannot prove the absence of unknown behavior."
+  ]
+}

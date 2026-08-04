@@ -207,6 +207,7 @@ describe("GitHub workflow security policy", () => {
       "npm run --silent finalize-target -- candidate.json",
     );
     expect(steps[reviewIndex]?.run).toBe("npm run --silent review-target");
+    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(16);
     expect(steps[reviewIndex]?.env).toMatchObject({
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
       TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
@@ -496,7 +497,14 @@ describe("GitHub workflow security policy", () => {
           /      - name: Contextually assess scanner evidence[\s\S]*?run: npm run --silent review-target\n/u,
           "",
         ),
-      /contextual review must separate preparation from V5 finalization/u,
+      /contextual review must remain bounded between preparation and V5 finalization/u,
+    );
+  });
+
+  test("workflow policy rejects an unbounded contextual review step", async () => {
+    await expectPolicyFailure(
+      (text) => text.replace("        timeout-minutes: 16\n", ""),
+      /contextual review must remain bounded between preparation and V5 finalization/u,
     );
   });
 
