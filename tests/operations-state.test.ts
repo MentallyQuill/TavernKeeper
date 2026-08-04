@@ -109,6 +109,37 @@ describe("secret-free operational state", () => {
     ).toThrow();
   });
 
+  test("accepts only the legacy hourly migration value for old model reply retries", () => {
+    const now = "2026-07-31T12:00:00.000Z";
+    const retry = {
+      source_id: "github-42",
+      repository_id: 42,
+      repository: "owner/repo",
+      target_sha: "a".repeat(40),
+      error_fingerprint: "b".repeat(64),
+      error_code: "MODEL_INVALID_RESPONSE",
+      scope: "repository" as const,
+      initial_failed_at: now,
+      last_failed_at: now,
+      attempt: 1,
+      next_retry_at: "2026-07-31T13:00:00.000Z",
+      exhausted: false,
+    };
+
+    expect(
+      parseOperationsState({
+        ...initialOperationsState(now),
+        retries: [retry],
+      }).retries,
+    ).toEqual([retry]);
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(now),
+        retries: [{ ...retry, next_retry_at: "2026-07-31T12:30:00.000Z" }],
+      }),
+    ).toThrow();
+  });
+
   test("serializes retry entries deterministically without diagnostic bodies", () => {
     const now = "2026-07-31T12:00:00.000Z";
     const first = recordFailure(initialOperationsState(now), {

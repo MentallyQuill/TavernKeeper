@@ -70,7 +70,10 @@ const baseSpec = {
       timeoutMs: 2_700_000 as const,
       maxOutputBytes: 104_857_600 as const,
     },
-    retry: { hoursFromInitialFailure: [1, 2, 3] as [1, 2, 3] },
+    retry: {
+      modelReplyMinutesFromInitialFailure: [5, 10, 15] as [5, 10, 15],
+      hoursFromInitialFailure: [1, 2, 3] as [1, 2, 3],
+    },
   },
   pins: {
     gitleaks: { version: "8.30.1" as const },

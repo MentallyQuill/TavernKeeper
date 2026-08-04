@@ -142,7 +142,7 @@ describe("GitHub workflow security policy", () => {
     expect(targeted.jobs.scan.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
     );
-    expect(retry.on.schedule).toEqual([{ cron: "17 * * * *" }]);
+    expect(retry.on.schedule).toEqual([{ cron: "*/5 * * * *" }]);
     expect(retry.jobs.reconcile.uses).toBe("./.github/workflows/reconcile.yml");
     expect(JSON.stringify(policy.jobs)).toContain("policy-rescan");
     expect(JSON.stringify(policy.jobs)).toContain("reconcile.yml");

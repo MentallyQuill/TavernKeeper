@@ -32,6 +32,10 @@ describe("deterministic scanner policy", () => {
     expect(policy.version).toBe("3");
     expect(policy.queue).toEqual({ batchSize: 5, maxParallel: 2 });
     expect(policy.history.maxCommits).toBe(20);
+    expect(policy.retry).toEqual({
+      modelReplyMinutesFromInitialFailure: [5, 10, 15],
+      hoursFromInitialFailure: [1, 2, 3],
+    });
     expect(policy).not.toHaveProperty("model");
     expect(
       ScannerPolicyV3Schema.safeParse({ ...policy, model: {} }).success,

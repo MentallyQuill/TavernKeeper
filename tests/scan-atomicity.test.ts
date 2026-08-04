@@ -37,7 +37,10 @@ const policy: ScannerPolicyV3 = {
     maxCompressionRatio: 200,
   },
   commands: { timeoutMs: 2_700_000, maxOutputBytes: 104_857_600 },
-  retry: { hoursFromInitialFailure: [1, 2, 3] },
+  retry: {
+    modelReplyMinutesFromInitialFailure: [5, 10, 15],
+    hoursFromInitialFailure: [1, 2, 3],
+  },
 };
 const runner: CommandRunner = {
   async run() {

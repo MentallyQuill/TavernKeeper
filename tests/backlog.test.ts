@@ -200,6 +200,76 @@ describe("derived scan backlog", () => {
     ]);
   });
 
+  test("dispatches a model reply retry exactly at its five-minute boundary", () => {
+    const retryTarget = target(44);
+    const state = recordFailure(runningState(), {
+      target: identity(retryTarget),
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+
+    expect(
+      planBatch(
+        manifest([retryTarget]),
+        emptyIndex,
+        state,
+        "2026-08-01T11:04:59.999Z",
+      ).targets,
+    ).toEqual([]);
+    expect(
+      planBatch(
+        manifest([retryTarget]),
+        emptyIndex,
+        state,
+        "2026-08-01T11:05:00.000Z",
+      ).targets,
+    ).toMatchObject([{ reason: "retry", target: { repository_id: 44 } }]);
+  });
+
+  test("pause and system breaker still block a due model reply retry", () => {
+    const replyTarget = target(44);
+    const recoveryTarget = target(45);
+    const replyState = recordFailure(runningState(), {
+      target: identity(replyTarget),
+      code: "MODEL_INVALID_RESPONSE",
+      scope: "repository",
+      at: "2026-08-01T10:00:00.000Z",
+    }).state;
+    const paused = pauseSystem(replyState, {
+      kind: "staff",
+      reasonCode: "STAFF_PAUSE",
+      at: "2026-08-01T10:05:00.000Z",
+    });
+
+    expect(
+      planBatch(
+        manifest([replyTarget]),
+        emptyIndex,
+        paused,
+        "2026-08-01T10:05:00.000Z",
+      ),
+    ).toMatchObject({ targets: [], remaining: 1, blocked: true });
+
+    const withBreaker = recordFailure(replyState, {
+      target: identity(recoveryTarget),
+      code: "MODEL_QUOTA",
+      scope: "system",
+      at: "2026-08-01T09:00:00.000Z",
+    }).state;
+    const plan = planBatch(
+      manifest([replyTarget, recoveryTarget]),
+      emptyIndex,
+      withBreaker,
+      "2026-08-01T10:05:00.000Z",
+    );
+
+    expect(plan.targets).toMatchObject([
+      { reason: "retry", target: { repository_id: 45 } },
+    ]);
+    expect(plan.remaining).toBe(1);
+  });
+
   test("age boosts a long-waiting old project without changing its lane", () => {
     const oldCoverage = "2026-05-01T00:00:00.000Z";
     const targets = manifest([

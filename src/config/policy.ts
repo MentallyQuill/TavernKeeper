@@ -21,6 +21,11 @@ const scannerPolicyShape = {
     maxOutputBytes: z.literal(104_857_600),
   }),
   retry: z.strictObject({
+    modelReplyMinutesFromInitialFailure: z.tuple([
+      z.literal(5),
+      z.literal(10),
+      z.literal(15),
+    ]),
     hoursFromInitialFailure: z.tuple([
       z.literal(1),
       z.literal(2),

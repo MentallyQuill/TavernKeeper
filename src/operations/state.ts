@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 import { FullShaSchema } from "../contracts/targets.js";
+import {
+  isRepositoryModelReplyFailure,
+  legacyHourlyRetryAt,
+  scheduledRetryAt,
+} from "./retry-schedule.js";
 
 const FingerprintSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const SafeCodeSchema = z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/u);
@@ -44,14 +49,26 @@ export const RetryEntrySchema = z
         });
       return;
     }
-    const expected = new Date(
-      initial + entry.attempt * 60 * 60 * 1_000,
-    ).toISOString();
-    if (entry.next_retry_at !== expected)
+    const expected = scheduledRetryAt({
+      initialFailedAt: entry.initial_failed_at,
+      attempt: entry.attempt,
+      scope: entry.scope,
+      code: entry.error_code,
+    });
+    const legacyExpected = isRepositoryModelReplyFailure(
+      entry.scope,
+      entry.error_code,
+    )
+      ? legacyHourlyRetryAt(entry.initial_failed_at, entry.attempt)
+      : null;
+    if (
+      entry.next_retry_at !== expected &&
+      (legacyExpected === null || entry.next_retry_at !== legacyExpected)
+    )
       context.addIssue({
         code: "custom",
         path: ["next_retry_at"],
-        message: "Retry time must be measured from the initial failure.",
+        message: "Retry time must match its failure class and initial failure.",
       });
   });
 
