@@ -9,7 +9,10 @@ import {
   ReportIndexV5Schema,
   ScanReportV5Schema,
 } from "../src/contracts/reports-v5.js";
-import { TargetManifestV2Schema } from "../src/contracts/targets.js";
+import {
+  TargetManifestV2Schema,
+  TargetManifestV3Schema,
+} from "../src/contracts/targets.js";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -24,6 +27,12 @@ const contracts: Array<{
     id: "https://tavernary.org/schemas/tavernkeeper-targets.v2.schema.json",
     title: "TavernKeeper V2 scan target manifest",
     schema: TargetManifestV2Schema,
+  },
+  {
+    file: "tavernary-targets.v3.schema.json",
+    id: "https://tavernary.org/schemas/tavernkeeper-targets.v3.schema.json",
+    title: "TavernKeeper V3 ranked scan target manifest",
+    schema: TargetManifestV3Schema,
   },
   {
     file: "scan-report.v5.schema.json",

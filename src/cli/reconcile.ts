@@ -32,7 +32,15 @@ export function buildReconcileMatrix({
   const index = parseReportIndexV5(indexInput);
   const state = parseOperationsState(stateInput);
   if (manifest.schema_version === 1) {
-    return { include: [], remaining: 0, blocked: false };
+    return {
+      include: [],
+      total_remaining: 0,
+      runnable_remaining: 0,
+      delayed_retries: 0,
+      shared_holds: 0,
+      next_wake_at: null,
+      blocked: false,
+    };
   }
   const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
   const targetMetadata = new Map(
@@ -53,7 +61,15 @@ export function buildReconcileMatrix({
       previous_report_shas: previousShas,
     });
   });
-  return { include, remaining: plan.remaining, blocked: plan.blocked };
+  return {
+    include,
+    total_remaining: plan.totalRemaining,
+    runnable_remaining: plan.runnableRemaining,
+    delayed_retries: plan.delayedRetries,
+    shared_holds: plan.sharedHolds,
+    next_wake_at: plan.nextWakeAt,
+    blocked: plan.blocked,
+  };
 }
 
 async function main() {

@@ -6,6 +6,7 @@ import { buildReconcileMatrix } from "../src/cli/reconcile.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
 import { buildTargetedMatrix } from "../src/cli/targeted-scan.js";
 import { initialOperationsState } from "../src/operations/state.js";
+import { recordFailure } from "../src/operations/retry.js";
 
 const now = "2026-07-31T18:00:00.000Z";
 
@@ -106,7 +107,14 @@ describe("JSON-only orchestration CLIs", () => {
     });
 
     expect(matrix.include).toHaveLength(5);
-    expect(matrix.remaining).toBe(3);
+    expect(matrix).toMatchObject({
+      total_remaining: 3,
+      runnable_remaining: 3,
+      delayed_retries: 0,
+      shared_holds: 0,
+      next_wake_at: null,
+      blocked: false,
+    });
     expect(matrix.include[0]).toMatchObject({
       repository_id: 1,
       report_version: 1,
@@ -218,6 +226,20 @@ describe("JSON-only orchestration CLIs", () => {
 
   test("lets a staff-targeted request override an already recorded retry", () => {
     const targetValue = target(42);
+    const {
+      project_kinds: _projectKinds,
+      catalog_priority: _catalogPriority,
+      ...targetIdentity
+    } = targetValue;
+    const retryState = recordFailure(initialOperationsState(now), {
+      target: targetIdentity,
+      failure: {
+        code: "SCANNER_TIMEOUT",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: now,
+    }).state;
     const matrix = buildTargetedMatrix({
       manifest: {
         schema_version: 2,
@@ -225,25 +247,7 @@ describe("JSON-only orchestration CLIs", () => {
         repositories: [targetValue],
       },
       index: { schema_version: 5, generated_at: now, reports: [] },
-      state: {
-        ...initialOperationsState(now),
-        retries: [
-          {
-            source_id: targetValue.source_id,
-            repository_id: targetValue.repository_id,
-            repository: targetValue.repository,
-            target_sha: targetValue.target_sha,
-            error_fingerprint: "a".repeat(64),
-            error_code: "SCANNER_TIMEOUT",
-            scope: "system",
-            initial_failed_at: now,
-            last_failed_at: now,
-            attempt: 1,
-            next_retry_at: "2026-07-31T19:00:00.000Z",
-            exhausted: false,
-          },
-        ],
-      },
+      state: retryState,
       repositoryId: 42,
       scannerPolicyVersion: "2",
       requestCreatedAt: now,
@@ -281,7 +285,7 @@ describe("JSON-only orchestration CLIs", () => {
         now,
         scannerPolicyVersion: "2",
       }),
-    ).toMatchObject({ include: [], remaining: 0 });
+    ).toMatchObject({ include: [], total_remaining: 0 });
   });
 
   test("staff scan requests accept only repository identity", () => {
