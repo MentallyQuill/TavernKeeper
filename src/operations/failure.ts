@@ -188,6 +188,7 @@ export function retryModeForFailure(
     throw new Error("Retry mode requires a target failure.");
   if (
     failure.code === "SCANNER_TIMEOUT" ||
+    failure.diagnostic === "rule_timeout" ||
     ["CHECKOUT_FAILED", "HISTORY_FAILED"].includes(failure.code)
   )
     return "automatic";

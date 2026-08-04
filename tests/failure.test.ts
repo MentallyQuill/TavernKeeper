@@ -99,6 +99,14 @@ describe("operation failure domains", () => {
         component: "opengrep",
       }),
     ).toBe("automatic");
+    expect(
+      retryModeForFailure({
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+        diagnostic: "rule_timeout",
+      }),
+    ).toBe("automatic");
   });
 
   test("preserves bounded scanner diagnostics", () => {
