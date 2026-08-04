@@ -1,38 +1,36 @@
-import { createHash } from "node:crypto";
-
 import { TargetSchema, type Target } from "../contracts/targets.js";
+import {
+  FailureDescriptorSchema,
+  failureFingerprint,
+  type FailureDescriptor,
+} from "./failure.js";
 import {
   OperationsStateSchema,
   type OperationsState,
-  type RetryEntry,
+  type SharedRecoveryHold,
+  type TargetRetryEntry,
 } from "./state.js";
-import { scheduledRetryAt } from "./retry-schedule.js";
+import { sharedProbeAt, targetRetryAt } from "./retry-schedule.js";
 
 export interface FailureTransition {
   state: OperationsState;
-  entry: RetryEntry;
+  entry: TargetRetryEntry;
   notification: "none" | "staff";
   terminal: boolean;
 }
 
-function fingerprint(scope: "repository" | "system", code: string) {
-  return createHash("sha256")
-    .update(JSON.stringify([scope, code]))
-    .digest("hex");
+function retryIdentity(
+  entry: Pick<TargetRetryEntry, "repository_id" | "target_sha">,
+  target: Target,
+) {
+  return (
+    entry.repository_id === target.repository_id &&
+    entry.target_sha === target.target_sha
+  );
 }
 
-function replaceTargetRetry(
-  retries: RetryEntry[],
-  entry: RetryEntry,
-): RetryEntry[] {
-  return [
-    ...retries.filter(
-      (candidate) =>
-        candidate.repository_id !== entry.repository_id ||
-        candidate.target_sha !== entry.target_sha,
-    ),
-    entry,
-  ].sort((left, right) =>
+function sortedRetries(retries: TargetRetryEntry[]) {
+  return [...retries].sort((left, right) =>
     [left.initial_failed_at, left.repository_id, left.target_sha]
       .join(":")
       .localeCompare(
@@ -43,84 +41,186 @@ function replaceTargetRetry(
   );
 }
 
+function updatedSharedHold(
+  current: SharedRecoveryHold | undefined,
+  failure: FailureDescriptor,
+  errorFingerprint: string,
+  at: string,
+): SharedRecoveryHold {
+  const isNewFailureTime =
+    current === undefined ||
+    Date.parse(at) > Date.parse(current.last_failed_at);
+  const consecutiveFailures =
+    current === undefined
+      ? 1
+      : current.consecutive_failures + (isNewFailureTime ? 1 : 0);
+  const lastFailedAt = isNewFailureTime ? at : current!.last_failed_at;
+  return {
+    error_fingerprint: errorFingerprint,
+    failure,
+    first_failed_at: current?.first_failed_at ?? at,
+    last_failed_at: lastFailedAt,
+    consecutive_failures: consecutiveFailures,
+    next_probe_at: sharedProbeAt(lastFailedAt, consecutiveFailures),
+    notified: consecutiveFailures >= 4,
+  };
+}
+
+function targetRetryEntry(input: {
+  target: Target;
+  failure: FailureDescriptor;
+  fingerprint: string;
+  existing?: TargetRetryEntry;
+  at: string;
+  sharedNextProbeAt?: string;
+}): TargetRetryEntry {
+  const initialFailedAt = input.existing?.initial_failed_at ?? input.at;
+  if (Date.parse(input.at) < Date.parse(initialFailedAt))
+    throw new Error("Retry failure precedes its initial failure.");
+
+  if (input.failure.domain === "target") {
+    const attempt = Math.min((input.existing?.attempt ?? 0) + 1, 4);
+    const exhausted = attempt === 4;
+    return {
+      source_id: input.target.source_id,
+      repository_id: input.target.repository_id,
+      repository: input.target.repository,
+      target_sha: input.target.target_sha,
+      failure: input.failure,
+      error_fingerprint: input.fingerprint,
+      initial_failed_at: initialFailedAt,
+      last_failed_at: input.at,
+      attempt,
+      next_retry_at: exhausted ? null : targetRetryAt(initialFailedAt, attempt),
+      exhausted,
+    };
+  }
+
+  if (input.failure.domain === "shared") {
+    if (input.sharedNextProbeAt === undefined)
+      throw new Error("Shared retry requires a recovery probe time.");
+    return {
+      source_id: input.target.source_id,
+      repository_id: input.target.repository_id,
+      repository: input.target.repository,
+      target_sha: input.target.target_sha,
+      failure: input.failure,
+      error_fingerprint: input.fingerprint,
+      initial_failed_at: initialFailedAt,
+      last_failed_at: input.at,
+      attempt: Math.min((input.existing?.attempt ?? 0) + 1, 4),
+      next_retry_at: input.sharedNextProbeAt,
+      exhausted: false,
+    };
+  }
+
+  return {
+    source_id: input.target.source_id,
+    repository_id: input.target.repository_id,
+    repository: input.target.repository,
+    target_sha: input.target.target_sha,
+    failure: input.failure,
+    error_fingerprint: input.fingerprint,
+    initial_failed_at: initialFailedAt,
+    last_failed_at: input.at,
+    attempt: Math.min((input.existing?.attempt ?? 0) + 1, 4),
+    next_retry_at: null,
+    exhausted: true,
+  };
+}
+
 export function recordFailure(
   stateInput: OperationsState,
   input: {
     target: Target;
-    code: string;
-    scope: "repository" | "system";
+    failure: FailureDescriptor;
     at: string;
-    credentialCompromise?: boolean;
   },
 ): FailureTransition {
   const state = OperationsStateSchema.parse(stateInput);
   const target = TargetSchema.parse(input.target);
-  if (!/^[A-Z][A-Z0-9_]{0,79}$/u.test(input.code))
-    throw new Error("Retry error code is invalid.");
-  const errorFingerprint = fingerprint(input.scope, input.code);
-  const existing = state.retries.find(
-    (entry) =>
-      entry.repository_id === target.repository_id &&
-      entry.target_sha === target.target_sha &&
-      entry.error_fingerprint === errorFingerprint,
+  const failure = FailureDescriptorSchema.parse(input.failure);
+  const errorFingerprint = failureFingerprint(failure);
+  const priorForTarget = state.target_retries.find((entry) =>
+    retryIdentity(entry, target),
+  );
+  const existing =
+    priorForTarget?.error_fingerprint === errorFingerprint
+      ? priorForTarget
+      : undefined;
+  const retriesWithoutTarget = state.target_retries.filter(
+    (entry) => !retryIdentity(entry, target),
   );
 
-  const initialFailedAt = existing?.initial_failed_at ?? input.at;
-  if (Date.parse(input.at) < Date.parse(initialFailedAt))
-    throw new Error("Retry failure precedes its initial failure.");
+  let sharedHolds = state.shared_holds.filter((hold) => {
+    if (
+      priorForTarget === undefined ||
+      priorForTarget.error_fingerprint === errorFingerprint ||
+      hold.error_fingerprint !== priorForTarget.error_fingerprint
+    )
+      return true;
+    return retriesWithoutTarget.some(
+      (entry) => entry.error_fingerprint === hold.error_fingerprint,
+    );
+  });
+
+  let sharedHold: SharedRecoveryHold | undefined;
+  if (failure.domain === "shared") {
+    const current = sharedHolds.find(
+      ({ error_fingerprint }) => error_fingerprint === errorFingerprint,
+    );
+    sharedHold = updatedSharedHold(
+      current,
+      failure,
+      errorFingerprint,
+      input.at,
+    );
+    sharedHolds = [
+      ...sharedHolds.filter(
+        ({ error_fingerprint }) => error_fingerprint !== errorFingerprint,
+      ),
+      sharedHold,
+    ];
+  }
+
+  const entry = targetRetryEntry({
+    target,
+    failure,
+    fingerprint: errorFingerprint,
+    ...(existing === undefined ? {} : { existing }),
+    at: input.at,
+    ...(sharedHold === undefined
+      ? {}
+      : { sharedNextProbeAt: sharedHold.next_probe_at }),
+  });
   const terminal =
-    input.credentialCompromise === true || existing?.attempt === 3;
-  const attempt = terminal
-    ? 3
-    : existing === undefined
-      ? 1
-      : existing.attempt + 1;
-  const entry: RetryEntry = {
-    source_id: target.source_id,
-    repository_id: target.repository_id,
-    repository: target.repository,
-    target_sha: target.target_sha,
-    error_fingerprint: errorFingerprint,
-    error_code: input.code,
-    scope: input.scope,
-    initial_failed_at: initialFailedAt,
-    last_failed_at: input.at,
-    attempt,
-    next_retry_at: terminal
-      ? null
-      : scheduledRetryAt({
-          initialFailedAt,
-          attempt,
-          scope: input.scope,
-          code: input.code,
-        }),
-    exhausted: terminal,
-  };
-  const circuitBreaker =
-    input.scope === "system"
-      ? {
-          error_fingerprint: errorFingerprint,
-          engaged_at: state.circuit_breaker?.engaged_at ?? initialFailedAt,
-          terminal,
-        }
-      : state.circuit_breaker;
+    failure.domain === "security" ||
+    (failure.domain === "target" && entry.exhausted);
+  const notification =
+    terminal || (sharedHold?.notified ?? false) ? "staff" : "none";
+
   const nextState = OperationsStateSchema.parse({
     ...state,
     updated_at: input.at,
-    retries: replaceTargetRetry(state.retries, entry),
-    circuit_breaker: circuitBreaker,
+    pause:
+      failure.domain === "security"
+        ? {
+            kind: "system",
+            reason_code: "SECURITY_HOLD",
+            paused_at: input.at,
+          }
+        : state.pause,
+    target_retries: sortedRetries([...retriesWithoutTarget, entry]),
+    shared_holds: sharedHolds.sort((left, right) =>
+      left.error_fingerprint.localeCompare(right.error_fingerprint),
+    ),
     active_scans: state.active_scans.filter(
       (active) =>
         active.repository_id !== target.repository_id ||
         active.target_sha !== target.target_sha,
     ),
   });
-  return {
-    state: nextState,
-    entry,
-    notification: terminal ? "staff" : "none",
-    terminal,
-  };
+  return { state: nextState, entry, notification, terminal };
 }
 
 export function dueRetries(stateInput: OperationsState, now: string) {
@@ -128,16 +228,36 @@ export function dueRetries(stateInput: OperationsState, now: string) {
   const nowMs = Date.parse(now);
   if (!Number.isFinite(nowMs)) throw new Error("Retry time is invalid.");
   if (state.pause !== null) return [];
-  const breakerFingerprint = state.circuit_breaker?.error_fingerprint;
-  return state.retries
+
+  if (state.shared_holds.length > 0)
+    return state.shared_holds
+      .filter(({ next_probe_at }) => Date.parse(next_probe_at) <= nowMs)
+      .sort((left, right) =>
+        [left.next_probe_at, left.error_fingerprint]
+          .join(":")
+          .localeCompare(
+            [right.next_probe_at, right.error_fingerprint].join(":"),
+          ),
+      )
+      .flatMap((hold) => {
+        const candidate = sortedRetries(
+          state.target_retries.filter(
+            (entry) =>
+              !entry.exhausted &&
+              entry.error_fingerprint === hold.error_fingerprint,
+          ),
+        )[0];
+        return candidate === undefined ? [] : [candidate];
+      })
+      .slice(0, 2);
+
+  return state.target_retries
     .filter(
       (entry) =>
+        entry.failure.domain !== "security" &&
         !entry.exhausted &&
         entry.next_retry_at !== null &&
-        Date.parse(entry.next_retry_at) <= nowMs &&
-        (breakerFingerprint === undefined ||
-          (entry.scope === "system" &&
-            entry.error_fingerprint === breakerFingerprint)),
+        Date.parse(entry.next_retry_at) <= nowMs,
     )
     .sort((left, right) =>
       [left.next_retry_at, left.repository_id, left.target_sha]
@@ -157,35 +277,21 @@ export function recordSuccess(
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const target = TargetSchema.parse(targetInput);
-  const removed = state.retries.filter(
-    (entry) =>
-      entry.repository_id === target.repository_id &&
-      entry.target_sha === target.target_sha,
+  const removed = state.target_retries.find((entry) =>
+    retryIdentity(entry, target),
   );
-  const retries = state.retries.filter(
-    (entry) =>
-      entry.repository_id !== target.repository_id ||
-      entry.target_sha !== target.target_sha,
-  );
-  const breaker = state.circuit_breaker;
-  const releaseTransientBreaker =
-    breaker !== null &&
-    !breaker.terminal &&
-    removed.some(
-      (entry) =>
-        entry.scope === "system" &&
-        entry.error_fingerprint === breaker.error_fingerprint,
-    ) &&
-    !retries.some(
-      (entry) =>
-        entry.scope === "system" &&
-        entry.error_fingerprint === breaker.error_fingerprint,
-    );
   return OperationsStateSchema.parse({
     ...state,
     updated_at: at,
-    retries,
-    circuit_breaker: releaseTransientBreaker ? null : breaker,
+    target_retries: state.target_retries.filter(
+      (entry) => !retryIdentity(entry, target),
+    ),
+    shared_holds:
+      removed?.failure.domain === "shared"
+        ? state.shared_holds.filter(
+            (hold) => hold.error_fingerprint !== removed.error_fingerprint,
+          )
+        : state.shared_holds,
     active_scans: state.active_scans.filter(
       (active) =>
         active.repository_id !== target.repository_id ||

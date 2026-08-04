@@ -9,7 +9,11 @@ import {
   type ScanRepositorySpec,
 } from "../src/orchestrator/scan-handler.js";
 import type { CommandRunner } from "../src/process/command-runner.js";
-import { normalizeFinding, type ScannerRun } from "../src/scanners/types.js";
+import {
+  normalizeFinding,
+  ScannerError,
+  type ScannerRun,
+} from "../src/scanners/types.js";
 
 const targetSha = "a".repeat(40);
 const sourceFile = {
@@ -222,5 +226,28 @@ describe("atomic deterministic repository evidence", () => {
     const result = await scanRepository(spec(), broken);
     expect(result).toMatchObject({ ok: false, error: { code } });
     expect("value" in result).toBe(false);
+  });
+
+  test("preserves the failing scanner component for retry isolation", async () => {
+    const broken = dependencies();
+    broken.scanners = async () => {
+      throw new ScannerError(
+        "SCANNER_FAILED",
+        "system",
+        "OpenGrep failed for this repository.",
+        "opengrep",
+      );
+    };
+
+    const result = await scanRepository(spec(), broken);
+
+    expect(result).toMatchObject({
+      ok: false,
+      error: {
+        code: "SCANNER_FAILED",
+        scope: "system",
+        component: "opengrep",
+      },
+    });
   });
 });

@@ -1,0 +1,57 @@
+import { describe, expect, test } from "vitest";
+
+import {
+  classifyFailure,
+  failureFingerprint,
+} from "../src/operations/failure.js";
+
+describe("operation failure domains", () => {
+  test.each([
+    [
+      { code: "SCANNER_FAILED", scope: "system", component: "opengrep" },
+      { code: "SCANNER_FAILED", domain: "target", component: "opengrep" },
+    ],
+    [
+      { code: "MODEL_PROVIDER", scope: "system" },
+      {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+    ],
+    [
+      { code: "MODEL_AUTHENTICATION", scope: "system" },
+      {
+        code: "MODEL_AUTHENTICATION",
+        domain: "security",
+        component: "contextual-model",
+      },
+    ],
+    [
+      { code: "UNRECOGNIZED_SYSTEM_FAILURE", scope: "system" },
+      {
+        code: "UNRECOGNIZED_SYSTEM_FAILURE",
+        domain: "security",
+        component: "orchestrator",
+      },
+    ],
+  ])("classifies a bounded failure descriptor", (input, expected) => {
+    expect(classifyFailure(input)).toEqual(expected);
+  });
+
+  test("fingerprints the complete failure identity", () => {
+    const opengrep = classifyFailure({
+      code: "SCANNER_FAILED",
+      scope: "system",
+      component: "opengrep",
+    });
+    const gitleaks = classifyFailure({
+      code: "SCANNER_FAILED",
+      scope: "system",
+      component: "gitleaks",
+    });
+
+    expect(failureFingerprint(opengrep)).not.toBe(failureFingerprint(gitleaks));
+    expect(failureFingerprint(opengrep)).toMatch(/^[a-f0-9]{64}$/u);
+  });
+});

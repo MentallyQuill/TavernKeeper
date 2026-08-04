@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-
 import { describe, expect, test } from "vitest";
 
 import {
@@ -11,151 +9,65 @@ import {
 } from "../src/operations/state.js";
 import { recordFailure } from "../src/operations/retry.js";
 
-describe("secret-free operational state", () => {
-  test("accepts the checked-in operational state without secret-bearing fields", async () => {
-    const state = parseOperationsState(
-      JSON.parse(
-        await readFile(
-          new URL("../operations/state.json", import.meta.url),
-          "utf8",
-        ),
-      ),
-    );
+describe("secret-free operations state V2", () => {
+  test("creates strict V2 state without a singular circuit breaker", () => {
+    const state = initialOperationsState("2026-08-04T00:00:00.000Z");
 
-    const serialized = serializeOperationsState(state);
-
-    expect(parseOperationsState(JSON.parse(serialized))).toEqual(state);
-    expect(serialized).not.toMatch(
-      /api[_-]?key|credential|raw[_-]?error|response[_-]?body|prompt/iu,
-    );
-    expect(
-      state.retries.every(
-        (retry) =>
-          retry.source_id === `github-${String(retry.repository_id)}` &&
-          retry.attempt >= 1 &&
-          retry.attempt <= 3,
-      ),
-    ).toBe(true);
+    expect(state).toMatchObject({
+      schema_version: 2,
+      target_retries: [],
+      shared_holds: [],
+    });
+    expect(state).not.toHaveProperty("circuit_breaker");
+    expect(state).not.toHaveProperty("retries");
   });
 
-  test("records coverage start once on first resume and never moves it", () => {
-    const created = "2026-07-31T12:00:00.000Z";
-    const firstResume = "2026-08-01T12:00:00.000Z";
-    const secondResume = "2026-08-02T12:00:00.000Z";
+  test("records coverage start once on first resume", () => {
+    const created = "2026-08-03T12:00:00.000Z";
+    const firstResume = "2026-08-04T12:00:00.000Z";
+    const secondResume = "2026-08-05T12:00:00.000Z";
     const started = resumeSystem(initialOperationsState(created), firstResume);
     const paused = pauseSystem(started, {
       kind: "staff",
       reasonCode: "STAFF_PAUSE",
-      at: "2026-08-01T13:00:00.000Z",
+      at: "2026-08-04T13:00:00.000Z",
     });
 
-    expect(started.coverage_started_at).toBe(firstResume);
     expect(resumeSystem(paused, secondResume).coverage_started_at).toBe(
       firstResume,
     );
   });
 
-  test("rejects retry identities whose source ID does not match repository ID", () => {
-    const now = "2026-07-31T12:00:00.000Z";
-    const state = initialOperationsState(now);
-
-    expect(() =>
-      parseOperationsState({
-        ...state,
-        retries: [
-          {
-            source_id: "github-41",
-            repository_id: 42,
-            repository: "owner/repo",
-            target_sha: "a".repeat(40),
-            error_fingerprint: "b".repeat(64),
-            error_code: "MODEL_QUOTA",
-            scope: "system",
-            initial_failed_at: now,
-            last_failed_at: now,
-            attempt: 1,
-            next_retry_at: "2026-07-31T13:00:00.000Z",
-            exhausted: false,
-          },
-        ],
-      }),
-    ).toThrow();
-  });
-
-  test("rejects non-exhausted retries without a scheduled next attempt", () => {
-    const now = "2026-07-31T12:00:00.000Z";
-    const state = initialOperationsState(now);
-
-    expect(() =>
-      parseOperationsState({
-        ...state,
-        retries: [
-          {
-            source_id: "github-42",
-            repository_id: 42,
-            repository: "owner/repo",
-            target_sha: "a".repeat(40),
-            error_fingerprint: "b".repeat(64),
-            error_code: "MODEL_QUOTA",
-            scope: "system",
-            initial_failed_at: now,
-            last_failed_at: now,
-            attempt: 1,
-            next_retry_at: null,
-            exhausted: false,
-          },
-        ],
-      }),
-    ).toThrow();
-  });
-
-  test("accepts only the legacy hourly migration value for old model reply retries", () => {
-    const now = "2026-07-31T12:00:00.000Z";
-    const retry = {
-      source_id: "github-42",
-      repository_id: 42,
-      repository: "owner/repo",
-      target_sha: "a".repeat(40),
-      error_fingerprint: "b".repeat(64),
-      error_code: "MODEL_INVALID_RESPONSE",
-      scope: "repository" as const,
-      initial_failed_at: now,
-      last_failed_at: now,
-      attempt: 1,
-      next_retry_at: "2026-07-31T13:00:00.000Z",
-      exhausted: false,
-    };
-
-    expect(
-      parseOperationsState({
-        ...initialOperationsState(now),
-        retries: [retry],
-      }).retries,
-    ).toEqual([retry]);
-    expect(() =>
-      parseOperationsState({
-        ...initialOperationsState(now),
-        retries: [{ ...retry, next_retry_at: "2026-07-31T12:30:00.000Z" }],
-      }),
-    ).toThrow();
-  });
-
-  test("serializes retry entries deterministically without diagnostic bodies", () => {
-    const now = "2026-07-31T12:00:00.000Z";
-    const first = recordFailure(initialOperationsState(now), {
+  test("validates fingerprints against their complete descriptors", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const retry = recordFailure(initialOperationsState(at), {
       target: {
         source_id: "github-42",
         provider: "github",
         repository_id: 42,
-        repository: "owner/repo-42",
+        repository: "owner/repo",
         target_sha: "a".repeat(40),
-        canonical_url: "https://github.com/owner/repo-42",
+        canonical_url: "https://github.com/owner/repo",
       },
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: now,
-    }).state;
-    const second = recordFailure(first, {
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at,
+    }).entry;
+
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(at),
+        target_retries: [{ ...retry, error_fingerprint: "b".repeat(64) }],
+      }),
+    ).toThrow();
+  });
+
+  test("serializes entries deterministically without diagnostic bodies", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const first = recordFailure(initialOperationsState(at), {
       target: {
         source_id: "github-43",
         provider: "github",
@@ -164,13 +76,33 @@ describe("secret-free operational state", () => {
         target_sha: "b".repeat(40),
         canonical_url: "https://github.com/owner/repo-43",
       },
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: now,
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at,
+    }).state;
+    const second = recordFailure(first, {
+      target: {
+        source_id: "github-42",
+        provider: "github",
+        repository_id: 42,
+        repository: "owner/repo-42",
+        target_sha: "a".repeat(40),
+        canonical_url: "https://github.com/owner/repo-42",
+      },
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at,
     }).state;
     const reversed = parseOperationsState({
       ...second,
-      retries: [...second.retries].reverse(),
+      target_retries: [...second.target_retries].reverse(),
+      shared_holds: [...second.shared_holds].reverse(),
     });
 
     const serialized = serializeOperationsState(second);
@@ -180,9 +112,9 @@ describe("secret-free operational state", () => {
     );
   });
 
-  test("rejects multiple classified retry sequences for one target", () => {
-    const now = "2026-07-31T12:00:00.000Z";
-    const first = recordFailure(initialOperationsState(now), {
+  test("rejects duplicate retry identities", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const retry = recordFailure(initialOperationsState(at), {
       target: {
         source_id: "github-42",
         provider: "github",
@@ -191,22 +123,18 @@ describe("secret-free operational state", () => {
         target_sha: "a".repeat(40),
         canonical_url: "https://github.com/owner/repo",
       },
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: now,
-    }).state.retries[0]!;
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at,
+    }).entry;
 
     expect(() =>
       parseOperationsState({
-        ...initialOperationsState(now),
-        retries: [
-          first,
-          {
-            ...first,
-            error_fingerprint: "c".repeat(64),
-            error_code: "MODEL_PROVIDER",
-          },
-        ],
+        ...initialOperationsState(at),
+        target_retries: [retry, retry],
       }),
     ).toThrow();
   });

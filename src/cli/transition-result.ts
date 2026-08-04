@@ -8,13 +8,10 @@ import {
   writeJsonFile,
 } from "./io.js";
 import { ScanRequestSchema } from "./staff-request.js";
-import { ScanTransitionSchema } from "./transition.js";
-import { z } from "zod";
+import { completedScanTransition, failedScanTransition } from "./transition.js";
+import { FailureDescriptorSchema } from "../operations/failure.js";
 
-const PhaseErrorSchema = z.strictObject({
-  code: z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/u),
-  scope: z.enum(["repository", "system"]),
-});
+const PhaseErrorSchema = FailureDescriptorSchema;
 
 async function exists(path: string) {
   try {
@@ -43,23 +40,19 @@ async function main() {
   const at = new Date().toISOString();
   let transition;
   if (await exists(candidatePath)) {
-    transition = { schema_version: 1, status: "completed", target, at };
+    transition = completedScanTransition(target, at);
   } else {
     const phaseError = (await exists(errorPath))
       ? PhaseErrorSchema.parse(await readJsonFile(errorPath))
-      : { code: "SCAN_PHASE_FAILED", scope: "system" as const };
-    transition = {
-      schema_version: 1,
-      status: "failure",
-      target,
-      code: phaseError.code,
-      scope: phaseError.scope,
-      at,
-    };
+      : {
+          code: "SCAN_PHASE_FAILED",
+          domain: "security" as const,
+          component: "orchestrator" as const,
+        };
+    transition = failedScanTransition(target, phaseError, at);
   }
-  const parsed = ScanTransitionSchema.parse(transition);
-  await writeJsonFile(output, parsed);
-  return { status: parsed.status };
+  await writeJsonFile(output, transition);
+  return { status: transition.status };
 }
 
 if (isDirectExecution(import.meta.url)) runJsonCli(main);

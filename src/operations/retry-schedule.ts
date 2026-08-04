@@ -1,15 +1,5 @@
-const repositoryModelReplyFailureCodes = new Set([
-  "MODEL_INVALID_RESPONSE",
-  "MODEL_CONTEXT_INCOMPLETE",
-  "MODEL_EVIDENCE_INVALID",
-]);
-
-export function isRepositoryModelReplyFailure(
-  scope: "repository" | "system",
-  code: string,
-) {
-  return scope === "repository" && repositoryModelReplyFailureCodes.has(code);
-}
+const targetRetryMinutes = [5, 30, 120] as const;
+const sharedProbeMinutes = [5, 15, 30, 60, 180] as const;
 
 function addMinutes(value: string, minutes: number) {
   const milliseconds = Date.parse(value);
@@ -17,18 +7,17 @@ function addMinutes(value: string, minutes: number) {
   return new Date(milliseconds + minutes * 60 * 1_000).toISOString();
 }
 
-export function scheduledRetryAt(input: {
-  initialFailedAt: string;
-  attempt: number;
-  scope: "repository" | "system";
-  code: string;
-}) {
-  const minutes = isRepositoryModelReplyFailure(input.scope, input.code)
-    ? input.attempt * 5
-    : input.attempt * 60;
-  return addMinutes(input.initialFailedAt, minutes);
+export function targetRetryAt(initialFailedAt: string, attempt: number) {
+  const minutes = targetRetryMinutes[attempt - 1];
+  if (minutes === undefined)
+    throw new Error("Target retry attempt is not schedulable.");
+  return addMinutes(initialFailedAt, minutes);
 }
 
-export function legacyHourlyRetryAt(initialFailedAt: string, attempt: number) {
-  return addMinutes(initialFailedAt, attempt * 60);
+export function sharedProbeAt(lastFailedAt: string, consecutive: number) {
+  if (!Number.isInteger(consecutive) || consecutive < 1)
+    throw new Error("Shared failure count is invalid.");
+  const minutes =
+    sharedProbeMinutes[Math.min(consecutive, sharedProbeMinutes.length) - 1]!;
+  return addMinutes(lastFailedAt, minutes);
 }

@@ -34,6 +34,7 @@ import {
 } from "../scanners/static-rules.js";
 import {
   ScannerError,
+  type ScannerComponent,
   type ScannerErrorCode,
   type ScannerRun,
 } from "../scanners/types.js";
@@ -71,6 +72,7 @@ export interface ScanFailure {
   code: string;
   scope: "repository" | "system";
   message: string;
+  component?: ScannerComponent;
 }
 
 export type ScanResult =
@@ -135,8 +137,17 @@ function failure(
   code: string,
   scope: ScanFailure["scope"],
   message: string,
+  component?: ScanFailure["component"],
 ): ScanResult {
-  return { ok: false, error: { code, scope, message } };
+  return {
+    ok: false,
+    error: {
+      code,
+      scope,
+      message,
+      ...(component === undefined ? {} : { component }),
+    },
+  };
 }
 
 function expectedScannerStatus(
@@ -410,7 +421,7 @@ export async function scanRepository(
     };
   } catch (error) {
     if (error instanceof ScannerError)
-      return failure(error.code, error.scope, error.message);
+      return failure(error.code, error.scope, error.message, error.component);
     return failure(
       "SCAN_PACKAGE_INVALID",
       "system",

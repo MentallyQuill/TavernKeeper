@@ -4,6 +4,7 @@ import type { Target } from "../src/contracts/targets.js";
 import {
   initialOperationsState,
   pauseSystem,
+  resumeSystem,
 } from "../src/operations/state.js";
 import {
   dueRetries,
@@ -20,17 +21,35 @@ const target: Target = {
   canonical_url: "https://github.com/owner/repo",
 };
 
-describe("scan retry schedule", () => {
-  test("a failure clears the matching active scan before scheduling retry", () => {
-    const initial = "2026-07-31T12:00:00.000Z";
+function anotherTarget(repositoryId = 43): Target {
+  return {
+    source_id: `github-${repositoryId}`,
+    provider: "github",
+    repository_id: repositoryId,
+    repository: `owner/repo-${repositoryId}`,
+    target_sha: String(repositoryId % 10).repeat(40),
+    canonical_url: `https://github.com/owner/repo-${repositoryId}`,
+  };
+}
+
+function runningState() {
+  return resumeSystem(
+    initialOperationsState("2026-08-03T23:00:00.000Z"),
+    "2026-08-03T23:01:00.000Z",
+  );
+}
+
+describe("automatic scan recovery", () => {
+  test("a failure clears the matching active scan", () => {
+    const at = "2026-08-04T00:00:00.000Z";
     const active = {
-      ...initialOperationsState(initial),
+      ...runningState(),
       active_scans: [
         {
           source_id: target.source_id,
           repository_id: target.repository_id,
           target_sha: target.target_sha,
-          started_at: initial,
+          started_at: at,
           run_id: "run-42",
         },
       ],
@@ -38,197 +57,217 @@ describe("scan retry schedule", () => {
 
     const failed = recordFailure(active, {
       target,
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: initial,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at,
     });
 
     expect(failed.state.active_scans).toEqual([]);
   });
 
-  test("keeps provider outage retries at one, two, and three hours", () => {
-    const initial = "2026-07-31T12:00:00.000Z";
-    const first = recordFailure(initialOperationsState(initial), {
-      target,
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: initial,
-    });
+  test("exhausting one target never creates a shared hold", () => {
+    let state = runningState();
+    for (const at of [
+      "2026-08-04T00:00:00.000Z",
+      "2026-08-04T00:05:00.000Z",
+      "2026-08-04T00:30:00.000Z",
+      "2026-08-04T02:00:00.000Z",
+    ])
+      state = recordFailure(state, {
+        target,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at,
+      }).state;
 
-    expect(first.notification).toBe("none");
-    expect(first.entry).toMatchObject({
-      attempt: 1,
-      next_retry_at: "2026-07-31T13:00:00.000Z",
+    expect(state.target_retries[0]).toMatchObject({
+      attempt: 4,
+      exhausted: true,
+      next_retry_at: null,
+    });
+    expect(state.shared_holds).toEqual([]);
+    expect(state.pause).toBeNull();
+  });
+
+  test("uses five-minute, thirty-minute, and two-hour target delays", () => {
+    let state = runningState();
+    const nextRetries: Array<string | null> = [];
+    for (const at of [
+      "2026-08-04T00:00:00.000Z",
+      "2026-08-04T00:05:30.000Z",
+      "2026-08-04T00:30:30.000Z",
+    ]) {
+      const result = recordFailure(state, {
+        target,
+        failure: {
+          code: "MODEL_INVALID_RESPONSE",
+          domain: "target",
+          component: "contextual-model",
+        },
+        at,
+      });
+      state = result.state;
+      nextRetries.push(result.entry.next_retry_at);
+    }
+
+    expect(nextRetries).toEqual([
+      "2026-08-04T00:05:00.000Z",
+      "2026-08-04T00:30:00.000Z",
+      "2026-08-04T02:00:00.000Z",
+    ]);
+  });
+
+  test("shared failures keep probing after the notification threshold", () => {
+    let state = runningState();
+    for (let index = 0; index < 7; index += 1)
+      state = recordFailure(state, {
+        target,
+        failure: {
+          code: "MODEL_PROVIDER",
+          domain: "shared",
+          component: "contextual-model",
+        },
+        at: new Date(Date.UTC(2026, 7, 4, index)).toISOString(),
+      }).state;
+
+    expect(state.shared_holds[0]).toMatchObject({
+      consecutive_failures: 7,
+      notified: true,
+      next_probe_at: "2026-08-04T09:00:00.000Z",
+    });
+    expect(state.target_retries[0]).toMatchObject({
+      attempt: 4,
       exhausted: false,
     });
-    expect(dueRetries(first.state, "2026-07-31T12:59:59.999Z")).toEqual([]);
-    expect(
-      dueRetries(first.state, "2026-07-31T13:00:00.000Z").map(
-        ({ attempt }) => attempt,
-      ),
-    ).toEqual([1]);
+    expect(state.pause).toBeNull();
+  });
 
-    const second = recordFailure(first.state, {
+  test("the first successful probe clears its hold even with other references", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const first = recordFailure(runningState(), {
       target,
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: "2026-07-31T13:05:00.000Z",
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at,
     });
-    expect(second.entry).toMatchObject({
-      attempt: 2,
-      next_retry_at: "2026-07-31T14:00:00.000Z",
+    const secondTarget = anotherTarget();
+    const second = recordFailure(first.state, {
+      target: secondTarget,
+      failure: first.entry.failure,
+      at,
     });
-    expect(
-      dueRetries(second.state, "2026-07-31T14:00:00.000Z").map(
-        ({ attempt }) => attempt,
-      ),
-    ).toEqual([2]);
 
     const recovered = recordSuccess(
       second.state,
       target,
-      "2026-07-31T14:01:00.000Z",
+      "2026-08-04T00:05:01.000Z",
     );
-    expect(recovered.retries).toEqual([]);
-    expect(recovered.circuit_breaker).toBeNull();
+
+    expect(recovered.shared_holds).toEqual([]);
+    expect(recovered.target_retries).toEqual([
+      expect.objectContaining({ repository_id: secondTarget.repository_id }),
+    ]);
   });
 
-  test.each([
-    "MODEL_INVALID_RESPONSE",
-    "MODEL_CONTEXT_INCOMPLETE",
-    "MODEL_EVIDENCE_INVALID",
-  ])("retries repository model reply failure %s every five minutes", (code) => {
-    const initial = "2026-07-31T12:00:00.000Z";
-    const first = recordFailure(initialOperationsState(initial), {
-      target,
-      code,
-      scope: "repository",
-      at: initial,
-    });
-
-    expect(first.entry).toMatchObject({
-      attempt: 1,
-      next_retry_at: "2026-07-31T12:05:00.000Z",
-      exhausted: false,
-    });
-    expect(dueRetries(first.state, "2026-07-31T12:04:59.999Z")).toEqual([]);
-    expect(
-      dueRetries(first.state, "2026-07-31T12:05:00.000Z").map(
-        ({ attempt }) => attempt,
-      ),
-    ).toEqual([1]);
-
-    const second = recordFailure(first.state, {
-      target,
-      code,
-      scope: "repository",
-      at: "2026-07-31T12:05:30.000Z",
-    });
-    expect(second.entry.next_retry_at).toBe("2026-07-31T12:10:00.000Z");
-
-    const third = recordFailure(second.state, {
-      target,
-      code,
-      scope: "repository",
-      at: "2026-07-31T12:10:30.000Z",
-    });
-    expect(third.entry.next_retry_at).toBe("2026-07-31T12:15:00.000Z");
-  });
-
-  test.each([
-    ["MODEL_INVALID_RESPONSE", "system"],
-    ["REPOSITORY_PARSE_FAILED", "repository"],
-  ] as const)(
-    "keeps non-reply failure %s with %s scope on the hourly schedule",
-    (code, scope) => {
-      const initial = "2026-07-31T12:00:00.000Z";
-      const failed = recordFailure(initialOperationsState(initial), {
-        target,
-        code,
-        scope,
-        at: initial,
-      });
-
-      expect(failed.entry.next_retry_at).toBe("2026-07-31T13:00:00.000Z");
-      expect(dueRetries(failed.state, "2026-07-31T12:59:59.999Z")).toEqual([]);
-    },
-  );
-
-  test("notifies staff only after the third scheduled retry also fails", () => {
-    const initial = "2026-07-31T12:00:00.000Z";
-    const first = recordFailure(initialOperationsState(initial), {
-      target,
-      code: "MODEL_AUTHENTICATION",
-      scope: "system",
-      at: initial,
-    });
-    const second = recordFailure(first.state, {
-      target,
-      code: "MODEL_AUTHENTICATION",
-      scope: "system",
-      at: "2026-07-31T13:00:00.000Z",
-    });
-    const third = recordFailure(second.state, {
-      target,
-      code: "MODEL_AUTHENTICATION",
-      scope: "system",
-      at: "2026-07-31T14:00:00.000Z",
-    });
-    const exhausted = recordFailure(third.state, {
-      target,
-      code: "MODEL_AUTHENTICATION",
-      scope: "system",
-      at: "2026-07-31T15:00:00.000Z",
-    });
-
-    expect([
-      first.notification,
-      second.notification,
-      third.notification,
-      exhausted.notification,
-    ]).toEqual(["none", "none", "none", "staff"]);
-    expect(exhausted).toMatchObject({
-      terminal: true,
-      entry: { attempt: 3, next_retry_at: null, exhausted: true },
-      state: { circuit_breaker: { terminal: true } },
-    });
-    expect(dueRetries(exhausted.state, "2026-07-31T16:00:00.000Z")).toEqual([]);
-  });
-
-  test("a system breaker permits only its recovery retry and a staff pause permits none", () => {
-    const initial = "2026-07-31T12:00:00.000Z";
-    const system = recordFailure(initialOperationsState(initial), {
-      target,
-      code: "MODEL_QUOTA",
-      scope: "system",
-      at: initial,
-    }).state;
-    const repositoryTarget: Target = {
-      source_id: "github-43",
-      provider: "github",
-      repository_id: 43,
-      repository: "owner/repo-43",
-      target_sha: "b".repeat(40),
-      canonical_url: "https://github.com/owner/repo-43",
+  test("a changed failure fingerprint prunes only an orphaned shared hold", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const sharedFailure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
     };
-    const withRepositoryFailure = recordFailure(system, {
-      target: repositoryTarget,
-      code: "REPOSITORY_PARSE_FAILED",
-      scope: "repository",
-      at: initial,
-    }).state;
+    const first = recordFailure(runningState(), {
+      target,
+      failure: sharedFailure,
+      at,
+    });
+    const secondTarget = anotherTarget();
+    const second = recordFailure(first.state, {
+      target: secondTarget,
+      failure: sharedFailure,
+      at,
+    });
+    const changed = recordFailure(second.state, {
+      target,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-04T00:01:00.000Z",
+    });
 
+    expect(changed.state.shared_holds).toHaveLength(1);
+
+    const changedLastReference = recordFailure(changed.state, {
+      target: secondTarget,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "gitleaks",
+      },
+      at: "2026-08-04T00:02:00.000Z",
+    });
+    expect(changedLastReference.state.shared_holds).toEqual([]);
+  });
+
+  test("security failures persist a staff-visible security pause", () => {
+    const failed = recordFailure(runningState(), {
+      target,
+      failure: {
+        code: "MODEL_AUTHENTICATION",
+        domain: "security",
+        component: "contextual-model",
+      },
+      at: "2026-08-04T00:00:00.000Z",
+    });
+
+    expect(failed).toMatchObject({ notification: "staff", terminal: true });
+    expect(failed.state.pause).toMatchObject({
+      kind: "system",
+      reason_code: "SECURITY_HOLD",
+    });
+    expect(dueRetries(failed.state, "2026-08-05T00:00:00.000Z")).toEqual([]);
+  });
+
+  test("shared holds admit one due probe per fingerprint", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const first = recordFailure(runningState(), {
+      target,
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at,
+    });
+    const second = recordFailure(first.state, {
+      target: anotherTarget(),
+      failure: first.entry.failure,
+      at,
+    });
+
+    expect(dueRetries(second.state, "2026-08-04T00:04:59.999Z")).toEqual([]);
     expect(
-      dueRetries(withRepositoryFailure, "2026-07-31T13:00:00.000Z").map(
+      dueRetries(second.state, "2026-08-04T00:05:00.000Z").map(
         ({ repository_id }) => repository_id,
       ),
     ).toEqual([42]);
 
-    const paused = pauseSystem(withRepositoryFailure, {
+    const paused = pauseSystem(second.state, {
       kind: "staff",
       reasonCode: "STAFF_PAUSE",
-      at: "2026-07-31T12:30:00.000Z",
+      at: "2026-08-04T00:05:01.000Z",
     });
-    expect(dueRetries(paused, "2026-07-31T13:00:00.000Z")).toEqual([]);
+    expect(dueRetries(paused, "2026-08-04T01:00:00.000Z")).toEqual([]);
   });
 });
