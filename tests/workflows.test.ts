@@ -112,6 +112,23 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("automatic reusable deployments bypass only the manual approval gate", async () => {
+    const [deploy, reconcile, scanAndPublish] = await Promise.all([
+      workflow("deploy-pages.yml"),
+      workflow("reconcile.yml"),
+      workflow("scan-and-publish.yml"),
+    ]);
+
+    expect(deploy.on.workflow_call.inputs.automatic).toEqual({
+      type: "boolean",
+      required: true,
+    });
+    expect(deploy.on.workflow_dispatch.inputs).not.toHaveProperty("automatic");
+    expect(deploy.jobs["authorize-manual"].if).toBe("${{ !inputs.automatic }}");
+    expect(reconcile.jobs["recover-pages"].with.automatic).toBe(true);
+    expect(scanAndPublish.jobs.deploy.with.automatic).toBe(true);
+  });
+
   test("reconciliation is bounded and all ordinary entry points converge", async () => {
     const [reconcile, targeted, retry, policy] = await Promise.all([
       workflow("reconcile.yml"),
