@@ -13,6 +13,19 @@ const uploadArtifactAction =
 const downloadArtifactAction =
   "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const publisherToken = "${{ steps.publisher-token.outputs.token }}";
+const canonicalPublisherPushLines = [
+  'push_succeeded="false"',
+  "for attempt in 1 2 3; do",
+  "  if git push origin HEAD:main; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  '  if [[ "$attempt" -lt 3 ]]; then',
+  '    sleep "$((attempt * 15))"',
+  "  fi",
+  "done",
+  'test "$push_succeeded" = "true"',
+];
 const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
@@ -146,6 +159,18 @@ const forbiddenRuntimePattern =
 
 function fail(file, message) {
   failures.push(`${file}: ${message}`);
+}
+
+function containsCanonicalPublisherPush(run) {
+  const lines = run.split("\n");
+  const start = lines.findIndex(
+    (line) => line.trim() === canonicalPublisherPushLines[0],
+  );
+  if (start < 0) return false;
+  const indentation = /^\s*/u.exec(lines[start])?.[0] ?? "";
+  return canonicalPublisherPushLines.every(
+    (line, index) => lines[start + index] === `${indentation}${line}`,
+  );
 }
 
 function walk(value, visit, path = []) {
@@ -466,13 +491,14 @@ function checkPublisherBoundary(file, workflow) {
       file,
       "Publisher-authenticated push changed from the reviewed contract",
     );
-  if (
-    !pushStep?.run?.includes("for attempt in 1 2 3; do") ||
-    !pushStep?.run?.includes("if git push origin HEAD:main; then") ||
-    !pushStep?.run?.includes('sleep "$((attempt * 15))"') ||
-    !pushStep?.run?.includes('test "$push_succeeded" = "true"')
-  )
-    fail(file, "Publisher-authenticated push must retain bounded retries");
+  const pushRun = pushStep?.run ?? "";
+  const pushCommandCount =
+    pushRun.match(/git push origin HEAD:main/gu)?.length ?? 0;
+  if (pushCommandCount !== 1 || !containsCanonicalPublisherPush(pushRun))
+    fail(
+      file,
+      "Publisher-authenticated push must retain one canonical bounded retry block",
+    );
   const checkouts = steps.filter(
     (step) =>
       typeof step?.uses === "string" &&

@@ -380,7 +380,18 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) =>
         text.replace("for attempt in 1 2 3; do", "for attempt in 1; do"),
-      /Publisher-authenticated push must retain bounded retries/u,
+      /Publisher-authenticated push must retain one canonical bounded retry block/u,
+    );
+  });
+
+  test("workflow policy rejects an extra Publisher-authenticated push", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          '            test "$push_succeeded" = "true"\n',
+          '            test "$push_succeeded" = "true"\n            git push origin HEAD:main\n',
+        ),
+      /Publisher-authenticated push must retain one canonical bounded retry block/u,
     );
   });
 
