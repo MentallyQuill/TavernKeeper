@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { Target } from "../src/contracts/targets.js";
+import { failureFingerprint } from "../src/operations/failure.js";
 import {
   initialOperationsState,
   pauseSystem,
@@ -29,7 +30,7 @@ function queuedState() {
 }
 
 describe("automatic scan recovery", () => {
-  test("every failure domain rotates only the affected target", () => {
+  test("every failure rotates the target while systemic failures add automatic backoff", () => {
     for (const domain of ["target", "shared", "security"] as const) {
       const failed = recordFailure(queuedState(), {
         target,
@@ -52,6 +53,18 @@ describe("automatic scan recovery", () => {
         ticket: 2,
         consecutive_failures: 1,
       });
+      expect(failed.state.automatic_holds).toEqual(
+        domain === "target"
+          ? []
+          : [
+              expect.objectContaining({
+                failure: expect.objectContaining({ domain }),
+                consecutive_failures: 1,
+                next_probe_at: "2026-08-04T00:05:00.000Z",
+                chronic: false,
+              }),
+            ],
+      );
     }
   });
 
@@ -136,5 +149,80 @@ describe("automatic scan recovery", () => {
       recordSuccess(queuedState(), target, "2026-08-04T00:01:00.000Z")
         .scan_queue.entries,
     ).toEqual([]);
+  });
+
+  test("only a matching recovery probe clears an automatic hold", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    let state = recordFailure(queuedState(), {
+      target,
+      failure,
+      at: "2026-08-04T00:00:00.000Z",
+    }).state;
+    state = recordSuccess(
+      state,
+      target,
+      "2026-08-04T00:05:01.000Z",
+      failureFingerprint(failure),
+    );
+
+    expect(state.automatic_holds).toEqual([]);
+    expect(state.scan_queue.entries).toEqual([]);
+  });
+
+  test("a failed probe cannot clear a circuit it did not prove recovered", () => {
+    const sharedFailure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const held = recordFailure(queuedState(), {
+      target,
+      failure: sharedFailure,
+      at: "2026-08-04T00:00:00.000Z",
+    }).state;
+    const failedProbe = recordFailure(held, {
+      target,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-04T00:05:01.000Z",
+      recoveryFingerprint: failureFingerprint(sharedFailure),
+    }).state;
+
+    expect(failedProbe.automatic_holds).toEqual(held.automatic_holds);
+  });
+
+  test("a different systemic probe failure cools both automatic circuits", () => {
+    const providerFailure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const held = recordFailure(queuedState(), {
+      target,
+      failure: providerFailure,
+      at: "2026-08-04T00:00:00.000Z",
+    }).state;
+    const failedProbe = recordFailure(held, {
+      target,
+      failure: {
+        code: "MODEL_AUTHENTICATION",
+        domain: "security",
+        component: "contextual-model",
+      },
+      at: "2026-08-04T00:05:01.000Z",
+      recoveryFingerprint: failureFingerprint(providerFailure),
+    }).state;
+
+    expect(failedProbe.automatic_holds).toHaveLength(2);
+    expect(
+      failedProbe.automatic_holds.map(({ next_probe_at }) => next_probe_at),
+    ).toEqual(["2026-08-04T00:10:01.000Z", "2026-08-04T00:10:01.000Z"]);
   });
 });

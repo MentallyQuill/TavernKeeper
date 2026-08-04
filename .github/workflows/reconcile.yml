@@ -85,6 +85,8 @@ jobs:
       delayed_entries: ${{ steps.plan.outputs.delayed_entries }}
       next_wake_at: ${{ steps.plan.outputs.next_wake_at }}
       emergency_stopped: ${{ steps.plan.outputs.emergency_stopped }}
+      automatic_holds: ${{ steps.plan.outputs.automatic_holds }}
+      recovery_probes: ${{ steps.plan.outputs.recovery_probes }}
     steps:
       - name: Check out synchronized TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -109,6 +111,8 @@ jobs:
           echo "delayed_entries=$(jq -er '.delayed_entries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "next_wake_at=$(jq -r '.next_wake_at // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "emergency_stopped=$(jq -er '.emergency_stopped | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "automatic_holds=$(jq -er '.automatic_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "recovery_probes=$(jq -er '.recovery_probes | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           {
             echo "### TavernKeeper durable queue"
             echo
@@ -117,6 +121,8 @@ jobs:
             echo "- Cooling entries: $(jq -r '.delayed_entries' <<< "$planned")"
             echo "- Next automatic wake: $(jq -r '.next_wake_at // "none"' <<< "$planned")"
             echo "- Staff emergency stop: $(jq -r '.emergency_stopped' <<< "$planned")"
+            echo "- Automatic recovery circuits: $(jq -r '.automatic_holds' <<< "$planned")"
+            echo "- Recovery probes in this batch: $(jq -r '.recovery_probes' <<< "$planned")"
           } >> "$GITHUB_STEP_SUMMARY"
 
   run:

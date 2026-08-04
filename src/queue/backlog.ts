@@ -20,6 +20,7 @@ export interface PlannedTarget {
   target: CurrentTarget;
   reason: BacklogReason;
   queueEntry: ScanQueueEntry;
+  recoveryFingerprint?: string | undefined;
 }
 
 export interface BatchPlan {
@@ -29,6 +30,8 @@ export interface BatchPlan {
   delayedEntries: number;
   nextWakeAt: string | null;
   emergencyStopped: boolean;
+  automaticHolds: number;
+  recoveryProbes: number;
 }
 
 function parseCurrentManifest(input: CurrentTargetManifest) {
@@ -44,8 +47,8 @@ function reasonFor(
   state: OperationsState,
   scannerPolicyVersion: string,
 ): BacklogReason {
-  if (entry.staff_requested === true) return "staff";
   if (entry.consecutive_failures > 0) return "retry";
+  if (entry.staff_requested === true) return "staff";
   const reports = index.reports.filter(
     ({ repository_id }) => repository_id === target.repository_id,
   );
@@ -107,7 +110,70 @@ export function planBatch(
       delayedEntries: delayed.length,
       nextWakeAt: null,
       emergencyStopped: true,
+      automaticHolds: state.automatic_holds.length,
+      recoveryProbes: 0,
     };
+
+  if (state.automatic_holds.length > 0) {
+    const dueHold = [...state.automatic_holds]
+      .filter(({ next_probe_at }) => Date.parse(next_probe_at) <= nowMs)
+      .sort((left, right) =>
+        [left.next_probe_at, left.error_fingerprint]
+          .join(":")
+          .localeCompare(
+            [right.next_probe_at, right.error_fingerprint].join(":"),
+          ),
+      )[0];
+    const probeEntry =
+      dueHold === undefined
+        ? undefined
+        : available.find(
+            ({ not_before }) =>
+              not_before === null || Date.parse(not_before) <= nowMs,
+          );
+    const targets: PlannedTarget[] = [];
+    if (dueHold !== undefined && probeEntry !== undefined) {
+      const target = targetByRepositoryId.get(probeEntry.repository_id);
+      if (target === undefined || target.target_sha !== probeEntry.target_sha)
+        throw new Error(
+          "Committed scan queue is not synchronized with the target manifest.",
+        );
+      targets.push({
+        target,
+        reason: reasonFor(
+          probeEntry,
+          target,
+          index,
+          state,
+          scannerPolicyVersion,
+        ),
+        queueEntry: probeEntry,
+        recoveryFingerprint: dueHold.error_fingerprint,
+      });
+    }
+    const futureHoldWake = state.automatic_holds
+      .filter(({ next_probe_at }) => Date.parse(next_probe_at) > nowMs)
+      .map(({ next_probe_at }) => next_probe_at)
+      .sort((left, right) => left.localeCompare(right))[0];
+    const queueWake = delayed
+      .map(({ not_before }) => not_before!)
+      .sort((left, right) => left.localeCompare(right))[0];
+    return {
+      targets,
+      totalRemaining: Math.max(0, available.length - targets.length),
+      runnableRemaining: 0,
+      delayedEntries: delayed.length,
+      nextWakeAt:
+        targets.length > 0
+          ? null
+          : ([futureHoldWake, queueWake]
+              .filter((value): value is string => value !== undefined)
+              .sort((left, right) => left.localeCompare(right))[0] ?? null),
+      emergencyStopped: false,
+      automaticHolds: state.automatic_holds.length,
+      recoveryProbes: targets.length,
+    };
+  }
 
   const runnable = available
     .filter(
@@ -134,5 +200,7 @@ export function planBatch(
     delayedEntries: delayed.length,
     nextWakeAt,
     emergencyStopped: false,
+    automaticHolds: 0,
+    recoveryProbes: 0,
   };
 }

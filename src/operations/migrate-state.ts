@@ -19,6 +19,7 @@ import {
   ActiveScanSchema,
   OperationsStateSchema,
   PolicyCampaignSchema,
+  type AutomaticRecoveryHold,
   type OperationsState,
   type ScanQueueEntry,
 } from "./state.js";
@@ -104,6 +105,50 @@ export function migrateOperationsState(
   const legacy = OperationsStateV2Schema.parse(value);
   const manifest = parseCurrentManifest(input.manifest);
   const index = ReportIndexV5Schema.parse(input.index);
+  const legacyAutomaticHolds: AutomaticRecoveryHold[] = legacy.shared_holds.map(
+    (hold) => {
+      const failure = {
+        ...hold.failure,
+        domain:
+          hold.failure.domain === "security"
+            ? ("security" as const)
+            : ("shared" as const),
+      };
+      return {
+        error_fingerprint: failureFingerprint(failure),
+        failure,
+        first_failed_at: hold.first_failed_at,
+        last_failed_at: hold.last_failed_at,
+        consecutive_failures: hold.consecutive_failures,
+        next_probe_at:
+          Date.parse(hold.next_probe_at) > Date.parse(input.at)
+            ? hold.next_probe_at
+            : input.at,
+        chronic: hold.consecutive_failures >= 5,
+      };
+    },
+  );
+  if (legacy.pause?.kind === "system") {
+    const failure = {
+      code: legacy.pause.reason_code,
+      domain: "security" as const,
+      component: "orchestrator" as const,
+    };
+    legacyAutomaticHolds.push({
+      error_fingerprint: failureFingerprint(failure),
+      failure,
+      first_failed_at: legacy.pause.paused_at,
+      last_failed_at: legacy.pause.paused_at,
+      consecutive_failures: 1,
+      next_probe_at: input.at,
+      chronic: false,
+    });
+  }
+  const automaticHolds = [
+    ...new Map(
+      legacyAutomaticHolds.map((hold) => [hold.error_fingerprint, hold]),
+    ).values(),
+  ];
   const base = OperationsStateSchema.parse({
     schema_version: 3,
     updated_at: input.at,
@@ -116,6 +161,7 @@ export function migrateOperationsState(
             paused_at: legacy.pause.paused_at,
           }
         : null,
+    automatic_holds: automaticHolds,
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: legacy.active_scans,
     policy_campaigns: legacy.policy_campaigns,
@@ -191,6 +237,7 @@ export function migrateOperationsState(
       ...seeded.summary,
       migrated_from: 2,
       automatic_stops_cleared: legacy.pause?.kind === "system" ? 1 : 0,
+      automatic_holds_preserved: automaticHolds.length,
       legacy_retries_preserved: normalizedRetries.length,
     },
   };

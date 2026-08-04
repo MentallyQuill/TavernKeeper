@@ -124,8 +124,17 @@ state concurrently with publication.
   updates a sanitized staff Issue. It is diagnostic, not terminal; the ticket
   remains scheduled forever until a success or a newer eligible SHA resets the
   streak.
-- Failure domains and components remain sanitized operational telemetry. They
-  never create shared holds, security holds, exhaustion, or a required resume.
+- Target-local failure domains remain isolated to their project. Shared and
+  security failures create a fingerprinted automatic circuit so a broken
+  provider, credential, toolchain, or integrity boundary is probed once instead
+  of being hammered by the full catalog. The probe delay is 5 minutes, 30
+  minutes, 2 hours, then 6 hours capped. A due circuit admits exactly one
+  lowest-ticket target. A matching successful probe clears only that circuit
+  and normal ticket order resumes immediately. No circuit exhausts or requires
+  a staff resume; its fifth failure is chronic diagnostic state only.
+- Unknown system failures default to the shared circuit. Only explicitly
+  recognized authentication, configuration, identity, response-origin, and
+  policy-integrity failures use the security domain.
 - Only a deliberate `pause` through the protected staff workflow creates an
   emergency stop. Common runtime failures cannot invoke it.
 
@@ -211,10 +220,11 @@ digest-pinned tools, and exact validated checkouts remain release and
 live-canary gates.
 
 For the durable-queue rollout: publish and verify Tavernary's complete ranked
-manifest; migrate to schema V3; confirm the automatic legacy stop is cleared,
-all eligible projects have unique increasing tickets, and legacy retry targets
-remain represented. Verify the first selected repositories follow ticket order,
-a fifth failure remains queued and chronic, later arrivals receive larger
-tickets than an already-rotated failure, scanning continues while Pages is
+manifest; migrate to schema V3; confirm the automatic legacy stop became a
+finite due probe, all eligible projects have unique increasing tickets, and
+legacy retry targets remain represented. Verify the first selected repositories
+follow ticket order, a fifth failure remains queued and chronic, later arrivals
+receive larger tickets than an already-rotated failure, shared/security recovery
+probes happen without staff action, scanning continues while Pages is
 reconciled independently, and no common failure path can create an emergency
 stop. Migration itself never dispatches scanning.

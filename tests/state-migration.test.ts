@@ -68,6 +68,19 @@ function v2State(
     reason_code: string;
     paused_at: string;
   } = null,
+  sharedHolds: Array<{
+    error_fingerprint: string;
+    failure: {
+      code: string;
+      domain: "target" | "shared" | "security";
+      component: "contextual-model";
+    };
+    first_failed_at: string;
+    last_failed_at: string;
+    consecutive_failures: number;
+    next_probe_at: string;
+    notified: boolean;
+  }> = [],
 ) {
   return {
     schema_version: 2,
@@ -75,7 +88,7 @@ function v2State(
     coverage_started_at: "2026-08-03T16:00:00.000Z",
     pause,
     target_retries: targets.map((value) => v2Retry(value, true)),
-    shared_holds: [],
+    shared_holds: sharedHolds,
     active_scans: [],
     policy_campaigns: [],
   };
@@ -118,7 +131,7 @@ describe("automatic operations-state migration", () => {
     });
   });
 
-  test("clears an automatic security hold without losing exhausted targets", () => {
+  test("converts an automatic security stop into an immediately due probe", () => {
     const failed = target(41, 1);
     const migrated = migrateOperationsState(
       v2State([failed], {
@@ -135,12 +148,24 @@ describe("automatic operations-state migration", () => {
     );
 
     expect(migrated.state.emergency_stop).toBeNull();
+    expect(migrated.state.automatic_holds).toEqual([
+      expect.objectContaining({
+        failure: expect.objectContaining({
+          code: "SECURITY_HOLD",
+          domain: "security",
+        }),
+        consecutive_failures: 1,
+        next_probe_at: at,
+        chronic: false,
+      }),
+    ]);
     expect(migrated.state.scan_queue.entries).toEqual([
       expect.objectContaining({ repository_id: 41, consecutive_failures: 4 }),
     ]);
     expect(migrated.summary).toMatchObject({
       migrated_from: 2,
       automatic_stops_cleared: 1,
+      automatic_holds_preserved: 1,
       legacy_retries_preserved: 1,
     });
   });
@@ -165,5 +190,43 @@ describe("automatic operations-state migration", () => {
       reason_code: "STAFF_PAUSE",
       paused_at: initialFailedAt,
     });
+  });
+
+  test("preserves a legacy shared hold as a finite automatic circuit", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const migrated = migrateOperationsState(
+      v2State([], null, [
+        {
+          error_fingerprint: failureFingerprint(failure),
+          failure,
+          first_failed_at: initialFailedAt,
+          last_failed_at: "2026-08-04T11:45:00.000Z",
+          consecutive_failures: 5,
+          next_probe_at: "2026-08-04T13:00:00.000Z",
+          notified: true,
+        },
+      ]),
+      {
+        manifest: manifest(target(41, 1)),
+        index: emptyIndex,
+        at,
+        scannerPolicyVersion: "3",
+      },
+    );
+
+    expect(migrated.state.automatic_holds).toEqual([
+      expect.objectContaining({
+        error_fingerprint: failureFingerprint(failure),
+        failure,
+        consecutive_failures: 5,
+        next_probe_at: "2026-08-04T13:00:00.000Z",
+        chronic: true,
+      }),
+    ]);
+    expect(migrated.summary.automatic_holds_preserved).toBe(1);
   });
 });

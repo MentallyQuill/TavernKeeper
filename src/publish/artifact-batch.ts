@@ -42,6 +42,7 @@ export interface PublishArtifactBatchResult {
   queue_delayed: number;
   next_wake_at: string | null;
   chronic_failures: number;
+  automatic_holds: number;
 }
 
 async function exists(path: string) {
@@ -188,6 +189,9 @@ export async function publishArtifactBatch(
         target: outcome.transition.target,
         failure: outcome.transition.failure,
         at: outcome.transition.at,
+        recoveryFingerprint: expectedByKey.get(
+          targetKey(outcome.transition.target),
+        )!.recovery_fingerprint,
       }).state;
       continue;
     }
@@ -250,5 +254,6 @@ export async function publishArtifactBatch(
       ({ repository_id, chronic }) =>
         chronic && failedRepositoryIds.has(repository_id),
     ).length,
+    automatic_holds: published.state.automatic_holds.length,
   };
 }

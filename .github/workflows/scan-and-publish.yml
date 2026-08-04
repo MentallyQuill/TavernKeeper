@@ -194,6 +194,7 @@ jobs:
       queue_delayed: ${{ steps.publish.outputs.queue_delayed }}
       next_wake_at: ${{ steps.publish.outputs.next_wake_at }}
       chronic_failures: ${{ steps.publish.outputs.chronic_failures }}
+      automatic_holds: ${{ steps.publish.outputs.automatic_holds }}
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -240,6 +241,7 @@ jobs:
           queue_delayed="$(jq -er '.queue_delayed | select(type == "number")' <<< "$result")"
           next_wake_at="$(jq -r '.next_wake_at // ""' <<< "$result")"
           chronic_failures="$(jq -er '.chronic_failures | select(type == "number")' <<< "$result")"
+          automatic_holds="$(jq -er '.automatic_holds | select(type == "number")' <<< "$result")"
           printf 'reports=%s\n' "$reports" >> "$GITHUB_OUTPUT"
           printf 'failures=%s\n' "$failures" >> "$GITHUB_OUTPUT"
           printf 'queue_remaining=%s\n' "$queue_remaining" >> "$GITHUB_OUTPUT"
@@ -247,6 +249,7 @@ jobs:
           printf 'queue_delayed=%s\n' "$queue_delayed" >> "$GITHUB_OUTPUT"
           printf 'next_wake_at=%s\n' "$next_wake_at" >> "$GITHUB_OUTPUT"
           printf 'chronic_failures=%s\n' "$chronic_failures" >> "$GITHUB_OUTPUT"
+          printf 'automatic_holds=%s\n' "$automatic_holds" >> "$GITHUB_OUTPUT"
       - name: Reconcile secret-free operational incidents
         continue-on-error: true
         env:
@@ -271,6 +274,23 @@ jobs:
                 --body "TavernKeeper is continuing automatic retries for a repeatedly failing target.\n\nRepository: \`$repository\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\nConsecutive failures: \`$count\`\nCode: \`$code\`\nComponent: \`$component\`\nNext retry: \`$next_retry\`\n\nThe target remains in the durable queue and later arrivals cannot overtake it."
             else
               gh issue comment "$existing" --body "Automatic retry remains active after $count consecutive failures. Next retry: \`$next_retry\`."
+            fi
+          done
+          jq -c '.automatic_holds[] | select(.chronic)' <<< "$incidents" | while read -r hold; do
+            fingerprint="$(jq -r '.error_fingerprint' <<< "$hold")"
+            count="$(jq -r '.consecutive_failures' <<< "$hold")"
+            code="$(jq -r '.failure.code' <<< "$hold")"
+            component="$(jq -r '.failure.component' <<< "$hold")"
+            domain="$(jq -r '.failure.domain' <<< "$hold")"
+            next_probe="$(jq -r '.next_probe_at' <<< "$hold")"
+            existing="$(gh issue list --state open --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            if [[ -z "$existing" ]]; then
+              gh issue create \
+                --label scanner-operations \
+                --title "[scanner-operations] chronic automatic recovery circuit" \
+                --body "TavernKeeper is automatically probing a repeatedly failing shared boundary.\n\nFingerprint: \`$fingerprint\`\nDomain: \`$domain\`\nCode: \`$code\`\nComponent: \`$component\`\nConsecutive failures: \`$count\`\nNext probe: \`$next_probe\`\n\nThis circuit is time-bounded and will probe again automatically; no manual resume is required."
+            else
+              gh issue comment "$existing" --body "Automatic recovery remains active after $count consecutive failures. Next probe: \`$next_probe\`."
             fi
           done
       - name: Create TavernKeeper Publisher token

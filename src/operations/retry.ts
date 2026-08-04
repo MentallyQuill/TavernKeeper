@@ -4,8 +4,14 @@ import {
   removeSuccessfulTarget,
   rotateFailedTarget,
 } from "../queue/durable-queue.js";
-import type { FailureDescriptor } from "./failure.js";
-import type { OperationsState, ScanQueueEntry } from "./state.js";
+import { failureFingerprint, type FailureDescriptor } from "./failure.js";
+import { scanRetryAt } from "./retry-schedule.js";
+import {
+  OperationsStateSchema,
+  type AutomaticRecoveryHold,
+  type OperationsState,
+  type ScanQueueEntry,
+} from "./state.js";
 
 export interface FailureTransition {
   state: OperationsState;
@@ -16,28 +22,91 @@ export interface FailureTransition {
 
 export function recordFailure(
   state: OperationsState,
-  input: { target: Target; failure: FailureDescriptor; at: string },
+  input: {
+    target: Target;
+    failure: FailureDescriptor;
+    at: string;
+    recoveryFingerprint?: string | undefined;
+  },
 ): FailureTransition {
   const rotated = rotateFailedTarget(state, input);
+  let automaticHolds = [...rotated.state.automatic_holds];
+  let automaticChronic = false;
+
+  if (input.failure.domain !== "target") {
+    const errorFingerprint = failureFingerprint(input.failure);
+    if (
+      input.recoveryFingerprint !== undefined &&
+      input.recoveryFingerprint !== errorFingerprint
+    )
+      automaticHolds = automaticHolds.map((hold) =>
+        hold.error_fingerprint === input.recoveryFingerprint
+          ? {
+              ...hold,
+              next_probe_at: scanRetryAt(input.at, hold.consecutive_failures),
+            }
+          : hold,
+      );
+    const current = automaticHolds.find(
+      ({ error_fingerprint }) => error_fingerprint === errorFingerprint,
+    );
+    const consecutiveFailures = (current?.consecutive_failures ?? 0) + 1;
+    const hold: AutomaticRecoveryHold = {
+      error_fingerprint: errorFingerprint,
+      failure: input.failure,
+      first_failed_at: current?.first_failed_at ?? input.at,
+      last_failed_at: input.at,
+      consecutive_failures: consecutiveFailures,
+      next_probe_at: scanRetryAt(input.at, consecutiveFailures),
+      chronic: consecutiveFailures >= 5,
+    };
+    automaticHolds = [
+      ...automaticHolds.filter(
+        ({ error_fingerprint }) => error_fingerprint !== errorFingerprint,
+      ),
+      hold,
+    ];
+    automaticChronic = hold.chronic;
+  }
+
+  const nextState = OperationsStateSchema.parse({
+    ...rotated.state,
+    automatic_holds: automaticHolds,
+  });
   return {
-    state: rotated.state,
+    state: nextState,
     entry: rotated.entry,
-    notification: rotated.entry.chronic ? "chronic" : "none",
+    notification:
+      rotated.entry.chronic || automaticChronic ? "chronic" : "none",
     terminal: false,
   };
 }
 
 export function dueRetries(state: OperationsState, now: string) {
-  return dueQueueEntries(state, now, Number.MAX_SAFE_INTEGER).filter(
-    ({ consecutive_failures }) => consecutive_failures > 0,
+  const due = dueQueueEntries(state, now, Number.MAX_SAFE_INTEGER);
+  if (state.automatic_holds.length === 0)
+    return due.filter(({ consecutive_failures }) => consecutive_failures > 0);
+  const holdDue = state.automatic_holds.some(
+    ({ next_probe_at }) => Date.parse(next_probe_at) <= Date.parse(now),
   );
+  return holdDue ? due.slice(0, 1) : [];
 }
 
 export function recordSuccess(
   state: OperationsState,
   target: Target,
   at: string,
-  _recoveryFingerprint?: string,
+  recoveryFingerprint?: string,
 ) {
-  return removeSuccessfulTarget(state, target, at);
+  const removed = removeSuccessfulTarget(state, target, at);
+  return OperationsStateSchema.parse({
+    ...removed,
+    automatic_holds:
+      recoveryFingerprint === undefined
+        ? removed.automatic_holds
+        : removed.automatic_holds.filter(
+            ({ error_fingerprint }) =>
+              error_fingerprint !== recoveryFingerprint,
+          ),
+  });
 }

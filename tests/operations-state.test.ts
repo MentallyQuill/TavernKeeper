@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import { failureFingerprint } from "../src/operations/failure.js";
 import {
   initialOperationsState,
   parseOperationsState,
@@ -27,12 +28,13 @@ function entry(repositoryId: number, ticket: number) {
 }
 
 describe("secret-free operations state V3", () => {
-  test("creates a strict durable queue without automatic hold fields", () => {
+  test("creates a strict durable queue with bounded automatic recovery", () => {
     const state = initialOperationsState(at);
 
     expect(state).toMatchObject({
       schema_version: 3,
       emergency_stop: null,
+      automatic_holds: [],
       scan_queue: { next_ticket: 1, entries: [] },
     });
     expect(state).not.toHaveProperty("pause");
@@ -131,6 +133,46 @@ describe("secret-free operations state V3", () => {
             },
           ],
         },
+      }),
+    ).toThrow();
+  });
+
+  test("binds each automatic circuit to one sanitized systemic failure", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const hold = {
+      error_fingerprint: failureFingerprint(failure),
+      failure,
+      first_failed_at: at,
+      last_failed_at: at,
+      consecutive_failures: 1,
+      next_probe_at: "2026-08-04T00:05:00.000Z",
+      chronic: false,
+    };
+    expect(
+      parseOperationsState({
+        ...initialOperationsState(at),
+        automatic_holds: [hold],
+      }).automatic_holds,
+    ).toEqual([hold]);
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(at),
+        automatic_holds: [hold, hold],
+      }),
+    ).toThrow();
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(at),
+        automatic_holds: [
+          {
+            ...hold,
+            failure: { ...failure, domain: "target" },
+          },
+        ],
       }),
     ).toThrow();
   });

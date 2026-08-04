@@ -21,6 +21,7 @@ export interface QueueSyncSummary {
   removed: number;
   migrated_from: 1 | 2 | null;
   automatic_stops_cleared: number;
+  automatic_holds_preserved: number;
   legacy_retries_preserved: number;
 }
 
@@ -189,6 +190,7 @@ export function reconcileCurrentScanQueue(input: {
       removed,
       migrated_from: null,
       automatic_stops_cleared: 0,
+      automatic_holds_preserved: 0,
       legacy_retries_preserved: 0,
     } satisfies QueueSyncSummary,
   };

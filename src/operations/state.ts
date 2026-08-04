@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { FullShaSchema } from "../contracts/targets.js";
-import { FailureDescriptorSchema } from "./failure.js";
+import { FailureDescriptorSchema, failureFingerprint } from "./failure.js";
 
 const SafeCodeSchema = z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/u);
 const SourceIdSchema = z.string().regex(/^github-[1-9][0-9]*$/u);
@@ -16,6 +16,47 @@ const SafeNonnegativeIntegerSchema = z
   .int()
   .nonnegative()
   .max(Number.MAX_SAFE_INTEGER);
+const FingerprintSchema = z.string().regex(/^[a-f0-9]{64}$/u);
+
+export const AutomaticRecoveryHoldSchema = z
+  .strictObject({
+    error_fingerprint: FingerprintSchema,
+    failure: FailureDescriptorSchema.refine(
+      ({ domain }) => domain === "shared" || domain === "security",
+      "Automatic holds require a shared or security failure.",
+    ),
+    first_failed_at: z.iso.datetime(),
+    last_failed_at: z.iso.datetime(),
+    consecutive_failures: SafePositiveIntegerSchema,
+    next_probe_at: z.iso.datetime(),
+    chronic: z.boolean(),
+  })
+  .superRefine((hold, context) => {
+    if (hold.error_fingerprint !== failureFingerprint(hold.failure))
+      context.addIssue({
+        code: "custom",
+        path: ["error_fingerprint"],
+        message: "Automatic hold fingerprint must match its failure.",
+      });
+    if (hold.chronic !== hold.consecutive_failures >= 5)
+      context.addIssue({
+        code: "custom",
+        path: ["chronic"],
+        message: "Chronic state must match the automatic failure streak.",
+      });
+    if (Date.parse(hold.last_failed_at) < Date.parse(hold.first_failed_at))
+      context.addIssue({
+        code: "custom",
+        path: ["last_failed_at"],
+        message: "Latest automatic failure cannot precede the first.",
+      });
+    if (Date.parse(hold.next_probe_at) < Date.parse(hold.last_failed_at))
+      context.addIssue({
+        code: "custom",
+        path: ["next_probe_at"],
+        message: "Automatic probe cannot precede the latest failure.",
+      });
+  });
 
 export const ScanQueueEntrySchema = z
   .strictObject({
@@ -150,11 +191,21 @@ export const OperationsStateSchema = z
     updated_at: z.iso.datetime(),
     coverage_started_at: z.iso.datetime().nullable(),
     emergency_stop: EmergencyStopSchema.nullable(),
+    automatic_holds: z.array(AutomaticRecoveryHoldSchema),
     scan_queue: ScanQueueSchema,
     active_scans: z.array(ActiveScanSchema),
     policy_campaigns: z.array(PolicyCampaignSchema),
   })
   .superRefine((state, context) => {
+    const holdFingerprints = state.automatic_holds.map(
+      ({ error_fingerprint }) => error_fingerprint,
+    );
+    if (new Set(holdFingerprints).size !== holdFingerprints.length)
+      context.addIssue({
+        code: "custom",
+        path: ["automatic_holds"],
+        message: "Automatic hold fingerprints must be unique.",
+      });
     const activeIdentities = state.active_scans.map(
       (entry) => `${entry.repository_id}:${entry.target_sha}`,
     );
@@ -182,6 +233,7 @@ export const OperationsStateSchema = z
 
 export type ScanQueueEntry = z.infer<typeof ScanQueueEntrySchema>;
 export type ScanQueue = z.infer<typeof ScanQueueSchema>;
+export type AutomaticRecoveryHold = z.infer<typeof AutomaticRecoveryHoldSchema>;
 export type OperationsState = z.infer<typeof OperationsStateSchema>;
 
 export function initialOperationsState(now: string): OperationsState {
@@ -190,6 +242,7 @@ export function initialOperationsState(now: string): OperationsState {
     updated_at: now,
     coverage_started_at: null,
     emergency_stop: null,
+    automatic_holds: [],
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: [],
     policy_campaigns: [],
@@ -204,6 +257,9 @@ export function serializeOperationsState(state: OperationsState) {
   const parsed = OperationsStateSchema.parse(state);
   const canonical = OperationsStateSchema.parse({
     ...parsed,
+    automatic_holds: [...parsed.automatic_holds].sort((left, right) =>
+      left.error_fingerprint.localeCompare(right.error_fingerprint),
+    ),
     scan_queue: {
       ...parsed.scan_queue,
       entries: [...parsed.scan_queue.entries].sort(

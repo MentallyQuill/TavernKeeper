@@ -6,6 +6,7 @@ async function main() {
     await readJsonFile("operations/state.json"),
   );
   return {
+    automatic_holds: state.automatic_holds,
     chronic_failures: state.scan_queue.entries
       .filter(({ chronic }) => chronic)
       .map(

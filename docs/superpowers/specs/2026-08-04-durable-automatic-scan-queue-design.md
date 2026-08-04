@@ -2,7 +2,7 @@
 
 **Status:** Approved on 2026-08-04  
 **Scope:** TavernKeeper scanning and publication, Tavernary report import, and the automation between them  
-**Supersedes:** The automatic hold, retry-exhaustion, retry-first, and deployment-gating portions of `2026-08-04-autonomous-catalog-scanning-design.md`
+**Supersedes:** The permanent/manual automatic-hold, retry-exhaustion, retry-first, and deployment-gating portions of `2026-08-04-autonomous-catalog-scanning-design.md`
 
 ## Directive
 
@@ -19,7 +19,7 @@ The existing system violates that directive in four ways:
 3. Reconciliation waits for Pages to match the latest committed report index before it dispatches more scans.
 4. Tavernary imports reports in one transaction, so one synthesis failure prevents every later report from being imported.
 
-These are liveness failures, not merely retry-timing problems. The redesign removes the terminal and global-gating states from common operation.
+These are liveness failures, not merely retry-timing problems. The redesign removes terminal and staff-gated recovery states from common operation. Shared and security boundary failures use a finite, automatically probed circuit so a known-broken common dependency is not hammered by the full catalog.
 
 ## Goals
 
@@ -63,6 +63,7 @@ A score combining popularity, age, and failures could usually behave well, but w
 {
   "schema_version": 3,
   "emergency_stop": null,
+  "automatic_holds": [],
   "scan_queue": {
     "next_ticket": 306,
     "entries": [
@@ -97,7 +98,7 @@ Before choosing a batch, a protected synchronization step reconciles the current
 3. Append missing eligible targets in current catalog popularity order, assigning consecutive tickets.
 4. Preserve every existing ticket not affected by the rules above.
 
-The first schema-3 synchronization seeds the whole current backlog in one operation. Existing target retries, exhausted targets, and targets named in automatic holds are reconciled into this ledger rather than discarded. The legacy automatic pause is cleared. An explicit operator emergency stop is preserved.
+The first schema-3 synchronization seeds the whole current backlog in one operation. Existing target retries and exhausted targets are reconciled into this ledger rather than discarded. Legacy shared and system holds become finite automatic recovery circuits whose next probes are scheduled without staff action. An explicit operator emergency stop is preserved.
 
 Synchronizing the full ledger before dispatch is important: it records the membership of the _current_ tail. If synchronization or its protected push temporarily fails, the scheduled reconciler retries it; it never writes a terminal pause.
 
@@ -121,16 +122,18 @@ This property does not require high steady-state volume. With 5–10 daily proje
 
 ## Failure Boundaries
 
-Failure classification remains useful for diagnostics, cooldown selection, and incident grouping, but it no longer grants failures authority to stop unrelated work.
+Failure classification determines whether recovery is target-local or whether a shared trusted boundary needs one bounded probe before normal batching resumes.
 
-- Target, shared-component, security-provider, and unknown scan failures all fail the current immutable report and rotate that target to the tail.
+- Every target, shared-component, security-provider, and unknown scan failure fails the current immutable report and rotates that target to the current queue tail.
+- Target-local failures do not affect peer scheduling.
+- Shared and security failures open or refresh a fingerprinted automatic circuit. While it cools, ordinary batches are withheld; at 5 minutes, 30 minutes, 2 hours, and then every 6 hours, the scheduler admits exactly one lowest-ticket due target as a recovery probe.
+- A matching successful probe clears only that circuit and the next reconciliation immediately resumes normal ticket order. A failed probe rotates its target, refreshes the relevant circuit, and schedules itself automatically. A fifth failure is chronic diagnostic state, never terminal state.
 - No common exception writes an emergency stop.
 - Credentials, integrity, or provider failures remain fail-closed for the affected report and open or update an incident.
 - Workflow-level failures before a target result is available are retried by the scheduled reconciler and GitHub Actions. They do not mutate durable state into a blocked state.
-- Optional component cooldowns may prevent waste during a known external outage, but must have a finite `not_before` and must be reconsidered automatically. They cannot require staff recovery.
 - Only an explicit operator action may set `emergency_stop`. Resuming it is likewise explicit because it represents intentional operational control, not ordinary recovery.
 
-Diagnostics must preserve a sanitized phase and underlying error category. Generic `CLI_FAILED` may be used as a final fallback, but it must not be interpreted as a security event or global gate.
+Diagnostics must preserve a sanitized phase and underlying error category. Generic or unrecognized system failures default to the shared circuit, not the security domain. Only explicitly classified authentication, configuration, identity, response-origin, and policy-integrity failures use the security domain.
 
 ## Independent Automation Loops
 
@@ -178,7 +181,7 @@ Snapshot and ledger changes are committed together after the run. The import wor
 
 - Add a protected queue-synchronization job before planning.
 - Remove the pre-scan Pages parity gate.
-- Remove retry-first derived sorting, automatic shared/security holds, exhaustion, and `continuation_blocked`.
+- Remove retry-first derived sorting, permanent/manual shared-security holds, exhaustion, and `continuation_blocked`; replace them with the finite automatic circuit and single-probe path.
 - Make continuation depend only on whether eligible queue work remains or a future cooldown is scheduled.
 - Dispatch Pages reconciliation and the next scan reconciliation independently after publication.
 - Keep one global scan concurrency group so state writers remain serialized.
@@ -200,8 +203,9 @@ Snapshot and ledger changes are committed together after the run. The import wor
 - A fifth and later failure remains eligible and rotates again.
 - Cooldown skips without repositioning; expiry restores ticket priority.
 - SHA replacement preserves ticket and resets the streak.
-- Schema-2 automatic pause, holds, and exhausted retries migrate into runnable queue entries.
-- Unknown failures never create an automatic stop.
+- Schema-2 target retries migrate into queue entries; shared and system holds migrate into finite, immediately reconsidered automatic circuits.
+- Unknown failures create a shared automatic circuit with a finite next probe, never an emergency stop.
+- Cooling circuits admit no ordinary batch, due circuits admit exactly one fingerprinted probe, and only a matching success clears the circuit.
 - A mixed batch publishes successes and queues failures without blocking continuation.
 - Scan continuation is independent of Pages deployment.
 
@@ -217,7 +221,7 @@ Snapshot and ledger changes are committed together after the run. The import wor
 ### Integration and live proof
 
 1. Merge TavernKeeper through its protected checks.
-2. Observe schema-3 synchronization clear the current automatic hold and materialize the full eligible backlog.
+2. Observe schema-3 synchronization materialize the full eligible backlog and convert legacy shared/security state into due automatic probes.
 3. Confirm the lowest-ticket targets advance while the repeatedly failing target remains in the ledger behind the captured tail.
 4. Confirm a report commit can be followed by another scan even if Pages reconciliation is pending or failing.
 5. Merge Tavernary through its protected checks and verify a known failing synthesis no longer blocks later report imports.
@@ -225,7 +229,7 @@ Snapshot and ledger changes are committed together after the run. The import wor
 
 ## Operational Invariants
 
-1. No common project, provider, CLI, synthesis, publication, or deployment failure can create a permanent or staff-gated stop.
+1. No common project, provider, CLI, synthesis, publication, or deployment failure can create a permanent or staff-gated stop; every shared/security circuit has a finite automatic probe time.
 2. Every eligible target is either covered, active, queued with a durable ticket, or temporarily cooling until a finite timestamp.
 3. Every failed target remains in the same current queue and later arrivals cannot overtake its requeued ticket.
 4. No incomplete or degraded security report is published.

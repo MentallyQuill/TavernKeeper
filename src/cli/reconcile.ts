@@ -39,34 +39,41 @@ export function buildReconcileMatrix({
       delayed_entries: 0,
       next_wake_at: null,
       emergency_stopped: false,
+      automatic_holds: 0,
+      recovery_probes: 0,
     };
   }
   const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
   const targetMetadata = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
-  const include = plan.targets.map(({ target, reason }) => {
-    const repositoryReports = index.reports.filter(
-      ({ repository_id }) => repository_id === target.repository_id,
-    );
-    const prior = repositoryReports
-      .filter(
-        ({ target_sha, scanner_policy_version }) =>
-          target_sha === target.target_sha &&
-          scanner_policy_version === scannerPolicyVersion,
-      )
-      .sort((left, right) => right.report_version - left.report_version)[0];
-    const previousShas = [
-      ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
-    ].slice(0, 20);
-    return ScanRequestSchema.parse({
-      ...targetMetadata.get(target.repository_id),
-      reason,
-      report_version: (prior?.report_version ?? 0) + 1,
-      supersedes_report_id: prior?.report_id ?? null,
-      previous_report_shas: previousShas,
-    });
-  });
+  const include = plan.targets.map(
+    ({ target, reason, recoveryFingerprint }) => {
+      const repositoryReports = index.reports.filter(
+        ({ repository_id }) => repository_id === target.repository_id,
+      );
+      const prior = repositoryReports
+        .filter(
+          ({ target_sha, scanner_policy_version }) =>
+            target_sha === target.target_sha &&
+            scanner_policy_version === scannerPolicyVersion,
+        )
+        .sort((left, right) => right.report_version - left.report_version)[0];
+      const previousShas = [
+        ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
+      ].slice(0, 20);
+      return ScanRequestSchema.parse({
+        ...targetMetadata.get(target.repository_id),
+        reason,
+        report_version: (prior?.report_version ?? 0) + 1,
+        supersedes_report_id: prior?.report_id ?? null,
+        previous_report_shas: previousShas,
+        ...(recoveryFingerprint === undefined
+          ? {}
+          : { recovery_fingerprint: recoveryFingerprint }),
+      });
+    },
+  );
   return {
     include,
     total_remaining: plan.totalRemaining,
@@ -74,6 +81,8 @@ export function buildReconcileMatrix({
     delayed_entries: plan.delayedEntries,
     next_wake_at: plan.nextWakeAt,
     emergency_stopped: plan.emergencyStopped,
+    automatic_holds: plan.automaticHolds,
+    recovery_probes: plan.recoveryProbes,
   };
 }
 

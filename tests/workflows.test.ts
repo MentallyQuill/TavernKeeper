@@ -257,6 +257,7 @@ describe("GitHub workflow security policy", () => {
       queue_delayed: "${{ steps.publish.outputs.queue_delayed }}",
       next_wake_at: "${{ steps.publish.outputs.next_wake_at }}",
       chronic_failures: "${{ steps.publish.outputs.chronic_failures }}",
+      automatic_holds: "${{ steps.publish.outputs.automatic_holds }}",
     });
     expect(value.jobs.publish.if).toBe("${{ always() }}");
     expect(publish).toMatchObject({ id: "publish", shell: "bash" });
@@ -266,6 +267,7 @@ describe("GitHub workflow security policy", () => {
     expect(publish?.run).toContain("queue_remaining");
     expect(publish?.run).toContain("queue_delayed");
     expect(publish?.run).toContain("chronic_failures");
+    expect(publish?.run).toContain("automatic_holds");
     expect(publish?.run).not.toMatch(
       /continuation_blocked|target_failures|shared_holds|security_holds|terminal_failures/u,
     );
@@ -321,6 +323,8 @@ describe("GitHub workflow security policy", () => {
       delayed_entries: "${{ steps.plan.outputs.delayed_entries }}",
       next_wake_at: "${{ steps.plan.outputs.next_wake_at }}",
       emergency_stopped: "${{ steps.plan.outputs.emergency_stopped }}",
+      automatic_holds: "${{ steps.plan.outputs.automatic_holds }}",
+      recovery_probes: "${{ steps.plan.outputs.recovery_probes }}",
     });
     expect(value.jobs.run.with).toEqual({
       requests_json: "${{ needs.plan.outputs.requests_json }}",

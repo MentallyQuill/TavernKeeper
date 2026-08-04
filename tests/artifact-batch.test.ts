@@ -114,7 +114,9 @@ async function readPublishedRepositoryIds(root: string) {
 function publicationInput(
   root: string,
   artifactsRoot: string,
-  expectedTargets: Target[],
+  expectedTargets: Array<
+    Target & { recovery_fingerprint?: string | undefined }
+  >,
 ) {
   return { root, artifactsRoot, generatedAt, expectedTargets };
 }
@@ -165,10 +167,19 @@ describe("artifact batch publication", () => {
       queue_delayed: 2,
       next_wake_at: "2026-08-04T04:06:00.000Z",
       chronic_failures: 0,
+      automatic_holds: 2,
     });
     await expect(readPublishedRepositoryIds(root)).resolves.toEqual([42, 44]);
     await expect(readState(root)).resolves.toMatchObject({
       emergency_stop: null,
+      automatic_holds: expect.arrayContaining([
+        expect.objectContaining({
+          failure: expect.objectContaining({ domain: "security" }),
+        }),
+        expect.objectContaining({
+          failure: expect.objectContaining({ domain: "shared" }),
+        }),
+      ]),
       scan_queue: {
         next_ticket: 7,
         entries: [
@@ -226,11 +237,19 @@ describe("artifact batch publication", () => {
       publicationInput(root, artifactsRoot, [targetOf(report)]),
     );
 
+    const failedState = await readState(root);
+    const recoveryFingerprint = failedState.automatic_holds[0]
+      .error_fingerprint as string;
     const recoveredArtifacts = join(root, "recovered-artifacts");
     await mkdir(recoveredArtifacts, { recursive: true });
     await writeOutcome(recoveredArtifacts, 0, completed(report), report);
     const recovered = await publishArtifactBatch(
-      publicationInput(root, recoveredArtifacts, [targetOf(report)]),
+      publicationInput(root, recoveredArtifacts, [
+        {
+          ...targetOf(report),
+          recovery_fingerprint: recoveryFingerprint,
+        },
+      ]),
     );
 
     expect(recovered).toMatchObject({
@@ -240,6 +259,7 @@ describe("artifact batch publication", () => {
       queue_remaining: 0,
     });
     await expect(readState(root)).resolves.toMatchObject({
+      automatic_holds: [],
       scan_queue: { entries: [] },
     });
   });

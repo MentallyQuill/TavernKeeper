@@ -1,6 +1,6 @@
 # Durable Automatic Scan Queue Implementation Plan
 
-> **For Codex:** Execute this plan in order with test-driven development. Do not introduce any automatic staff gate, terminal retry, or deployment dependency while translating the approved design.
+> **For Codex:** Execute this plan in order with test-driven development. Do not introduce any automatic staff gate, terminal retry, or deployment dependency while translating the approved design. Shared/security failures use a time-bounded automatic circuit with one fingerprinted probe; this circuit must never require a manual resume.
 
 **Goal:** Replace TavernKeeper's derived/terminal retry system and Tavernary's all-or-nothing importer with small persisted ticket queues whose failures rotate to the then-current tail and remain automatically retryable.
 
@@ -119,8 +119,8 @@ Cover these exact cases:
 - a changed SHA preserves its existing ticket and resets the consecutive streak/cooldown;
 - covered and ineligible targets leave the queue;
 - active campaigns add otherwise-covered targets;
-- schema-2 target retries, exhausted targets, security failures, and shared holds become ordinary queue entries;
-- a schema-2 automatic pause is discarded, while a schema-2 staff pause becomes `emergency_stop`;
+- schema-2 target retries and exhausted targets become ordinary queue entries;
+- schema-2 shared holds and system pauses become finite automatic recovery circuits due no later than their next scheduled probe, while a schema-2 staff pause becomes `emergency_stop`;
 - repeated synchronization without input changes is byte-stable.
 
 Run:
@@ -135,7 +135,7 @@ Expected: FAIL on the new migration and CLI contracts.
 
 Add `syncScanQueue({ manifest, index, state, now, scannerPolicyVersion })`. It must accept schema-2 or schema-3 input, migrate legacy entries first, reconcile coverage/current SHAs, append missing targets in popularity order, and return `{ state, changed, summary }`.
 
-The legacy migration must deduplicate multiple legacy retry/hold references by repository, retain the highest known failure count, and assign those targets in deterministic current catalog order during initial materialization. It must never emit an automatic stop.
+The legacy migration must deduplicate target retry references by repository, retain the highest known failure count, and assign those targets in deterministic current catalog order during initial materialization. It must preserve shared/security evidence as fingerprinted, finite automatic circuits and never emit an automatic staff stop.
 
 **Step 3: Implement the queue-sync CLI**
 
@@ -177,7 +177,7 @@ Require:
 - later catalog arrivals have larger tickets than a previously rotated failure;
 - success removes only the exact immutable target;
 - unknown system/orchestrator errors classify as target-local diagnostic failures and never as security/global stops;
-- an explicit emergency stop is the sole reason a normal plan is blocked.
+- an explicit emergency stop blocks all work; an automatic circuit temporarily withholds ordinary batches and admits exactly one due recovery probe.
 
 Run:
 
@@ -185,7 +185,7 @@ Run:
 npm.cmd test -- tests/backlog.test.ts tests/retry.test.ts tests/failure.test.ts
 ```
 
-Expected: FAIL on retry-first, exhaustion, holds, and automatic pause behavior.
+Expected: FAIL on retry-first, exhaustion, permanent/manual hold behavior, and automatic staff-pause behavior.
 
 **Step 2: Replace derived backlog behavior**
 
@@ -206,7 +206,7 @@ Return:
 
 **Step 3: Replace retry transitions**
 
-`recordFailure` calls the queue rotation helper for every diagnostic domain. Its notification becomes `"chronic"` at five failures and on subsequent incident-worthy recurrences, but `terminal` remains false. `recordSuccess` removes the exact entry. Delete production dependence on shared holds and exhausted lists.
+`recordFailure` calls the queue rotation helper for every diagnostic domain. Its notification becomes `"chronic"` at five failures and on subsequent incident-worthy recurrences, but `terminal` remains false. Target failures rotate only the target. Shared/security failures also create or refresh a fingerprinted automatic circuit. `recordSuccess` removes the exact entry and clears only the matching recovery fingerprint. Delete production dependence on manual holds and exhausted lists.
 
 **Step 4: Improve fallback classification**
 
@@ -238,7 +238,7 @@ Prove that a batch containing successes plus target/shared/security/unknown fail
 - publishes every complete successful report;
 - removes successful tickets;
 - rotates each failed ticket once in deterministic requested-target order;
-- returns no `continuation_blocked`, `terminal_failures`, or hold counts;
+- returns no `continuation_blocked` or `terminal_failures`, and exposes the count of finite `automatic_holds`;
 - returns queue telemetry including remaining, due, delayed, next wake, and chronic incidents;
 - never publishes a candidate paired with a failure or a candidate that fails exact-target authentication.
 
@@ -284,7 +284,7 @@ Require:
 - scan continuation depends on queue work/cooldown only and does not need deployment;
 - Pages deployment and next reconciliation are independent jobs after publication;
 - a Tavernary targeted wake validates the repository ID but appends through normal queue reconciliation instead of bypassing existing tickets;
-- legacy strings `continuation_blocked`, `shared_holds`, `security_holds`, `terminal_failures`, and `deploy_required` are absent from common scheduling;
+- legacy strings `continuation_blocked`, `shared_holds`, `security_holds`, `terminal_failures`, and `deploy_required` are absent from common scheduling; the replacement `automatic_holds` state is finite and self-probing;
 - workflow policy still pins actions, isolates secrets, authenticates artifacts, and limits each Publisher token to its reviewed push block.
 
 Run:
@@ -335,7 +335,7 @@ git commit -m "feat: decouple scan and deployment loops"
 
 **Step 1: Convert remaining fixtures through public helpers**
 
-Update test builders to produce schema-3 state. Keep explicit migration fixtures for schema versions 1 and 2. Do not mechanically preserve obsolete hold assertions.
+Update test builders to produce schema-3 state. Keep explicit migration fixtures for schema versions 1 and 2. Replace obsolete manual-hold assertions with finite automatic-probe assertions.
 
 **Step 2: Update operational documentation**
 
@@ -343,7 +343,7 @@ Document ticket order, automatic rotation, chronic incidents, explicit emergency
 
 **Step 3: Materialize a checked-in schema-3 state**
 
-Run the queue sync against current fixed inputs or use the tested migration CLI to produce canonical schema-3 state. Confirm it contains no automatic stop and no exhausted/no-man's-land retry state.
+Run the queue sync against current fixed inputs or use the tested migration CLI to produce canonical schema-3 state. Confirm it contains no automatic staff stop and no exhausted/no-man's-land retry state. Convert any live shared/security failures into due automatic circuits.
 
 **Step 4: Run the complete TavernKeeper gate**
 
@@ -475,7 +475,7 @@ Using authenticated GitHub CLI calls:
 
 - confirm the merged main SHA and successful queue-sync/reconcile workflow;
 - inspect committed schema-3 state and count eligible queued projects;
-- confirm the legacy automatic hold is gone;
+- confirm legacy manual holds are gone and any replacement circuit has a finite automatic probe;
 - confirm the previously failing project has a durable ticket and no terminal state;
 - observe at least one later scan/publication cycle advance independently of Pages status;
 - verify exact Pages deployment SHA and live report index convergence.
