@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Kenhito/Marinara-RPG-Extension at commit 39160a6.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Kenhito/Marinara-RPG-Extension</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Kenhito/Marinara-RPG-Extension" rel="noopener noreferrer">Kenhito/Marinara-RPG-Extension</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Kenhito/Marinara-RPG-Extension/commit/39160a667c8331ff1d3acab20fe70a16f99d78f5" rel="noopener noreferrer">39160a6</a></span>
+        <span>Reviewed <time datetime="2026-08-04T23:09:47.319Z">Aug 4, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or high-risk concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 high</span>
+        <span>0 material</span>
+        <span>22 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or high-risk item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The code evaluates a math formula using a method that can run arbitrary code, but it strictly filters the input to only allow numbers and basic math symbols, making it safe from hacking. However, it might not work on web pages with strict security settings.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code uses `new Function` to evaluate a formula string. The input is sanitized by a regex `/^[\s0-9+\-*/().]+$/` which only permits digits, whitespace, arithmetic operators, parentheses, and decimal points. This prevents arbitrary code execution. However, using `new Function` may fail in environments with strict Content Security Policy (CSP) that blocks &#39;unsafe-eval&#39;, as noted in the project&#39;s own README for a different evaluator.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace `new Function` with a recursive descent parser or a safe math expression evaluator to ensure compatibility with strict Content Security Policy (CSP) environments, consistent with the approach used in the project&#39;s other formula evaluator.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L9872" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:9872</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The code builds a small math expression from a user-imported ruleset and runs it. It first checks that the expression contains only numbers and basic math symbols, which stops anyone from sneaking in real code. The main drawback is that this approach can break on systems with strict security settings, and the project already uses a safer method for other similar calculations.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate uses new Function to evaluate a crit/fumble formula string sourced from an imported ruleset bundle. Before execution, the substituted string is validated against a whitelist regex that permits only digits, arithmetic operators, parentheses, and whitespace. This character-class restriction prevents JavaScript identifier or statement injection, so arbitrary code execution is not achievable through this path. The residual weakness is the use of new Function itself, which is blocked under strict Content Security Policy and is inconsistent with the project&#39;s stated move to a recursive-descent evaluator for similar formulas elsewhere.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace the new Function evaluator with the same recursive-descent arithmetic parser already used for skillBonusFormula, eliminating the CSP-unsafe eval path and keeping behavior consistent across the extension.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/extension/RPG-Extension-GM-Mode.js#L10119" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:10119</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (13)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but it actually found a label the extension uses to remember where a window was dragged on screen. This is normal app behavior and not a security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a localStorage key name used to persist the screen position of a draggable UI panel. It is a hardcoded string literal identifying client-side UI state, not a credential, API key, or secret. The gitleaks generic-api-key pattern produced a false positive on the key-like string format. No credential is present and no sensitive data is exposed.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/ec51408ac2a8ab65cd2be51a5f887637c48b75c9/extension/RPG-Extension-GM-Mode.js#L1786" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:1786</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner mistook a setting name used to remember where a panel sits on screen for a secret password or API key. It is just a label for saving window position, not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line contains a localStorage storage key name used to persist the screen position of a UI flyout panel. It is a positional preference string, not an API key, token, or credential. The generic-api-key rule produced a false positive on a key-value-like string. No credential is present, transmitted, or used.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/ec51408ac2a8ab65cd2be51a5f887637c48b75c9/extension/RPG-Extension-GM-Mode.js#L7120" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:7120</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but the text is just a label the extension uses to remember where a pop-up window was last moved on screen. It is not a credential and cannot be used to access anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged string is a localStorage key name used to persist the screen position of a draggable UI panel. It is a hardcoded identifier passed to a panel-creation helper, not a credential, API key, or secret. No network destination, authentication value, or sensitive data flow is involved. The gitleaks generic-api-key rule produced a false positive on this UI-state key.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L2213" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:2213</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label the extension uses to remember where a popup window was last moved on screen. It is not a password or API key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a localStorage key name used to persist the screen position of a draggable UI panel. It is a hardcoded string literal with no credential value, no network destination, and no secret material. The gitleaks generic-api-key rule produced a false positive on the string format.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L2059" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:2059</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is just a label the extension uses to remember where a popup window was placed on screen. It is not a password or API key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched the string value on line 8166, which is a localStorage storage key identifier used to persist the position of a UI panel. It is not a credential, token, or secret. No credential exposure or sensitive data flow is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/94a380fd10ddbbc7e53db1f9907766c4c7906d2a/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L8166" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:8166</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a dynamic evaluation feature to calculate RPG dice crit/fumble thresholds from user-authored ruleset formulas. Before running anything, it checks that the formula contains only numbers and basic math symbols, blocking any attempt to sneak in code. This is a normal pattern for a tabletop RPG rules engine and does not pose a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged `new Function` is inside `evalRollUnderFormula`, which evaluates user-supplied crit/fumble threshold formulas from ruleset bundles. Before execution, the substituted string is validated against a strict whitelist regex `^[\s0-9+\-*/().]+$` that permits only digits, whitespace, arithmetic operators, and parentheses. No letters, identifiers, quotes, semicolons, or other JavaScript syntax can pass the gate, so arbitrary code execution via the formula string is not achievable. The function also wraps the call in try/catch and rejects non-numeric results. This is a constrained arithmetic evaluator matching the project&#39;s stated purpose of computing RPG roll thresholds.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L10119" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:10119</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged what looks like a key, but it is just a label the extension uses to remember where a pop-up items window was last moved on screen. It is not a password or secret of any kind.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched the string value on line 7919, which is a UI panel configuration property. The matched value is a localStorage key name used to persist the draggable position of an items flyout panel. It contains no credential material, secret tokens, or authentication data. It is a benign identifier for client-side UI state persistence, consistent with the extension&#39;s stated purpose of rendering resizable, draggable character sheets and panels.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L7919" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:7919</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a string that looks like it could be a key, but it is just a label the extension uses to remember where a popup window was moved on screen. It is not a password or API key and is not sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line assigns a localStorage key name used to persist the screen position of a UI flyout panel. The matched value is a descriptive identifier for client-side UI state, not a credential, token, or secret. No credential is present in the surrounding code, and the value is never transmitted to any network destination or used for authentication.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/extension/RPG-Extension-GM-Mode.js#L2213" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:2213</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a string that looks like it could be an API key by pattern, but it is actually just a label the extension uses to remember where a popup window was dragged on screen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a localStorage key name used to persist the screen position of a draggable UI panel. It is a hardcoded string literal naming a client-side storage slot, not a credential, token, or secret. No network destination, authentication context, or sensitive data flow is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/1720c8e0f08495739354996fb8059b986d1e7a68/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L7919" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:7919</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label the extension uses to remember where a popup window was last moved on screen. It is not a password or secret key of any kind.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line contains a UI panel position persistence key used by a localStorage-style storage mechanism to remember where the item bag flyout panel was last positioned. It is a descriptive identifier for local client-side UI state, not a credential, token, or secret. The generic-api-key rule produced a false positive on a string literal that merely contains the word &#39;key&#39;.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L8166" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:8166</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label the extension uses to remember where a popup window was dragged on screen. It is not a password or API key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a localStorage storage key name used to persist the draggable panel position for the items flyout. It is a hardcoded UI state key, not a credential, token, or secret. The gitleaks generic-api-key rule matched on the hyphenated alphanumeric string format, producing a false positive. No credential is present and no network or authentication use occurs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/extension/RPG-Extension-GM-Mode.js#L8166" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:8166</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a string that looks like it could be an API key, but it is actually just a label the extension uses to remember where a popup window was last moved on screen. There is no password or secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a localStorage key name used to persist the screen position of a UI flyout panel. It is a static string literal assigned to a storageKey property, not a credential value, API key, or secret. The gitleaks generic-api-key pattern matched on the hyphenated alphanumeric key name, producing a false positive. No credential is present, exfiltrated, or transmitted.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/1720c8e0f08495739354996fb8059b986d1e7a68/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L2059" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:2059</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a string that looks like it could be a key and flagged it. It is actually just a label the extension uses to remember where a popup window was last moved on screen. It is not a password or secret.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a localStorage key name used to persist the screen position of a draggable UI panel. It is a hardcoded string literal naming a client-side storage slot, not a credential, API key, or secret. No network destination, authentication context, or sensitive data flow is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/94a380fd10ddbbc7e53db1f9907766c4c7906d2a/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L2213" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:2213</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>LocalStorage key name false-positives on generic-api-key pattern</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The extension uses named labels to save window positions locally. These labels can look like API keys to automated scanners but contain no secrets.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The storageKey string is one of several panel-position persistence keys used by the extension&#39;s draggable UI panels. These are static identifiers with no sensitive payload. Similar hyphenated key names elsewhere in the file may also trigger generic credential scanners.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/1720c8e0f08495739354996fb8059b986d1e7a68/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L2059" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:2059</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Panel position storage key misidentified as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A label for remembering window position was mistaken for a secret key. No security issue.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched string is a localStorage key for persisting UI panel coordinates. It contains no secret material and is not transmitted anywhere.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/94a380fd10ddbbc7e53db1f9907766c4c7906d2a/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L2213" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:2213</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Panel position storage key false positive</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner mistook a window-position label for a secret. It is harmless.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched value is a localStorage key for persisting UI panel position. It contains no secret material and is not used for authentication or remote access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/extension/RPG-Extension-GM-Mode.js#L8166" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:8166</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>UI panel position storage key misidentified as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner mistook a window-position label for a secret. There is no security issue here.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The storageKey property is assigned a constant string used as a localStorage identifier for persisting panel coordinates. No secret is present and no credential is exposed.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js#L2059" rel="noopener noreferrer">releases/v0.4.2/install-files/RPG-Extension-GM-Mode.js:2059</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Panel position persisted under a named localStorage key</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The extension saves the last on-screen position of a window so it reopens in the same spot. The label used for that save is what the scanner mistook for a secret.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The panel-creation call passes a storageKey property whose value is a fixed string identifying where to save and restore the panel&#39;s position. This is a standard pattern for draggable UI panels and does not involve credentials or external communication.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L2213" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:2213</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Formula evaluator uses new Function instead of a parser</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The project already replaced a similar calculator elsewhere with a safer method. This one still uses a technique that some browsers&#39; security settings may block, though the current input checks keep it safe.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The README notes the project migrated the main skill-bonus formula evaluator to recursive descent for CSP safety, but this roll-under crit/failure evaluator still relies on `new Function` with a regex whitelist. While the whitelist is effective, a recursive-descent or `Function`-free arithmetic parser would be more robust against future regex mistakes and would work under strict CSP environments that block `unsafe-eval`.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider replacing this `new Function` call with the same recursive-descent parser approach already used for skill-bonus formulas, for consistency and CSP compatibility.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/39160a667c8331ff1d3acab20fe70a16f99d78f5/releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js#L10119" rel="noopener noreferrer">releases/v0.5.0/install-files/RPG-Extension-GM-Mode.js:10119</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Panel position persistence key misidentified as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The extension saves where you moved a popup window so it reopens in the same spot. The scanner mistook the save label for a secret key.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The storageKey value is passed to a panel creation helper to persist draggable panel coordinates in localStorage. This is consistent with the project purpose of rendering resizable, draggable character sheet and flyout panels. No network call, credential, or secret is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Kenhito/Marinara-RPG-Extension/blob/ec51408ac2a8ab65cd2be51a5f887637c48b75c9/extension/RPG-Extension-GM-Mode.js#L1786" rel="noopener noreferrer">extension/RPG-Extension-GM-Mode.js:1786</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>311 files &middot; 12012283 bytes</dd>
+      <dt>Contextual coverage</dt><dd>15 of 15 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Kenhito/Marinara-RPG-Extension/commit/39160a667c8331ff1d3acab20fe70a16f99d78f5" rel="noopener noreferrer">39160a667c8331ff1d3acab20fe70a16f99d78f5</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-04T23:09:47.319Z">Aug 4, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>1</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v1</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>80979 input &middot; 10540 output &middot; 8081 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>04f80b8bf61d147864c7eed1b00c68e06c650074c7af0d8fcfd1b9affd895714</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1225767064/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
