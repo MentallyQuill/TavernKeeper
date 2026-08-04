@@ -59,18 +59,21 @@ persist them.
 ## Normal reconciliation
 
 `reconcile.yml` runs every six hours and accepts input-free workflow and
-repository dispatches. It derives work from Tavernary's live V2 target manifest
-minus TavernKeeper's V5 preferred current reports. It selects at most five
-repositories and calls `scan-and-publish.yml`, which runs at most two scan jobs
-concurrently. Standard, retry, targeted, and policy-campaign scans converge on
-the same automatic V5 publication path. If work remains after verified
-deployment, it dispatches another input-free batch.
+repository dispatches. `retry.yml` also reconciles every five minutes so due
+recovery work does not wait for the safety-net schedule. Reconciliation derives
+work from Tavernary's live V2 or V3 target manifest minus TavernKeeper's V5
+preferred current reports. It selects at most five repositories and calls
+`scan-and-publish.yml`, which runs at most two scan jobs concurrently. Standard,
+retry, targeted, and policy-campaign scans converge on the same automatic V5
+publication path. If work remains after verified publication and deployment,
+the publisher dispatches another input-free batch.
 
 On the first staff resume, TavernKeeper records an immutable
-`coverage_started_at` timestamp. Ordinary work uses three lanes: current Top 30,
-submissions first cataloged on or after that timestamp, and older projects. New
-and old lanes sort by `first_cataloged_at`; due retries return to their source
-lane. Thirty-day age boosts prevent starvation without changing lane identity.
+`coverage_started_at` timestamp. Manifest V3 initial coverage is strict
+`popularity_rank` order, with due retries ahead of new work. V2 remains a
+temporary compatibility path: current Top 30, submissions first cataloged on or
+after coverage start, and older projects. V2 new and old lanes sort by
+`first_cataloged_at`, and thirty-day age boosts prevent starvation.
 
 The queue is derived. A target that advances before acquisition is coalesced to
 the newest manifest SHA. Once exact-SHA acquisition begins, TavernKeeper
@@ -102,22 +105,28 @@ strict synthesis and enforces deterministic risk floors after import.
 
 ## Pause and recovery
 
-The tracked initial state is staff-paused with reason `INITIAL_ROLLOUT`. Use
-`staff-operations.yml` to pause, resume, or request a retry. The first resume
-records `coverage_started_at`; later cycles preserve it. Never edit state
+Operations state schema V2 separates three failure domains. Never edit state
 concurrently with publication.
 
-System failures stop ordinary scanning and engage the circuit breaker. No
-degraded repository report is published. Every selected matrix target still
-finishes independently, and the serialized publisher retains complete reports
-from peer repositories while recording only unsuccessful targets for retry.
-The initial system-failure attempt is followed by retries at T+1, T+2, and T+3
-hours. No staff or owner notification is sent for intermediate failures. After
-the third delayed retry fails, TavernKeeper creates or updates one deduplicated
-`scanner-operations` Issue for TavernKeeper staff and remains stopped until
-staff fix the cause and explicitly resume. Repository-specific failures delay
-only that target. External project owners receive no operational-failure
-notification.
+- `target`: retry the exact repository SHA after 5 minutes, 30 minutes, and 2
+  hours. A fourth failure exhausts only that SHA, creates one deduplicated staff
+  Issue, and leaves the rest of the catalog runnable.
+- `shared`: pause new catalog targets and admit one due recovery probe per
+  complete failure fingerprint, with two probes maximum per batch. Delays are
+  5, 15, 30, and 60 minutes, then 3 hours capped indefinitely. Four failures
+  create a staff Issue, but probing never becomes terminal. The first successful
+  probe clears its hold and ordinary reconciliation resumes automatically.
+- `security`: fail closed with reason `SECURITY_HOLD`. Repair the credential,
+  configuration, authenticity, authorization, encryption, or integrity
+  boundary; run the relevant compatibility check; then explicitly resume
+  through `staff-operations.yml`. Unknown system failures take this path.
+
+Every selected matrix target still finishes independently. The serialized
+publisher retains complete reports from peer repositories, persists the real
+failure domains, and exposes `continuation_blocked`. Ordinary continuation uses
+only the persisted publisher result plus successful deployment; target-local
+matrix failures do not suppress it. External project owners receive no
+operational-failure notification.
 
 Provider exhaustion, context insufficiency, invalid model output, and missing
 review coverage are failures, never permission to skip candidates, reduce the
@@ -128,8 +137,8 @@ OpenGrep policy 3 treats only warning-level code 2 `Other syntax error` and
 warning-level code 3 `PartialParsing` tuple diagnostics as bounded parser
 limitations. Valid findings remain eligible for contextual review when those
 warnings occur. Unknown warnings, error-level diagnostics, malformed output,
-nonzero exits, and process failures remain system failures and engage the same
-fail-closed queue controls.
+nonzero exits, and process failures remain target-local scanner failures unless
+the pinned tool itself is unavailable, which is a shared transient failure.
 
 Any change to scanner behavior or output requires a clean canary baseline.
 Before reactivation, remove the existing Wandlight and Recursion report trees
@@ -146,11 +155,12 @@ reset gate.
 - `provider-check.yml` makes one benign, bounded review request and validates
   the configured endpoint, Bearer authentication, model, and response contract.
 - `targeted-scan.yml` accepts only a repository-ID hint from the immutable
-  Tavernary wake-App actor, refetches the public V2 manifest, and derives a
+  Tavernary wake-App actor, refetches the public V2 or V3 manifest, and derives a
   standard scan request. Staff begin this flow through Tavernary's
   exact-GitHub-URL Action.
 - `policy-rescan.yml` schedules a campaign under the current reviewed policy.
-- `staff-operations.yml` pauses, resumes, or retries a target.
+- `staff-operations.yml` pauses, resumes, retries a target, or performs the
+  protected one-time V1-to-V2 state migration.
 - `deploy-pages.yml` deploys only an exact commit proven to be on `main`;
   manual runs require staff protection.
 
@@ -188,8 +198,11 @@ adapters, model transport, and exact-HEAD verification. Real provider behavior,
 digest-pinned tools, and exact validated checkouts remain release and
 live-canary gates.
 
-For the first rollout, keep ordinary operations paused and use Tavernary's
-staff-targeted GitHub-URL Action to prove Recursion and Wandlight through the
-complete production path. Neither repository is hardcoded into policy. Resume
-the Top-30/new/old backlog only after both V5 reports, Pages publication,
-Tavernary synthesis, and inline scan-result presentation are verified live.
+For the V3 autonomous rollout: publish and verify Tavernary's complete ranked
+manifest; merge TavernKeeper while operations remain stopped; run the protected
+`migrate` operation and verify schema V2 plus its numeric classification
+summary; run provider and pinned-tool compatibility checks; then use a separate
+protected `resume`. Verify the first selected repositories have ascending
+popularity ranks, Pages matches the committed report index, a real shared hold
+admits a probe and clears on success, and no security hold remains. Migration
+itself never dispatches scanning.

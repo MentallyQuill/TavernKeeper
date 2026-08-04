@@ -29,7 +29,7 @@ Publisher token; continuation dispatches use a separate Actions-only token.
 ```text
 Tavernary target manifest (repository ID + exact SHA)
   -> input-free wake, repository-ID hint, or scheduled reconciliation
-  -> TavernKeeper derives at most 5 pending targets
+  -> TavernKeeper derives at most 5 pending targets by exact popularity rank
   -> at most 2 disposable scan jobs run concurrently
   -> exact checkout and portable-path inventory
   -> history, TavernKeeper rules, and all applicable pinned scanners
@@ -89,8 +89,22 @@ Matrix targets finish independently. The serialized publisher pairs each
 completed transition with its own candidate, records every failed transition,
 and atomically publishes the complete successful subset. A peer failure never
 turns a completed report into degraded output and never causes that report to
-be discarded. System-scoped failures still engage the circuit breaker before a
-later ordinary batch can start.
+be discarded. Publisher state and verified deployment—not matrix job status—
+drive continuation after a mixed batch.
+
+Every sanitized failure carries a bounded domain, component, code, and optional
+diagnostic stage. A `target` failure owns an independent exact-SHA retry
+sequence and cannot block other targets. A `shared` failure creates a
+nonterminal hold keyed by the complete failure fingerprint; the scheduler
+admits bounded probes until the first successful probe clears that hold. A
+`security` failure records a protected pause and fails closed until staff repair
+and explicitly resume. Unknown system failures classify as security failures.
+
+Operations state schema V2 persists independent target retries and multiple
+shared holds; it has no singular circuit breaker. Tavernary manifest V3 adds a
+complete positive `popularity_rank`, which controls initial coverage strictly
+from rank 1 upward. Manifest V2 remains a temporary compatibility input and
+uses the earlier Top-30/new/old lane behavior.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Matrix jobs encrypt
