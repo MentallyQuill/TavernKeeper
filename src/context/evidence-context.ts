@@ -273,8 +273,7 @@ async function readVerifiedText(
   root: string,
   file: InventoryFile,
 ): Promise<string> {
-  if (file.kind !== "text")
-    throw new EvidenceContextError();
+  if (file.kind !== "text") throw new EvidenceContextError();
   const contents = await readFile(absoluteInventoryPath(root, file.path));
   const sha256 = createHash("sha256").update(contents).digest("hex");
   if (contents.byteLength !== file.bytes || sha256 !== file.sha256) {

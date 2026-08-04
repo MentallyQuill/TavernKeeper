@@ -312,9 +312,7 @@ describe("OpenGrep adapter", () => {
 
   test("classifies a rule timeout as transient", async () => {
     const runner = new OpenGrepRunner(
-      resultJson("src/index.ts", [
-        { code: 2, level: "warn", type: "Timeout" },
-      ]),
+      resultJson("src/index.ts", [{ code: 2, level: "warn", type: "Timeout" }]),
     );
 
     await expect(

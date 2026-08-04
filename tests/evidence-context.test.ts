@@ -42,31 +42,31 @@ describe("evidence context builder", () => {
     });
 
     const error = await buildEvidenceContextGroups({
-        checkoutRoot: root,
-        target: {
-          source_id: "github-42",
-          provider: "github",
-          repository_id: 42,
-          repository: "owner/repo",
-          canonical_url: "https://github.com/owner/repo",
-          target_sha: "a".repeat(40),
-        },
-        projectKinds: ["extension"],
-        findings: [finding],
-        inventory: {
-          root,
-          files: [
-            {
-              path: "payload.bin",
-              bytes: binary.byteLength,
-              sha256: createHash("sha256").update(binary).digest("hex"),
-              kind: "binary",
-            },
-          ],
-          totals: { files: 1, bytes: binary.byteLength },
-          totalBytes: binary.byteLength,
-        },
-      }).catch((value: unknown) => value);
+      checkoutRoot: root,
+      target: {
+        source_id: "github-42",
+        provider: "github",
+        repository_id: 42,
+        repository: "owner/repo",
+        canonical_url: "https://github.com/owner/repo",
+        target_sha: "a".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "payload.bin",
+            bytes: binary.byteLength,
+            sha256: createHash("sha256").update(binary).digest("hex"),
+            kind: "binary",
+          },
+        ],
+        totals: { files: 1, bytes: binary.byteLength },
+        totalBytes: binary.byteLength,
+      },
+    }).catch((value: unknown) => value);
 
     expect(classifyFailure(error)).toEqual({
       code: "EVIDENCE_CONTEXT_UNSUPPORTED",

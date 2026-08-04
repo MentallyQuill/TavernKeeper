@@ -330,9 +330,7 @@ describe("GitHub workflow security policy", () => {
     expect(targetBlock).toContain("Target incident key:");
     expect(targetBlock).toContain("Repository ID:");
     expect(targetBlock).toContain("Target commit:");
-    expect(targetBlock).not.toContain(
-      '--search "$fingerprint in:body"',
-    );
+    expect(targetBlock).not.toContain('--search "$fingerprint in:body"');
   });
 
   test("state migration exists only behind the protected staff workflow", async () => {
