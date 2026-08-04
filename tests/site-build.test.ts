@@ -111,6 +111,19 @@ describe("Pages site allowlist", () => {
     expect(landing).toContain(
       "does not run dependencies, scripts, builds, tests, Actions, or target executables",
     );
+    for (const [name, url] of [
+      ["Gitleaks", "https://github.com/gitleaks/gitleaks"],
+      ["OpenGrep", "https://github.com/opengrep/opengrep"],
+      ["OSV-Scanner", "https://github.com/google/osv-scanner"],
+      ["zizmor", "https://github.com/zizmorcore/zizmor"],
+      ["malcontent", "https://github.com/chainguard-dev/malcontent"],
+    ] as const) {
+      expect(landing).toContain(name);
+      expect(landing).toContain(url);
+    }
+    expect(landing).toContain("version-pinned");
+    expect(landing).toContain("untrusted data");
+    expect(landing).toContain("advisory evidence");
     expect(landing).not.toContain("Report ID");
 
     const reportHtml = await readFile(
