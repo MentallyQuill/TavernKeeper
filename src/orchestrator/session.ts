@@ -357,7 +357,7 @@ export async function prepareTargetSession({
     projectKinds.length === 0
   )
     throw new ScanPhaseError(
-      "INVALID_SCAN_SPEC",
+      "SCAN_POLICY_MISMATCH",
       "system",
       "Prepared scanner policy does not match deterministic policy.",
     );

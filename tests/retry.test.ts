@@ -95,6 +95,30 @@ describe("automatic scan recovery", () => {
     expect(state.pause).toBeNull();
   });
 
+  test("exhausts an exact SHA after four alternating target failures", () => {
+    let state = runningState();
+    const failures = [
+      { code: "SCANNER_FAILED", component: "opengrep" },
+      { code: "SCANNER_TIMEOUT", component: "opengrep" },
+      { code: "SCANNER_FAILED", component: "gitleaks" },
+      { code: "SCANNER_TIMEOUT", component: "gitleaks" },
+    ] as const;
+    failures.forEach((failure, index) => {
+      state = recordFailure(state, {
+        target,
+        failure: { ...failure, domain: "target" },
+        at: new Date(Date.UTC(2026, 7, 4, index)).toISOString(),
+      }).state;
+    });
+
+    expect(state.target_retries[0]).toMatchObject({
+      attempt: 4,
+      exhausted: true,
+      next_retry_at: null,
+      failure: failures.at(-1),
+    });
+  });
+
   test("uses five-minute, thirty-minute, and two-hour target delays", () => {
     let state = runningState();
     const nextRetries: Array<string | null> = [];

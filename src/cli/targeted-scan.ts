@@ -40,7 +40,7 @@ export function buildTargetedMatrix({
   );
   if (target === undefined)
     throw new Error(
-      "Targeted repository ID is not in Tavernary's V2 manifest.",
+      "Targeted repository ID is not in Tavernary's current target manifest.",
     );
   const requestCreatedAtMs = Date.parse(requestCreatedAt);
   if (!Number.isFinite(requestCreatedAtMs))
@@ -48,6 +48,8 @@ export function buildTargetedMatrix({
   const previous = index.reports.filter(
     ({ repository_id }) => repository_id === target.repository_id,
   );
+  if (state.pause !== null || state.shared_holds.length > 0)
+    return { include: [], coalesced: true };
   const matchingReports = previous.filter(
     ({ target_sha, scanner_policy_version }) =>
       target_sha === target.target_sha &&

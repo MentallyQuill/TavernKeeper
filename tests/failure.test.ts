@@ -28,6 +28,30 @@ describe("operation failure domains", () => {
       },
     ],
     [
+      { code: "SCAN_POLICY_MISMATCH", scope: "system" },
+      {
+        code: "SCAN_POLICY_MISMATCH",
+        domain: "security",
+        component: "orchestrator",
+      },
+    ],
+    [
+      { code: "MODEL_RESPONSE_ORIGIN", scope: "system" },
+      {
+        code: "MODEL_RESPONSE_ORIGIN",
+        domain: "security",
+        component: "contextual-model",
+      },
+    ],
+    [
+      { code: "MODEL_IDENTITY_MISMATCH", scope: "system" },
+      {
+        code: "MODEL_IDENTITY_MISMATCH",
+        domain: "security",
+        component: "contextual-model",
+      },
+    ],
+    [
       { code: "UNRECOGNIZED_SYSTEM_FAILURE", scope: "system" },
       {
         code: "UNRECOGNIZED_SYSTEM_FAILURE",

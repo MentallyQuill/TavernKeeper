@@ -222,14 +222,16 @@ jobs:
       - name: Decrypt sanitized outcomes
         env:
           TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
+          TAVERNKEEPER_SCAN_REQUESTS: ${{ inputs.requests_json }}
         shell: bash
         run: |
+          expected="$(jq -er 'if type == "array" and length > 0 then length else error("invalid scan request batch") end' <<< "$TAVERNKEEPER_SCAN_REQUESTS")"
           position=0
           while IFS= read -r -d '' artifact; do
             npm run --silent artifact-transport -- decrypt "$artifact" "artifacts/scan-$position"
             position=$((position + 1))
-          done < <(find encrypted-artifacts -type f -name outcome.enc -print0)
-          test "$position" -gt 0
+          done < <(find encrypted-artifacts -type f -name 'tavernkeeper-outcome-*.enc' -print0)
+          test "$position" -eq "$expected"
       - name: Publish serialized batch
         id: publish
         env:
@@ -353,6 +355,34 @@ jobs:
       source_sha: ${{ needs.publish.outputs.source_sha }}
       automatic: true
     secrets: inherit
+
+  incident:
+    needs: [scan, publish]
+    if: ${{ always() && needs.publish.result == 'failure' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Report bounded pipeline failure
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          code="PUBLISH_PIPELINE_FAILED"
+          component="publication"
+          run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          gh label create scanner-operations --color B60205 --description "TavernKeeper operational incidents" --force
+          existing="$(gh issue list --state open --label scanner-operations --search "$code in:body" --json number --jq '.[0].number // empty')"
+          if [[ -n "$existing" ]]; then
+            gh issue comment "$existing" --body "The bounded publication pipeline failed again: $run_url"
+          else
+            gh issue create \
+              --label scanner-operations \
+              --title "[scanner-operations] publication pipeline failed" \
+              --body "TavernKeeper could not persist its sanitized batch outcome. No scan payload or secret is included.\n\nCode: \`$code\`\nComponent: \`$component\`\nRun: $run_url\n\nAutomatic schedules remain enabled; inspect and repair the trusted publication boundary."
+          fi
 
   continue:
     needs: [publish, deploy]

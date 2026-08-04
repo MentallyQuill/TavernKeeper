@@ -114,7 +114,9 @@ async function readPublishedRepositoryIds(root: string) {
 function publicationInput(
   root: string,
   artifactsRoot: string,
-  expectedTargets: Target[],
+  expectedTargets: Array<
+    Target & { recovery_fingerprint?: string | undefined }
+  >,
 ) {
   return { root, artifactsRoot, generatedAt, expectedTargets };
 }
@@ -387,6 +389,40 @@ describe("artifact batch publication", () => {
     });
     await expect(readState(root)).resolves.toMatchObject({ shared_holds: [] });
     await expect(readPublishedRepositoryIds(root)).resolves.toEqual([57]);
+  });
+
+  test("a rebound recovery probe clears the intended stale hold", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const removed = await reportFor(58, "b");
+    await writeOutcome(
+      artifactsRoot,
+      0,
+      failed(targetOf(removed), {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      }),
+    );
+    await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [targetOf(removed)]),
+    );
+    const held = await readState(root);
+    const recoveryFingerprint = held.shared_holds[0]!.error_fingerprint;
+
+    const rebound = await reportFor(59, "c");
+    const recoveredArtifacts = join(root, "rebound-artifacts");
+    await mkdir(recoveredArtifacts, { recursive: true });
+    await writeOutcome(recoveredArtifacts, 0, completed(rebound), rebound);
+    await publishArtifactBatch(
+      publicationInput(root, recoveredArtifacts, [
+        {
+          ...targetOf(rebound),
+          recovery_fingerprint: recoveryFingerprint,
+        },
+      ]),
+    );
+
+    await expect(readState(root)).resolves.toMatchObject({ shared_holds: [] });
   });
 
   test("rejects an outcome whose identity differs from the requested target", async () => {

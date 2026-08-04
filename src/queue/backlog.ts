@@ -22,6 +22,7 @@ export interface PlannedTarget {
   reason: BacklogReason;
   lane: BacklogLane;
   ageFrom: string;
+  recoveryFingerprint?: string;
 }
 
 export interface BatchPlan {
@@ -148,8 +149,12 @@ function sortedRunnable(
       const rank =
         left.target.catalog_priority.popularity_rank -
         right.target.catalog_priority.popularity_rank;
-      return rank !== 0
-        ? rank
+      if (rank !== 0) return rank;
+      const catalogAge =
+        Date.parse(left.target.catalog_priority.first_cataloged_at) -
+        Date.parse(right.target.catalog_priority.first_cataloged_at);
+      return catalogAge !== 0
+        ? catalogAge
         : left.target.repository_id - right.target.repository_id;
     }
     return v2FallbackComparator(left, right, state.coverage_started_at, nowMs);
@@ -175,8 +180,8 @@ export function planBatch(
   const retryByIdentity = new Map(
     state.target_retries.map((retry) => [retryIdentity(retry), retry]),
   );
-  const targetByIdentity = new Map(
-    manifest.repositories.map((target) => [targetIdentity(target), target]),
+  const targetByRepositoryId = new Map(
+    manifest.repositories.map((target) => [target.repository_id, target]),
   );
   const planned: PlannedTarget[] = [];
   let outstanding = 0;
@@ -253,7 +258,7 @@ export function planBatch(
       state.shared_holds.map(({ next_probe_at }) => next_probe_at),
       nowMs,
     );
-    const eligible = state.shared_holds
+    const dueHolds = state.shared_holds
       .filter(({ next_probe_at }) => Date.parse(next_probe_at) <= nowMs)
       .sort((left, right) =>
         [left.next_probe_at, left.error_fingerprint]
@@ -261,34 +266,62 @@ export function planBatch(
           .localeCompare(
             [right.next_probe_at, right.error_fingerprint].join(":"),
           ),
-      )
-      .flatMap((hold) => {
-        const retry = state.target_retries
-          .filter(
-            (entry) =>
-              !entry.exhausted &&
-              entry.error_fingerprint === hold.error_fingerprint,
-          )
-          .sort((left, right) =>
-            [left.initial_failed_at, left.repository_id]
-              .join(":")
-              .localeCompare(
-                [right.initial_failed_at, right.repository_id].join(":"),
-              ),
-          )[0];
-        if (retry === undefined) return [];
-        const target = targetByIdentity.get(retryIdentity(retry));
-        return target === undefined
-          ? []
-          : [
-              {
-                target,
-                reason: "retry" as const,
-                lane: laneFor(target, state.coverage_started_at),
-                ageFrom: retry.initial_failed_at,
-              },
-            ];
+      );
+    const recoveryTargets = [...manifest.repositories]
+      .filter((target) => !activeRepositoryIds.has(target.repository_id))
+      .sort((left, right) => {
+        if (
+          manifest.schema_version === 3 &&
+          "popularity_rank" in left.catalog_priority &&
+          "popularity_rank" in right.catalog_priority
+        )
+          return (
+            left.catalog_priority.popularity_rank -
+              right.catalog_priority.popularity_rank ||
+            left.repository_id - right.repository_id
+          );
+        return left.repository_id - right.repository_id;
       });
+    const usedRepositoryIds = new Set<number>();
+    const eligible: PlannedTarget[] = [];
+    for (const hold of dueHolds) {
+      const retries = state.target_retries
+        .filter(
+          (entry) =>
+            !entry.exhausted &&
+            entry.error_fingerprint === hold.error_fingerprint,
+        )
+        .sort((left, right) =>
+          [left.initial_failed_at, left.repository_id]
+            .join(":")
+            .localeCompare(
+              [right.initial_failed_at, right.repository_id].join(":"),
+            ),
+        );
+      const retry = retries[0];
+      if (retry === undefined) continue;
+      const target =
+        retries
+          .map(({ repository_id }) => targetByRepositoryId.get(repository_id))
+          .find(
+            (candidate) =>
+              candidate !== undefined &&
+              !activeRepositoryIds.has(candidate.repository_id) &&
+              !usedRepositoryIds.has(candidate.repository_id),
+          ) ??
+        recoveryTargets.find(
+          (candidate) => !usedRepositoryIds.has(candidate.repository_id),
+        );
+      if (target === undefined) continue;
+      usedRepositoryIds.add(target.repository_id);
+      eligible.push({
+        target,
+        reason: "retry",
+        lane: laneFor(target, state.coverage_started_at),
+        ageFrom: retry.initial_failed_at,
+        recoveryFingerprint: hold.error_fingerprint,
+      });
+    }
     const targets = eligible.slice(0, 2);
     return {
       targets,

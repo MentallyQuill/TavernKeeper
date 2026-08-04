@@ -114,15 +114,26 @@ export const TargetManifestV3Schema = z
         path: ["repositories"],
         message: "Repository IDs must be unique and strictly increasing.",
       });
-    const ranks = manifest.repositories
-      .map(({ catalog_priority }) => catalog_priority.popularity_rank)
-      .sort((left, right) => left - right);
-    if (ranks.some((rank, index) => rank !== index + 1))
+    const ranks = manifest.repositories.map(
+      ({ catalog_priority }) => catalog_priority.popularity_rank,
+    );
+    if (new Set(ranks).size !== ranks.length)
       context.addIssue({
         code: "custom",
         path: ["repositories"],
-        message: "Popularity ranks must form one complete unique sequence.",
+        message: "Popularity ranks must be unique.",
       });
+    manifest.repositories.forEach((target, index) => {
+      if (
+        target.catalog_priority.top_30 !==
+        target.catalog_priority.popularity_rank <= 30
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["repositories", index, "catalog_priority"],
+          message: "Top-30 metadata must agree with the popularity rank.",
+        });
+    });
   });
 
 export const TargetManifestV1Schema = TargetManifestSchema;

@@ -46,21 +46,26 @@ export function buildReconcileMatrix({
   const targetMetadata = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
-  const include = plan.targets.map(({ target, reason }) => {
-    const repositoryReports = index.reports.filter(
-      ({ repository_id }) => repository_id === target.repository_id,
-    );
-    const previousShas = [
-      ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
-    ].slice(0, 20);
-    return ScanRequestSchema.parse({
-      ...targetMetadata.get(target.repository_id),
-      reason,
-      report_version: 1,
-      supersedes_report_id: null,
-      previous_report_shas: previousShas,
-    });
-  });
+  const include = plan.targets.map(
+    ({ target, reason, recoveryFingerprint }) => {
+      const repositoryReports = index.reports.filter(
+        ({ repository_id }) => repository_id === target.repository_id,
+      );
+      const previousShas = [
+        ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
+      ].slice(0, 20);
+      return ScanRequestSchema.parse({
+        ...targetMetadata.get(target.repository_id),
+        reason,
+        ...(recoveryFingerprint === undefined
+          ? {}
+          : { recovery_fingerprint: recoveryFingerprint }),
+        report_version: 1,
+        supersedes_report_id: null,
+        previous_report_shas: previousShas,
+      });
+    },
+  );
   return {
     include,
     total_remaining: plan.totalRemaining,

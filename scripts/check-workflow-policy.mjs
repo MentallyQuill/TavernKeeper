@@ -39,7 +39,7 @@ const allowedTriggers = {
     "workflow_call",
     "workflow_dispatch",
   ],
-  "retry.yml": ["schedule"],
+  "retry.yml": ["schedule", "workflow_dispatch"],
   "scan-and-publish.yml": ["workflow_call"],
   "staff-operations.yml": ["workflow_dispatch"],
   "targeted-scan.yml": ["workflow_dispatch"],
@@ -99,6 +99,7 @@ const permissionProfiles = {
       scan: { contents: "read" },
       publish: { contents: "read", issues: "write" },
       deploy: undefined,
+      incident: { contents: "read", issues: "write" },
       continue: { actions: "write" },
     },
   },
@@ -423,6 +424,21 @@ function checkEncryptedHandoff(file, workflow) {
   );
   if (downloads.length !== 1 || downloads[0]?.uses !== downloadArtifactAction)
     fail(file, "artifact actions must retain the reviewed Node 24 pins");
+  const decrypt = (workflow.jobs?.publish?.steps ?? []).find(
+    (step) => step?.name === "Decrypt sanitized outcomes",
+  );
+  if (
+    decrypt?.env?.TAVERNKEEPER_SCAN_REQUESTS !==
+      "${{ inputs.requests_json }}" ||
+    !decrypt?.run?.includes(
+      "find encrypted-artifacts -type f -name 'tavernkeeper-outcome-*.enc' -print0",
+    ) ||
+    !decrypt?.run?.includes('test "$position" -eq "$expected"')
+  )
+    fail(
+      file,
+      "publisher must decrypt the exact per-repository artifact batch",
+    );
   const encrypt = steps.find(
     (step) => step?.name === "Encrypt sanitized outcome",
   );

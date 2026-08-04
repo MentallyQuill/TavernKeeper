@@ -145,7 +145,10 @@ export function recordFailure(
     retryIdentity(entry, target),
   );
   const existing =
-    priorForTarget?.error_fingerprint === errorFingerprint
+    priorForTarget !== undefined &&
+    (priorForTarget.error_fingerprint === errorFingerprint ||
+      (priorForTarget.failure.domain === "target" &&
+        failure.domain === "target"))
       ? priorForTarget
       : undefined;
   const retriesWithoutTarget = state.target_retries.filter(
@@ -274,24 +277,38 @@ export function recordSuccess(
   stateInput: OperationsState,
   targetInput: Target,
   at: string,
+  recoveryFingerprint?: string,
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const target = TargetSchema.parse(targetInput);
-  const removed = state.target_retries.find((entry) =>
-    retryIdentity(entry, target),
+  if (
+    recoveryFingerprint !== undefined &&
+    !/^[0-9a-f]{64}$/u.test(recoveryFingerprint)
+  )
+    throw new Error("Recovery fingerprint is invalid.");
+  const removed = state.target_retries.filter(
+    (entry) =>
+      retryIdentity(entry, target) ||
+      (recoveryFingerprint !== undefined &&
+        entry.repository_id === target.repository_id &&
+        entry.error_fingerprint === recoveryFingerprint),
   );
+  const resolvedSharedFingerprints = new Set(
+    removed
+      .filter(({ failure }) => failure.domain === "shared")
+      .map(({ error_fingerprint }) => error_fingerprint),
+  );
+  if (recoveryFingerprint !== undefined)
+    resolvedSharedFingerprints.add(recoveryFingerprint);
   return OperationsStateSchema.parse({
     ...state,
     updated_at: at,
     target_retries: state.target_retries.filter(
-      (entry) => !retryIdentity(entry, target),
+      (entry) => !removed.includes(entry),
     ),
-    shared_holds:
-      removed?.failure.domain === "shared"
-        ? state.shared_holds.filter(
-            (hold) => hold.error_fingerprint !== removed.error_fingerprint,
-          )
-        : state.shared_holds,
+    shared_holds: state.shared_holds.filter(
+      (hold) => !resolvedSharedFingerprints.has(hold.error_fingerprint),
+    ),
     active_scans: state.active_scans.filter(
       (active) =>
         active.repository_id !== target.repository_id ||

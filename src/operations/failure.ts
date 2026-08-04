@@ -58,7 +58,6 @@ export type FailureDescriptor = z.infer<typeof FailureDescriptorSchema>;
 const TargetSystemCodes = new Set([
   "CLASSIFICATION_INVALID",
   "CONTEXTUAL_REVIEW_INVALID",
-  "INVALID_SCAN_SPEC",
   "INVENTORY_INVALID",
   "MALFORMED_SCANNER_OUTPUT",
   "MODEL_CONTEXT_INCOMPLETE",
@@ -83,6 +82,9 @@ const SecuritySystemCodes = new Set([
   "MODEL_AUTHENTICATION",
   "MODEL_AUTH_HEADER_MISMATCH",
   "MODEL_CONFIGURATION",
+  "MODEL_IDENTITY_MISMATCH",
+  "MODEL_RESPONSE_ORIGIN",
+  "SCAN_POLICY_MISMATCH",
 ]);
 
 function objectRecord(value: unknown): Record<string, unknown> {

@@ -383,6 +383,72 @@ describe("derived scan backlog", () => {
     ).toEqual([[recovery.repository_id, "retry"]]);
   });
 
+  test("probes a due shared hold after its repository advances SHA", () => {
+    const failedTarget = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(failedTarget),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+    const advancedTarget = {
+      ...failedTarget,
+      target_sha: "f".repeat(40),
+    };
+
+    const plan = planBatch(
+      manifestV3([advancedTarget]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan).toMatchObject({ blocked: false, sharedHolds: 1 });
+    expect(plan.targets).toEqual([
+      expect.objectContaining({
+        reason: "retry",
+        target: expect.objectContaining({
+          repository_id: 100,
+          target_sha: "f".repeat(40),
+        }),
+      }),
+    ]);
+  });
+
+  test("rebinds a due shared probe when its repository leaves the catalog", () => {
+    const removedTarget = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(removedTarget),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+
+    const plan = planBatch(
+      manifestV3([targetV3(200, { rank: 2 })]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan).toMatchObject({ blocked: false, sharedHolds: 1 });
+    expect(plan.targets).toEqual([
+      expect.objectContaining({
+        reason: "retry",
+        recoveryFingerprint: state.shared_holds[0]!.error_fingerprint,
+        target: expect.objectContaining({ repository_id: 200 }),
+      }),
+    ]);
+  });
+
   test("keeps one queue position when an active repository advances SHA", () => {
     const activeTarget = target(1);
     const state = runningState({

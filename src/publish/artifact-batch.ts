@@ -13,7 +13,7 @@ import {
   type ScanReportV5,
 } from "../contracts/reports-v5.js";
 import type { Target } from "../contracts/targets.js";
-import { recordFailure } from "../operations/retry.js";
+import { recordFailure, recordSuccess } from "../operations/retry.js";
 import { parseOperationsState } from "../operations/state.js";
 import { publishCandidates } from "./publisher.js";
 
@@ -27,7 +27,9 @@ export interface PublishArtifactBatchInput {
   root: string;
   artifactsRoot: string;
   generatedAt: string;
-  expectedTargets: Target[];
+  expectedTargets: Array<
+    Target & { recovery_fingerprint?: string | undefined }
+  >;
 }
 
 export interface PublishArtifactBatchResult {
@@ -106,9 +108,14 @@ function targetKey(target: Target) {
 
 function requireCompleteOutcomeSet(
   outcomes: Awaited<ReturnType<typeof loadPairedOutcome>>[],
-  expectedTargets: Target[],
+  expectedTargets: Array<
+    Target & { recovery_fingerprint?: string | undefined }
+  >,
 ) {
-  const expectedByKey = new Map<string, Target>();
+  const expectedByKey = new Map<
+    string,
+    Target & { recovery_fingerprint?: string | undefined }
+  >();
   for (const target of expectedTargets) {
     const key = targetKey(target);
     if (expectedByKey.has(key))
@@ -132,6 +139,7 @@ function requireCompleteOutcomeSet(
 
   if (outcomeKeys.size !== expectedByKey.size)
     throw new Error("Scan outcome set does not match the requested batch.");
+  return expectedByKey;
 }
 
 export async function publishArtifactBatch(
@@ -141,7 +149,10 @@ export async function publishArtifactBatch(
     (await outcomeDirectories(input.artifactsRoot)).map(loadPairedOutcome),
   );
   if (outcomes.length === 0) throw new Error("No scan outcomes were supplied.");
-  requireCompleteOutcomeSet(outcomes, input.expectedTargets);
+  const expectedByKey = requireCompleteOutcomeSet(
+    outcomes,
+    input.expectedTargets,
+  );
 
   let state = parseOperationsState(
     await readJsonFile(join(input.root, "operations", "state.json")),
@@ -169,6 +180,13 @@ export async function publishArtifactBatch(
       throw new Error(
         "Completed candidate does not match its transition target.",
       );
+    state = recordSuccess(
+      state,
+      outcome.transition.target,
+      outcome.transition.at,
+      expectedByKey.get(targetKey(outcome.transition.target))!
+        .recovery_fingerprint,
+    );
     reports.push(report);
   }
 

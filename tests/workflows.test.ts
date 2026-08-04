@@ -275,6 +275,27 @@ describe("GitHub workflow security policy", () => {
     expect(value.on.workflow_call.inputs).not.toHaveProperty("remaining");
   });
 
+  test("reports a secret-free incident when publication cannot persist state", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const incident = value.jobs.incident;
+    const report = (incident.steps as Workflow[]).find(
+      (step) => step.name === "Report bounded pipeline failure",
+    );
+
+    expect(incident.needs).toEqual(["scan", "publish"]);
+    expect(incident.if).toContain("needs.publish.result == 'failure'");
+    expect(incident.permissions).toEqual({ contents: "read", issues: "write" });
+    expect(report?.env).toEqual({ GH_TOKEN: "${{ github.token }}" });
+    expect(report?.run).toContain("PUBLISH_PIPELINE_FAILED");
+    expect(report?.run).toContain('component="publication"');
+    expect(JSON.stringify(incident)).not.toMatch(/secrets\./u);
+  });
+
+  test("retry recovery remains manually dispatchable for operations", async () => {
+    const value = await workflow("retry.yml");
+    expect(value.on).toHaveProperty("workflow_dispatch");
+  });
+
   test("reconcile exposes rich queue state to the reusable scanner", async () => {
     const value = await workflow("reconcile.yml");
     expect(value.jobs.plan.outputs).toMatchObject({
@@ -309,10 +330,21 @@ describe("GitHub workflow security policy", () => {
 
   test("publisher authenticates every decrypted outcome against the requested batch", async () => {
     const value = await workflow("scan-and-publish.yml");
+    const decrypt = (value.jobs.publish.steps as Workflow[]).find(
+      (step) => step.name === "Decrypt sanitized outcomes",
+    );
     const publish = (value.jobs.publish.steps as Workflow[]).find(
       (step) => step.name === "Publish serialized batch",
     );
 
+    expect(decrypt?.env).toEqual({
+      TAVERNKEEPER_ARTIFACT_KEY: "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}",
+      TAVERNKEEPER_SCAN_REQUESTS: "${{ inputs.requests_json }}",
+    });
+    expect(decrypt?.run).toContain(
+      "find encrypted-artifacts -type f -name 'tavernkeeper-outcome-*.enc' -print0",
+    );
+    expect(decrypt?.run).toContain('test "$position" -eq "$expected"');
     expect(publish?.env).toEqual({
       TAVERNKEEPER_SCAN_REQUESTS: "${{ inputs.requests_json }}",
     });

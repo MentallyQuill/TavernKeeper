@@ -312,7 +312,7 @@ export async function scanRepository(
       spec.ruleCatalogVersion !== "1"
     )
       return failure(
-        "INVALID_SCAN_SPEC",
+        "SCAN_POLICY_MISMATCH",
         "system",
         "Scan configuration failed validation.",
       );

@@ -79,6 +79,30 @@ describe("public TavernKeeper contracts", () => {
         })),
       }).success,
     ).toBe(false);
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: repositories.map((target, index) => ({
+          ...target,
+          catalog_priority: {
+            ...target.catalog_priority,
+            popularity_rank: index === 0 ? 1 : 3,
+          },
+        })),
+      }).success,
+    ).toBe(true);
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: repositories.map((target, index) => ({
+          ...target,
+          catalog_priority: {
+            ...target.catalog_priority,
+            top_30: index === 0 ? false : target.catalog_priority.top_30,
+          },
+        })),
+      }).success,
+    ).toBe(false);
     const { popularity_rank: _rank, ...missingRank } =
       repositories[0]!.catalog_priority;
     expect(
