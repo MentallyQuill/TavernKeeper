@@ -48,8 +48,7 @@ export function buildTargetedMatrix({
   const previous = index.reports.filter(
     ({ repository_id }) => repository_id === target.repository_id,
   );
-  if (state.pause !== null || state.shared_holds.length > 0)
-    return { include: [], coalesced: true };
+  if (state.emergency_stop !== null) return { include: [], coalesced: true };
   const matchingReports = previous.filter(
     ({ target_sha, scanner_policy_version }) =>
       target_sha === target.target_sha &&

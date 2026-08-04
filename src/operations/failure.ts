@@ -148,7 +148,7 @@ export function classifyFailure(value: unknown): FailureDescriptor {
         ? "shared"
         : SecuritySystemCodes.has(code)
           ? "security"
-          : "security";
+          : "target";
 
   return {
     code,

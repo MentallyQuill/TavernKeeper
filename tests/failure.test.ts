@@ -55,9 +55,13 @@ describe("operation failure domains", () => {
       { code: "UNRECOGNIZED_SYSTEM_FAILURE", scope: "system" },
       {
         code: "UNRECOGNIZED_SYSTEM_FAILURE",
-        domain: "security",
+        domain: "target",
         component: "orchestrator",
       },
+    ],
+    [
+      new Error("body deliberately ignored"),
+      { code: "CLI_FAILED", domain: "target", component: "orchestrator" },
     ],
   ])("classifies a bounded failure descriptor", (input, expected) => {
     expect(classifyFailure(input)).toEqual(expected);
