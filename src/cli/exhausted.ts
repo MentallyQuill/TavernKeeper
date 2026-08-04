@@ -6,36 +6,32 @@ async function main() {
     await readJsonFile("operations/state.json"),
   );
   return {
-    target_exhaustions: state.target_retries
-      .filter(
-        ({ exhausted, failure }) => exhausted && failure.domain === "target",
-      )
+    automatic_holds: state.automatic_holds,
+    chronic_failures: state.scan_queue.entries
+      .filter(({ chronic }) => chronic)
       .map(
         ({
           repository_id,
+          repository,
           target_sha,
-          error_fingerprint,
-          failure,
-          initial_failed_at,
+          ticket,
+          consecutive_failures,
+          total_failures,
+          not_before,
+          last_failure,
           last_failed_at,
         }) => ({
           repository_id,
+          repository,
           target_sha,
-          error_fingerprint,
-          failure,
-          initial_failed_at,
+          ticket,
+          consecutive_failures,
+          total_failures,
+          not_before,
+          last_failure,
           last_failed_at,
         }),
       ),
-    shared_holds: state.shared_holds,
-    security_holds: state.target_retries
-      .filter(({ failure }) => failure.domain === "security")
-      .map(({ repository_id, target_sha, error_fingerprint, failure }) => ({
-        repository_id,
-        target_sha,
-        error_fingerprint,
-        failure,
-      })),
   };
 }
 

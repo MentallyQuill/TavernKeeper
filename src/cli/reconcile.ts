@@ -36,10 +36,11 @@ export function buildReconcileMatrix({
       include: [],
       total_remaining: 0,
       runnable_remaining: 0,
-      delayed_retries: 0,
-      shared_holds: 0,
+      delayed_entries: 0,
       next_wake_at: null,
-      blocked: false,
+      emergency_stopped: false,
+      automatic_holds: 0,
+      recovery_probes: 0,
     };
   }
   const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
@@ -51,18 +52,25 @@ export function buildReconcileMatrix({
       const repositoryReports = index.reports.filter(
         ({ repository_id }) => repository_id === target.repository_id,
       );
+      const prior = repositoryReports
+        .filter(
+          ({ target_sha, scanner_policy_version }) =>
+            target_sha === target.target_sha &&
+            scanner_policy_version === scannerPolicyVersion,
+        )
+        .sort((left, right) => right.report_version - left.report_version)[0];
       const previousShas = [
         ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
       ].slice(0, 20);
       return ScanRequestSchema.parse({
         ...targetMetadata.get(target.repository_id),
         reason,
+        report_version: (prior?.report_version ?? 0) + 1,
+        supersedes_report_id: prior?.report_id ?? null,
+        previous_report_shas: previousShas,
         ...(recoveryFingerprint === undefined
           ? {}
           : { recovery_fingerprint: recoveryFingerprint }),
-        report_version: 1,
-        supersedes_report_id: null,
-        previous_report_shas: previousShas,
       });
     },
   );
@@ -70,10 +78,11 @@ export function buildReconcileMatrix({
     include,
     total_remaining: plan.totalRemaining,
     runnable_remaining: plan.runnableRemaining,
-    delayed_retries: plan.delayedRetries,
-    shared_holds: plan.sharedHolds,
+    delayed_entries: plan.delayedEntries,
     next_wake_at: plan.nextWakeAt,
-    blocked: plan.blocked,
+    emergency_stopped: plan.emergencyStopped,
+    automatic_holds: plan.automaticHolds,
+    recovery_probes: plan.recoveryProbes,
   };
 }
 

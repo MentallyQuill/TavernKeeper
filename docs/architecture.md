@@ -29,7 +29,8 @@ Publisher token; continuation dispatches use a separate Actions-only token.
 ```text
 Tavernary target manifest (repository ID + exact SHA)
   -> input-free wake, repository-ID hint, or scheduled reconciliation
-  -> TavernKeeper derives at most 5 pending targets by exact popularity rank
+  -> TavernKeeper synchronizes the durable ticket queue
+  -> TavernKeeper selects at most 5 due targets in ticket order
   -> at most 2 disposable scan jobs run concurrently
   -> exact checkout and portable-path inventory
   -> history, TavernKeeper rules, and all applicable pinned scanners
@@ -39,8 +40,10 @@ Tavernary target manifest (repository ID + exact SHA)
   -> exact-HEAD, evidence, coverage, schema, and sanitizer validation
   -> authenticated encrypted candidate handoff
   -> serialized V5 validation and immutable publication/history
-  -> verified TavernKeeper Pages report index
-  -> input-free Tavernary wake
+  -> committed report and queue state
+     -> immediate next reconciliation when queue work remains
+     -> independent TavernKeeper Pages reconciliation and deployment
+        -> input-free Tavernary wake
   -> Tavernary validates the complete report
   -> Tavernary Luna synthesis plus deterministic risk floors
   -> atomic assessment history update and card deployment
@@ -89,22 +92,25 @@ Matrix targets finish independently. The serialized publisher pairs each
 completed transition with its own candidate, records every failed transition,
 and atomically publishes the complete successful subset. A peer failure never
 turns a completed report into degraded output and never causes that report to
-be discarded. Publisher state and verified deployment—not matrix job status—
-drive continuation after a mixed batch.
+be discarded. Committed publisher state, not matrix or Pages job status, drives
+continuation after a mixed batch. A separate scheduled reconciler repairs Pages
+drift without holding the scan queue.
 
 Every sanitized failure carries a bounded domain, component, code, and optional
-diagnostic stage. A `target` failure owns an independent exact-SHA retry
-sequence and cannot block other targets. A `shared` failure creates a
-nonterminal hold keyed by the complete failure fingerprint; the scheduler
-admits bounded probes until the first successful probe clears that hold. A
-`security` failure records a protected pause and fails closed until staff repair
-and explicitly resume. Unknown system failures classify as security failures.
+diagnostic stage. Domains preserve useful incident classification, but no
+ordinary failure domain can pause scheduling. A failed exact target receives a
+new tail ticket and a finite cooldown; after the fifth consecutive failure it
+is chronic and staff-visible but remains nonterminal. Unknown failures use a
+sanitized target-local fallback so unexpected diagnostics cannot halt the
+catalog.
 
-Operations state schema V2 persists independent target retries and multiple
-shared holds; it has no singular circuit breaker. Tavernary manifest V3 adds a
-complete positive `popularity_rank`, which controls initial coverage strictly
-from rank 1 upward. Manifest V2 remains a temporary compatibility input and
-uses the earlier Top-30/new/old lane behavior.
+Operations state schema V3 persists one monotonic ticket ledger. Tavernary
+manifest V3 adds a complete positive `popularity_rank`, which controls initial
+seeding strictly from rank 1 upward. A failure moves behind every project
+already assigned a ticket; later catalog arrivals append behind that rotated
+failure. The sole scheduling stop is an explicit protected staff emergency
+stop. Manifest V2 remains a temporary compatibility input and uses the earlier
+Top-30/new/old order when seeding.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Matrix jobs encrypt

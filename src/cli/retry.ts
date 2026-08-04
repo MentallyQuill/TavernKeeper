@@ -1,3 +1,5 @@
+import { writeFile } from "node:fs/promises";
+
 import { z } from "zod";
 
 import {
@@ -13,7 +15,6 @@ import {
   requiredEnvironment,
   runJsonCli,
 } from "./io.js";
-import { writeFile } from "node:fs/promises";
 
 const OperationSchema = z.discriminatedUnion("operation", [
   z.strictObject({ operation: z.literal("due") }),
@@ -46,22 +47,18 @@ async function main() {
         })
       : operation.operation === "resume"
         ? resumeSystem(state, now)
-        : (() => {
-            const targetRetries = state.target_retries.filter(
-              ({ repository_id }) => repository_id !== operation.repository_id,
-            );
-            const retainedFingerprints = new Set(
-              targetRetries.map(({ error_fingerprint }) => error_fingerprint),
-            );
-            return parseOperationsState({
-              ...state,
-              updated_at: now,
-              target_retries: targetRetries,
-              shared_holds: state.shared_holds.filter(({ error_fingerprint }) =>
-                retainedFingerprints.has(error_fingerprint),
+        : parseOperationsState({
+            ...state,
+            updated_at: now,
+            scan_queue: {
+              ...state.scan_queue,
+              entries: state.scan_queue.entries.map((entry) =>
+                entry.repository_id === operation.repository_id
+                  ? { ...entry, not_before: null }
+                  : entry,
               ),
-            });
-          })();
+            },
+          });
   await writeFile(path, serializeOperationsState(next));
   return { status: operation.operation };
 }

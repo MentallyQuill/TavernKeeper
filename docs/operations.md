@@ -60,27 +60,37 @@ persist them.
 
 `reconcile.yml` runs every six hours and accepts input-free workflow and
 repository dispatches. `retry.yml` also reconciles every five minutes so due
-recovery work does not wait for the safety-net schedule. Reconciliation derives
-work from Tavernary's live V2 or V3 target manifest minus TavernKeeper's V5
-preferred current reports. It selects at most five repositories and calls
-`scan-and-publish.yml`, which runs at most two scan jobs concurrently. Standard,
-retry, targeted, and policy-campaign scans converge on the same automatic V5
-publication path. If work remains after verified publication and deployment,
-the publisher dispatches another input-free batch.
+recovery work does not wait for the safety-net schedule. Reconciliation first
+synchronizes Tavernary's live V2 or V3 target manifest and TavernKeeper's V5
+preferred current reports into committed schema-3 queue state. It then selects
+at most five due tickets and calls `scan-and-publish.yml`, which runs at most two
+scan jobs concurrently. Standard, retry, targeted, and policy-campaign scans
+converge on the same automatic V5 publication path. Committed queue work starts
+the next input-free batch independently of Pages deployment.
 
-On the first staff resume, TavernKeeper records an immutable
+On the first queue activation, TavernKeeper records an immutable
 `coverage_started_at` timestamp. Manifest V3 initial coverage is strict
-`popularity_rank` order, with due retries ahead of new work. V2 remains a
+`popularity_rank` order. V2 remains a
 temporary compatibility path: current Top 30, submissions first cataloged on or
 after coverage start, and older projects. V2 new and old lanes sort by
-`first_cataloged_at`, and thirty-day age boosts prevent starvation.
+`first_cataloged_at`.
 
-The queue is derived. A target that advances before acquisition is coalesced to
-the newest manifest SHA. Once exact-SHA acquisition begins, TavernKeeper
+The queue is a durable monotonic ticket ledger reconciled against current
+eligibility. A target that advances before acquisition keeps its ticket while
+its queued identity moves to the newest manifest SHA. Once exact-SHA
+acquisition begins, TavernKeeper
 completes and publishes that immutable SHA even if the catalog advances.
 Tavernary keeps the assessment and marks freshness separately. A staff request
-created after a prior completed report remains an intentional forced rescan,
-and a same-SHA replacement may become preferred without erasing history.
+created after a prior completed report is appended as an intentional forced
+rescan, and a same-SHA replacement may become preferred without erasing
+history.
+
+Ticket allocation is the fairness guarantee. Initial projects receive tickets
+in catalog order. Any failure removes that target from its old position and
+assigns it the next tail ticket, behind every project currently assigned to be
+scanned. Projects discovered afterward receive higher tickets, so a growing
+catalog cannot repeatedly push an older failure backward. Targeted rescans use
+the same tail and never bypass existing work.
 
 ## Scan lifecycle
 
@@ -103,30 +113,38 @@ weakness, a material vulnerability, or credible malicious behavior. It does
 not assign Tavernary's final project color. Tavernary performs a separate
 strict synthesis and enforces deterministic risk floors after import.
 
-## Pause and recovery
+## Durable recovery
 
-Operations state schema V2 separates three failure domains. Never edit state
-concurrently with publication.
+Operations state schema V3 records one queue entry per repository. Never edit
+state concurrently with publication.
 
-- `target`: retry the exact repository SHA after 5 minutes, 30 minutes, and 2
-  hours. A fourth failure exhausts only that SHA, creates one deduplicated staff
-  Issue, and leaves the rest of the catalog runnable.
-- `shared`: pause new catalog targets and admit one due recovery probe per
-  complete failure fingerprint, with two probes maximum per batch. Delays are
-  5, 15, 30, and 60 minutes, then 3 hours capped indefinitely. Four failures
-  create a staff Issue, but probing never becomes terminal. The first successful
-  probe clears its hold and ordinary reconciliation resumes automatically.
-- `security`: fail closed with reason `SECURITY_HOLD`. Repair the credential,
-  configuration, authenticity, authorization, encryption, or integrity
-  boundary; run the relevant compatibility check; then explicitly resume
-  through `staff-operations.yml`. Unknown system failures take this path.
+- Every failed project rotates to the current tail and receives a cooldown of 5
+  minutes, 30 minutes, 2 hours, then 6 hours capped for every later attempt.
+- The fifth consecutive failure marks the entry `chronic` and creates or
+  updates a sanitized staff Issue. It is diagnostic, not terminal; the ticket
+  remains scheduled forever until a success or a newer eligible SHA resets the
+  streak.
+- Target-local failure domains remain isolated to their project. Shared and
+  security failures create a fingerprinted automatic circuit so a broken
+  provider, credential, toolchain, or integrity boundary is probed once instead
+  of being hammered by the full catalog. The probe delay is 5 minutes, 30
+  minutes, 2 hours, then 6 hours capped. A due circuit admits exactly one
+  lowest-ticket target. A matching successful probe clears only that circuit
+  and normal ticket order resumes immediately. No circuit exhausts or requires
+  a staff resume; its fifth failure is chronic diagnostic state only.
+- Unknown system failures default to the shared circuit. Only explicitly
+  recognized authentication, configuration, identity, response-origin, and
+  policy-integrity failures use the security domain.
+- Only a deliberate `pause` through the protected staff workflow creates an
+  emergency stop. Common runtime failures cannot invoke it.
 
 Every selected matrix target still finishes independently. The serialized
-publisher retains complete reports from peer repositories, persists the real
-failure domains, and exposes `continuation_blocked`. Ordinary continuation uses
-only the persisted publisher result plus successful deployment; target-local
-matrix failures do not suppress it. External project owners receive no
-operational-failure notification.
+publisher retains complete reports from peer repositories and applies all queue
+transitions in request order. Ordinary continuation uses only persisted queue
+work and does not wait for deployment. `pages-reconcile.yml` independently
+checks committed versus deployed report indexes every fifteen minutes and
+repairs drift. External project owners receive no operational-failure
+notification.
 
 Provider exhaustion, context insufficiency, invalid model output, and missing
 review coverage are failures, never permission to skip candidates, reduce the
@@ -155,14 +173,17 @@ reset gate.
 - `provider-check.yml` makes one benign, bounded review request and validates
   the configured endpoint, Bearer authentication, model, and response contract.
 - `targeted-scan.yml` accepts only a repository-ID hint from the immutable
-  Tavernary wake-App actor, refetches the public V2 or V3 manifest, and derives a
-  standard scan request. Staff begin this flow through Tavernary's
-  exact-GitHub-URL Action.
+  Tavernary wake-App actor, refetches the public V2 or V3 manifest, synchronizes
+  the current queue, commits the targeted tail ticket, and dispatches ordinary
+  reconciliation. Staff begin this flow through Tavernary's exact-GitHub-URL
+  Action.
 - `policy-rescan.yml` schedules a campaign under the current reviewed policy.
-- `staff-operations.yml` pauses, resumes, retries a target, or performs the
-  protected one-time V1-to-V2 state migration.
+- `staff-operations.yml` sets or clears the explicit emergency stop, makes one
+  target immediately due, or performs a protected legacy-to-V3 state migration.
 - `deploy-pages.yml` deploys only an exact commit proven to be on `main`;
   manual runs require staff protection.
+- `pages-reconcile.yml` automatically repairs a missing or stale Pages
+  deployment without participating in scan continuation.
 
 Public Issues and comments do not trigger these workflows. A false-positive
 appeal cannot change an individual report. If evidence exposes a scanner,
@@ -198,11 +219,12 @@ adapters, model transport, and exact-HEAD verification. Real provider behavior,
 digest-pinned tools, and exact validated checkouts remain release and
 live-canary gates.
 
-For the V3 autonomous rollout: publish and verify Tavernary's complete ranked
-manifest; merge TavernKeeper while operations remain stopped; run the protected
-`migrate` operation and verify schema V2 plus its numeric classification
-summary; run provider and pinned-tool compatibility checks; then use a separate
-protected `resume`. Verify the first selected repositories have ascending
-popularity ranks, Pages matches the committed report index, a real shared hold
-admits a probe and clears on success, and no security hold remains. Migration
-itself never dispatches scanning.
+For the durable-queue rollout: publish and verify Tavernary's complete ranked
+manifest; migrate to schema V3; confirm the automatic legacy stop became a
+finite due probe, all eligible projects have unique increasing tickets, and
+legacy retry targets remain represented. Verify the first selected repositories
+follow ticket order, a fifth failure remains queued and chronic, later arrivals
+receive larger tickets than an already-rotated failure, shared/security recovery
+probes happen without staff action, scanning continues while Pages is
+reconciled independently, and no common failure path can create an emergency
+stop. Migration itself never dispatches scanning.

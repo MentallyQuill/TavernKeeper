@@ -26,7 +26,7 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({
       code: "CLI_FAILED",
-      domain: "security",
+      domain: "shared",
       component: "orchestrator",
     });
   });

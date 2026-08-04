@@ -1,160 +1,232 @@
 import { describe, expect, test } from "vitest";
 
+import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
+import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
+import { failureFingerprint } from "../src/operations/failure.js";
 import { migrateOperationsState } from "../src/operations/migrate-state.js";
 
 const at = "2026-08-04T12:00:00.000Z";
 const initialFailedAt = "2026-08-01T00:00:00.000Z";
+const emptyIndex: ReportIndexV5 = {
+  schema_version: 5,
+  generated_at: at,
+  reports: [],
+};
 
-function legacyRetry(
-  repositoryId: number,
-  input: {
-    code: string;
-    scope: "repository" | "system";
-    exhausted?: boolean;
-  },
-) {
+function target(repositoryId: number, rank: number): TargetV3 {
   return {
     source_id: `github-${repositoryId}`,
+    provider: "github",
     repository_id: repositoryId,
     repository: `owner/repo-${repositoryId}`,
     target_sha: String(repositoryId % 10).repeat(40),
-    error_fingerprint: "a".repeat(64),
-    error_code: input.code,
-    scope: input.scope,
-    initial_failed_at: initialFailedAt,
-    last_failed_at: initialFailedAt,
-    attempt: input.exhausted === true ? 3 : 1,
-    next_retry_at: input.exhausted === true ? null : "2026-08-01T01:00:00.000Z",
-    exhausted: input.exhausted === true,
+    canonical_url: `https://github.com/owner/repo-${repositoryId}`,
+    project_kinds: ["extension"],
+    catalog_priority: {
+      top_30: rank <= 30,
+      first_cataloged_at: "2026-07-01T00:00:00.000Z",
+      popularity_rank: rank,
+    },
   };
 }
 
-describe("explicit operations-state migration", () => {
-  test("maps a literal V1 state without preserving the singular breaker", () => {
-    const migrated = migrateOperationsState(
-      {
-        schema_version: 1,
-        updated_at: "2026-08-01T01:00:00.000Z",
-        coverage_started_at: "2026-07-31T00:00:00.000Z",
-        pause: null,
-        circuit_breaker: {
-          error_fingerprint: "a".repeat(64),
-          engaged_at: initialFailedAt,
-          terminal: false,
-        },
-        retries: [
-          legacyRetry(41, {
-            code: "MODEL_INVALID_RESPONSE",
-            scope: "repository",
-            exhausted: true,
-          }),
-          legacyRetry(42, { code: "MODEL_PROVIDER", scope: "system" }),
-          legacyRetry(43, { code: "SCANNER_FAILED", scope: "system" }),
-        ],
-        active_scans: [
-          {
-            source_id: "github-44",
-            repository_id: 44,
-            target_sha: "4".repeat(40),
-            started_at: initialFailedAt,
-            run_id: "run-44",
-          },
-        ],
-        policy_campaigns: [
-          {
-            id: "campaign-1",
-            scanner_policy_version: "3",
-            repository_ids: [41, 42, 43],
-            created_at: initialFailedAt,
-            status: "active",
-          },
-        ],
-      },
-      at,
-    );
+function manifest(...targets: TargetV3[]): TargetManifestV3 {
+  return {
+    schema_version: 3,
+    generated_at: at,
+    repositories: [...targets].sort(
+      (left, right) => left.repository_id - right.repository_id,
+    ),
+  };
+}
 
-    expect(migrated.summary).toEqual({ target: 2, shared: 1, security: 0 });
-    expect(migrated.state).toMatchObject({
-      schema_version: 2,
-      updated_at: at,
-      coverage_started_at: "2026-07-31T00:00:00.000Z",
-      pause: null,
-      active_scans: [expect.objectContaining({ repository_id: 44 })],
-      policy_campaigns: [expect.objectContaining({ id: "campaign-1" })],
-      shared_holds: [
-        expect.objectContaining({
-          failure: {
-            code: "MODEL_PROVIDER",
-            domain: "shared",
-            component: "contextual-model",
-          },
-        }),
-      ],
+function v2Retry(targetValue: TargetV3, exhausted = false) {
+  const failure = {
+    code: "SCANNER_FAILED",
+    domain: "target" as const,
+    component: "opengrep" as const,
+  };
+  return {
+    source_id: targetValue.source_id,
+    repository_id: targetValue.repository_id,
+    repository: targetValue.repository,
+    target_sha: targetValue.target_sha,
+    failure,
+    error_fingerprint: failureFingerprint(failure),
+    initial_failed_at: initialFailedAt,
+    last_failed_at: "2026-08-04T08:00:00.000Z",
+    attempt: exhausted ? 4 : 3,
+    next_retry_at: exhausted ? null : "2026-08-04T10:00:00.000Z",
+    exhausted,
+  };
+}
+
+function v2State(
+  targets: TargetV3[],
+  pause: null | {
+    kind: "staff" | "system";
+    reason_code: string;
+    paused_at: string;
+  } = null,
+  sharedHolds: Array<{
+    error_fingerprint: string;
+    failure: {
+      code: string;
+      domain: "target" | "shared" | "security";
+      component: "contextual-model";
+    };
+    first_failed_at: string;
+    last_failed_at: string;
+    consecutive_failures: number;
+    next_probe_at: string;
+    notified: boolean;
+  }> = [],
+) {
+  return {
+    schema_version: 2,
+    updated_at: "2026-08-04T08:00:00.000Z",
+    coverage_started_at: "2026-08-03T16:00:00.000Z",
+    pause,
+    target_retries: targets.map((value) => v2Retry(value, true)),
+    shared_holds: sharedHolds,
+    active_scans: [],
+    policy_campaigns: [],
+  };
+}
+
+describe("automatic operations-state migration", () => {
+  test("moves legacy retries behind the current healthy catalog backlog", () => {
+    const failed = target(41, 1);
+    const healthy = target(42, 2);
+    const migrated = migrateOperationsState(v2State([failed]), {
+      manifest: manifest(failed, healthy),
+      index: emptyIndex,
+      at,
+      scannerPolicyVersion: "3",
     });
-    expect(migrated.state).not.toHaveProperty("circuit_breaker");
+
+    expect(migrated.state).toMatchObject({
+      schema_version: 3,
+      emergency_stop: null,
+      scan_queue: { next_ticket: 3 },
+    });
     expect(
-      migrated.state.target_retries.find(
+      migrated.state.scan_queue.entries.map(({ repository_id, ticket }) => [
+        repository_id,
+        ticket,
+      ]),
+    ).toEqual([
+      [42, 1],
+      [41, 2],
+    ]);
+    expect(
+      migrated.state.scan_queue.entries.find(
         ({ repository_id }) => repository_id === 41,
       ),
     ).toMatchObject({
-      exhausted: true,
-      attempt: 4,
-      failure: { domain: "target", component: "contextual-model" },
-    });
-    expect(
-      migrated.state.target_retries.find(
-        ({ repository_id }) => repository_id === 43,
-      ),
-    ).toMatchObject({
-      failure: { domain: "target", component: "orchestrator" },
+      consecutive_failures: 4,
+      total_failures: 4,
+      chronic: false,
+      last_failure: { component: "opengrep" },
     });
   });
 
-  test("rejects migration of state that is already V2", () => {
-    expect(() =>
-      migrateOperationsState(
-        {
-          schema_version: 2,
-          updated_at: at,
-          coverage_started_at: null,
-          pause: null,
-          target_retries: [],
-          shared_holds: [],
-          active_scans: [],
-          policy_campaigns: [],
-        },
+  test("converts an automatic security stop into an immediately due probe", () => {
+    const failed = target(41, 1);
+    const migrated = migrateOperationsState(
+      v2State([failed], {
+        kind: "system",
+        reason_code: "SECURITY_HOLD",
+        paused_at: initialFailedAt,
+      }),
+      {
+        manifest: manifest(failed),
+        index: emptyIndex,
         at,
-      ),
-    ).toThrow("already schema version 2");
+        scannerPolicyVersion: "3",
+      },
+    );
+
+    expect(migrated.state.emergency_stop).toBeNull();
+    expect(migrated.state.automatic_holds).toEqual([
+      expect.objectContaining({
+        failure: expect.objectContaining({
+          code: "SECURITY_HOLD",
+          domain: "security",
+        }),
+        consecutive_failures: 1,
+        next_probe_at: at,
+        chronic: false,
+      }),
+    ]);
+    expect(migrated.state.scan_queue.entries).toEqual([
+      expect.objectContaining({ repository_id: 41, consecutive_failures: 4 }),
+    ]);
+    expect(migrated.summary).toMatchObject({
+      migrated_from: 2,
+      automatic_stops_cleared: 1,
+      automatic_holds_preserved: 1,
+      legacy_retries_preserved: 1,
+    });
   });
 
-  test.each(["SCAN_PHASE_FAILED", "CLI_FAILED"])(
-    "keeps ambiguous legacy %s failures target-local",
-    (code) => {
-      const migrated = migrateOperationsState(
-        {
-          schema_version: 1,
-          updated_at: "2026-08-01T01:00:00.000Z",
-          coverage_started_at: null,
-          pause: null,
-          circuit_breaker: null,
-          retries: [legacyRetry(45, { code, scope: "system" })],
-          active_scans: [],
-          policy_campaigns: [],
-        },
+  test("preserves only an explicit staff emergency stop", () => {
+    const migrated = migrateOperationsState(
+      v2State([], {
+        kind: "staff",
+        reason_code: "STAFF_PAUSE",
+        paused_at: initialFailedAt,
+      }),
+      {
+        manifest: manifest(target(41, 1)),
+        index: emptyIndex,
         at,
-      );
+        scannerPolicyVersion: "3",
+      },
+    );
 
-      expect(migrated.summary).toEqual({
-        target: 1,
-        shared: 0,
-        security: 0,
-      });
-      expect(migrated.state.pause).toBeNull();
-      expect(migrated.state.target_retries[0]).toMatchObject({
-        failure: { code, domain: "target", component: "orchestrator" },
-        exhausted: false,
-      });
-    },
-  );
+    expect(migrated.state.emergency_stop).toEqual({
+      kind: "staff",
+      reason_code: "STAFF_PAUSE",
+      paused_at: initialFailedAt,
+    });
+  });
+
+  test("preserves a legacy shared hold as a finite automatic circuit", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const migrated = migrateOperationsState(
+      v2State([], null, [
+        {
+          error_fingerprint: failureFingerprint(failure),
+          failure,
+          first_failed_at: initialFailedAt,
+          last_failed_at: "2026-08-04T11:45:00.000Z",
+          consecutive_failures: 5,
+          next_probe_at: "2026-08-04T13:00:00.000Z",
+          notified: true,
+        },
+      ]),
+      {
+        manifest: manifest(target(41, 1)),
+        index: emptyIndex,
+        at,
+        scannerPolicyVersion: "3",
+      },
+    );
+
+    expect(migrated.state.automatic_holds).toEqual([
+      expect.objectContaining({
+        error_fingerprint: failureFingerprint(failure),
+        failure,
+        consecutive_failures: 5,
+        next_probe_at: "2026-08-04T13:00:00.000Z",
+        chronic: true,
+      }),
+    ]);
+    expect(migrated.summary.automatic_holds_preserved).toBe(1);
+  });
 });

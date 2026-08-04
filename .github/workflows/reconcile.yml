@@ -20,20 +20,11 @@ permissions:
   actions: write
 
 jobs:
-  plan:
+  sync:
     runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
     permissions:
       contents: read
-    outputs:
-      requests_json: ${{ steps.plan.outputs.requests_json }}
-      total_remaining: ${{ steps.plan.outputs.total_remaining }}
-      runnable_remaining: ${{ steps.plan.outputs.runnable_remaining }}
-      delayed_retries: ${{ steps.plan.outputs.delayed_retries }}
-      shared_holds: ${{ steps.plan.outputs.shared_holds }}
-      next_wake_at: ${{ steps.plan.outputs.next_wake_at }}
-      blocked: ${{ steps.plan.outputs.blocked }}
-      deploy_required: ${{ steps.plan.outputs.deploy_required }}
-      source_sha: ${{ steps.plan.outputs.source_sha }}
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -47,76 +38,97 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Plan deployment recovery or bounded batch
+      - name: Synchronize durable scan queue
+        run: npm run --silent queue:sync
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
+      - name: Commit synchronized queue
+        env:
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+        shell: bash
+        run: |
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add operations/state.json
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(ops): synchronize durable scan queue"
+            push_succeeded="false"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                push_succeeded="true"
+                break
+              fi
+              if [[ "$attempt" -lt 3 ]]; then
+                sleep "$((attempt * 15))"
+              fi
+            done
+            test "$push_succeeded" = "true"
+          fi
+
+  plan:
+    needs: sync
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      requests_json: ${{ steps.plan.outputs.requests_json }}
+      total_remaining: ${{ steps.plan.outputs.total_remaining }}
+      runnable_remaining: ${{ steps.plan.outputs.runnable_remaining }}
+      delayed_entries: ${{ steps.plan.outputs.delayed_entries }}
+      next_wake_at: ${{ steps.plan.outputs.next_wake_at }}
+      emergency_stopped: ${{ steps.plan.outputs.emergency_stopped }}
+      automatic_holds: ${{ steps.plan.outputs.automatic_holds }}
+      recovery_probes: ${{ steps.plan.outputs.recovery_probes }}
+    steps:
+      - name: Check out synchronized TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Plan bounded ticket batch
         id: plan
         shell: bash
         run: |
-          source_sha="$(git rev-parse HEAD)"
-          expected="$(sha256sum reports/index.json | cut -d' ' -f1)"
-          actual=""
-          if curl --fail --silent --show-error --location --max-redirs 0 \
-            --output "$RUNNER_TEMP/live-index.json" \
-            "https://mentallyquill.github.io/TavernKeeper/reports/index.json"; then
-            actual="$(sha256sum "$RUNNER_TEMP/live-index.json" | cut -d' ' -f1)"
-          fi
-          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
-          if [[ "$actual" != "$expected" ]]; then
-            echo "deploy_required=true" >> "$GITHUB_OUTPUT"
-            echo 'requests_json=[]' >> "$GITHUB_OUTPUT"
-            echo 'total_remaining=0' >> "$GITHUB_OUTPUT"
-            echo 'runnable_remaining=0' >> "$GITHUB_OUTPUT"
-            echo 'delayed_retries=0' >> "$GITHUB_OUTPUT"
-            echo 'shared_holds=0' >> "$GITHUB_OUTPUT"
-            echo 'next_wake_at=' >> "$GITHUB_OUTPUT"
-            echo 'blocked=false' >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "deploy_required=false" >> "$GITHUB_OUTPUT"
           planned="$(npm run --silent reconcile)"
           echo "requests_json=$(jq -c '.include' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "total_remaining=$(jq -er '.total_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "runnable_remaining=$(jq -er '.runnable_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "delayed_retries=$(jq -er '.delayed_retries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "shared_holds=$(jq -er '.shared_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "delayed_entries=$(jq -er '.delayed_entries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "next_wake_at=$(jq -r '.next_wake_at // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "blocked=$(jq -er '.blocked | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "emergency_stopped=$(jq -er '.emergency_stopped | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "automatic_holds=$(jq -er '.automatic_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "recovery_probes=$(jq -er '.recovery_probes | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           {
-            echo "### TavernKeeper queue"
+            echo "### TavernKeeper durable queue"
             echo
-            echo "- Total remaining after this batch: $(jq -r '.total_remaining' <<< "$planned")"
-            echo "- Runnable remaining after this batch: $(jq -r '.runnable_remaining' <<< "$planned")"
-            echo "- Delayed retries: $(jq -r '.delayed_retries' <<< "$planned")"
-            echo "- Shared holds: $(jq -r '.shared_holds' <<< "$planned")"
+            echo "- Remaining after this batch: $(jq -r '.total_remaining' <<< "$planned")"
+            echo "- Runnable after this batch: $(jq -r '.runnable_remaining' <<< "$planned")"
+            echo "- Cooling entries: $(jq -r '.delayed_entries' <<< "$planned")"
             echo "- Next automatic wake: $(jq -r '.next_wake_at // "none"' <<< "$planned")"
+            echo "- Staff emergency stop: $(jq -r '.emergency_stopped' <<< "$planned")"
+            echo "- Automatic recovery circuits: $(jq -r '.automatic_holds' <<< "$planned")"
+            echo "- Recovery probes in this batch: $(jq -r '.recovery_probes' <<< "$planned")"
           } >> "$GITHUB_STEP_SUMMARY"
-
-  recover-pages:
-    needs: plan
-    if: ${{ needs.plan.outputs.deploy_required == 'true' }}
-    uses: ./.github/workflows/deploy-pages.yml
-    with:
-      source_sha: ${{ needs.plan.outputs.source_sha }}
-      automatic: true
-    secrets: inherit
 
   run:
     needs: plan
-    if: ${{ needs.plan.outputs.deploy_required == 'false' && fromJSON(needs.plan.outputs.requests_json)[0] != null }}
+    if: ${{ fromJSON(needs.plan.outputs.requests_json)[0] != null }}
     uses: ./.github/workflows/scan-and-publish.yml
     with:
       requests_json: ${{ needs.plan.outputs.requests_json }}
-      total_remaining: ${{ needs.plan.outputs.total_remaining }}
-      runnable_remaining: ${{ needs.plan.outputs.runnable_remaining }}
     secrets: inherit
-
-  resume-after-recovery:
-    needs: recover-pages
-    if: ${{ needs.recover-pages.result == 'success' }}
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
-      - name: Resume reconciliation after verified deployment
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main
