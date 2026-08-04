@@ -29,6 +29,44 @@ const LANDING_CSP = [
   "frame-ancestors 'none'",
 ].join("; ");
 
+const EXTERNAL_SCANNERS = [
+  {
+    name: "Gitleaks",
+    url: "https://github.com/gitleaks/gitleaks",
+    what: "Searches source and repository history for exposed secrets and credential-like values.",
+    usage:
+      "TavernKeeper runs the pinned scanner against the exact commit and its bounded history as untrusted data.",
+  },
+  {
+    name: "OpenGrep",
+    url: "https://github.com/opengrep/opengrep",
+    what: "Applies static-analysis rules to code to find security issues and suspicious patterns.",
+    usage:
+      "TavernKeeper runs the pinned engine with its review policy against the exact checkout without executing project code.",
+  },
+  {
+    name: "OSV-Scanner",
+    url: "https://github.com/google/osv-scanner",
+    what: "Checks declared dependency inputs against known vulnerability advisories from the OSV ecosystem.",
+    usage:
+      "TavernKeeper applies it when the inventory contains supported dependency manifests, then records the advisory evidence for review.",
+  },
+  {
+    name: "zizmor",
+    url: "https://github.com/zizmorcore/zizmor",
+    what: "Performs static analysis for security problems in GitHub Actions workflows.",
+    usage:
+      "TavernKeeper applies it to workflow files found in the exact commit, keeping workflow findings tied to that revision.",
+  },
+  {
+    name: "malcontent",
+    url: "https://github.com/chainguard-dev/malcontent",
+    what: "Looks for signals associated with supply-chain attacks and suspicious behavior in project artifacts.",
+    usage:
+      "TavernKeeper applies it to eligible artifacts from the exact checkout and reports its results as candidates for contextual review.",
+  },
+] as const;
+
 const LANDING_STYLES = `
   .hero { max-width: 780px; margin-bottom: 44px; }
   .hero h1 { margin: 8px 0 18px; }
@@ -79,6 +117,14 @@ const LANDING_STYLES = `
   .steps { display: grid; gap: 12px; margin: 0; padding-left: 24px; }
   .steps li { padding-left: 8px; color: var(--text-secondary); }
   .steps strong { color: var(--text); }
+  .scanner-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .scanner-card { min-width: 0; padding: 18px; }
+  .scanner-card h3 { margin: 0 0 10px; font-size: 1.08rem; }
+  .scanner-card h3 a { color: var(--text); }
+  .scanner-card h3 a:hover { color: var(--link-hover); }
+  .scanner-card p { margin: 0; color: var(--text-secondary); }
+  .scanner-card p + p { margin-top: 10px; }
+  .scanner-card strong { color: var(--text); }
   .boundaries { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
   .boundaries h3 { margin-top: 0; }
   .boundaries p { color: var(--text-secondary); }
@@ -86,6 +132,7 @@ const LANDING_STYLES = `
   .page-footer a { margin-right: 18px; }
   @media (max-width: 700px) {
     .report-controls { grid-template-columns: 1fr; }
+    .scanner-grid { grid-template-columns: 1fr; }
     .boundaries { grid-template-columns: 1fr; gap: 12px; }
     .report-card-top { flex-direction: column; gap: 5px; }
   }
@@ -116,6 +163,14 @@ function renderReportCard(entry: ReportIndexEntryV5) {
       </div>
     </article>
   </li>`;
+}
+
+function renderScannerCard(scanner: (typeof EXTERNAL_SCANNERS)[number]) {
+  return `<article class="scanner-card surface">
+    <h3><a href="${escapeHtml(scanner.url)}">${escapeHtml(scanner.name)}</a></h3>
+    <p><strong>What it checks.</strong> ${escapeHtml(scanner.what)}</p>
+    <p><strong>How TavernKeeper uses it.</strong> ${escapeHtml(scanner.usage)}</p>
+  </article>`;
 }
 
 export function renderLandingHtml(index: ReportIndexV5) {
@@ -184,6 +239,16 @@ export function renderLandingHtml(index: ReportIndexV5) {
         <li><strong>Review candidate context.</strong> Bounded candidate context is sent to the named configured model provider under a strict response schema.</li>
         <li><strong>Validate and publish.</strong> Complete evidence and review coverage is validated before a sanitized immutable report is published.</li>
       </ol>
+    </section>
+
+    <section class="content-section" id="external-scanners" aria-labelledby="scanner-title">
+      <div class="section-heading">
+        <h2 id="scanner-title">External scanners</h2>
+        <p class="secondary">TavernKeeper uses version-pinned, purpose-built scanners from established open-source projects. Each tool covers a different evidence source; applicable scanners run only when the exact commit contains the inputs they understand.</p>
+      </div>
+      <div class="scanner-grid">
+        ${EXTERNAL_SCANNERS.map(renderScannerCard).join("\n")}
+      </div>
     </section>
 
     <section class="content-section boundaries" aria-label="Scanning boundaries">
