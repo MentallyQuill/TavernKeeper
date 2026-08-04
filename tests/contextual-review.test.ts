@@ -175,7 +175,7 @@ describe("contextual evidence review", () => {
 
   test("retries public safety claims before report finalization", async () => {
     const current = group("src/a.ts", [ids[0]!]);
-    const requestCompletion = vi.fn(async () => {
+    const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {
       const item = assessment(ids[0]!, current.path, 2);
       return {
         completionId: `completion-${requestCompletion.mock.calls.length}`,
@@ -212,6 +212,15 @@ describe("contextual evidence review", () => {
       }),
     ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
     expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion.mock.calls[0]?.[0].systemContent).not.toContain(
+      "assessment_layman_explanation",
+    );
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "assessment_layman_explanation",
+    );
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).not.toContain(
+      "This repository is safe.",
+    );
   });
 
   test("retries malformed JSON immediately and then accepts complete coverage", async () => {
@@ -291,6 +300,48 @@ describe("contextual evidence review", () => {
       scope: "repository",
       diagnostic: "assessment_developer_action",
     });
+  });
+
+  test("stops when corrective feedback would repeat", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-repeat-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [
+          {
+            ...assessment(ids[0]!, current.path, 2),
+            developer_action: "",
+          },
+        ],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_INVALID_RESPONSE",
+      diagnostic: "assessment_developer_action",
+    });
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
   });
 
   test("expands requested context instead of treating uncertainty as low risk", async () => {
@@ -378,7 +429,7 @@ describe("contextual evidence review", () => {
       code: "MODEL_EVIDENCE_INVALID",
       scope: "repository",
     });
-    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
   });
 
   test("refuses invented evidence", async () => {
