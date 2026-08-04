@@ -263,17 +263,28 @@ jobs:
           gh label create scanner-recovery --color D4C5F9 --description "TavernKeeper automatic recovery probes" --force
 
           jq -c '.target_exhaustions[]' <<< "$incidents" | while read -r failure; do
+            incident_key="$(jq -r '.target_incident_key' <<< "$failure")"
             fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
             code="$(jq -r '.failure.code' <<< "$failure")"
             component="$(jq -r '.failure.component' <<< "$failure")"
             repository_id="$(jq -r '.repository_id' <<< "$failure")"
             target="$(jq -r '.target_sha' <<< "$failure")"
-            existing="$(gh issue list --state all --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            history="$(jq -c '[.failure_history[] | {failed_at, code: .failure.code, component: .failure.component, diagnostic: (.failure.diagnostic // null)}]' <<< "$failure")"
+            issues="$(gh issue list --state all --label scanner-operations --limit 100 --json number,createdAt,body)"
+            existing="$(jq -r --arg incident "$incident_key" --arg repository_id "$repository_id" --arg target "$target" '
+              map(select(
+                (.body | contains("Target incident key: `" + $incident + "`")) or
+                ((.body | contains("Repository ID: `" + $repository_id + "`")) and
+                 (.body | contains("Target commit: `" + $target + "`")))
+              ))
+              | sort_by(.createdAt)
+              | .[0].number // empty
+            ' <<< "$issues")"
             if [[ -z "$existing" ]]; then
               gh issue create \
                 --label scanner-operations \
                 --title "[scanner-operations] target retry exhausted" \
-                --body "TavernKeeper exhausted three delayed retries for one exact target.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nUnrelated catalog work continues automatically."
+                --body "TavernKeeper exhausted four queued attempts for one exact target.\n\nTarget incident key: \`$incident_key\`\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\nFailure history: \`$history\`\n\nUnrelated catalog work continues automatically."
             fi
           done
 

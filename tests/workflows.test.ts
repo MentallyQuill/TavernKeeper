@@ -316,6 +316,25 @@ describe("GitHub workflow security policy", () => {
     });
   });
 
+  test("target exhaustion incidents deduplicate by exact target identity", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const reconcile = (value.jobs.publish.steps as Workflow[]).find(
+      (step) => step.name === "Reconcile secret-free operational incidents",
+    );
+    const targetBlock = reconcile?.run.slice(
+      reconcile.run.indexOf(".target_exhaustions[]"),
+      reconcile.run.indexOf(".shared_holds[]"),
+    );
+
+    expect(targetBlock).toContain("target_incident_key");
+    expect(targetBlock).toContain("Target incident key:");
+    expect(targetBlock).toContain("Repository ID:");
+    expect(targetBlock).toContain("Target commit:");
+    expect(targetBlock).not.toContain(
+      '--search "$fingerprint in:body"',
+    );
+  });
+
   test("state migration exists only behind the protected staff workflow", async () => {
     const values = await Promise.all(
       workflowNames.map(async (name) => [name, await workflow(name)] as const),
