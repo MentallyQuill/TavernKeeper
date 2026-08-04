@@ -15,6 +15,7 @@ import {
 import type { Target } from "../contracts/targets.js";
 import { recordFailure, recordSuccess } from "../operations/retry.js";
 import { parseOperationsState } from "../operations/state.js";
+import { appendQueuedTarget } from "../queue/durable-queue.js";
 import { publishCandidates } from "./publisher.js";
 
 const CandidateEnvelopeSchema = z.strictObject({ report: ScanReportV5Schema });
@@ -35,11 +36,12 @@ export interface PublishArtifactBatchInput {
 export interface PublishArtifactBatchResult {
   status: ArtifactBatchStatus;
   reports: number;
-  target_failures: number;
-  shared_holds: number;
-  security_holds: number;
-  continuation_blocked: boolean;
-  terminal_failures: number;
+  failures: number;
+  queue_remaining: number;
+  queue_due: number;
+  queue_delayed: number;
+  next_wake_at: string | null;
+  chronic_failures: number;
 }
 
 async function exists(path: string) {
@@ -153,14 +155,31 @@ export async function publishArtifactBatch(
     outcomes,
     input.expectedTargets,
   );
+  const outcomeByKey = new Map(
+    outcomes.map((outcome) => [targetKey(outcome.transition.target), outcome]),
+  );
+  const orderedOutcomes = input.expectedTargets.map((target) =>
+    outcomeByKey.get(targetKey(target))!,
+  );
 
   let state = parseOperationsState(
     await readJsonFile(join(input.root, "operations", "state.json")),
   );
+  for (const target of input.expectedTargets) {
+    const existing = state.scan_queue.entries.find(
+      ({ repository_id }) => repository_id === target.repository_id,
+    );
+    if (existing === undefined) {
+      state = appendQueuedTarget(state, target);
+      continue;
+    }
+    if (existing.target_sha !== target.target_sha)
+      throw new Error("Requested batch target is not the queued target SHA.");
+  }
   const reports: ScanReportV5[] = [];
   const failures: FailedScanTransition[] = [];
 
-  for (const outcome of outcomes) {
+  for (const outcome of orderedOutcomes) {
     if (outcome.transition.status === "failure") {
       if (outcome.candidate !== null)
         throw new Error("Failed outcome must not contain a candidate.");
@@ -197,13 +216,21 @@ export async function publishArtifactBatch(
     generatedAt: input.generatedAt,
   });
   const hasFailures = failures.length > 0;
-  const targetFailures = failures.filter(
-    ({ failure }) => failure.domain === "target",
-  ).length;
-  const securityHolds = failures.filter(
-    ({ failure }) => failure.domain === "security",
-  ).length;
-  const sharedHolds = published.state.shared_holds.length;
+  const generatedAtMs = Date.parse(input.generatedAt);
+  if (!Number.isFinite(generatedAtMs))
+    throw new Error("Publication batch time is invalid.");
+  const remaining = published.state.scan_queue.entries;
+  const delayed = remaining.filter(
+    ({ not_before }) =>
+      not_before !== null && Date.parse(not_before) > generatedAtMs,
+  );
+  const due = remaining.filter(
+    ({ not_before }) =>
+      not_before === null || Date.parse(not_before) <= generatedAtMs,
+  );
+  const failedRepositoryIds = new Set(
+    failures.map(({ target }) => target.repository_id),
+  );
   return {
     status: hasFailures
       ? published.published.length > 0
@@ -211,18 +238,17 @@ export async function publishArtifactBatch(
         : "deferred"
       : "published",
     reports: published.published.length,
-    target_failures: targetFailures,
-    shared_holds: sharedHolds,
-    security_holds: securityHolds,
-    continuation_blocked: published.state.pause !== null || sharedHolds > 0,
-    terminal_failures: failures.filter(({ target }) =>
-      published.state.target_retries.some(
-        (retry) =>
-          retry.repository_id === target.repository_id &&
-          retry.target_sha === target.target_sha &&
-          retry.failure.domain === "target" &&
-          retry.exhausted,
-      ),
+    failures: failures.length,
+    queue_remaining: remaining.length,
+    queue_due: due.length,
+    queue_delayed: delayed.length,
+    next_wake_at:
+      delayed
+        .map(({ not_before }) => not_before!)
+        .sort((left, right) => left.localeCompare(right))[0] ?? null,
+    chronic_failures: remaining.filter(
+      ({ repository_id, chronic }) =>
+        chronic && failedRepositoryIds.has(repository_id),
     ).length,
   };
 }
