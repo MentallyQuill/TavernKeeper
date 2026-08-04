@@ -49,14 +49,21 @@ export function buildReconcileMatrix({
     const repositoryReports = index.reports.filter(
       ({ repository_id }) => repository_id === target.repository_id,
     );
+    const prior = repositoryReports
+      .filter(
+        ({ target_sha, scanner_policy_version }) =>
+          target_sha === target.target_sha &&
+          scanner_policy_version === scannerPolicyVersion,
+      )
+      .sort((left, right) => right.report_version - left.report_version)[0];
     const previousShas = [
       ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
     ].slice(0, 20);
     return ScanRequestSchema.parse({
       ...targetMetadata.get(target.repository_id),
       reason,
-      report_version: 1,
-      supersedes_report_id: null,
+      report_version: (prior?.report_version ?? 0) + 1,
+      supersedes_report_id: prior?.report_id ?? null,
       previous_report_shas: previousShas,
     });
   });

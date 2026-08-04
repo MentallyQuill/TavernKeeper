@@ -15,14 +15,13 @@ permissions:
   actions: write
 
 jobs:
-  resolve:
+  enqueue:
     if: ${{ github.actor_id == vars.TAVERNARY_WAKE_APP_BOT_ID }}
     runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
     permissions:
       contents: read
-      actions: read
-    outputs:
-      accepted: ${{ steps.request.outputs.accepted }}
+      actions: write
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -36,7 +35,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Resolve repository ID from the public Tavernary target manifest
+      - name: Synchronize and enqueue the authorized target
         id: request
         env:
           GH_TOKEN: ${{ github.token }}
@@ -45,17 +44,44 @@ jobs:
         shell: bash
         run: |
           created_at="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" --jq .created_at)"
-          resolved="$(TAVERNKEEPER_REQUEST_CREATED_AT="$created_at" npm run --silent targeted-scan)"
-          echo "accepted=$(jq -r '.include | length > 0' <<< "$resolved")" >> "$GITHUB_OUTPUT"
-
-  enqueue:
-    needs: resolve
-    if: ${{ needs.resolve.result == 'success' && needs.resolve.outputs.accepted == 'true' }}
-    runs-on: ubuntu-latest
-    permissions:
-      actions: write
-    steps:
+          queued="$(TAVERNKEEPER_REQUEST_CREATED_AT="$created_at" npm run --silent targeted-scan)"
+          printf '%s\n' "$queued"
+          echo "accepted=$(jq -r '.accepted' <<< "$queued")" >> "$GITHUB_OUTPUT"
+          echo "changed=$(jq -r '.changed' <<< "$queued")" >> "$GITHUB_OUTPUT"
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        if: ${{ steps.request.outputs.changed == 'true' }}
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
+      - name: Commit targeted queue entry
+        if: ${{ steps.request.outputs.changed == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+        shell: bash
+        run: |
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add operations/state.json
+          git commit -m "chore(ops): enqueue targeted scan"
+          push_succeeded="false"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              push_succeeded="true"
+              break
+            fi
+            if [[ "$attempt" -lt 3 ]]; then
+              sleep "$((attempt * 15))"
+            fi
+          done
+          test "$push_succeeded" = "true"
       - name: Enter the normal durable queue
+        if: ${{ steps.request.outputs.accepted == 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main

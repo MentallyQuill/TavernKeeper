@@ -14,7 +14,7 @@ import {
   type ScanQueueEntry,
 } from "../operations/state.js";
 
-export type BacklogReason = "new" | "changed" | "retry" | "policy";
+export type BacklogReason = "new" | "changed" | "retry" | "policy" | "staff";
 
 export interface PlannedTarget {
   target: CurrentTarget;
@@ -44,6 +44,7 @@ function reasonFor(
   state: OperationsState,
   scannerPolicyVersion: string,
 ): BacklogReason {
+  if (entry.staff_requested === true) return "staff";
   if (entry.consecutive_failures > 0) return "retry";
   const reports = index.reports.filter(
     ({ repository_id }) => repository_id === target.repository_id,
@@ -64,6 +65,7 @@ function reasonFor(
     )
   )
     return "policy";
+  if (covered) return "staff";
   return "changed";
 }
 

@@ -122,7 +122,8 @@ export function reconcileCurrentScanQueue(input: {
     const target = targetByRepositoryId.get(entry.repository_id);
     if (
       target === undefined ||
-      !eligibleRepositoryIds.has(entry.repository_id)
+      (!eligibleRepositoryIds.has(entry.repository_id) &&
+        entry.staff_requested !== true)
     ) {
       removed += 1;
       continue;
@@ -132,6 +133,7 @@ export function reconcileCurrentScanQueue(input: {
       entries.push({
         ...blankEntry(target, entry.ticket),
         total_failures: entry.total_failures,
+        ...(entry.staff_requested === true ? { staff_requested: true } : {}),
       });
       replaced += 1;
       continue;

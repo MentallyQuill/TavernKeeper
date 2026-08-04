@@ -30,6 +30,7 @@ export const ScanQueueEntrySchema = z
     last_failure: FailureDescriptorSchema.nullable(),
     last_failed_at: z.iso.datetime().nullable(),
     chronic: z.boolean(),
+    staff_requested: z.literal(true).optional(),
   })
   .superRefine((entry, context) => {
     if (entry.source_id !== `github-${entry.repository_id}`)

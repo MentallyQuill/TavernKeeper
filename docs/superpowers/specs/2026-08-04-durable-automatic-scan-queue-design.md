@@ -99,7 +99,7 @@ Before choosing a batch, a protected synchronization step reconciles the current
 
 The first schema-3 synchronization seeds the whole current backlog in one operation. Existing target retries, exhausted targets, and targets named in automatic holds are reconciled into this ledger rather than discarded. The legacy automatic pause is cleared. An explicit operator emergency stop is preserved.
 
-Synchronizing the full ledger before dispatch is important: it records the membership of the *current* tail. If synchronization or its protected push temporarily fails, the scheduled reconciler retries it; it never writes a terminal pause.
+Synchronizing the full ledger before dispatch is important: it records the membership of the _current_ tail. If synchronization or its protected push temporarily fails, the scheduled reconciler retries it; it never writes a terminal pause.
 
 ## Scheduling and Retry Semantics
 

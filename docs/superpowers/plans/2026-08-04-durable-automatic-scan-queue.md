@@ -195,12 +195,12 @@ Return:
 
 ```ts
 {
-  targets,
-  totalRemaining,
-  runnableRemaining,
-  delayedEntries,
-  nextWakeAt,
-  emergencyStopped
+  (targets,
+    totalRemaining,
+    runnableRemaining,
+    delayedEntries,
+    nextWakeAt,
+    emergencyStopped);
 }
 ```
 

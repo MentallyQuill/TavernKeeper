@@ -141,9 +141,13 @@ describe("GitHub workflow security policy", () => {
     expect(reconcile.jobs.run.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
     );
-    expect(targeted.jobs.enqueue.needs).toBe("resolve");
-    expect(targeted.jobs.enqueue.steps[0].run).toContain(
+    expect(targeted.jobs.enqueue.environment).toBe("tavernkeeper-scanner");
+    expect(JSON.stringify(targeted.jobs.enqueue)).toContain("targeted-scan");
+    expect(JSON.stringify(targeted.jobs.enqueue)).toContain(
       "gh workflow run reconcile.yml",
+    );
+    expect(JSON.stringify(targeted.jobs.enqueue)).toContain(
+      "git add operations/state.json",
     );
     expect(retry.on.schedule).toEqual([{ cron: "*/5 * * * *" }]);
     expect(retry.jobs.reconcile.uses).toBe("./.github/workflows/reconcile.yml");
@@ -164,8 +168,8 @@ describe("GitHub workflow security policy", () => {
     expect(value["run-name"]).toBe(
       "Tavernary targeted scan #${{ inputs.repository_id }}",
     );
-    expect(value.jobs.resolve.if).toContain("github.actor_id");
-    expect(value.jobs.resolve.if).toContain("vars.TAVERNARY_WAKE_APP_BOT_ID");
+    expect(value.jobs.enqueue.if).toContain("github.actor_id");
+    expect(value.jobs.enqueue.if).toContain("vars.TAVERNARY_WAKE_APP_BOT_ID");
     expect(text).toMatch(/tavernkeeper-targets\.json/u);
     expect(text).not.toContain("scan-and-publish.yml");
     expect(text).not.toMatch(
@@ -459,9 +463,7 @@ describe("GitHub workflow security policy", () => {
       expect(consumers[0]!.run).toContain("git push origin HEAD:main");
       expect(consumers[0]!.run).toContain("for attempt in 1 2 3; do");
       expect(consumers[0]!.run).toContain('sleep "$((attempt * 15))"');
-      expect(consumers[0]!.run).toContain(
-        'test "$push_succeeded" = "true"',
-      );
+      expect(consumers[0]!.run).toContain('test "$push_succeeded" = "true"');
       expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
     }
   });

@@ -4,12 +4,17 @@ import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
-import { buildTargetedMatrix } from "../src/cli/targeted-scan.js";
+import {
+  buildTargetedMatrix,
+  buildTargetedQueueUpdate,
+} from "../src/cli/targeted-scan.js";
+import type { TargetManifestV2 } from "../src/contracts/targets.js";
 import {
   initialOperationsState,
   pauseSystem,
 } from "../src/operations/state.js";
 import { recordFailure } from "../src/operations/retry.js";
+import { syncScanQueue } from "../src/queue/sync.js";
 
 const now = "2026-07-31T18:00:00.000Z";
 
@@ -95,16 +100,30 @@ function indexedReport(
 
 describe("JSON-only orchestration CLIs", () => {
   test("reconcile emits no more than five self-contained scan requests", () => {
-    const matrix = buildReconcileMatrix({
-      manifest: {
-        schema_version: 2,
-        generated_at: now,
-        repositories: Array.from({ length: 8 }, (_, index) =>
-          target(index + 1),
-        ),
-      },
-      index: { schema_version: 5, generated_at: now, reports: [] },
+    const manifest: TargetManifestV2 = {
+      schema_version: 2,
+      generated_at: now,
+      repositories: Array.from({ length: 8 }, (_, index) => {
+        const current = target(index + 1);
+        return { ...current, project_kinds: [...current.project_kinds] };
+      }),
+    };
+    const index = {
+      schema_version: 5 as const,
+      generated_at: now,
+      reports: [],
+    };
+    const state = syncScanQueue({
+      manifest,
+      index,
       state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "2",
+    }).state;
+    const matrix = buildReconcileMatrix({
+      manifest,
+      index,
+      state,
       now,
       scannerPolicyVersion: "2",
     });
@@ -113,10 +132,9 @@ describe("JSON-only orchestration CLIs", () => {
     expect(matrix).toMatchObject({
       total_remaining: 3,
       runnable_remaining: 3,
-      delayed_retries: 0,
-      shared_holds: 0,
+      delayed_entries: 0,
       next_wake_at: null,
-      blocked: false,
+      emergency_stopped: false,
     });
     expect(matrix.include[0]).toMatchObject({
       repository_id: 1,
@@ -227,6 +245,99 @@ describe("JSON-only orchestration CLIs", () => {
     ]);
   });
 
+  test("persists a forced rescan behind the current queue and ahead of later arrivals", () => {
+    const first = target(1);
+    const second = target(2);
+    const targeted = target(42);
+    const prior = indexedReport(targeted, "2026-07-31T17:55:00.000Z");
+    const manifest: TargetManifestV2 = {
+      schema_version: 2,
+      generated_at: now,
+      repositories: [first, second, targeted].map((entry) => ({
+        ...entry,
+        project_kinds: [...entry.project_kinds],
+      })),
+    };
+    const index = {
+      schema_version: 5 as const,
+      generated_at: now,
+      reports: [prior],
+    };
+
+    const queued = buildTargetedQueueUpdate({
+      manifest,
+      index,
+      state: initialOperationsState(now),
+      repositoryId: 42,
+      scannerPolicyVersion: "2",
+      requestCreatedAt: now,
+      now,
+    });
+
+    expect(queued).toMatchObject({
+      accepted: true,
+      coalesced: false,
+      changed: true,
+      ticket: 3,
+    });
+    expect(
+      queued.state.scan_queue.entries.map(({ repository_id, ticket }) => [
+        repository_id,
+        ticket,
+      ]),
+    ).toEqual([
+      [1, 1],
+      [2, 2],
+      [42, 3],
+    ]);
+
+    const later = target(43);
+    const synchronized = syncScanQueue({
+      manifest: {
+        ...manifest,
+        repositories: [
+          ...manifest.repositories,
+          { ...later, project_kinds: [...later.project_kinds] },
+        ],
+      },
+      index,
+      state: queued.state,
+      now: "2026-07-31T18:01:00.000Z",
+      scannerPolicyVersion: "2",
+    }).state;
+    expect(
+      synchronized.scan_queue.entries.map(({ repository_id, ticket }) => [
+        repository_id,
+        ticket,
+      ]),
+    ).toEqual([
+      [1, 1],
+      [2, 2],
+      [42, 3],
+      [43, 4],
+    ]);
+
+    const matrix = buildReconcileMatrix({
+      manifest: {
+        ...manifest,
+        repositories: [
+          ...manifest.repositories,
+          { ...later, project_kinds: [...later.project_kinds] },
+        ],
+      },
+      index,
+      state: synchronized,
+      now: "2026-07-31T18:02:00.000Z",
+      scannerPolicyVersion: "2",
+    });
+    expect(matrix.include[2]).toMatchObject({
+      repository_id: 42,
+      reason: "staff",
+      report_version: 2,
+      supersedes_report_id: prior.report_id,
+    });
+  });
+
   test("lets a staff-targeted request override an already recorded retry", () => {
     const targetValue = target(42);
     const {
@@ -266,32 +377,30 @@ describe("JSON-only orchestration CLIs", () => {
     ]);
   });
 
-  test("targeted wakes respect staff and security pauses", () => {
+  test("targeted wakes respect the explicit staff emergency stop", () => {
     const targetValue = target(42);
-    for (const kind of ["staff", "system"] as const) {
-      const state = pauseSystem(initialOperationsState(now), {
-        kind,
-        reasonCode: kind === "staff" ? "STAFF_PAUSE" : "SECURITY_HOLD",
-        at: now,
-      });
-      expect(
-        buildTargetedMatrix({
-          manifest: {
-            schema_version: 2,
-            generated_at: now,
-            repositories: [targetValue],
-          },
-          index: { schema_version: 5, generated_at: now, reports: [] },
-          state,
-          repositoryId: 42,
-          scannerPolicyVersion: "2",
-          requestCreatedAt: now,
-        }),
-      ).toEqual({ include: [], coalesced: true });
-    }
+    const state = pauseSystem(initialOperationsState(now), {
+      kind: "staff",
+      reasonCode: "STAFF_PAUSE",
+      at: now,
+    });
+    expect(
+      buildTargetedMatrix({
+        manifest: {
+          schema_version: 2,
+          generated_at: now,
+          repositories: [targetValue],
+        },
+        index: { schema_version: 5, generated_at: now, reports: [] },
+        state,
+        repositoryId: 42,
+        scannerPolicyVersion: "2",
+        requestCreatedAt: now,
+      }),
+    ).toEqual({ include: [], coalesced: true });
   });
 
-  test("targeted wakes cannot bypass shared-probe isolation", () => {
+  test("a shared diagnostic failure cannot stall a targeted wake", () => {
     const targetValue = target(42);
     const {
       project_kinds: _projectKinds,
@@ -321,7 +430,15 @@ describe("JSON-only orchestration CLIs", () => {
         scannerPolicyVersion: "2",
         requestCreatedAt: "2026-07-31T18:05:00.000Z",
       }),
-    ).toEqual({ include: [], coalesced: true });
+    ).toEqual({
+      include: [
+        expect.objectContaining({
+          repository_id: 42,
+          target_sha: targetValue.target_sha,
+        }),
+      ],
+      coalesced: false,
+    });
   });
 
   test("targeted scans reject IDs absent from the public target manifest", () => {

@@ -114,8 +114,7 @@ const permissionProfiles = {
   "targeted-scan.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: {
-      resolve: { contents: "read", actions: "read" },
-      enqueue: { actions: "write" },
+      enqueue: { contents: "read", actions: "write" },
     },
   },
 };
@@ -135,6 +134,10 @@ const mutationJobs = {
   "staff-operations.yml": {
     job: "operate",
     environment: "tavernkeeper-staff",
+  },
+  "targeted-scan.yml": {
+    job: "enqueue",
+    environment: "tavernkeeper-scanner",
   },
 };
 const approvedWorkflowSecretNames = new Set([
@@ -523,10 +526,15 @@ function checkEncryptedHandoff(file, workflow) {
   const continuation = workflow.jobs?.continue;
   if (
     continuation?.needs !== "publish" ||
-    !continuation?.if?.includes("needs.publish.outputs.queue_remaining != '0'") ||
+    !continuation?.if?.includes(
+      "needs.publish.outputs.queue_remaining != '0'",
+    ) ||
     /needs\.scan\.result|system_failure/u.test(continuation?.if ?? "")
   )
-    fail(file, "persisted queue work must continue independently of deployment");
+    fail(
+      file,
+      "persisted queue work must continue independently of deployment",
+    );
 }
 
 function checkPublisherBoundary(file, workflow) {
@@ -616,7 +624,7 @@ function checkTargetedAuthority(file, workflow) {
   const inputs = Object.keys(workflow.on?.workflow_dispatch?.inputs ?? {});
   if (!same(inputs, ["repository_id"]))
     fail(file, "targeted workflow accepts more than repository_id");
-  const condition = workflow.jobs?.resolve?.if ?? "";
+  const condition = workflow.jobs?.enqueue?.if ?? "";
   if (
     !condition.includes("github.actor_id") ||
     !condition.includes("vars.TAVERNARY_WAKE_APP_BOT_ID")

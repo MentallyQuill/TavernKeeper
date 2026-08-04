@@ -50,6 +50,7 @@ function parseTargetIdentity(target: Target) {
 export function appendQueuedTarget(
   stateInput: OperationsState,
   targetInput: Target,
+  options: { staffRequested?: boolean } = {},
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const target = parseTargetIdentity(targetInput);
@@ -57,7 +58,21 @@ export function appendQueuedTarget(
     ({ repository_id }) => repository_id === target.repository_id,
   );
   if (existing !== undefined) {
-    if (existing.target_sha === target.target_sha) return state;
+    if (existing.target_sha === target.target_sha) {
+      if (options.staffRequested !== true || existing.staff_requested === true)
+        return state;
+      return OperationsStateSchema.parse({
+        ...state,
+        scan_queue: {
+          ...state.scan_queue,
+          entries: state.scan_queue.entries.map((entry) =>
+            entry.repository_id === target.repository_id
+              ? { ...entry, staff_requested: true }
+              : entry,
+          ),
+        },
+      });
+    }
     throw new Error("Repository already has a different queued target SHA.");
   }
   if (state.scan_queue.next_ticket >= Number.MAX_SAFE_INTEGER)
@@ -69,7 +84,10 @@ export function appendQueuedTarget(
       next_ticket: state.scan_queue.next_ticket + 1,
       entries: [
         ...state.scan_queue.entries,
-        entryForTarget(target, state.scan_queue.next_ticket),
+        {
+          ...entryForTarget(target, state.scan_queue.next_ticket),
+          ...(options.staffRequested === true ? { staff_requested: true } : {}),
+        },
       ],
     },
   });
@@ -178,6 +196,9 @@ export function replaceQueuedTargetSha(
           ? {
               ...entryForTarget(target, entry.ticket),
               total_failures: entry.total_failures,
+              ...(entry.staff_requested === true
+                ? { staff_requested: true }
+                : {}),
             }
           : entry,
       ),

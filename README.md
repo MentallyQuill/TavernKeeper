@@ -42,11 +42,10 @@ reconciliation repairs missed wake-ups.
 
 Every selected repository finishes independently inside its bounded batch.
 The serialized publisher keeps every complete Technical Report V5 candidate,
-publishes the valid subset atomically, and queues only unsuccessful targets for
-retry. Target-local failures never stop unrelated catalog work. Shared
-dependencies recover through bounded automatic probes, while credential and
-trusted-boundary failures alone create a security hold that requires repair and
-an explicit protected resume.
+publishes the valid subset atomically, removes successful targets from the
+durable queue, and rotates every unsuccessful target behind the currently
+assigned queue. A failure never creates an automatic pause or terminal retry;
+only an explicit protected staff emergency stop can suspend scheduling.
 
 Only Tavernary staff can initiate a targeted scan, through Tavernary's
 exact-GitHub-URL Action. TavernKeeper accepts only the authorized wake App's
@@ -57,14 +56,16 @@ repositories per batch and two concurrent repositories.
 Provider configuration is model-agnostic. `TAVERNKEEPER_MODEL` selects the
 configured OpenAI-compatible model without changing the report contract or
 policy. A provider, token, context, validation, or required-scanner failure
-cannot fall back to a degraded report. Target failures retry after 5 minutes,
-30 minutes, and 2 hours, then exhaust only that exact SHA. Shared transient
-failures probe after 5, 15, 30, and 60 minutes and every 3 hours thereafter;
-notification never disables automatic recovery.
+cannot fall back to a degraded report. Failed projects cool down for 5 minutes,
+30 minutes, 2 hours, and then 6 hours capped indefinitely. The fifth
+consecutive failure marks a chronic operational incident but the project stays
+in the current queue and continues retrying automatically.
 
 Initial V3 catalog coverage follows Tavernary's complete popularity rank.
 TavernKeeper temporarily accepts V2 manifests with the legacy Top-30/new/old
-fallback during rollout. See [operations](docs/operations.md),
+fallback during rollout. Durable tickets preserve that initial order: a failed
+project receives a new tail ticket, and projects discovered later receive still
+higher tickets, so neither can starve the other. See [operations](docs/operations.md),
 [architecture](docs/architecture.md), and [rule documentation](docs/rules.md).
 
 ## Local verification
