@@ -13,6 +13,7 @@ export const FailureComponents = [
   "osv-scanner",
   "zizmor",
   "malcontent",
+  "evidence-context",
   "contextual-model",
   "finalization",
   "artifact-transport",
@@ -44,6 +45,9 @@ export const SafeFailureDiagnostics = [
   "response_size",
   "response_usage",
   "review_schema",
+  "evidence_non_text",
+  "parser_syntax",
+  "rule_timeout",
 ] as const;
 
 export const FailureDescriptorSchema = z.strictObject({
@@ -58,6 +62,7 @@ export type FailureDescriptor = z.infer<typeof FailureDescriptorSchema>;
 const TargetSystemCodes = new Set([
   "CLASSIFICATION_INVALID",
   "CONTEXTUAL_REVIEW_INVALID",
+  "EVIDENCE_CONTEXT_UNSUPPORTED",
   "INVENTORY_INVALID",
   "MALFORMED_SCANNER_OUTPUT",
   "MODEL_CONTEXT_INCOMPLETE",

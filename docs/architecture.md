@@ -100,9 +100,18 @@ Every sanitized failure carries a bounded domain, component, code, and optional
 diagnostic stage. Domains preserve useful incident classification, but no
 ordinary failure domain can pause scheduling. A failed exact target receives a
 new tail ticket and a finite cooldown; after the fifth consecutive failure it
-is chronic and staff-visible but remains nonterminal. Unknown failures use a
-sanitized target-local fallback so unexpected diagnostics cannot halt the
-catalog.
+is chronic and staff-visible but remains nonterminal. The queue retains the
+latest four sanitized failure descriptors so a changing sequence remains
+diagnosable without preserving raw tool output, source paths, or model prose.
+The chronic Issue identity is derived from repository ID and exact SHA rather
+than the failure descriptor. Unknown failures use the sanitized shared circuit,
+so unexpected diagnostics receive a finite automatic probe instead of halting
+the catalog.
+
+OpenGrep exposes bounded `parser_syntax` and `rule_timeout` categories, and
+unsupported non-text contextual evidence exposes `evidence_non_text`. Model
+schema retries receive the rejected field category only; identical corrective
+feedback is not retried indefinitely.
 
 Operations state schema V3 persists one monotonic ticket ledger. Tavernary
 manifest V3 adds a complete positive `popularity_rank`, which controls initial

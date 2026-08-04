@@ -82,4 +82,20 @@ describe("operation failure domains", () => {
     expect(failureFingerprint(opengrep)).not.toBe(failureFingerprint(gitleaks));
     expect(failureFingerprint(opengrep)).toMatch(/^[a-f0-9]{64}$/u);
   });
+
+  test("preserves bounded scanner diagnostics", () => {
+    expect(
+      classifyFailure({
+        code: "SCANNER_FAILED",
+        scope: "system",
+        component: "opengrep",
+        diagnostic: "rule_timeout",
+      }),
+    ).toEqual({
+      code: "SCANNER_FAILED",
+      domain: "target",
+      component: "opengrep",
+      diagnostic: "rule_timeout",
+    });
+  });
 });

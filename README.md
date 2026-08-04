@@ -59,7 +59,16 @@ policy. A provider, token, context, validation, or required-scanner failure
 cannot fall back to a degraded report. Failed projects cool down for 5 minutes,
 30 minutes, 2 hours, and then 6 hours capped indefinitely. The fifth
 consecutive failure marks a chronic operational incident but the project stays
-in the current queue and continues retrying automatically.
+in the current queue and continues retrying automatically. Queue state retains
+only the latest four sanitized failure categories, never raw scanner or model
+output. Chronic Issues use repository ID plus exact commit as their stable
+identity, so a changing failure category updates one incident instead of
+creating duplicates.
+
+When a contextual model response violates the bounded schema, its next
+immediate attempt receives only the rejected field category as corrective
+feedback. Repeated identical violations stop early; rejected prose is never
+echoed into the prompt or persisted.
 
 Initial V3 catalog coverage follows Tavernary's complete popularity rank.
 TavernKeeper temporarily accepts V2 manifests with the legacy Top-30/new/old

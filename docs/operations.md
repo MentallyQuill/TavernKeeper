@@ -123,7 +123,13 @@ state concurrently with publication.
 - The fifth consecutive failure marks the entry `chronic` and creates or
   updates a sanitized staff Issue. It is diagnostic, not terminal; the ticket
   remains scheduled forever until a success or a newer eligible SHA resets the
-  streak.
+  streak. The Issue is keyed by repository ID plus exact SHA, independent of
+  the latest failure class, and closes when that exact target is no longer
+  chronic.
+- Each entry retains only its latest four sanitized failure descriptors and
+  fingerprints. This makes alternating parser, timeout, evidence, and model
+  failures visible without retaining raw stderr, repository paths, source
+  excerpts, provider responses, or rejected prose.
 - Target-local failure domains remain isolated to their project. Shared and
   security failures create a fingerprinted automatic circuit so a broken
   provider, credential, toolchain, or integrity boundary is probed once instead
@@ -157,6 +163,15 @@ limitations. Valid findings remain eligible for contextual review when those
 warnings occur. Unknown warnings, error-level diagnostics, malformed output,
 nonzero exits, and process failures remain target-local scanner failures unless
 the pinned tool itself is unavailable, which is a shared transient failure.
+Rejected OpenGrep diagnostics are categorized as `parser_syntax` or
+`rule_timeout` when possible; paths and raw diagnostic text are not persisted.
+A scanner finding that requires unsupported binary context is categorized as
+`evidence_non_text` for that exact target.
+
+Invalid contextual-model responses receive one corrective prompt that names
+only the rejected schema field category. If the next response fails in the
+same category, TavernKeeper stops the immediate loop and rotates the target;
+it never copies the rejected response back into a prompt or queue state.
 
 Any change to scanner behavior or output requires a clean canary baseline.
 Before reactivation, remove the existing Wandlight and Recursion report trees

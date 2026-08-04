@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 
 import type { Target } from "../src/contracts/targets.js";
+import { failureFingerprint } from "../src/operations/failure.js";
 import { initialOperationsState } from "../src/operations/state.js";
 import {
   appendQueuedTarget,
@@ -119,6 +120,38 @@ describe("durable scan ticket operations", () => {
     expect(state.scan_queue.entries).toHaveLength(1);
   });
 
+  test("retains only the latest four sanitized failures", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    const diagnostics = [
+      "parser_syntax",
+      "rule_timeout",
+      "parser_syntax",
+      "rule_timeout",
+      "parser_syntax",
+      "rule_timeout",
+    ] as const;
+    for (const [index, diagnostic] of diagnostics.entries()) {
+      state = rotateFailedTarget(state, {
+        target: target(42),
+        failure: { ...failure, diagnostic },
+        at: new Date(Date.UTC(2026, 7, 4, index + 1)).toISOString(),
+      }).state;
+    }
+
+    const history = state.scan_queue.entries[0]?.failure_history;
+    expect(history).toHaveLength(4);
+    expect(history?.map((entry) => entry.failure.diagnostic)).toEqual(
+      diagnostics.slice(-4),
+    );
+    expect(
+      history?.every(
+        (entry) =>
+          entry.error_fingerprint === failureFingerprint(entry.failure),
+      ),
+    ).toBe(true);
+    expect(JSON.stringify(history)).not.toContain("private/source.ts");
+  });
+
   test("replacing a SHA preserves its ticket and resets its streak", () => {
     let state = appendQueuedTarget(initialOperationsState(at), target(42));
     state = rotateFailedTarget(state, {
@@ -143,6 +176,9 @@ describe("durable scan ticket operations", () => {
       last_failed_at: null,
       chronic: false,
     });
+    expect(replaced.scan_queue.entries[0]).not.toHaveProperty(
+      "failure_history",
+    );
   });
 
   test("success removes only the exact immutable target", () => {

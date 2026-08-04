@@ -137,6 +137,56 @@ describe("secret-free operations state V3", () => {
     ).toThrow();
   });
 
+  test("binds bounded queue history to its sanitized failure", () => {
+    const failure = {
+      code: "SCANNER_FAILED",
+      domain: "target" as const,
+      component: "opengrep" as const,
+      diagnostic: "parser_syntax" as const,
+    };
+    const failedEntry = {
+      ...entry(42, 1),
+      consecutive_failures: 1,
+      total_failures: 1,
+      not_before: "2026-08-04T00:05:00.000Z",
+      last_failure: failure,
+      last_failed_at: at,
+      failure_history: [
+        {
+          failed_at: at,
+          failure,
+          error_fingerprint: failureFingerprint(failure),
+        },
+      ],
+    };
+
+    expect(
+      parseOperationsState({
+        ...initialOperationsState(at),
+        scan_queue: { next_ticket: 2, entries: [failedEntry] },
+      }).scan_queue.entries[0]?.failure_history,
+    ).toEqual(failedEntry.failure_history);
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(at),
+        scan_queue: {
+          next_ticket: 2,
+          entries: [
+            {
+              ...failedEntry,
+              failure_history: [
+                {
+                  ...failedEntry.failure_history[0],
+                  error_fingerprint: "f".repeat(64),
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    ).toThrow();
+  });
+
   test("binds each automatic circuit to one sanitized systemic failure", () => {
     const failure = {
       code: "MODEL_PROVIDER",

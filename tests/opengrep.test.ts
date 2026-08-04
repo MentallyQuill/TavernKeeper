@@ -283,6 +283,66 @@ describe("OpenGrep adapter", () => {
     });
   });
 
+  test("classifies a syntax diagnostic without persisting its path", async () => {
+    const runner = new OpenGrepRunner(
+      resultJson("src/index.ts", [
+        {
+          code: 3,
+          level: "warn",
+          type: "Syntax error",
+          path: "private/source.ts",
+        },
+      ]),
+    );
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "system",
+      component: "opengrep",
+      diagnostic: "parser_syntax",
+    });
+  });
+
+  test("classifies a rule timeout without persisting scanner output", async () => {
+    const runner = new OpenGrepRunner(
+      resultJson("src/index.ts", [{ code: 2, level: "warn", type: "Timeout" }]),
+    );
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({ diagnostic: "rule_timeout" });
+  });
+
+  test("prefers deterministic syntax when a run also times out", async () => {
+    const runner = new OpenGrepRunner(
+      resultJson("src/index.ts", [
+        { code: 2, level: "warn", type: "Timeout" },
+        { code: 3, level: "warn", type: "Syntax error" },
+      ]),
+    );
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({ diagnostic: "parser_syntax" });
+  });
+
   test.each([
     {
       exitCode: 2,
