@@ -448,7 +448,7 @@ function checkEncryptedHandoff(file, workflow) {
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     ) ||
     !publishRun.includes(
-      `system_failure="$(jq -er '.system_failure | select(type == "boolean")' <<< "$result")"`,
+      `system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"`,
     ) ||
     !publishRun.includes(
       `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,

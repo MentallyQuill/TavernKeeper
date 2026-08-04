@@ -232,7 +232,7 @@ describe("GitHub workflow security policy", () => {
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     );
     expect(publish?.run).toContain(
-      `system_failure="$(jq -er '.system_failure | select(type == "boolean")' <<< "$result")"`,
+      `system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"`,
     );
     expect(publish?.run).toContain(
       `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,

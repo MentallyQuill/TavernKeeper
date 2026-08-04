@@ -219,7 +219,7 @@ jobs:
           result="$(npm run --silent publish -- artifacts)"
           printf '%s\n' "$result"
           reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"
-          system_failure="$(jq -er '.system_failure | select(type == "boolean")' <<< "$result")"
+          system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"
           printf 'reports=%s\n' "$reports" >> "$GITHUB_OUTPUT"
           printf 'system_failure=%s\n' "$system_failure" >> "$GITHUB_OUTPUT"
       - name: Notify staff only after retry exhaustion
