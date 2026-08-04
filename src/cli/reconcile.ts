@@ -38,6 +38,10 @@ export function buildReconcileMatrix({
       runnable_remaining: 0,
       delayed_retries: 0,
       shared_holds: 0,
+      primary_remaining: 0,
+      automatic_retries: 0,
+      manual_quarantines: 0,
+      exhausted_targets: 0,
       next_wake_at: null,
       blocked: false,
     };
@@ -72,6 +76,10 @@ export function buildReconcileMatrix({
     runnable_remaining: plan.runnableRemaining,
     delayed_retries: plan.delayedRetries,
     shared_holds: plan.sharedHolds,
+    primary_remaining: plan.primaryRemaining,
+    automatic_retries: plan.automaticRetries,
+    manual_quarantines: plan.manualQuarantines,
+    exhausted_targets: plan.exhaustedTargets,
     next_wake_at: plan.nextWakeAt,
     blocked: plan.blocked,
   };

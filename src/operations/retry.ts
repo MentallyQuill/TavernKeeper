@@ -273,6 +273,9 @@ export function dueRetries(stateInput: OperationsState, now: string) {
     .filter(
       (entry) =>
         entry.failure.domain !== "security" &&
+        (entry.failure.domain !== "target" ||
+          (entry.retry_mode ?? retryModeForFailure(entry.failure)) ===
+            "automatic") &&
         !entry.exhausted &&
         entry.next_retry_at !== null &&
         Date.parse(entry.next_retry_at) <= nowMs,

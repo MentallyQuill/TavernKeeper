@@ -303,6 +303,10 @@ describe("GitHub workflow security policy", () => {
       runnable_remaining: "${{ steps.plan.outputs.runnable_remaining }}",
       delayed_retries: "${{ steps.plan.outputs.delayed_retries }}",
       shared_holds: "${{ steps.plan.outputs.shared_holds }}",
+      primary_remaining: "${{ steps.plan.outputs.primary_remaining }}",
+      automatic_retries: "${{ steps.plan.outputs.automatic_retries }}",
+      manual_quarantines: "${{ steps.plan.outputs.manual_quarantines }}",
+      exhausted_targets: "${{ steps.plan.outputs.exhausted_targets }}",
       next_wake_at: "${{ steps.plan.outputs.next_wake_at }}",
       blocked: "${{ steps.plan.outputs.blocked }}",
     });

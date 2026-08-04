@@ -30,6 +30,10 @@ jobs:
       runnable_remaining: ${{ steps.plan.outputs.runnable_remaining }}
       delayed_retries: ${{ steps.plan.outputs.delayed_retries }}
       shared_holds: ${{ steps.plan.outputs.shared_holds }}
+      primary_remaining: ${{ steps.plan.outputs.primary_remaining }}
+      automatic_retries: ${{ steps.plan.outputs.automatic_retries }}
+      manual_quarantines: ${{ steps.plan.outputs.manual_quarantines }}
+      exhausted_targets: ${{ steps.plan.outputs.exhausted_targets }}
       next_wake_at: ${{ steps.plan.outputs.next_wake_at }}
       blocked: ${{ steps.plan.outputs.blocked }}
       deploy_required: ${{ steps.plan.outputs.deploy_required }}
@@ -67,6 +71,10 @@ jobs:
             echo 'runnable_remaining=0' >> "$GITHUB_OUTPUT"
             echo 'delayed_retries=0' >> "$GITHUB_OUTPUT"
             echo 'shared_holds=0' >> "$GITHUB_OUTPUT"
+            echo 'primary_remaining=0' >> "$GITHUB_OUTPUT"
+            echo 'automatic_retries=0' >> "$GITHUB_OUTPUT"
+            echo 'manual_quarantines=0' >> "$GITHUB_OUTPUT"
+            echo 'exhausted_targets=0' >> "$GITHUB_OUTPUT"
             echo 'next_wake_at=' >> "$GITHUB_OUTPUT"
             echo 'blocked=false' >> "$GITHUB_OUTPUT"
             exit 0
@@ -78,6 +86,10 @@ jobs:
           echo "runnable_remaining=$(jq -er '.runnable_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "delayed_retries=$(jq -er '.delayed_retries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "shared_holds=$(jq -er '.shared_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "primary_remaining=$(jq -er '.primary_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "automatic_retries=$(jq -er '.automatic_retries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "manual_quarantines=$(jq -er '.manual_quarantines | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "exhausted_targets=$(jq -er '.exhausted_targets | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "next_wake_at=$(jq -r '.next_wake_at // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "blocked=$(jq -er '.blocked | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
           {
@@ -87,6 +99,10 @@ jobs:
             echo "- Runnable remaining after this batch: $(jq -r '.runnable_remaining' <<< "$planned")"
             echo "- Delayed retries: $(jq -r '.delayed_retries' <<< "$planned")"
             echo "- Shared holds: $(jq -r '.shared_holds' <<< "$planned")"
+            echo "- Primary remaining after this batch: $(jq -r '.primary_remaining' <<< "$planned")"
+            echo "- Automatic target retries: $(jq -r '.automatic_retries' <<< "$planned")"
+            echo "- Manual target quarantines: $(jq -r '.manual_quarantines' <<< "$planned")"
+            echo "- Exhausted exact targets: $(jq -r '.exhausted_targets' <<< "$planned")"
             echo "- Next automatic wake: $(jq -r '.next_wake_at // "none"' <<< "$planned")"
           } >> "$GITHUB_STEP_SUMMARY"
 

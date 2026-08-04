@@ -325,4 +325,33 @@ describe("automatic scan recovery", () => {
     });
     expect(dueRetries(paused, "2026-08-04T01:00:00.000Z")).toEqual([]);
   });
+
+  test("does not expose a legacy deterministic retry as due", () => {
+    const failed = recordFailure(runningState(), {
+      target,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-04T00:00:00.000Z",
+    });
+    const {
+      retry_mode: _retryMode,
+      failure_history: _failureHistory,
+      ...legacy
+    } = failed.entry;
+
+    expect(
+      dueRetries(
+        {
+          ...failed.state,
+          target_retries: [
+            { ...legacy, next_retry_at: "2026-08-04T00:05:00.000Z" },
+          ],
+        },
+        "2026-08-04T01:00:00.000Z",
+      ),
+    ).toEqual([]);
+  });
 });

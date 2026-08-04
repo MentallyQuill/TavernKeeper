@@ -13,6 +13,7 @@ import {
   type OperationsState,
   type TargetRetryEntry,
 } from "../operations/state.js";
+import { retryModeForFailure } from "../operations/failure.js";
 
 export type BacklogReason = "new" | "changed" | "retry" | "policy";
 export type BacklogLane = "top-30" | "new-submission" | "old-project";
@@ -33,6 +34,10 @@ export interface BatchPlan {
   sharedHolds: number;
   nextWakeAt: string | null;
   blocked: boolean;
+  primaryRemaining: number;
+  automaticRetries: number;
+  manualQuarantines: number;
+  exhaustedTargets: number;
 }
 
 const LANE_RANK: Record<BacklogLane, number> = {
@@ -129,8 +134,6 @@ function sortedRunnable(
     state.target_retries.map((retry) => [retryIdentity(retry), retry]),
   );
   return [...planned].sort((left, right) => {
-    if (left.reason === "retry" && right.reason !== "retry") return -1;
-    if (right.reason === "retry" && left.reason !== "retry") return 1;
     if (left.reason === "retry" && right.reason === "retry") {
       const leftRetry = retryByIdentity.get(targetIdentity(left.target))!;
       const rightRetry = retryByIdentity.get(targetIdentity(right.target))!;
@@ -186,6 +189,9 @@ export function planBatch(
   const planned: PlannedTarget[] = [];
   let outstanding = 0;
   let delayedRetries = 0;
+  let automaticRetries = 0;
+  let manualQuarantines = 0;
+  let exhaustedTargets = 0;
   const delayedTimes: string[] = [];
 
   for (const target of manifest.repositories) {
@@ -224,7 +230,18 @@ export function planBatch(
     if (reason === null) continue;
     outstanding += 1;
 
-    if (retry?.exhausted === true) continue;
+    if (retry?.exhausted === true) {
+      exhaustedTargets += 1;
+      continue;
+    }
+    if (retry?.failure.domain === "target") {
+      const retryMode = retry.retry_mode ?? retryModeForFailure(retry.failure);
+      if (retryMode === "manual") {
+        manualQuarantines += 1;
+        continue;
+      }
+      automaticRetries += 1;
+    }
     if (
       retry !== undefined &&
       retry.next_retry_at !== null &&
@@ -251,6 +268,11 @@ export function planBatch(
       sharedHolds: state.shared_holds.length,
       nextWakeAt: null,
       blocked: true,
+      primaryRemaining: planned.filter(({ reason }) => reason !== "retry")
+        .length,
+      automaticRetries,
+      manualQuarantines,
+      exhaustedTargets,
     };
 
   if (state.shared_holds.length > 0) {
@@ -353,10 +375,27 @@ export function planBatch(
       sharedHolds: state.shared_holds.length,
       nextWakeAt: holdFutureTimes[0] ?? null,
       blocked: targets.length === 0,
+      primaryRemaining: planned.filter(({ reason }) => reason !== "retry")
+        .length,
+      automaticRetries,
+      manualQuarantines,
+      exhaustedTargets,
     };
   }
 
-  const runnable = sortedRunnable(planned, manifest, state, nowMs);
+  const primary = sortedRunnable(
+    planned.filter(({ reason }) => reason !== "retry"),
+    manifest,
+    state,
+    nowMs,
+  );
+  const retries = sortedRunnable(
+    planned.filter(({ reason }) => reason === "retry"),
+    manifest,
+    state,
+    nowMs,
+  );
+  const runnable = primary.length > 0 ? primary : retries;
   const targets = runnable.slice(0, 5);
   return {
     targets,
@@ -366,5 +405,9 @@ export function planBatch(
     sharedHolds: 0,
     nextWakeAt: delayedTimes.sort()[0] ?? null,
     blocked: false,
+    primaryRemaining: Math.max(0, primary.length - targets.length),
+    automaticRetries,
+    manualQuarantines,
+    exhaustedTargets,
   };
 }

@@ -115,6 +115,10 @@ describe("JSON-only orchestration CLIs", () => {
       runnable_remaining: 3,
       delayed_retries: 0,
       shared_holds: 0,
+      primary_remaining: 3,
+      automatic_retries: 0,
+      manual_quarantines: 0,
+      exhausted_targets: 0,
       next_wake_at: null,
       blocked: false,
     });

@@ -221,9 +221,9 @@ describe("derived scan backlog", () => {
     const retryState = recordFailure(runningState(), {
       target: identity(retryTarget),
       failure: {
-        code: "REPOSITORY_PARSE_FAILED",
+        code: "SCANNER_TIMEOUT",
         domain: "target",
-        component: "orchestrator",
+        component: "opengrep",
       },
       at: "2026-08-01T10:00:00.000Z",
     }).state;
@@ -239,14 +239,14 @@ describe("derived scan backlog", () => {
     ]);
   });
 
-  test("dispatches a model reply retry exactly at its five-minute boundary", () => {
+  test("dispatches a transient retry exactly at its five-minute boundary", () => {
     const retryTarget = target(44);
     const state = recordFailure(runningState(), {
       target: identity(retryTarget),
       failure: {
-        code: "MODEL_INVALID_RESPONSE",
+        code: "SCANNER_TIMEOUT",
         domain: "target",
-        component: "contextual-model",
+        component: "opengrep",
       },
       at: "2026-08-01T11:00:00.000Z",
     }).state;
@@ -574,12 +574,66 @@ describe("derived scan backlog", () => {
     expect(plan).toMatchObject({ runnableRemaining: 0, totalRemaining: 1 });
   });
 
-  test("prioritizes due target retries ahead of new ranked work", () => {
+  test("keeps a deterministic exact SHA in manual quarantine", () => {
+    const quarantined = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(quarantined),
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+        diagnostic: "parser_syntax",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+
+    const plan = planBatch(
+      manifestV3([quarantined]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan).toMatchObject({
+      targets: [],
+      manualQuarantines: 1,
+      automaticRetries: 0,
+      exhaustedTargets: 0,
+      totalRemaining: 1,
+    });
+  });
+
+  test("treats a newer SHA as primary work", () => {
+    const oldTarget = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(oldTarget),
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+    const changedTarget = {
+      ...oldTarget,
+      target_sha: "f".repeat(40),
+    };
+
+    expect(
+      planBatch(manifestV3([changedTarget]), emptyIndex, state, now, "3")
+        .targets,
+    ).toMatchObject([
+      { reason: "new", target: { target_sha: "f".repeat(40) } },
+    ]);
+  });
+
+  test("finishes ranked primary work before a due target retry", () => {
     const retryTarget = targetV3(300, { rank: 3 });
     const state = recordFailure(runningState(), {
       target: identity(retryTarget),
       failure: {
-        code: "SCANNER_FAILED",
+        code: "SCANNER_TIMEOUT",
         domain: "target",
         component: "opengrep",
       },
@@ -598,8 +652,14 @@ describe("derived scan backlog", () => {
     );
 
     expect(plan.targets.map(({ target: item }) => item.repository_id)).toEqual([
-      300, 100, 200,
+      100, 200,
     ]);
+    expect(plan).toMatchObject({
+      primaryRemaining: 0,
+      automaticRetries: 1,
+      manualQuarantines: 0,
+      exhaustedTargets: 0,
+    });
   });
 
   test("reports a future wake for a non-due shared hold", () => {
@@ -674,7 +734,7 @@ describe("derived scan backlog", () => {
     const state = recordFailure(runningState(), {
       target: identity(delayed),
       failure: {
-        code: "SCANNER_FAILED",
+        code: "SCANNER_TIMEOUT",
         domain: "target",
         component: "opengrep",
       },
