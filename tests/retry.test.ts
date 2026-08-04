@@ -40,6 +40,34 @@ function runningState() {
 }
 
 describe("automatic scan recovery", () => {
+  test("quarantines a deterministic target failure for manual retry", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const failed = recordFailure(runningState(), {
+      target,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+        diagnostic: "parser_syntax",
+      },
+      at,
+    });
+
+    expect(failed.entry).toMatchObject({
+      attempt: 1,
+      retry_mode: "manual",
+      next_retry_at: null,
+      exhausted: false,
+      failure_history: [
+        {
+          failed_at: at,
+          failure: failed.entry.failure,
+          error_fingerprint: failed.entry.error_fingerprint,
+        },
+      ],
+    });
+  });
+
   test("a failure clears the matching active scan", () => {
     const at = "2026-08-04T00:00:00.000Z";
     const active = {
@@ -117,9 +145,12 @@ describe("automatic scan recovery", () => {
       next_retry_at: null,
       failure: failures.at(-1),
     });
+    expect(
+      state.target_retries[0]?.failure_history?.map(({ failure }) => failure),
+    ).toEqual(failures.map((failure) => ({ ...failure, domain: "target" })));
   });
 
-  test("uses five-minute, thirty-minute, and two-hour target delays", () => {
+  test("backs off transient targets from their latest failure", () => {
     let state = runningState();
     const nextRetries: Array<string | null> = [];
     for (const at of [
@@ -130,9 +161,9 @@ describe("automatic scan recovery", () => {
       const result = recordFailure(state, {
         target,
         failure: {
-          code: "MODEL_INVALID_RESPONSE",
+          code: "SCANNER_TIMEOUT",
           domain: "target",
-          component: "contextual-model",
+          component: "opengrep",
         },
         at,
       });
@@ -142,8 +173,8 @@ describe("automatic scan recovery", () => {
 
     expect(nextRetries).toEqual([
       "2026-08-04T00:05:00.000Z",
-      "2026-08-04T00:30:00.000Z",
-      "2026-08-04T02:00:00.000Z",
+      "2026-08-04T00:35:30.000Z",
+      "2026-08-04T02:30:30.000Z",
     ]);
   });
 

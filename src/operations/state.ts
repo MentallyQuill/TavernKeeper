@@ -1,13 +1,34 @@
 import { z } from "zod";
 
 import { FullShaSchema } from "../contracts/targets.js";
-import { FailureDescriptorSchema, failureFingerprint } from "./failure.js";
+import {
+  FailureDescriptorSchema,
+  TargetRetryModeSchema,
+  failureFingerprint,
+} from "./failure.js";
 import { targetRetryAt } from "./retry-schedule.js";
 
 const FingerprintSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const SafeCodeSchema = z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/u);
 const SourceIdSchema = z.string().regex(/^github-[1-9][0-9]*$/u);
 const RepositorySchema = z.string().regex(/^[^/\s]+\/[^/\s]+$/u);
+
+export const TargetFailureHistoryEntrySchema = z
+  .strictObject({
+    failed_at: z.iso.datetime(),
+    failure: FailureDescriptorSchema.refine(
+      ({ domain }) => domain === "target",
+      "Target failure history requires a target failure.",
+    ),
+    error_fingerprint: FingerprintSchema,
+  })
+  .refine(
+    (entry) => entry.error_fingerprint === failureFingerprint(entry.failure),
+    {
+      path: ["error_fingerprint"],
+      message: "History fingerprint must match its failure descriptor.",
+    },
+  );
 
 export const TargetRetryEntrySchema = z
   .strictObject({
@@ -22,6 +43,8 @@ export const TargetRetryEntrySchema = z
     attempt: z.number().int().min(1).max(4),
     next_retry_at: z.iso.datetime().nullable(),
     exhausted: z.boolean(),
+    retry_mode: TargetRetryModeSchema.optional(),
+    failure_history: z.array(TargetFailureHistoryEntrySchema).max(4).optional(),
   })
   .superRefine((entry, context) => {
     if (entry.source_id !== `github-${entry.repository_id}`)
@@ -44,6 +67,20 @@ export const TargetRetryEntrySchema = z
       });
 
     if (entry.failure.domain === "target") {
+      if (
+        entry.failure_history !== undefined &&
+        entry.failure_history.some(
+          (history, index) =>
+            index > 0 &&
+            Date.parse(history.failed_at) <
+              Date.parse(entry.failure_history![index - 1]!.failed_at),
+        )
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["failure_history"],
+          message: "Target failure history must be chronological.",
+        });
       if (entry.exhausted) {
         if (entry.attempt !== 4 || entry.next_retry_at !== null)
           context.addIssue({
@@ -51,15 +88,37 @@ export const TargetRetryEntrySchema = z
             path: ["exhausted"],
             message: "An exhausted target must end on its fourth failure.",
           });
-      } else if (
-        entry.attempt === 4 ||
+      } else if (entry.attempt === 4)
+        context.addIssue({
+          code: "custom",
+          path: ["attempt"],
+          message: "A fourth target failure must be exhausted.",
+        });
+      else if (
+        entry.retry_mode === "automatic" &&
+        entry.next_retry_at !==
+          targetRetryAt(entry.last_failed_at, entry.attempt)
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["next_retry_at"],
+          message: "Automatic target retry must use its latest failure time.",
+        });
+      else if (entry.retry_mode === "manual" && entry.next_retry_at !== null)
+        context.addIssue({
+          code: "custom",
+          path: ["next_retry_at"],
+          message: "Manual target quarantine cannot have an automatic wake.",
+        });
+      else if (
+        entry.retry_mode === undefined &&
         entry.next_retry_at !==
           targetRetryAt(entry.initial_failed_at, entry.attempt)
       )
         context.addIssue({
           code: "custom",
           path: ["next_retry_at"],
-          message: "Target retry time must match its bounded schedule.",
+          message: "Legacy target retry time must match its bounded schedule.",
         });
       return;
     }

@@ -2,6 +2,7 @@ import { TargetSchema, type Target } from "../contracts/targets.js";
 import {
   FailureDescriptorSchema,
   failureFingerprint,
+  retryModeForFailure,
   type FailureDescriptor,
 } from "./failure.js";
 import {
@@ -81,6 +82,15 @@ function targetRetryEntry(input: {
   if (input.failure.domain === "target") {
     const attempt = Math.min((input.existing?.attempt ?? 0) + 1, 4);
     const exhausted = attempt === 4;
+    const retryMode = retryModeForFailure(input.failure);
+    const failureHistory = [
+      ...(input.existing?.failure_history ?? []),
+      {
+        failed_at: input.at,
+        failure: input.failure,
+        error_fingerprint: input.fingerprint,
+      },
+    ].slice(-4);
     return {
       source_id: input.target.source_id,
       repository_id: input.target.repository_id,
@@ -91,8 +101,13 @@ function targetRetryEntry(input: {
       initial_failed_at: initialFailedAt,
       last_failed_at: input.at,
       attempt,
-      next_retry_at: exhausted ? null : targetRetryAt(initialFailedAt, attempt),
+      next_retry_at:
+        exhausted || retryMode === "manual"
+          ? null
+          : targetRetryAt(input.at, attempt),
       exhausted,
+      retry_mode: retryMode,
+      failure_history: failureHistory,
     };
   }
 

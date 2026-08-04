@@ -138,4 +138,38 @@ describe("secret-free operations state V2", () => {
       }),
     ).toThrow();
   });
+
+  test("keeps legacy V2 retry entries readable", () => {
+    const at = "2026-08-04T00:00:00.000Z";
+    const retry = recordFailure(initialOperationsState(at), {
+      target: {
+        source_id: "github-42",
+        provider: "github",
+        repository_id: 42,
+        repository: "owner/repo",
+        target_sha: "a".repeat(40),
+        canonical_url: "https://github.com/owner/repo",
+      },
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at,
+    }).entry;
+    const {
+      retry_mode: _retryMode,
+      failure_history: _failureHistory,
+      ...legacy
+    } = retry;
+
+    expect(
+      parseOperationsState({
+        ...initialOperationsState(at),
+        target_retries: [
+          { ...legacy, next_retry_at: "2026-08-04T00:05:00.000Z" },
+        ],
+      }).target_retries[0],
+    ).not.toHaveProperty("retry_mode");
+  });
 });
