@@ -29,7 +29,7 @@ jobs:
     permissions:
       contents: read
     strategy:
-      fail-fast: true
+      fail-fast: false
       max-parallel: 2
       matrix:
         request: ${{ fromJSON(inputs.requests_json) }}
@@ -179,6 +179,8 @@ jobs:
       issues: write
     outputs:
       source_sha: ${{ steps.commit.outputs.source_sha }}
+      reports: ${{ steps.publish.outputs.reports }}
+      system_failure: ${{ steps.publish.outputs.system_failure }}
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -209,7 +211,13 @@ jobs:
           done < <(find encrypted-artifacts -type f -name outcome.enc -print0)
           test "$position" -gt 0
       - name: Publish serialized batch
-        run: npm run --silent publish -- artifacts
+        id: publish
+        shell: bash
+        run: |
+          result="$(npm run --silent publish -- artifacts)"
+          printf '%s\n' "$result"
+          echo "reports=$(jq -er '.reports | select(type == \"number\")' <<< "$result")" >> "$GITHUB_OUTPUT"
+          echo "system_failure=$(jq -er '.system_failure | select(type == \"boolean\")' <<< "$result")" >> "$GITHUB_OUTPUT"
       - name: Notify staff only after retry exhaustion
         continue-on-error: true
         env:
@@ -270,7 +278,7 @@ jobs:
 
   deploy:
     needs: publish
-    if: ${{ needs.publish.result == 'success' }}
+    if: ${{ always() && needs.publish.result == 'success' }}
     uses: ./.github/workflows/deploy-pages.yml
     with:
       source_sha: ${{ needs.publish.outputs.source_sha }}
@@ -278,8 +286,8 @@ jobs:
     secrets: inherit
 
   continue:
-    needs: deploy
-    if: ${{ needs.deploy.result == 'success' && inputs.continue_backlog && inputs.remaining != '0' }}
+    needs: [publish, deploy]
+    if: ${{ always() && needs.publish.result == 'success' && needs.deploy.result == 'success' && needs.publish.outputs.system_failure != 'true' && inputs.continue_backlog && inputs.remaining != '0' }}
     runs-on: ubuntu-latest
     permissions:
       actions: write

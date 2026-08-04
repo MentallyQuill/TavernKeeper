@@ -191,7 +191,7 @@ describe("GitHub workflow security policy", () => {
     );
 
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
-    expect(value.jobs.scan.strategy["fail-fast"]).toBe(true);
+    expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
     expect(reviewIndex).toBe(prepareIndex + 1);
     expect(finalizeIndex).toBe(reviewIndex + 1);
     expect(steps[prepareIndex]?.run).toBe("npm run --silent prepare-target");
@@ -215,6 +215,28 @@ describe("GitHub workflow security policy", () => {
     expect(providerSecretSteps.map((step) => step.name)).toEqual([
       "Contextually assess scanner evidence",
     ]);
+  });
+
+  test("mixed batches deploy successes but stop ordinary continuation on a system failure", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const publish = (value.jobs.publish.steps as Workflow[]).find(
+      (step) => step.name === "Publish serialized batch",
+    );
+
+    expect(value.jobs.publish.outputs).toMatchObject({
+      reports: "${{ steps.publish.outputs.reports }}",
+      system_failure: "${{ steps.publish.outputs.system_failure }}",
+    });
+    expect(publish).toMatchObject({ id: "publish", shell: "bash" });
+    expect(publish?.run).toContain(".reports");
+    expect(publish?.run).toContain(".system_failure");
+    expect(value.jobs.deploy.if).toBe(
+      "${{ always() && needs.publish.result == 'success' }}",
+    );
+    expect(value.jobs.continue.needs).toEqual(["publish", "deploy"]);
+    expect(value.jobs.continue.if).toContain(
+      "needs.publish.outputs.system_failure != 'true'",
+    );
   });
 
   test("the protected provider check makes one non-publishing contextual request", async () => {
@@ -317,6 +339,13 @@ describe("GitHub workflow security policy", () => {
           "",
         ),
       /contextual review must separate preparation from V5 finalization/u,
+    );
+  });
+
+  test("workflow policy rejects fail-fast batch cancellation", async () => {
+    await expectPolicyFailure(
+      (text) => text.replace("fail-fast: false", "fail-fast: true"),
+      /scan matrix must finish every selected repository/u,
     );
   });
 

@@ -431,8 +431,38 @@ function checkEncryptedHandoff(file, workflow) {
     fail(file, "scan must atomically replace the bootstrap failure outcome");
   if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2)
     fail(file, "scan matrix must retain max-parallel: 2");
-  if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== true)
-    fail(file, "scan matrix must stop pending work after a system failure");
+  if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== false)
+    fail(file, "scan matrix must finish every selected repository");
+
+  const publishJob = workflow.jobs?.publish;
+  const publish = (publishJob?.steps ?? []).find(
+    (step) => step?.name === "Publish serialized batch",
+  );
+  if (
+    publish?.id !== "publish" ||
+    publish?.shell !== "bash" ||
+    !publish?.run?.includes(".reports") ||
+    !publish?.run?.includes(".system_failure") ||
+    publishJob?.outputs?.reports !== "${{ steps.publish.outputs.reports }}" ||
+    publishJob?.outputs?.system_failure !==
+      "${{ steps.publish.outputs.system_failure }}"
+  )
+    fail(file, "publisher must expose typed mixed-batch routing outputs");
+
+  if (
+    workflow.jobs?.deploy?.if !==
+    "${{ always() && needs.publish.result == 'success' }}"
+  )
+    fail(file, "deployment must accept a successful mixed-batch publisher");
+
+  const continuation = workflow.jobs?.continue;
+  if (
+    !same(continuation?.needs, ["publish", "deploy"]) ||
+    !continuation?.if?.includes(
+      "needs.publish.outputs.system_failure != 'true'",
+    )
+  )
+    fail(file, "system failures must suppress ordinary batch continuation");
 }
 
 function checkPublisherBoundary(file, workflow) {
