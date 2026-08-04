@@ -1,0 +1,57 @@
+name: Reconcile report deployment
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: tavernkeeper-pages-reconcile
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      deploy_required: ${{ steps.compare.outputs.deploy_required }}
+      source_sha: ${{ steps.compare.outputs.source_sha }}
+    steps:
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Compare committed and deployed report indexes
+        id: compare
+        shell: bash
+        run: |
+          source_sha="$(git rev-parse HEAD)"
+          expected="$(sha256sum reports/index.json | cut -d' ' -f1)"
+          actual=""
+          if curl --fail --silent --show-error --location --max-redirs 0 \
+            --output "$RUNNER_TEMP/live-index.json" \
+            "https://mentallyquill.github.io/TavernKeeper/reports/index.json"; then
+            actual="$(sha256sum "$RUNNER_TEMP/live-index.json" | cut -d' ' -f1)"
+          fi
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+          if [[ "$actual" = "$expected" ]]; then
+            echo "deploy_required=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy_required=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    needs: check
+    if: ${{ needs.check.outputs.deploy_required == 'true' }}
+    uses: ./.github/workflows/deploy-pages.yml
+    with:
+      source_sha: ${{ needs.check.outputs.source_sha }}
+      automatic: true
+    secrets: inherit

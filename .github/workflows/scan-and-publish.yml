@@ -6,14 +6,6 @@ on:
       requests_json:
         type: string
         required: true
-      total_remaining:
-        type: string
-        required: false
-        default: "0"
-      runnable_remaining:
-        type: string
-        required: false
-        default: "0"
 permissions:
   contents: read
   issues: write
@@ -196,11 +188,12 @@ jobs:
     outputs:
       source_sha: ${{ steps.commit.outputs.source_sha }}
       reports: ${{ steps.publish.outputs.reports }}
-      target_failures: ${{ steps.publish.outputs.target_failures }}
-      shared_holds: ${{ steps.publish.outputs.shared_holds }}
-      security_holds: ${{ steps.publish.outputs.security_holds }}
-      continuation_blocked: ${{ steps.publish.outputs.continuation_blocked }}
-      terminal_failures: ${{ steps.publish.outputs.terminal_failures }}
+      failures: ${{ steps.publish.outputs.failures }}
+      queue_remaining: ${{ steps.publish.outputs.queue_remaining }}
+      queue_due: ${{ steps.publish.outputs.queue_due }}
+      queue_delayed: ${{ steps.publish.outputs.queue_delayed }}
+      next_wake_at: ${{ steps.publish.outputs.next_wake_at }}
+      chronic_failures: ${{ steps.publish.outputs.chronic_failures }}
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -241,17 +234,19 @@ jobs:
           result="$(npm run --silent publish -- artifacts)"
           printf '%s\n' "$result"
           reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"
-          target_failures="$(jq -er '.target_failures | select(type == "number")' <<< "$result")"
-          shared_holds="$(jq -er '.shared_holds | select(type == "number")' <<< "$result")"
-          security_holds="$(jq -er '.security_holds | select(type == "number")' <<< "$result")"
-          continuation_blocked="$(jq -er '.continuation_blocked | select(type == "boolean") | tostring' <<< "$result")"
-          terminal_failures="$(jq -er '.terminal_failures | select(type == "number")' <<< "$result")"
+          failures="$(jq -er '.failures | select(type == "number")' <<< "$result")"
+          queue_remaining="$(jq -er '.queue_remaining | select(type == "number")' <<< "$result")"
+          queue_due="$(jq -er '.queue_due | select(type == "number")' <<< "$result")"
+          queue_delayed="$(jq -er '.queue_delayed | select(type == "number")' <<< "$result")"
+          next_wake_at="$(jq -r '.next_wake_at // ""' <<< "$result")"
+          chronic_failures="$(jq -er '.chronic_failures | select(type == "number")' <<< "$result")"
           printf 'reports=%s\n' "$reports" >> "$GITHUB_OUTPUT"
-          printf 'target_failures=%s\n' "$target_failures" >> "$GITHUB_OUTPUT"
-          printf 'shared_holds=%s\n' "$shared_holds" >> "$GITHUB_OUTPUT"
-          printf 'security_holds=%s\n' "$security_holds" >> "$GITHUB_OUTPUT"
-          printf 'continuation_blocked=%s\n' "$continuation_blocked" >> "$GITHUB_OUTPUT"
-          printf 'terminal_failures=%s\n' "$terminal_failures" >> "$GITHUB_OUTPUT"
+          printf 'failures=%s\n' "$failures" >> "$GITHUB_OUTPUT"
+          printf 'queue_remaining=%s\n' "$queue_remaining" >> "$GITHUB_OUTPUT"
+          printf 'queue_due=%s\n' "$queue_due" >> "$GITHUB_OUTPUT"
+          printf 'queue_delayed=%s\n' "$queue_delayed" >> "$GITHUB_OUTPUT"
+          printf 'next_wake_at=%s\n' "$next_wake_at" >> "$GITHUB_OUTPUT"
+          printf 'chronic_failures=%s\n' "$chronic_failures" >> "$GITHUB_OUTPUT"
       - name: Reconcile secret-free operational incidents
         continue-on-error: true
         env:
@@ -260,56 +255,22 @@ jobs:
         run: |
           incidents="$(npm run --silent exhausted)"
           gh label create scanner-operations --color B60205 --description "TavernKeeper operational incidents" --force
-          gh label create scanner-recovery --color D4C5F9 --description "TavernKeeper automatic recovery probes" --force
-
-          jq -c '.target_exhaustions[]' <<< "$incidents" | while read -r failure; do
-            fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
-            code="$(jq -r '.failure.code' <<< "$failure")"
-            component="$(jq -r '.failure.component' <<< "$failure")"
+          jq -c '.chronic_failures[]' <<< "$incidents" | while read -r failure; do
             repository_id="$(jq -r '.repository_id' <<< "$failure")"
+            repository="$(jq -r '.repository' <<< "$failure")"
             target="$(jq -r '.target_sha' <<< "$failure")"
-            existing="$(gh issue list --state all --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            count="$(jq -r '.consecutive_failures' <<< "$failure")"
+            code="$(jq -r '.last_failure.code' <<< "$failure")"
+            component="$(jq -r '.last_failure.component' <<< "$failure")"
+            next_retry="$(jq -r '.not_before // "due"' <<< "$failure")"
+            existing="$(gh issue list --state open --label scanner-operations --search "$repository_id $target in:body" --json number --jq '.[0].number // empty')"
             if [[ -z "$existing" ]]; then
               gh issue create \
                 --label scanner-operations \
-                --title "[scanner-operations] target retry exhausted" \
-                --body "TavernKeeper exhausted three delayed retries for one exact target.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nUnrelated catalog work continues automatically."
-            fi
-          done
-
-          jq -c '.shared_holds[] | select(.notified)' <<< "$incidents" | while read -r hold; do
-            fingerprint="$(jq -r '.error_fingerprint' <<< "$hold")"
-            code="$(jq -r '.failure.code' <<< "$hold")"
-            component="$(jq -r '.failure.component' <<< "$hold")"
-            next_probe="$(jq -r '.next_probe_at' <<< "$hold")"
-            existing="$(gh issue list --state open --label scanner-recovery --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
-            if [[ -z "$existing" ]]; then
-              gh issue create \
-                --label scanner-recovery \
-                --title "[scanner-recovery] shared dependency is retrying" \
-                --body "TavernKeeper continues bounded automatic recovery probes.\n\nRecovery fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\nNext probe: \`$next_probe\`"
-            fi
-          done
-
-          gh issue list --state open --label scanner-recovery --limit 100 --json number,body --jq '.[] | @base64' | while read -r encoded; do
-            issue="$(printf '%s' "$encoded" | base64 --decode)"
-            number="$(jq -r '.number' <<< "$issue")"
-            fingerprint="$(jq -r '.body | capture("Recovery fingerprint: `(?<value>[0-9a-f]{64})`").value // empty' <<< "$issue")"
-            if [[ -n "$fingerprint" ]] && ! jq -e --arg fingerprint "$fingerprint" '.shared_holds[] | select(.error_fingerprint == $fingerprint)' <<< "$incidents" >/dev/null; then
-              gh issue close "$number" --comment "Automatic recovery succeeded; this shared hold is no longer active."
-            fi
-          done
-
-          jq -c '.security_holds[]' <<< "$incidents" | while read -r failure; do
-            fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
-            code="$(jq -r '.failure.code' <<< "$failure")"
-            component="$(jq -r '.failure.component' <<< "$failure")"
-            existing="$(gh issue list --state open --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
-            if [[ -z "$existing" ]]; then
-              gh issue create \
-                --label scanner-operations \
-                --title "[scanner-operations] security hold requires repair" \
-                --body "TavernKeeper paused safely for a trusted-boundary failure.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\n\nRepair and verify the external condition, then resume through the protected staff workflow."
+                --title "[scanner-operations] chronic target failure" \
+                --body "TavernKeeper is continuing automatic retries for a repeatedly failing target.\n\nRepository: \`$repository\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\nConsecutive failures: \`$count\`\nCode: \`$code\`\nComponent: \`$component\`\nNext retry: \`$next_retry\`\n\nThe target remains in the durable queue and later arrivals cannot overtake it."
+            else
+              gh issue comment "$existing" --body "Automatic retry remains active after $count consecutive failures. Next retry: \`$next_retry\`."
             fi
           done
       - name: Create TavernKeeper Publisher token
@@ -349,7 +310,7 @@ jobs:
 
   deploy:
     needs: publish
-    if: ${{ always() && needs.publish.result == 'success' }}
+    if: ${{ always() && needs.publish.result == 'success' && needs.publish.outputs.reports != '0' }}
     uses: ./.github/workflows/deploy-pages.yml
     with:
       source_sha: ${{ needs.publish.outputs.source_sha }}
@@ -385,8 +346,8 @@ jobs:
           fi
 
   continue:
-    needs: [publish, deploy]
-    if: ${{ always() && needs.publish.result == 'success' && needs.deploy.result == 'success' && needs.publish.outputs.continuation_blocked != 'true' && inputs.total_remaining != '0' }}
+    needs: publish
+    if: ${{ always() && needs.publish.result == 'success' && needs.publish.outputs.queue_remaining != '0' }}
     runs-on: ubuntu-latest
     permissions:
       actions: write

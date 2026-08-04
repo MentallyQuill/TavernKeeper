@@ -31,6 +31,7 @@ const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
+  "pages-reconcile.yml": ["schedule", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
   "provider-check.yml": ["workflow_dispatch"],
   "reconcile.yml": [
@@ -54,6 +55,10 @@ const permissionProfiles = {
     workflow: { contents: "read", pages: "write", "id-token": "write" },
     jobs: { "authorize-manual": {}, deploy: undefined },
   },
+  "pages-reconcile.yml": {
+    workflow: { contents: "read", pages: "write", "id-token": "write" },
+    jobs: { check: { contents: "read" }, deploy: undefined },
+  },
   "policy-rescan.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: { schedule: { contents: "read", actions: "write" } },
@@ -71,10 +76,9 @@ const permissionProfiles = {
       actions: "write",
     },
     jobs: {
+      sync: { contents: "read" },
       plan: { contents: "read" },
-      "recover-pages": undefined,
       run: undefined,
-      "resume-after-recovery": { actions: "write" },
     },
   },
   "retry.yml": {
@@ -108,16 +112,10 @@ const permissionProfiles = {
     jobs: { operate: { contents: "read", actions: "write" } },
   },
   "targeted-scan.yml": {
-    workflow: {
-      contents: "read",
-      issues: "write",
-      pages: "write",
-      "id-token": "write",
-      actions: "write",
-    },
+    workflow: { contents: "read", actions: "write" },
     jobs: {
       resolve: { contents: "read", actions: "read" },
-      scan: undefined,
+      enqueue: { actions: "write" },
     },
   },
 };
@@ -129,6 +127,7 @@ const protectedManual = new Set([
 ]);
 const mutationJobs = {
   "policy-rescan.yml": { job: "schedule", environment: "tavernkeeper-staff" },
+  "reconcile.yml": { job: "sync", environment: "tavernkeeper-scanner" },
   "scan-and-publish.yml": {
     job: "publish",
     environment: "tavernkeeper-scanner",
@@ -490,18 +489,25 @@ function checkEncryptedHandoff(file, workflow) {
     !publishRun.includes(
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     ) ||
-    !publishRun.includes("target_failures") ||
-    !publishRun.includes("shared_holds") ||
-    !publishRun.includes("security_holds") ||
-    !publishRun.includes("continuation_blocked") ||
+    !publishRun.includes("failures") ||
+    !publishRun.includes("queue_remaining") ||
+    !publishRun.includes("queue_due") ||
+    !publishRun.includes("queue_delayed") ||
+    !publishRun.includes("next_wake_at") ||
+    !publishRun.includes("chronic_failures") ||
+    /target_failures|shared_holds|security_holds|continuation_blocked|terminal_failures/u.test(
+      publishRun,
+    ) ||
     !publishRun.includes(
       `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
     ) ||
     /echo .*jq/iu.test(publishRun) ||
     publishJob?.if !== "${{ always() }}" ||
     publishJob?.outputs?.reports !== "${{ steps.publish.outputs.reports }}" ||
-    publishJob?.outputs?.continuation_blocked !==
-      "${{ steps.publish.outputs.continuation_blocked }}"
+    publishJob?.outputs?.queue_remaining !==
+      "${{ steps.publish.outputs.queue_remaining }}" ||
+    publishJob?.outputs?.chronic_failures !==
+      "${{ steps.publish.outputs.chronic_failures }}"
   )
     fail(
       file,
@@ -510,20 +516,17 @@ function checkEncryptedHandoff(file, workflow) {
 
   if (
     workflow.jobs?.deploy?.if !==
-    "${{ always() && needs.publish.result == 'success' }}"
+    "${{ always() && needs.publish.result == 'success' && needs.publish.outputs.reports != '0' }}"
   )
     fail(file, "deployment must accept a successful mixed-batch publisher");
 
   const continuation = workflow.jobs?.continue;
   if (
-    !same(continuation?.needs, ["publish", "deploy"]) ||
-    !continuation?.if?.includes(
-      "needs.publish.outputs.continuation_blocked != 'true'",
-    ) ||
-    !continuation?.if?.includes("inputs.total_remaining != '0'") ||
+    continuation?.needs !== "publish" ||
+    !continuation?.if?.includes("needs.publish.outputs.queue_remaining != '0'") ||
     /needs\.scan\.result|system_failure/u.test(continuation?.if ?? "")
   )
-    fail(file, "only persisted holds may suppress ordinary batch continuation");
+    fail(file, "persisted queue work must continue independently of deployment");
 }
 
 function checkPublisherBoundary(file, workflow) {

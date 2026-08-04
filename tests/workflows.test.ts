@@ -30,6 +30,7 @@ const downloadArtifactAction =
 const workflowNames = [
   "ci.yml",
   "deploy-pages.yml",
+  "pages-reconcile.yml",
   "policy-rescan.yml",
   "provider-check.yml",
   "reconcile.yml",
@@ -113,9 +114,9 @@ describe("GitHub workflow security policy", () => {
   });
 
   test("automatic reusable deployments bypass only the manual approval gate", async () => {
-    const [deploy, reconcile, scanAndPublish] = await Promise.all([
+    const [deploy, pagesReconcile, scanAndPublish] = await Promise.all([
       workflow("deploy-pages.yml"),
-      workflow("reconcile.yml"),
+      workflow("pages-reconcile.yml"),
       workflow("scan-and-publish.yml"),
     ]);
 
@@ -125,7 +126,8 @@ describe("GitHub workflow security policy", () => {
     });
     expect(deploy.on.workflow_dispatch.inputs).not.toHaveProperty("automatic");
     expect(deploy.jobs["authorize-manual"].if).toBe("${{ !inputs.automatic }}");
-    expect(reconcile.jobs["recover-pages"].with.automatic).toBe(true);
+    expect(pagesReconcile.on.schedule).toEqual([{ cron: "*/15 * * * *" }]);
+    expect(pagesReconcile.jobs.deploy.with.automatic).toBe(true);
     expect(scanAndPublish.jobs.deploy.with.automatic).toBe(true);
   });
 
@@ -139,8 +141,9 @@ describe("GitHub workflow security policy", () => {
     expect(reconcile.jobs.run.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
     );
-    expect(targeted.jobs.scan.uses).toBe(
-      "./.github/workflows/scan-and-publish.yml",
+    expect(targeted.jobs.enqueue.needs).toBe("resolve");
+    expect(targeted.jobs.enqueue.steps[0].run).toContain(
+      "gh workflow run reconcile.yml",
     );
     expect(retry.on.schedule).toEqual([{ cron: "*/5 * * * *" }]);
     expect(retry.jobs.reconcile.uses).toBe("./.github/workflows/reconcile.yml");
@@ -164,6 +167,7 @@ describe("GitHub workflow security policy", () => {
     expect(value.jobs.resolve.if).toContain("github.actor_id");
     expect(value.jobs.resolve.if).toContain("vars.TAVERNARY_WAKE_APP_BOT_ID");
     expect(text).toMatch(/tavernkeeper-targets\.json/u);
+    expect(text).not.toContain("scan-and-publish.yml");
     expect(text).not.toMatch(
       /clone_url|repository_url|branch|token_budget|priority|mode.*inputs/iu,
     );
@@ -244,35 +248,41 @@ describe("GitHub workflow security policy", () => {
 
     expect(value.jobs.publish.outputs).toMatchObject({
       reports: "${{ steps.publish.outputs.reports }}",
-      continuation_blocked: "${{ steps.publish.outputs.continuation_blocked }}",
+      failures: "${{ steps.publish.outputs.failures }}",
+      queue_remaining: "${{ steps.publish.outputs.queue_remaining }}",
+      queue_delayed: "${{ steps.publish.outputs.queue_delayed }}",
+      next_wake_at: "${{ steps.publish.outputs.next_wake_at }}",
+      chronic_failures: "${{ steps.publish.outputs.chronic_failures }}",
     });
     expect(value.jobs.publish.if).toBe("${{ always() }}");
     expect(publish).toMatchObject({ id: "publish", shell: "bash" });
     expect(publish?.run).toContain(
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     );
-    expect(publish?.run).toContain("continuation_blocked");
-    expect(publish?.run).toContain("target_failures");
-    expect(publish?.run).toContain("shared_holds");
-    expect(publish?.run).toContain("security_holds");
+    expect(publish?.run).toContain("queue_remaining");
+    expect(publish?.run).toContain("queue_delayed");
+    expect(publish?.run).toContain("chronic_failures");
+    expect(publish?.run).not.toMatch(
+      /continuation_blocked|target_failures|shared_holds|security_holds|terminal_failures/u,
+    );
     expect(publish?.run).toContain(
       `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
     );
     expect(publish?.run).not.toMatch(/echo .*jq/iu);
     expect(value.jobs.deploy.if).toBe(
-      "${{ always() && needs.publish.result == 'success' }}",
+      "${{ always() && needs.publish.result == 'success' && needs.publish.outputs.reports != '0' }}",
     );
-    expect(value.jobs.continue.needs).toEqual(["publish", "deploy"]);
+    expect(value.jobs.continue.needs).toBe("publish");
     expect(value.jobs.continue.if).toContain(
-      "needs.publish.outputs.continuation_blocked != 'true'",
+      "needs.publish.outputs.queue_remaining != '0'",
     );
-    expect(value.jobs.continue.if).toContain("inputs.total_remaining != '0'");
+    expect(value.jobs.continue.if).not.toContain("needs.deploy");
     expect(value.jobs.continue.if).not.toMatch(
       /needs\.scan\.result|system_failure/u,
     );
-    expect(value.on.workflow_call.inputs).toHaveProperty("total_remaining");
-    expect(value.on.workflow_call.inputs).toHaveProperty("runnable_remaining");
-    expect(value.on.workflow_call.inputs).not.toHaveProperty("remaining");
+    expect(Object.keys(value.on.workflow_call.inputs)).toEqual([
+      "requests_json",
+    ]);
   });
 
   test("reports a secret-free incident when publication cannot persist state", async () => {
@@ -298,18 +308,22 @@ describe("GitHub workflow security policy", () => {
 
   test("reconcile exposes rich queue state to the reusable scanner", async () => {
     const value = await workflow("reconcile.yml");
+    expect(value.jobs.sync.environment).toBe("tavernkeeper-scanner");
+    expect(JSON.stringify(value.jobs.sync)).toContain("queue:sync");
+    expect(value.jobs.plan.needs).toBe("sync");
     expect(value.jobs.plan.outputs).toMatchObject({
       total_remaining: "${{ steps.plan.outputs.total_remaining }}",
       runnable_remaining: "${{ steps.plan.outputs.runnable_remaining }}",
-      delayed_retries: "${{ steps.plan.outputs.delayed_retries }}",
-      shared_holds: "${{ steps.plan.outputs.shared_holds }}",
+      delayed_entries: "${{ steps.plan.outputs.delayed_entries }}",
       next_wake_at: "${{ steps.plan.outputs.next_wake_at }}",
-      blocked: "${{ steps.plan.outputs.blocked }}",
+      emergency_stopped: "${{ steps.plan.outputs.emergency_stopped }}",
     });
-    expect(value.jobs.run.with).toMatchObject({
-      total_remaining: "${{ needs.plan.outputs.total_remaining }}",
-      runnable_remaining: "${{ needs.plan.outputs.runnable_remaining }}",
+    expect(value.jobs.run.with).toEqual({
+      requests_json: "${{ needs.plan.outputs.requests_json }}",
     });
+    expect(JSON.stringify(value)).not.toMatch(
+      /deploy_required|recover-pages|shared_holds|security_holds|continuation_blocked/u,
+    );
   });
 
   test("state migration exists only behind the protected staff workflow", async () => {
@@ -414,35 +428,42 @@ describe("GitHub workflow security policy", () => {
     ]);
   });
 
-  test("the Publisher App token has one reviewed bounded push consumer", async () => {
-    const value = await workflow("scan-and-publish.yml");
-    const steps = value.jobs.publish.steps as Workflow[];
-    const tokenSteps = steps.filter((step) =>
-      JSON.stringify(step).match(
-        /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)/u,
-      ),
-    );
-    const consumers = steps.filter((step) =>
-      JSON.stringify(step).includes("steps.publisher-token.outputs.token"),
-    );
+  test("each Publisher App token has one reviewed bounded push consumer", async () => {
+    for (const [workflowName, jobName] of [
+      ["reconcile.yml", "sync"],
+      ["scan-and-publish.yml", "publish"],
+    ] as const) {
+      const value = await workflow(workflowName);
+      const steps = value.jobs[jobName].steps as Workflow[];
+      const tokenSteps = steps.filter((step) =>
+        JSON.stringify(step).match(
+          /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)/u,
+        ),
+      );
+      const consumers = steps.filter((step) =>
+        JSON.stringify(step).includes("steps.publisher-token.outputs.token"),
+      );
 
-    expect(tokenSteps).toHaveLength(1);
-    expect(tokenSteps[0]).toMatchObject({
-      name: "Create TavernKeeper Publisher token",
-      id: "publisher-token",
-      uses: publisherAction,
-      with: {
-        owner: "MentallyQuill",
-        repositories: "TavernKeeper",
-        "permission-contents": "write",
-      },
-    });
-    expect(consumers).toHaveLength(1);
-    expect(consumers[0]!.run).toContain("git push origin HEAD:main");
-    expect(consumers[0]!.run).toContain("for attempt in 1 2 3; do");
-    expect(consumers[0]!.run).toContain('sleep "$((attempt * 15))"');
-    expect(consumers[0]!.run).toContain('test "$push_succeeded" = "true"');
-    expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
+      expect(tokenSteps).toHaveLength(1);
+      expect(tokenSteps[0]).toMatchObject({
+        name: "Create TavernKeeper Publisher token",
+        id: "publisher-token",
+        uses: publisherAction,
+        with: {
+          owner: "MentallyQuill",
+          repositories: "TavernKeeper",
+          "permission-contents": "write",
+        },
+      });
+      expect(consumers).toHaveLength(1);
+      expect(consumers[0]!.run).toContain("git push origin HEAD:main");
+      expect(consumers[0]!.run).toContain("for attempt in 1 2 3; do");
+      expect(consumers[0]!.run).toContain('sleep "$((attempt * 15))"');
+      expect(consumers[0]!.run).toContain(
+        'test "$push_succeeded" = "true"',
+      );
+      expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
+    }
   });
 
   test("workflow policy rejects removal of the contextual review boundary", async () => {
@@ -605,7 +626,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 9 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 10 workflows/u),
     });
   });
 });
