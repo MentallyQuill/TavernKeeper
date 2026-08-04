@@ -228,8 +228,19 @@ describe("GitHub workflow security policy", () => {
       system_failure: "${{ steps.publish.outputs.system_failure }}",
     });
     expect(publish).toMatchObject({ id: "publish", shell: "bash" });
-    expect(publish?.run).toContain(".reports");
-    expect(publish?.run).toContain(".system_failure");
+    expect(publish?.run).toContain(
+      `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
+    );
+    expect(publish?.run).toContain(
+      `system_failure="$(jq -er '.system_failure | select(type == "boolean")' <<< "$result")"`,
+    );
+    expect(publish?.run).toContain(
+      `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
+    );
+    expect(publish?.run).toContain(
+      `printf 'system_failure=%s\\n' "$system_failure" >> "$GITHUB_OUTPUT"`,
+    );
+    expect(publish?.run).not.toMatch(/echo .*jq/iu);
     expect(value.jobs.deploy.if).toBe(
       "${{ always() && needs.publish.result == 'success' }}",
     );
@@ -237,6 +248,17 @@ describe("GitHub workflow security policy", () => {
     expect(value.jobs.continue.if).toContain(
       "needs.publish.outputs.system_failure != 'true'",
     );
+  });
+
+  test("publisher authenticates every decrypted outcome against the requested batch", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const publish = (value.jobs.publish.steps as Workflow[]).find(
+      (step) => step.name === "Publish serialized batch",
+    );
+
+    expect(publish?.env).toEqual({
+      TAVERNKEEPER_SCAN_REQUESTS: "${{ inputs.requests_json }}",
+    });
   });
 
   test("the protected provider check makes one non-publishing contextual request", async () => {
@@ -346,6 +368,17 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) => text.replace("fail-fast: false", "fail-fast: true"),
       /scan matrix must finish every selected repository/u,
+    );
+  });
+
+  test("workflow policy rejects removal of requested-batch authentication", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "        env:\n          TAVERNKEEPER_SCAN_REQUESTS: ${{ inputs.requests_json }}\n",
+          "",
+        ),
+      /publisher must authenticate every decrypted outcome against the requested batch/u,
     );
   });
 

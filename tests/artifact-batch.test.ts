@@ -115,6 +115,14 @@ async function readPublishedRepositoryIds(root: string) {
     .sort((left, right) => left - right);
 }
 
+function publicationInput(
+  root: string,
+  artifactsRoot: string,
+  expectedTargets: Target[],
+) {
+  return { root, artifactsRoot, generatedAt, expectedTargets };
+}
+
 describe("artifact batch publication", () => {
   test("publishes completed reports while recording a system failure", async () => {
     const { root, artifactsRoot } = await batchRoot();
@@ -133,11 +141,13 @@ describe("artifact batch publication", () => {
       ),
     ]);
 
-    const result = await publishArtifactBatch({
-      root,
-      artifactsRoot,
-      generatedAt,
-    });
+    const result = await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [
+        targetOf(first),
+        targetOf(second),
+        targetOf(failedReport),
+      ]),
+    );
 
     expect(result).toEqual({
       status: "partial",
@@ -162,11 +172,9 @@ describe("artifact batch publication", () => {
       failed(targetOf(report), "system", "MODEL_PROVIDER"),
     );
 
-    const result = await publishArtifactBatch({
-      root,
-      artifactsRoot,
-      generatedAt,
-    });
+    const result = await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [targetOf(report)]),
+    );
 
     expect(result).toMatchObject({
       status: "deferred",
@@ -192,11 +200,12 @@ describe("artifact batch publication", () => {
       ),
     ]);
 
-    const result = await publishArtifactBatch({
-      root,
-      artifactsRoot,
-      generatedAt,
-    });
+    const result = await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [
+        targetOf(successful),
+        targetOf(failedReport),
+      ]),
+    );
 
     expect(result).toMatchObject({
       status: "partial",
@@ -213,7 +222,9 @@ describe("artifact batch publication", () => {
     await writeOutcome(artifactsRoot, 0, completed(report));
 
     await expect(
-      publishArtifactBatch({ root, artifactsRoot, generatedAt }),
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [targetOf(report)]),
+      ),
     ).rejects.toThrow("Completed outcome is missing its candidate.");
   });
 
@@ -228,7 +239,9 @@ describe("artifact batch publication", () => {
     );
 
     await expect(
-      publishArtifactBatch({ root, artifactsRoot, generatedAt }),
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [targetOf(report)]),
+      ),
     ).rejects.toThrow("Failed outcome must not contain a candidate.");
   });
 
@@ -246,7 +259,9 @@ describe("artifact batch publication", () => {
     );
 
     await expect(
-      publishArtifactBatch({ root, artifactsRoot, generatedAt }),
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [targetOf(transitionReport)]),
+      ),
     ).rejects.toThrow(
       "Completed candidate does not match its transition target.",
     );
@@ -265,7 +280,50 @@ describe("artifact batch publication", () => {
     ]);
 
     await expect(
-      publishArtifactBatch({ root, artifactsRoot, generatedAt }),
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [targetOf(report)]),
+      ),
     ).rejects.toThrow("Duplicate scan outcome target in publication batch.");
+  });
+
+  test("rejects a batch missing an expected repository outcome", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const [present, missing] = await Promise.all([
+      reportFor(53, "6"),
+      reportFor(54, "7"),
+    ]);
+    await writeOutcome(artifactsRoot, 0, completed(present), present);
+
+    await expect(
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [
+          targetOf(present),
+          targetOf(missing),
+        ]),
+      ),
+    ).rejects.toThrow("Scan outcome set does not match the requested batch.");
+    await expect(readPublishedRepositoryIds(root)).rejects.toThrow();
+    await expect(readState(root)).resolves.toEqual(
+      initialOperationsState(initialAt),
+    );
+  });
+
+  test("rejects an outcome whose identity differs from the requested target", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const report = await reportFor(55, "8");
+    await writeOutcome(artifactsRoot, 0, completed(report), report);
+
+    await expect(
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [
+          {
+            ...targetOf(report),
+            repository: "owner/renamed-repo",
+            canonical_url: "https://github.com/owner/renamed-repo",
+          },
+        ]),
+      ),
+    ).rejects.toThrow("Scan outcome set does not match the requested batch.");
+    await expect(readPublishedRepositoryIds(root)).rejects.toThrow();
   });
 });

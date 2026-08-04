@@ -27,6 +27,7 @@ export interface PublishArtifactBatchInput {
   root: string;
   artifactsRoot: string;
   generatedAt: string;
+  expectedTargets: Target[];
 }
 
 export interface PublishArtifactBatchResult {
@@ -75,15 +76,60 @@ async function loadPairedOutcome(directory: string) {
   };
 }
 
-function reportMatchesTarget(report: ScanReportV5, target: Target) {
+function targetMatches(
+  candidate: Pick<
+    Target,
+    | "source_id"
+    | "provider"
+    | "repository_id"
+    | "repository"
+    | "canonical_url"
+    | "target_sha"
+  >,
+  target: Target,
+) {
   return (
-    report.source_id === target.source_id &&
-    report.provider === target.provider &&
-    report.repository_id === target.repository_id &&
-    report.repository === target.repository &&
-    report.canonical_url === target.canonical_url &&
-    report.target_sha === target.target_sha
+    candidate.source_id === target.source_id &&
+    candidate.provider === target.provider &&
+    candidate.repository_id === target.repository_id &&
+    candidate.repository === target.repository &&
+    candidate.canonical_url === target.canonical_url &&
+    candidate.target_sha === target.target_sha
   );
+}
+
+function targetKey(target: Target) {
+  return [target.provider, target.repository_id, target.target_sha].join(":");
+}
+
+function requireCompleteOutcomeSet(
+  outcomes: Awaited<ReturnType<typeof loadPairedOutcome>>[],
+  expectedTargets: Target[],
+) {
+  const expectedByKey = new Map<string, Target>();
+  for (const target of expectedTargets) {
+    const key = targetKey(target);
+    if (expectedByKey.has(key))
+      throw new Error("Duplicate target in requested publication batch.");
+    expectedByKey.set(key, target);
+  }
+
+  const outcomeKeys = new Set<string>();
+  for (const outcome of outcomes) {
+    const key = targetKey(outcome.transition.target);
+    if (outcomeKeys.has(key))
+      throw new Error("Duplicate scan outcome target in publication batch.");
+    outcomeKeys.add(key);
+    const expected = expectedByKey.get(key);
+    if (
+      expected === undefined ||
+      !targetMatches(outcome.transition.target, expected)
+    )
+      throw new Error("Scan outcome set does not match the requested batch.");
+  }
+
+  if (outcomeKeys.size !== expectedByKey.size)
+    throw new Error("Scan outcome set does not match the requested batch.");
 }
 
 export async function publishArtifactBatch(
@@ -93,24 +139,15 @@ export async function publishArtifactBatch(
     (await outcomeDirectories(input.artifactsRoot)).map(loadPairedOutcome),
   );
   if (outcomes.length === 0) throw new Error("No scan outcomes were supplied.");
+  requireCompleteOutcomeSet(outcomes, input.expectedTargets);
 
   let state = parseOperationsState(
     await readJsonFile(join(input.root, "operations", "state.json")),
   );
   const reports: ScanReportV5[] = [];
   const failures: FailedScanTransition[] = [];
-  const targetKeys = new Set<string>();
 
   for (const outcome of outcomes) {
-    const targetKey = [
-      outcome.transition.target.provider,
-      outcome.transition.target.repository_id,
-      outcome.transition.target.target_sha,
-    ].join(":");
-    if (targetKeys.has(targetKey))
-      throw new Error("Duplicate scan outcome target in publication batch.");
-    targetKeys.add(targetKey);
-
     if (outcome.transition.status === "failure") {
       if (outcome.candidate !== null)
         throw new Error("Failed outcome must not contain a candidate.");
@@ -127,7 +164,7 @@ export async function publishArtifactBatch(
     if (outcome.candidate === null)
       throw new Error("Completed outcome is missing its candidate.");
     const report = CandidateEnvelopeSchema.parse(outcome.candidate).report;
-    if (!reportMatchesTarget(report, outcome.transition.target))
+    if (!targetMatches(report, outcome.transition.target))
       throw new Error(
         "Completed candidate does not match its transition target.",
       );

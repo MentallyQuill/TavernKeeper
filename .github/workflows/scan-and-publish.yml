@@ -165,7 +165,7 @@ jobs:
           path: outcome.enc
           if-no-files-found: error
           retention-days: 1
-      - name: Stop pending repositories after a system failure
+      - name: Mark this repository failed after a system failure
         if: ${{ steps.transition.outputs.system_failure == 'true' }}
         run: exit 1
 
@@ -212,12 +212,16 @@ jobs:
           test "$position" -gt 0
       - name: Publish serialized batch
         id: publish
+        env:
+          TAVERNKEEPER_SCAN_REQUESTS: ${{ inputs.requests_json }}
         shell: bash
         run: |
           result="$(npm run --silent publish -- artifacts)"
           printf '%s\n' "$result"
-          echo "reports=$(jq -er '.reports | select(type == \"number\")' <<< "$result")" >> "$GITHUB_OUTPUT"
-          echo "system_failure=$(jq -er '.system_failure | select(type == \"boolean\")' <<< "$result")" >> "$GITHUB_OUTPUT"
+          reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"
+          system_failure="$(jq -er '.system_failure | select(type == "boolean")' <<< "$result")"
+          printf 'reports=%s\n' "$reports" >> "$GITHUB_OUTPUT"
+          printf 'system_failure=%s\n' "$system_failure" >> "$GITHUB_OUTPUT"
       - name: Notify staff only after retry exhaustion
         continue-on-error: true
         env:

@@ -438,16 +438,33 @@ function checkEncryptedHandoff(file, workflow) {
   const publish = (publishJob?.steps ?? []).find(
     (step) => step?.name === "Publish serialized batch",
   );
+  const publishRun = publish?.run ?? "";
   if (
     publish?.id !== "publish" ||
     publish?.shell !== "bash" ||
-    !publish?.run?.includes(".reports") ||
-    !publish?.run?.includes(".system_failure") ||
+    publish?.env?.TAVERNKEEPER_SCAN_REQUESTS !==
+      "${{ inputs.requests_json }}" ||
+    !publishRun.includes(
+      `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
+    ) ||
+    !publishRun.includes(
+      `system_failure="$(jq -er '.system_failure | select(type == "boolean")' <<< "$result")"`,
+    ) ||
+    !publishRun.includes(
+      `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
+    ) ||
+    !publishRun.includes(
+      `printf 'system_failure=%s\\n' "$system_failure" >> "$GITHUB_OUTPUT"`,
+    ) ||
+    /echo .*jq/iu.test(publishRun) ||
     publishJob?.outputs?.reports !== "${{ steps.publish.outputs.reports }}" ||
     publishJob?.outputs?.system_failure !==
       "${{ steps.publish.outputs.system_failure }}"
   )
-    fail(file, "publisher must expose typed mixed-batch routing outputs");
+    fail(
+      file,
+      "publisher must authenticate every decrypted outcome against the requested batch and expose typed routing outputs",
+    );
 
   if (
     workflow.jobs?.deploy?.if !==
