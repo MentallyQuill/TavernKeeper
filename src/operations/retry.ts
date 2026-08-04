@@ -6,6 +6,7 @@ import {
   type OperationsState,
   type RetryEntry,
 } from "./state.js";
+import { scheduledRetryAt } from "./retry-schedule.js";
 
 export interface FailureTransition {
   state: OperationsState;
@@ -18,12 +19,6 @@ function fingerprint(scope: "repository" | "system", code: string) {
   return createHash("sha256")
     .update(JSON.stringify([scope, code]))
     .digest("hex");
-}
-
-function addHours(value: string, hours: number) {
-  const milliseconds = Date.parse(value);
-  if (!Number.isFinite(milliseconds)) throw new Error("Retry time is invalid.");
-  return new Date(milliseconds + hours * 60 * 60 * 1_000).toISOString();
 }
 
 function replaceTargetRetry(
@@ -91,7 +86,14 @@ export function recordFailure(
     initial_failed_at: initialFailedAt,
     last_failed_at: input.at,
     attempt,
-    next_retry_at: terminal ? null : addHours(initialFailedAt, attempt),
+    next_retry_at: terminal
+      ? null
+      : scheduledRetryAt({
+          initialFailedAt,
+          attempt,
+          scope: input.scope,
+          code: input.code,
+        }),
     exhausted: terminal,
   };
   const circuitBreaker =
