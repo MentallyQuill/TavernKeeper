@@ -1,0 +1,205 @@
+{
+  "schema_version": 5,
+  "report_id": "6cc1be57a430ccef4bcd76432c9b6daec984a2c53f80eeabf1fc31775248fcb8",
+  "report_digest": "6cc1be57a430ccef4bcd76432c9b6daec984a2c53f80eeabf1fc31775248fcb8",
+  "report_version": 1,
+  "supersedes_report_id": null,
+  "scanner_version": "0.1.0",
+  "scanner_policy_version": "3",
+  "rule_catalog_version": "1",
+  "package_schema_version": 1,
+  "contextual_review_policy_version": "1",
+  "ecosystem_context_version": "sillytavern-community-v1",
+  "prompt_version": "contextual-review-v1",
+  "assessment_schema_version": "contextual-assessment-v1",
+  "source_id": "github-884053465",
+  "provider": "github",
+  "repository_id": 884053465,
+  "repository": "kaldigo/SillyTavern-Tracker",
+  "canonical_url": "https://github.com/kaldigo/SillyTavern-Tracker",
+  "target_sha": "65e0acb3cc9b53a97751132d567622d9b3ba2c2c",
+  "completed_at": "2026-08-04T03:07:51.380Z",
+  "assessment_method": "deterministic-evidence-contextual-review",
+  "contextual_reviewer": {
+    "provider": "nano-gpt.com",
+    "model": "deepseek/deepseek-v4-flash-0731:thinking"
+  },
+  "review_usage": {
+    "input_tokens": 2836,
+    "output_tokens": 1592,
+    "cache_read_tokens": 0,
+    "reasoning_tokens": 0
+  },
+  "history": {
+    "base_sha": null,
+    "commits": 20
+  },
+  "coverage": {
+    "inventory": {
+      "files": 25,
+      "bytes": 5942441,
+      "first_party_text_files": 24,
+      "first_party_text_bytes": 274120,
+      "excluded": {
+        "dependency_lockfiles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "vendored_dependencies": {
+          "files": 0,
+          "bytes": 0
+        },
+        "generated_bundles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "minified_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "binaries": {
+          "files": 1,
+          "bytes": 5668321
+        },
+        "archives": {
+          "files": 0,
+          "bytes": 0
+        },
+        "oversized_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "unsafe_entries": {
+          "files": 0,
+          "bytes": 0
+        }
+      }
+    },
+    "tools": [
+      {
+        "name": "inventory",
+        "version": "0.1.0",
+        "status": "completed"
+      },
+      {
+        "name": "tavernkeeper-static",
+        "version": "3",
+        "status": "completed"
+      },
+      {
+        "name": "gitleaks",
+        "version": "8.30.1",
+        "status": "completed"
+      },
+      {
+        "name": "opengrep",
+        "version": "1.26.0",
+        "status": "completed"
+      },
+      {
+        "name": "osv-scanner",
+        "version": "2.4.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "zizmor",
+        "version": "1.28.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "malcontent",
+        "version": "1.25.7",
+        "status": "completed"
+      }
+    ],
+    "evidence_validation": {
+      "status": "completed",
+      "validated_candidates": 1
+    }
+  },
+  "review_coverage": {
+    "required": 1,
+    "completed": 1
+  },
+  "candidates": [
+    {
+      "candidate_id": "8515cddfef0a8f7b3a08691ddd9fae36a154bac3ab173b56be25de6db7f87d69",
+      "evidence_id": "8515cddfef0a8f7b3a08691ddd9fae36a154bac3ab173b56be25de6db7f87d69",
+      "origin": "opengrep",
+      "scanner_version": "1.26.0",
+      "rule_id": "tavernkeeper.dynamic-execution.javascript-eval",
+      "category": "dynamic-execution",
+      "scanner_severity": "medium",
+      "scanner_confidence": "high",
+      "path": "src/settings/settings.js",
+      "line_start": 613,
+      "line_end": 613,
+      "evidence_sha": "65e0acb3cc9b53a97751132d567622d9b3ba2c2c",
+      "file_role": "production",
+      "title": "OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval",
+      "explanation": "OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.",
+      "remediation": "Review the matched code path and remove or constrain the flagged behavior when it is not required."
+    }
+  ],
+  "assessments": [
+    {
+      "candidate_id": "8515cddfef0a8f7b3a08691ddd9fae36a154bac3ab173b56be25de6db7f87d69",
+      "evidence_ids": [
+        "8515cddfef0a8f7b3a08691ddd9fae36a154bac3ab173b56be25de6db7f87d69"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "technical_explanation": "The code uses new Function to evaluate extensionSettings.mesTrackerJavascript, which is user-supplied JavaScript entered through the extension's settings UI. This is an intentional customization feature for defining tracker init, cleanup, and processing logic. The input originates from the local user's own settings, not from remote or untrusted data, and the execution is visible and directly tied to the stated purpose of the extension. No exfiltration, obfuscation, or hidden destination is present in the supplied evidence.",
+      "layman_explanation": "This extension lets the user paste their own JavaScript to customize how the tracker works, and it runs that code when the user types it in. That is a normal feature for this kind of customization tool, and there is no sign it sends data anywhere or hides what it does.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "src/settings/settings.js",
+          "line_start": 613,
+          "line_end": 613
+        }
+      ]
+    }
+  ],
+  "observations": [],
+  "counts": {
+    "candidates": 1,
+    "assessments": 1,
+    "observations": 0,
+    "items": 1,
+    "disposition": {
+      "expected_behavior": 1,
+      "minor_weakness": 0,
+      "material_vulnerability": 0,
+      "credible_malicious_behavior": 0
+    },
+    "impact": {
+      "none": 1,
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "exploitability": {
+      "unlikely": 1,
+      "plausible": 0,
+      "readily_exploitable": 0
+    },
+    "confidence": {
+      "low": 0,
+      "medium": 0,
+      "high": 1
+    },
+    "recommended_risk": {
+      "low": 1,
+      "material": 0,
+      "high": 0
+    }
+  },
+  "limitations": [
+    "This advisory review cannot prove the absence of unknown behavior."
+  ]
+}
