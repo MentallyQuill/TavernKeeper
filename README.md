@@ -40,6 +40,12 @@ retry state, immutable Technical Report V5 publication, and technical history.
 Input-free GitHub App wake-ups reduce latency in both directions; scheduled
 reconciliation repairs missed wake-ups.
 
+Every selected repository finishes independently inside its bounded batch.
+The serialized publisher keeps every complete Technical Report V5 candidate,
+publishes the valid subset atomically, and queues only unsuccessful targets for
+retry. A system-scoped failure still engages the circuit breaker for later
+batches; it does not discard complete reports from peer repositories.
+
 Only Tavernary staff can initiate a targeted scan, through Tavernary's
 exact-GitHub-URL Action. TavernKeeper accepts only the authorized wake App's
 repository-ID hint and resolves the repository again from Tavernary's public
