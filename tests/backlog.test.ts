@@ -4,7 +4,12 @@ import type {
   ReportIndexEntryV5,
   ReportIndexV5,
 } from "../src/contracts/reports-v5.js";
-import type { TargetManifestV2, TargetV2 } from "../src/contracts/targets.js";
+import type {
+  TargetManifestV2,
+  TargetManifestV3,
+  TargetV2,
+  TargetV3,
+} from "../src/contracts/targets.js";
 import {
   initialOperationsState,
   pauseSystem,
@@ -39,6 +44,37 @@ function target(
 function manifest(repositories: TargetV2[]): TargetManifestV2 {
   return {
     schema_version: 2,
+    generated_at: now,
+    repositories: [...repositories].sort(
+      (left, right) => left.repository_id - right.repository_id,
+    ),
+  };
+}
+
+function targetV3(
+  repositoryId: number,
+  options: { rank: number; firstCatalogedAt?: string },
+): TargetV3 {
+  return {
+    ...target(repositoryId, {
+      top30: options.rank <= 30,
+      ...(options.firstCatalogedAt === undefined
+        ? {}
+        : { firstCatalogedAt: options.firstCatalogedAt }),
+    }),
+    catalog_priority: {
+      ...target(repositoryId).catalog_priority,
+      first_cataloged_at:
+        options.firstCatalogedAt ?? "2026-07-01T00:00:00.000Z",
+      top_30: options.rank <= 30,
+      popularity_rank: options.rank,
+    },
+  };
+}
+
+function manifestV3(repositories: TargetV3[]): TargetManifestV3 {
+  return {
+    schema_version: 3,
     generated_at: now,
     repositories: [...repositories].sort(
       (left, right) => left.repository_id - right.repository_id,
@@ -155,7 +191,7 @@ describe("derived scan backlog", () => {
       ["new-submission", 46],
     ]);
     expect(plan.targets).toHaveLength(5);
-    expect(plan.remaining).toBe(2);
+    expect(plan.totalRemaining).toBe(2);
   });
 
   test("sorts new and old lanes by first cataloged time", () => {
@@ -184,8 +220,11 @@ describe("derived scan backlog", () => {
     });
     const retryState = recordFailure(runningState(), {
       target: identity(retryTarget),
-      code: "REPOSITORY_PARSE_FAILED",
-      scope: "repository",
+      failure: {
+        code: "REPOSITORY_PARSE_FAILED",
+        domain: "target",
+        component: "orchestrator",
+      },
       at: "2026-08-01T10:00:00.000Z",
     }).state;
 
@@ -204,8 +243,11 @@ describe("derived scan backlog", () => {
     const retryTarget = target(44);
     const state = recordFailure(runningState(), {
       target: identity(retryTarget),
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
+      failure: {
+        code: "MODEL_INVALID_RESPONSE",
+        domain: "target",
+        component: "contextual-model",
+      },
       at: "2026-08-01T11:00:00.000Z",
     }).state;
 
@@ -227,13 +269,16 @@ describe("derived scan backlog", () => {
     ).toMatchObject([{ reason: "retry", target: { repository_id: 44 } }]);
   });
 
-  test("pause and system breaker still block a due model reply retry", () => {
+  test("pause and shared hold still block unrelated retries", () => {
     const replyTarget = target(44);
     const recoveryTarget = target(45);
     const replyState = recordFailure(runningState(), {
       target: identity(replyTarget),
-      code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
+      failure: {
+        code: "MODEL_INVALID_RESPONSE",
+        domain: "target",
+        component: "contextual-model",
+      },
       at: "2026-08-01T10:00:00.000Z",
     }).state;
     const paused = pauseSystem(replyState, {
@@ -249,12 +294,15 @@ describe("derived scan backlog", () => {
         paused,
         "2026-08-01T10:05:00.000Z",
       ),
-    ).toMatchObject({ targets: [], remaining: 1, blocked: true });
+    ).toMatchObject({ targets: [], totalRemaining: 1, blocked: true });
 
     const withBreaker = recordFailure(replyState, {
       target: identity(recoveryTarget),
-      code: "MODEL_QUOTA",
-      scope: "system",
+      failure: {
+        code: "MODEL_QUOTA",
+        domain: "shared",
+        component: "contextual-model",
+      },
       at: "2026-08-01T09:00:00.000Z",
     }).state;
     const plan = planBatch(
@@ -267,7 +315,7 @@ describe("derived scan backlog", () => {
     expect(plan.targets).toMatchObject([
       { reason: "retry", target: { repository_id: 45 } },
     ]);
-    expect(plan.remaining).toBe(1);
+    expect(plan.totalRemaining).toBe(1);
   });
 
   test("age boosts a long-waiting old project without changing its lane", () => {
@@ -304,15 +352,18 @@ describe("derived scan backlog", () => {
         state,
         now,
       ),
-    ).toMatchObject({ targets: [], remaining: 3, blocked: true });
+    ).toMatchObject({ targets: [], totalRemaining: 3, blocked: true });
   });
 
-  test("a transient system breaker allows only its due recovery retry", () => {
+  test("a transient shared hold allows only its due recovery retry", () => {
     const recovery = target(2);
     const state = recordFailure(runningState(), {
       target: identity(recovery),
-      code: "MODEL_QUOTA",
-      scope: "system",
+      failure: {
+        code: "MODEL_QUOTA",
+        domain: "shared",
+        component: "contextual-model",
+      },
       at: "2026-08-01T10:00:00.000Z",
     }).state;
 
@@ -330,6 +381,112 @@ describe("derived scan backlog", () => {
         reason,
       ]),
     ).toEqual([[recovery.repository_id, "retry"]]);
+  });
+
+  test("probes a due shared hold after its repository advances SHA", () => {
+    const failedTarget = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(failedTarget),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+    const advancedTarget = {
+      ...failedTarget,
+      target_sha: "f".repeat(40),
+    };
+
+    const plan = planBatch(
+      manifestV3([advancedTarget]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan).toMatchObject({ blocked: false, sharedHolds: 1 });
+    expect(plan.targets).toEqual([
+      expect.objectContaining({
+        reason: "retry",
+        target: expect.objectContaining({
+          repository_id: 100,
+          target_sha: "f".repeat(40),
+        }),
+      }),
+    ]);
+  });
+
+  test("rebinds a due shared probe when its repository leaves the catalog", () => {
+    const removedTarget = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(removedTarget),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+
+    const plan = planBatch(
+      manifestV3([targetV3(200, { rank: 2 })]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan).toMatchObject({ blocked: false, sharedHolds: 1 });
+    expect(plan.targets).toEqual([
+      expect.objectContaining({
+        reason: "retry",
+        recoveryFingerprint: state.shared_holds[0]!.error_fingerprint,
+        target: expect.objectContaining({ repository_id: 200 }),
+      }),
+    ]);
+  });
+
+  test("rotates a rebound shared probe away from a target in local backoff", () => {
+    const removedTarget = targetV3(100, { rank: 1 });
+    const shared = recordFailure(runningState(), {
+      target: identity(removedTarget),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+    const firstSubstitute = targetV3(200, { rank: 2 });
+    const nextSubstitute = targetV3(300, { rank: 3 });
+    const manifestValue = manifestV3([firstSubstitute, nextSubstitute]);
+    const firstPlan = planBatch(manifestValue, emptyIndex, shared, now, "3");
+    expect(firstPlan.targets[0]?.target.repository_id).toBe(200);
+
+    const failedSubstitute = recordFailure(shared, {
+      target: identity(firstSubstitute),
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: now,
+    }).state;
+    const nextPlan = planBatch(
+      manifestValue,
+      emptyIndex,
+      failedSubstitute,
+      now,
+      "3",
+    );
+
+    expect(nextPlan.targets[0]).toMatchObject({
+      recoveryFingerprint: shared.shared_holds[0]!.error_fingerprint,
+      target: { repository_id: 300 },
+    });
   });
 
   test("keeps one queue position when an active repository advances SHA", () => {
@@ -367,5 +524,170 @@ describe("derived scan backlog", () => {
     expect(
       planBatch(manifest([covered]), index, runningState(), now).targets,
     ).toEqual([]);
+  });
+
+  test("orders V3 initial coverage by exact popularity rank", () => {
+    const plan = planBatch(
+      manifestV3([
+        targetV3(300, { rank: 3 }),
+        targetV3(100, { rank: 1 }),
+        targetV3(200, { rank: 2 }),
+      ]),
+      emptyIndex,
+      runningState(),
+      now,
+      "3",
+    );
+
+    expect(plan.targets.map(({ target: item }) => item.repository_id)).toEqual([
+      100, 200, 300,
+    ]);
+  });
+
+  test("does not reselect an exhausted exact SHA as new", () => {
+    const exhaustedTarget = targetV3(100, { rank: 1 });
+    let state = runningState();
+    for (const at of [
+      "2026-08-01T08:00:00.000Z",
+      "2026-08-01T08:05:00.000Z",
+      "2026-08-01T08:30:00.000Z",
+      "2026-08-01T10:00:00.000Z",
+    ])
+      state = recordFailure(state, {
+        target: identity(exhaustedTarget),
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at,
+      }).state;
+
+    const plan = planBatch(
+      manifestV3([exhaustedTarget]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+    expect(plan.targets).toEqual([]);
+    expect(plan).toMatchObject({ runnableRemaining: 0, totalRemaining: 1 });
+  });
+
+  test("prioritizes due target retries ahead of new ranked work", () => {
+    const retryTarget = targetV3(300, { rank: 3 });
+    const state = recordFailure(runningState(), {
+      target: identity(retryTarget),
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+    const plan = planBatch(
+      manifestV3([
+        targetV3(100, { rank: 1 }),
+        targetV3(200, { rank: 2 }),
+        retryTarget,
+      ]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan.targets.map(({ target: item }) => item.repository_id)).toEqual([
+      300, 100, 200,
+    ]);
+  });
+
+  test("reports a future wake for a non-due shared hold", () => {
+    const recovery = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(recovery),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:59:00.000Z",
+    }).state;
+    const plan = planBatch(
+      manifestV3([recovery, targetV3(200, { rank: 2 })]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+
+    expect(plan).toMatchObject({
+      targets: [],
+      runnableRemaining: 0,
+      delayedRetries: 1,
+      sharedHolds: 1,
+      nextWakeAt: "2026-08-01T12:04:00.000Z",
+      blocked: true,
+    });
+  });
+
+  test("admits at most two due shared probes, one per fingerprint", () => {
+    const failures = [
+      [100, "MODEL_PROVIDER"],
+      [200, "MODEL_QUOTA"],
+      [300, "SCANNER_UNAVAILABLE"],
+    ] as const;
+    let state = runningState();
+    for (const [repositoryId, code] of failures)
+      state = recordFailure(state, {
+        target: identity(targetV3(repositoryId, { rank: repositoryId / 100 })),
+        failure: {
+          code,
+          domain: "shared",
+          component:
+            code === "SCANNER_UNAVAILABLE"
+              ? "orchestrator"
+              : "contextual-model",
+        },
+        at: "2026-08-01T11:00:00.000Z",
+      }).state;
+
+    const plan = planBatch(
+      manifestV3([
+        targetV3(100, { rank: 1 }),
+        targetV3(200, { rank: 2 }),
+        targetV3(300, { rank: 3 }),
+      ]),
+      emptyIndex,
+      state,
+      now,
+      "3",
+    );
+    expect(plan.targets).toHaveLength(2);
+    expect(
+      new Set(plan.targets.map(({ target: item }) => item.repository_id)).size,
+    ).toBe(2);
+  });
+
+  test("does not count a delayed-only retry as runnable", () => {
+    const delayed = targetV3(100, { rank: 1 });
+    const state = recordFailure(runningState(), {
+      target: identity(delayed),
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-01T11:59:00.000Z",
+    }).state;
+    const plan = planBatch(manifestV3([delayed]), emptyIndex, state, now, "3");
+
+    expect(plan).toMatchObject({
+      targets: [],
+      totalRemaining: 1,
+      runnableRemaining: 0,
+      delayedRetries: 1,
+      nextWakeAt: "2026-08-01T12:04:00.000Z",
+    });
   });
 });

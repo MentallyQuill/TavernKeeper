@@ -41,6 +41,8 @@ export type ModelRequestErrorCode =
   | "MODEL_QUOTA"
   | "MODEL_PROVIDER"
   | "MODEL_INVALID_RESPONSE"
+  | "MODEL_IDENTITY_MISMATCH"
+  | "MODEL_RESPONSE_ORIGIN"
   | "MODEL_EVIDENCE_INVALID"
   | "MODEL_CONTEXT_INCOMPLETE";
 
@@ -451,7 +453,7 @@ export async function requestTextCompletion(
       responseOrigin = new URL(response.url).origin;
     } catch {
       throw new ModelRequestError(
-        "MODEL_INVALID_RESPONSE",
+        "MODEL_RESPONSE_ORIGIN",
         "system",
         "Configured model returned an invalid response origin.",
         "response_envelope",
@@ -459,7 +461,7 @@ export async function requestTextCompletion(
     }
     if (responseOrigin !== endpoint.origin)
       throw new ModelRequestError(
-        "MODEL_INVALID_RESPONSE",
+        "MODEL_RESPONSE_ORIGIN",
         "system",
         "Configured model returned a response from an unexpected origin.",
         "response_envelope",
@@ -499,7 +501,7 @@ export async function requestTextCompletion(
   const parsedId = CompletionIdSchema.safeParse(envelope.data.id);
   if (!parsedId.success)
     throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
+      "MODEL_IDENTITY_MISMATCH",
       "system",
       "Configured model returned an invalid completion identity.",
       "response_envelope",
@@ -508,7 +510,7 @@ export async function requestTextCompletion(
     );
   if (envelope.data.model !== undefined && envelope.data.model !== model)
     throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
+      "MODEL_IDENTITY_MISMATCH",
       "system",
       "Configured model returned an unexpected model identity.",
       "response_envelope",

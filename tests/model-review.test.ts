@@ -127,4 +127,53 @@ describe("OpenAI-compatible contextual-review transport", () => {
       }),
     ).rejects.toMatchObject({ code: "MODEL_PROVIDER", scope: "system" });
   });
+
+  test("separates response-origin and model-identity boundary failures", async () => {
+    const base = {
+      endpoint: "https://provider.example/v1/chat/completions",
+      apiKey: "test-key",
+      model: "configured/model",
+      maxOutputTokens: 100,
+      systemContent: "System",
+      userContent: "User",
+      resolveAddresses: async () => ["93.184.216.34"],
+    };
+    const responseBody = (model = "configured/model") =>
+      JSON.stringify({
+        id: "chatcmpl-boundary",
+        model,
+        choices: [
+          {
+            message: { content: '{"status":"complete"}' },
+            finish_reason: "stop",
+          },
+        ],
+        usage: { input_tokens: 1, output_tokens: 1 },
+      });
+
+    const wrongOrigin = new Response(responseBody(), { status: 200 });
+    Object.defineProperty(wrongOrigin, "url", {
+      value: "https://unexpected.example/v1/chat/completions",
+    });
+    await expect(
+      requestTextCompletion({
+        ...base,
+        fetchImpl: async () => wrongOrigin,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_RESPONSE_ORIGIN",
+      scope: "system",
+    });
+
+    await expect(
+      requestTextCompletion({
+        ...base,
+        fetchImpl: async () =>
+          new Response(responseBody("unexpected/model"), { status: 200 }),
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_IDENTITY_MISMATCH",
+      scope: "system",
+    });
+  });
 });

@@ -5,7 +5,11 @@ import { describe, expect, test } from "vitest";
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
 import { buildTargetedMatrix } from "../src/cli/targeted-scan.js";
-import { initialOperationsState } from "../src/operations/state.js";
+import {
+  initialOperationsState,
+  pauseSystem,
+} from "../src/operations/state.js";
+import { recordFailure } from "../src/operations/retry.js";
 
 const now = "2026-07-31T18:00:00.000Z";
 
@@ -106,7 +110,14 @@ describe("JSON-only orchestration CLIs", () => {
     });
 
     expect(matrix.include).toHaveLength(5);
-    expect(matrix.remaining).toBe(3);
+    expect(matrix).toMatchObject({
+      total_remaining: 3,
+      runnable_remaining: 3,
+      delayed_retries: 0,
+      shared_holds: 0,
+      next_wake_at: null,
+      blocked: false,
+    });
     expect(matrix.include[0]).toMatchObject({
       repository_id: 1,
       report_version: 1,
@@ -218,6 +229,20 @@ describe("JSON-only orchestration CLIs", () => {
 
   test("lets a staff-targeted request override an already recorded retry", () => {
     const targetValue = target(42);
+    const {
+      project_kinds: _projectKinds,
+      catalog_priority: _catalogPriority,
+      ...targetIdentity
+    } = targetValue;
+    const retryState = recordFailure(initialOperationsState(now), {
+      target: targetIdentity,
+      failure: {
+        code: "SCANNER_TIMEOUT",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: now,
+    }).state;
     const matrix = buildTargetedMatrix({
       manifest: {
         schema_version: 2,
@@ -225,25 +250,7 @@ describe("JSON-only orchestration CLIs", () => {
         repositories: [targetValue],
       },
       index: { schema_version: 5, generated_at: now, reports: [] },
-      state: {
-        ...initialOperationsState(now),
-        retries: [
-          {
-            source_id: targetValue.source_id,
-            repository_id: targetValue.repository_id,
-            repository: targetValue.repository,
-            target_sha: targetValue.target_sha,
-            error_fingerprint: "a".repeat(64),
-            error_code: "SCANNER_TIMEOUT",
-            scope: "system",
-            initial_failed_at: now,
-            last_failed_at: now,
-            attempt: 1,
-            next_retry_at: "2026-07-31T19:00:00.000Z",
-            exhausted: false,
-          },
-        ],
-      },
+      state: retryState,
       repositoryId: 42,
       scannerPolicyVersion: "2",
       requestCreatedAt: now,
@@ -259,7 +266,65 @@ describe("JSON-only orchestration CLIs", () => {
     ]);
   });
 
-  test("targeted scans reject IDs absent from the public V2 manifest", () => {
+  test("targeted wakes respect staff and security pauses", () => {
+    const targetValue = target(42);
+    for (const kind of ["staff", "system"] as const) {
+      const state = pauseSystem(initialOperationsState(now), {
+        kind,
+        reasonCode: kind === "staff" ? "STAFF_PAUSE" : "SECURITY_HOLD",
+        at: now,
+      });
+      expect(
+        buildTargetedMatrix({
+          manifest: {
+            schema_version: 2,
+            generated_at: now,
+            repositories: [targetValue],
+          },
+          index: { schema_version: 5, generated_at: now, reports: [] },
+          state,
+          repositoryId: 42,
+          scannerPolicyVersion: "2",
+          requestCreatedAt: now,
+        }),
+      ).toEqual({ include: [], coalesced: true });
+    }
+  });
+
+  test("targeted wakes cannot bypass shared-probe isolation", () => {
+    const targetValue = target(42);
+    const {
+      project_kinds: _projectKinds,
+      catalog_priority: _catalogPriority,
+      ...targetIdentity
+    } = targetValue;
+    const state = recordFailure(initialOperationsState(now), {
+      target: targetIdentity,
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: now,
+    }).state;
+
+    expect(
+      buildTargetedMatrix({
+        manifest: {
+          schema_version: 2,
+          generated_at: now,
+          repositories: [targetValue],
+        },
+        index: { schema_version: 5, generated_at: now, reports: [] },
+        state,
+        repositoryId: 42,
+        scannerPolicyVersion: "2",
+        requestCreatedAt: "2026-07-31T18:05:00.000Z",
+      }),
+    ).toEqual({ include: [], coalesced: true });
+  });
+
+  test("targeted scans reject IDs absent from the public target manifest", () => {
     expect(() =>
       buildTargetedMatrix({
         manifest: { schema_version: 2, generated_at: now, repositories: [] },
@@ -269,7 +334,7 @@ describe("JSON-only orchestration CLIs", () => {
         scannerPolicyVersion: "2",
         requestCreatedAt: now,
       }),
-    ).toThrow(/not in Tavernary's V2 manifest/iu);
+    ).toThrow(/not in Tavernary's current target manifest/iu);
   });
 
   test("waits without selecting work from a frozen V1 target manifest", () => {
@@ -281,7 +346,7 @@ describe("JSON-only orchestration CLIs", () => {
         now,
         scannerPolicyVersion: "2",
       }),
-    ).toMatchObject({ include: [], remaining: 0 });
+    ).toMatchObject({ include: [], total_remaining: 0 });
   });
 
   test("staff scan requests accept only repository identity", () => {

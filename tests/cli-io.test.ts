@@ -12,7 +12,7 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({
       code: "MALFORMED_SCANNER_OUTPUT",
-      scope: "system",
+      domain: "target",
       component: "opengrep",
     });
   });
@@ -24,7 +24,11 @@ describe("safe CLI error diagnostics", () => {
         scope: "unexpected",
         component: "secret-bearing target output",
       }),
-    ).toEqual({ code: "CLI_FAILED", scope: "system" });
+    ).toEqual({
+      code: "CLI_FAILED",
+      domain: "security",
+      component: "orchestrator",
+    });
   });
 
   test("does not preserve provider-shaped diagnostic fields", () => {
@@ -35,7 +39,11 @@ describe("safe CLI error diagnostics", () => {
         diagnostic: "provider output that must never be logged",
         httpStatus: 413,
       }),
-    ).toEqual({ code: "SCANNER_FAILED", scope: "system" });
+    ).toEqual({
+      code: "SCANNER_FAILED",
+      domain: "target",
+      component: "orchestrator",
+    });
   });
 
   test("preserves only an allowlisted model-response stage", () => {
@@ -47,7 +55,8 @@ describe("safe CLI error diagnostics", () => {
       }),
     ).toEqual({
       code: "MODEL_INVALID_RESPONSE",
-      scope: "repository",
+      domain: "target",
+      component: "contextual-model",
       diagnostic: "assessment_developer_action",
     });
 
@@ -57,6 +66,10 @@ describe("safe CLI error diagnostics", () => {
         scope: "repository",
         diagnostic: "secret-bearing provider output",
       }),
-    ).toEqual({ code: "MODEL_INVALID_RESPONSE", scope: "repository" });
+    ).toEqual({
+      code: "MODEL_INVALID_RESPONSE",
+      domain: "target",
+      component: "contextual-model",
+    });
   });
 });

@@ -46,14 +46,22 @@ async function main() {
         })
       : operation.operation === "resume"
         ? resumeSystem(state, now)
-        : parseOperationsState({
-            ...state,
-            updated_at: now,
-            circuit_breaker: null,
-            retries: state.retries.filter(
+        : (() => {
+            const targetRetries = state.target_retries.filter(
               ({ repository_id }) => repository_id !== operation.repository_id,
-            ),
-          });
+            );
+            const retainedFingerprints = new Set(
+              targetRetries.map(({ error_fingerprint }) => error_fingerprint),
+            );
+            return parseOperationsState({
+              ...state,
+              updated_at: now,
+              target_retries: targetRetries,
+              shared_holds: state.shared_holds.filter(({ error_fingerprint }) =>
+                retainedFingerprints.has(error_fingerprint),
+              ),
+            });
+          })();
   await writeFile(path, serializeOperationsState(next));
   return { status: operation.operation };
 }

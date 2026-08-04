@@ -48,19 +48,23 @@ export const TargetManifestSchema = z
 
 const ProjectKindSchema = z.enum(["extension", "frontend", "preset"]);
 
+const ProjectKindsSchema = z
+  .array(ProjectKindSchema)
+  .min(1)
+  .refine(
+    (kinds) =>
+      kinds.every((kind, index) => index === 0 || kinds[index - 1]! < kind),
+    "Project kinds must be unique and sorted.",
+  );
+
+const CatalogPriorityV2Schema = z.strictObject({
+  top_30: z.boolean(),
+  first_cataloged_at: z.iso.datetime(),
+});
+
 export const TargetV2Schema = TargetIdentitySchema.extend({
-  project_kinds: z
-    .array(ProjectKindSchema)
-    .min(1)
-    .refine(
-      (kinds) =>
-        kinds.every((kind, index) => index === 0 || kinds[index - 1]! < kind),
-      "Project kinds must be unique and sorted.",
-    ),
-  catalog_priority: z.strictObject({
-    top_30: z.boolean(),
-    first_cataloged_at: z.iso.datetime(),
-  }),
+  project_kinds: ProjectKindsSchema,
+  catalog_priority: CatalogPriorityV2Schema,
 });
 
 export const TargetManifestV2Schema = z
@@ -83,11 +87,61 @@ export const TargetManifestV2Schema = z
     },
   );
 
+export const TargetV3Schema = TargetIdentitySchema.extend({
+  project_kinds: ProjectKindsSchema,
+  catalog_priority: CatalogPriorityV2Schema.extend({
+    popularity_rank: z.number().int().positive(),
+  }),
+});
+
+export const TargetManifestV3Schema = z
+  .strictObject({
+    schema_version: z.literal(3),
+    generated_at: z.iso.datetime(),
+    repositories: z.array(TargetV3Schema),
+  })
+  .superRefine((manifest, context) => {
+    if (
+      !manifest.repositories.every(
+        (target, index) =>
+          index === 0 ||
+          manifest.repositories[index - 1]!.repository_id <
+            target.repository_id,
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["repositories"],
+        message: "Repository IDs must be unique and strictly increasing.",
+      });
+    const ranks = manifest.repositories.map(
+      ({ catalog_priority }) => catalog_priority.popularity_rank,
+    );
+    if (new Set(ranks).size !== ranks.length)
+      context.addIssue({
+        code: "custom",
+        path: ["repositories"],
+        message: "Popularity ranks must be unique.",
+      });
+    manifest.repositories.forEach((target, index) => {
+      if (
+        target.catalog_priority.top_30 !==
+        target.catalog_priority.popularity_rank <= 30
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["repositories", index, "catalog_priority"],
+          message: "Top-30 metadata must agree with the popularity rank.",
+        });
+    });
+  });
+
 export const TargetManifestV1Schema = TargetManifestSchema;
 
 const TargetManifestInputSchema = z.union([
   TargetManifestV1Schema,
   TargetManifestV2Schema,
+  TargetManifestV3Schema,
 ]);
 
 export function parseTargetManifest(input: unknown) {
@@ -97,8 +151,10 @@ export function parseTargetManifest(input: unknown) {
 export function requireTargetManifestV2(
   manifest: z.infer<typeof TargetManifestInputSchema>,
 ) {
-  if (manifest.schema_version !== 2) {
-    throw new Error("TavernKeeper target manifest version 2 is not published.");
+  if (manifest.schema_version !== 2 && manifest.schema_version !== 3) {
+    throw new Error(
+      "TavernKeeper target manifest version 2 or 3 is not published.",
+    );
   }
   return manifest;
 }
@@ -108,3 +164,7 @@ export type TargetManifest = z.infer<typeof TargetManifestSchema>;
 export type TargetManifestV1 = z.infer<typeof TargetManifestV1Schema>;
 export type TargetV2 = z.infer<typeof TargetV2Schema>;
 export type TargetManifestV2 = z.infer<typeof TargetManifestV2Schema>;
+export type TargetV3 = z.infer<typeof TargetV3Schema>;
+export type TargetManifestV3 = z.infer<typeof TargetManifestV3Schema>;
+export type CurrentTarget = TargetV2 | TargetV3;
+export type CurrentTargetManifest = TargetManifestV2 | TargetManifestV3;

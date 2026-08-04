@@ -16,6 +16,7 @@ import {
   parseTargetManifest,
   requireTargetManifestV2,
   TargetManifestV2Schema,
+  TargetManifestV3Schema,
 } from "../src/contracts/targets.js";
 
 async function fixture(name: string) {
@@ -41,6 +42,85 @@ describe("public TavernKeeper contracts", () => {
       ScanReportV5Schema.safeParse({
         ...report,
         review_coverage: { required: 1, completed: 0 },
+      }).success,
+    ).toBe(false);
+  });
+
+  test("accepts only a complete strict V3 popularity ranking", async () => {
+    const current = await fixture("targets.v3.valid.json");
+    expect(TargetManifestV3Schema.parse(current)).toEqual(current);
+    expect(parseTargetManifest(current).schema_version).toBe(3);
+    expect(requireTargetManifestV2(parseTargetManifest(current))).toEqual(
+      current,
+    );
+
+    const repositories = current.repositories as Array<Record<string, any>>;
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: repositories.map((target, index) => ({
+          ...target,
+          catalog_priority: {
+            ...target.catalog_priority,
+            popularity_rank: index,
+          },
+        })),
+      }).success,
+    ).toBe(false);
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: repositories.map((target) => ({
+          ...target,
+          catalog_priority: {
+            ...target.catalog_priority,
+            popularity_rank: 1,
+          },
+        })),
+      }).success,
+    ).toBe(false);
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: repositories.map((target, index) => ({
+          ...target,
+          catalog_priority: {
+            ...target.catalog_priority,
+            popularity_rank: index === 0 ? 1 : 3,
+          },
+        })),
+      }).success,
+    ).toBe(true);
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: repositories.map((target, index) => ({
+          ...target,
+          catalog_priority: {
+            ...target.catalog_priority,
+            top_30: index === 0 ? false : target.catalog_priority.top_30,
+          },
+        })),
+      }).success,
+    ).toBe(false);
+    const { popularity_rank: _rank, ...missingRank } =
+      repositories[0]!.catalog_priority;
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        repositories: [
+          {
+            ...repositories[0],
+            catalog_priority: missingRank,
+          },
+          repositories[1],
+        ],
+      }).success,
+    ).toBe(false);
+    expect(
+      TargetManifestV3Schema.safeParse({
+        ...current,
+        unexpected: true,
       }).success,
     ).toBe(false);
   });
@@ -87,6 +167,7 @@ describe("public TavernKeeper contracts", () => {
   test("generated JSON Schemas validate the shared current fixtures", async () => {
     const fixtures = new Map([
       ["tavernary-targets.v2.schema.json", "targets.v2.valid.json"],
+      ["tavernary-targets.v3.schema.json", "targets.v3.valid.json"],
       ["scan-report.v5.schema.json", "report.v5.valid.json"],
       ["report-index.v5.schema.json", "index.v5.valid.json"],
     ]);

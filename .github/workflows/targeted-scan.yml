@@ -43,7 +43,7 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Resolve repository ID from the public Tavernary V2 manifest
+      - name: Resolve repository ID from the public Tavernary target manifest
         id: request
         env:
           GH_TOKEN: ${{ github.token }}
@@ -61,6 +61,6 @@ jobs:
     uses: ./.github/workflows/scan-and-publish.yml
     with:
       requests_json: ${{ needs.resolve.outputs.requests_json }}
-      remaining: "0"
-      continue_backlog: false
+      total_remaining: "0"
+      runnable_remaining: "0"
     secrets: inherit

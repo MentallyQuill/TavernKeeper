@@ -26,7 +26,12 @@ jobs:
       contents: read
     outputs:
       requests_json: ${{ steps.plan.outputs.requests_json }}
-      remaining: ${{ steps.plan.outputs.remaining }}
+      total_remaining: ${{ steps.plan.outputs.total_remaining }}
+      runnable_remaining: ${{ steps.plan.outputs.runnable_remaining }}
+      delayed_retries: ${{ steps.plan.outputs.delayed_retries }}
+      shared_holds: ${{ steps.plan.outputs.shared_holds }}
+      next_wake_at: ${{ steps.plan.outputs.next_wake_at }}
+      blocked: ${{ steps.plan.outputs.blocked }}
       deploy_required: ${{ steps.plan.outputs.deploy_required }}
       source_sha: ${{ steps.plan.outputs.source_sha }}
     steps:
@@ -58,13 +63,32 @@ jobs:
           if [[ "$actual" != "$expected" ]]; then
             echo "deploy_required=true" >> "$GITHUB_OUTPUT"
             echo 'requests_json=[]' >> "$GITHUB_OUTPUT"
-            echo 'remaining=0' >> "$GITHUB_OUTPUT"
+            echo 'total_remaining=0' >> "$GITHUB_OUTPUT"
+            echo 'runnable_remaining=0' >> "$GITHUB_OUTPUT"
+            echo 'delayed_retries=0' >> "$GITHUB_OUTPUT"
+            echo 'shared_holds=0' >> "$GITHUB_OUTPUT"
+            echo 'next_wake_at=' >> "$GITHUB_OUTPUT"
+            echo 'blocked=false' >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "deploy_required=false" >> "$GITHUB_OUTPUT"
           planned="$(npm run --silent reconcile)"
           echo "requests_json=$(jq -c '.include' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "remaining=$(jq -r '.remaining' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "total_remaining=$(jq -er '.total_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "runnable_remaining=$(jq -er '.runnable_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "delayed_retries=$(jq -er '.delayed_retries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "shared_holds=$(jq -er '.shared_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "next_wake_at=$(jq -r '.next_wake_at // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "blocked=$(jq -er '.blocked | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          {
+            echo "### TavernKeeper queue"
+            echo
+            echo "- Total remaining after this batch: $(jq -r '.total_remaining' <<< "$planned")"
+            echo "- Runnable remaining after this batch: $(jq -r '.runnable_remaining' <<< "$planned")"
+            echo "- Delayed retries: $(jq -r '.delayed_retries' <<< "$planned")"
+            echo "- Shared holds: $(jq -r '.shared_holds' <<< "$planned")"
+            echo "- Next automatic wake: $(jq -r '.next_wake_at // "none"' <<< "$planned")"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   recover-pages:
     needs: plan
@@ -81,8 +105,8 @@ jobs:
     uses: ./.github/workflows/scan-and-publish.yml
     with:
       requests_json: ${{ needs.plan.outputs.requests_json }}
-      remaining: ${{ needs.plan.outputs.remaining }}
-      continue_backlog: true
+      total_remaining: ${{ needs.plan.outputs.total_remaining }}
+      runnable_remaining: ${{ needs.plan.outputs.runnable_remaining }}
     secrets: inherit
 
   resume-after-recovery:

@@ -9,6 +9,7 @@ import type { Target } from "../src/contracts/targets.js";
 import { initialOperationsState } from "../src/operations/state.js";
 import { publishArtifactBatch } from "../src/publish/artifact-batch.js";
 import type { ScanTransition } from "../src/cli/transition.js";
+import type { FailureDescriptor } from "../src/operations/failure.js";
 import { fixtureReportV5 } from "./helpers/v5-report.js";
 
 const roots: string[] = [];
@@ -59,24 +60,19 @@ function targetOf(report: ScanReportV5): Target {
 
 function completed(report: ScanReportV5): ScanTransition {
   return {
-    schema_version: 1,
+    schema_version: 2,
     status: "completed",
     target: targetOf(report),
     at: generatedAt,
   };
 }
 
-function failed(
-  target: Target,
-  scope: "repository" | "system",
-  code: string,
-): ScanTransition {
+function failed(target: Target, failure: FailureDescriptor): ScanTransition {
   return {
-    schema_version: 1,
+    schema_version: 2,
     status: "failure",
     target,
-    code,
-    scope,
+    failure,
     at: generatedAt,
   };
 }
@@ -118,13 +114,15 @@ async function readPublishedRepositoryIds(root: string) {
 function publicationInput(
   root: string,
   artifactsRoot: string,
-  expectedTargets: Target[],
+  expectedTargets: Array<
+    Target & { recovery_fingerprint?: string | undefined }
+  >,
 ) {
   return { root, artifactsRoot, generatedAt, expectedTargets };
 }
 
 describe("artifact batch publication", () => {
-  test("publishes completed reports while recording a system failure", async () => {
+  test("publishes completed reports and continues after a target failure", async () => {
     const { root, artifactsRoot } = await batchRoot();
     const [first, second, failedReport] = await Promise.all([
       reportFor(42, "a"),
@@ -137,7 +135,11 @@ describe("artifact batch publication", () => {
       writeOutcome(
         artifactsRoot,
         2,
-        failed(targetOf(failedReport), "system", "SCANNER_FAILED"),
+        failed(targetOf(failedReport), {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        }),
       ),
     ]);
 
@@ -152,14 +154,16 @@ describe("artifact batch publication", () => {
     expect(result).toEqual({
       status: "partial",
       reports: 2,
-      has_failures: true,
-      system_failure: true,
+      target_failures: 1,
+      shared_holds: 0,
+      security_holds: 0,
+      continuation_blocked: false,
       terminal_failures: 0,
     });
     await expect(readPublishedRepositoryIds(root)).resolves.toEqual([42, 43]);
     await expect(readState(root)).resolves.toMatchObject({
-      circuit_breaker: { terminal: false },
-      retries: [expect.objectContaining({ repository_id: 44 })],
+      shared_holds: [],
+      target_retries: [expect.objectContaining({ repository_id: 44 })],
     });
   });
 
@@ -169,7 +173,11 @@ describe("artifact batch publication", () => {
     await writeOutcome(
       artifactsRoot,
       0,
-      failed(targetOf(report), "system", "MODEL_PROVIDER"),
+      failed(targetOf(report), {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      }),
     );
 
     const result = await publishArtifactBatch(
@@ -179,8 +187,10 @@ describe("artifact batch publication", () => {
     expect(result).toMatchObject({
       status: "deferred",
       reports: 0,
-      has_failures: true,
-      system_failure: true,
+      target_failures: 0,
+      shared_holds: 1,
+      security_holds: 0,
+      continuation_blocked: true,
     });
     await expect(readPublishedRepositoryIds(root)).resolves.toEqual([]);
   });
@@ -196,7 +206,11 @@ describe("artifact batch publication", () => {
       writeOutcome(
         artifactsRoot,
         1,
-        failed(targetOf(failedReport), "repository", "MODEL_INVALID_RESPONSE"),
+        failed(targetOf(failedReport), {
+          code: "MODEL_INVALID_RESPONSE",
+          domain: "target",
+          component: "contextual-model",
+        }),
       ),
     ]);
 
@@ -210,10 +224,12 @@ describe("artifact batch publication", () => {
     expect(result).toMatchObject({
       status: "partial",
       reports: 1,
-      has_failures: true,
-      system_failure: false,
+      target_failures: 1,
+      shared_holds: 0,
+      security_holds: 0,
+      continuation_blocked: false,
     });
-    expect((await readState(root)).circuit_breaker).toBeNull();
+    expect((await readState(root)).shared_holds).toEqual([]);
   });
 
   test("rejects a completed transition without its candidate", async () => {
@@ -234,7 +250,11 @@ describe("artifact batch publication", () => {
     await writeOutcome(
       artifactsRoot,
       0,
-      failed(targetOf(report), "system", "SCANNER_FAILED"),
+      failed(targetOf(report), {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      }),
       report,
     );
 
@@ -275,7 +295,11 @@ describe("artifact batch publication", () => {
       writeOutcome(
         artifactsRoot,
         1,
-        failed(targetOf(report), "system", "SCANNER_FAILED"),
+        failed(targetOf(report), {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        }),
       ),
     ]);
 
@@ -306,6 +330,99 @@ describe("artifact batch publication", () => {
     await expect(readState(root)).resolves.toEqual(
       initialOperationsState(initialAt),
     );
+  });
+
+  test("security failures persist a pause and block continuation", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const report = await reportFor(56, "9");
+    await writeOutcome(
+      artifactsRoot,
+      0,
+      failed(targetOf(report), {
+        code: "MODEL_AUTHENTICATION",
+        domain: "security",
+        component: "contextual-model",
+      }),
+    );
+
+    const result = await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [targetOf(report)]),
+    );
+
+    expect(result).toMatchObject({
+      security_holds: 1,
+      continuation_blocked: true,
+    });
+    await expect(readState(root)).resolves.toMatchObject({
+      pause: { kind: "system", reason_code: "SECURITY_HOLD" },
+    });
+  });
+
+  test("a successful shared recovery probe clears its hold", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const report = await reportFor(57, "a");
+    await writeOutcome(
+      artifactsRoot,
+      0,
+      failed(targetOf(report), {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      }),
+    );
+    await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [targetOf(report)]),
+    );
+
+    const recoveredArtifacts = join(root, "recovered-artifacts");
+    await mkdir(recoveredArtifacts, { recursive: true });
+    await writeOutcome(recoveredArtifacts, 0, completed(report), report);
+    const recovered = await publishArtifactBatch(
+      publicationInput(root, recoveredArtifacts, [targetOf(report)]),
+    );
+
+    expect(recovered).toMatchObject({
+      status: "published",
+      reports: 1,
+      shared_holds: 0,
+      continuation_blocked: false,
+    });
+    await expect(readState(root)).resolves.toMatchObject({ shared_holds: [] });
+    await expect(readPublishedRepositoryIds(root)).resolves.toEqual([57]);
+  });
+
+  test("a rebound recovery probe clears the intended stale hold", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const removed = await reportFor(58, "b");
+    await writeOutcome(
+      artifactsRoot,
+      0,
+      failed(targetOf(removed), {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      }),
+    );
+    await publishArtifactBatch(
+      publicationInput(root, artifactsRoot, [targetOf(removed)]),
+    );
+    const held = await readState(root);
+    const recoveryFingerprint = held.shared_holds[0]!.error_fingerprint;
+
+    const rebound = await reportFor(59, "c");
+    const recoveredArtifacts = join(root, "rebound-artifacts");
+    await mkdir(recoveredArtifacts, { recursive: true });
+    await writeOutcome(recoveredArtifacts, 0, completed(rebound), rebound);
+    await publishArtifactBatch(
+      publicationInput(root, recoveredArtifacts, [
+        {
+          ...targetOf(rebound),
+          recovery_fingerprint: recoveryFingerprint,
+        },
+      ]),
+    );
+
+    await expect(readState(root)).resolves.toMatchObject({ shared_holds: [] });
   });
 
   test("rejects an outcome whose identity differs from the requested target", async () => {
