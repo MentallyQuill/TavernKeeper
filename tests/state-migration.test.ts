@@ -127,4 +127,34 @@ describe("explicit operations-state migration", () => {
       ),
     ).toThrow("already schema version 2");
   });
+
+  test.each(["SCAN_PHASE_FAILED", "CLI_FAILED"])(
+    "keeps ambiguous legacy %s failures target-local",
+    (code) => {
+      const migrated = migrateOperationsState(
+        {
+          schema_version: 1,
+          updated_at: "2026-08-01T01:00:00.000Z",
+          coverage_started_at: null,
+          pause: null,
+          circuit_breaker: null,
+          retries: [legacyRetry(45, { code, scope: "system" })],
+          active_scans: [],
+          policy_campaigns: [],
+        },
+        at,
+      );
+
+      expect(migrated.summary).toEqual({
+        target: 1,
+        shared: 0,
+        security: 0,
+      });
+      expect(migrated.state.pause).toBeNull();
+      expect(migrated.state.target_retries[0]).toMatchObject({
+        failure: { code, domain: "target", component: "orchestrator" },
+        exhausted: false,
+      });
+    },
+  );
 });

@@ -54,7 +54,15 @@ export interface StateMigrationResult {
   summary: { target: number; shared: number; security: number };
 }
 
-function legacyFailure(code: string, scope: "repository" | "system") {
+function legacyFailure(
+  code: string,
+  scope: "repository" | "system",
+): FailureDescriptor {
+  if (
+    scope === "system" &&
+    (code === "SCAN_PHASE_FAILED" || code === "CLI_FAILED")
+  )
+    return { code, domain: "target", component: "orchestrator" };
   return classifyFailure({ code, scope });
 }
 
