@@ -42,8 +42,15 @@ describe("Pages site allowlist", () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-site-"));
     roots.push(root);
     await Promise.all(
-      ["reports", "schemas", "docs/rules", "src", "config", "operations"].map(
-        (path) => mkdir(join(root, ...path.split("/")), { recursive: true }),
+      [
+        "reports",
+        "schemas",
+        "docs/rules",
+        "src/site/assets",
+        "config",
+        "operations",
+      ].map((path) =>
+        mkdir(join(root, ...path.split("/")), { recursive: true }),
       ),
     );
     const report = await fixtureReportV5();
@@ -74,6 +81,10 @@ describe("Pages site allowlist", () => {
     await writeFile(join(historyDirectory, "index.html"), "old history html\n");
     await writeFile(join(root, "schemas", "report.json"), "{}\n");
     await writeFile(join(root, "docs", "rules", "rule.md"), "# Rule\n");
+    await writeFile(
+      join(root, "src", "site", "assets", "favicon.svg"),
+      '<svg viewBox="0 0 24 24" />\n',
+    );
     await writeFile(join(root, "src", "secret.ts"), "scanner source\n");
     await writeFile(join(root, "config", "policy.json"), "private config\n");
     await writeFile(join(root, "operations", "state.json"), "private state\n");
@@ -82,6 +93,7 @@ describe("Pages site allowlist", () => {
     const result = await buildSite({ root, output });
 
     expect(result.files).toContain("assets/report-search.js");
+    expect(result.files).toContain("assets/favicon.svg");
     expect(result.files).toContain(`${reportPath(report)}/index.html`);
     expect(result.files).toContain(`${historyPath(report)}/index.html`);
 

@@ -2,6 +2,7 @@ import type { ScanReportV5 } from "../contracts/reports-v5.js";
 import {
   assessmentSummary,
   escapeHtml,
+  FAVICON_LINKS,
   formatPublicDate,
   highestRisk,
   renderSiteHeader,
@@ -230,6 +231,7 @@ export function renderReportV5Html(input: unknown) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Advisory TavernKeeper scan report for ${escapeHtml(report.repository)} at commit ${escapeHtml(shortSha(report.target_sha))}.">
   <meta http-equiv="Content-Security-Policy" content="${escapeHtml(SCRIPT_FREE_CSP)}">
+  ${FAVICON_LINKS}
   <title>TavernKeeper scan report &middot; ${escapeHtml(report.repository)}</title>
   <style>${SITE_STYLES}${REPORT_STYLES}</style>
 </head>

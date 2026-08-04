@@ -7,6 +7,16 @@ type RecommendedRiskCounts = ContextualCountsV5["recommended_risk"];
 export const SITE_ROOT = "https://mentallyquill.github.io/TavernKeeper/";
 export const TAVERNARY_URL = "https://tavernary.org/";
 
+export const FAVICON_LINKS = [
+  `<link rel="icon" href="${SITE_ROOT}assets/favicon.svg" type="image/svg+xml">`,
+  `<link rel="icon" href="${SITE_ROOT}assets/favicon.ico" sizes="any">`,
+  `<link rel="icon" href="${SITE_ROOT}assets/favicon-32.png" type="image/png" sizes="32x32">`,
+  `<link rel="icon" href="${SITE_ROOT}assets/favicon-16.png" type="image/png" sizes="16x16">`,
+  `<link rel="apple-touch-icon" href="${SITE_ROOT}assets/apple-touch-icon.png" sizes="180x180">`,
+  `<link rel="icon" href="${SITE_ROOT}assets/favicon-192.png" type="image/png" sizes="192x192">`,
+  `<link rel="icon" href="${SITE_ROOT}assets/favicon-512.png" type="image/png" sizes="512x512">`,
+].join("\n  ");
+
 export const SCRIPT_FREE_CSP = [
   "default-src 'none'",
   "style-src 'unsafe-inline'",

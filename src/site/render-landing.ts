@@ -7,6 +7,7 @@ import {
   escapeHtml,
   formatPublicDate,
   highestRisk,
+  FAVICON_LINKS,
   renderSiteHeader,
   shortSha,
   SITE_STYLES,
@@ -131,6 +132,7 @@ export function renderLandingHtml(index: ReportIndexV5) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Search advisory TavernKeeper security reports for Tavernary projects and understand how each exact-commit review works.">
   <meta http-equiv="Content-Security-Policy" content="${escapeHtml(LANDING_CSP)}">
+  ${FAVICON_LINKS}
   <title>TavernKeeper · Advisory reports for Tavernary</title>
   <style>${SITE_STYLES}${LANDING_STYLES}</style>
   <script src="assets/report-search.js" defer></script>
