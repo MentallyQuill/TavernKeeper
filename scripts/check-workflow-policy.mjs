@@ -392,9 +392,11 @@ function checkEncryptedHandoff(file, workflow) {
   if (
     bootstrap?.name !== "Initialize encrypted bootstrap failure" ||
     bootstrap?.env?.TAVERNKEEPER_ARTIFACT_KEY !== artifactSecret ||
+    bootstrap?.env?.TAVERNKEEPER_BOOTSTRAP_OUTCOME !==
+      "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc" ||
     !bootstrap?.run?.includes("SCAN_BOOTSTRAP_FAILED") ||
     !bootstrap?.run?.includes("aes-256-gcm") ||
-    !bootstrap?.run?.includes('"outcome.enc"')
+    !bootstrap?.run?.includes("TAVERNKEEPER_BOOTSTRAP_OUTCOME")
   )
     fail(file, "scan must initialize an encrypted failure before setup");
   const uploads = steps.filter(
@@ -406,7 +408,8 @@ function checkEncryptedHandoff(file, workflow) {
     uploads.length !== 1 ||
     uploads[0]?.uses !== uploadArtifactAction ||
     uploads[0]?.if !== "always()" ||
-    uploads[0]?.with?.path !== "outcome.enc" ||
+    uploads[0]?.with?.path !==
+      "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc" ||
     uploads[0]?.with?.["retention-days"] !== 1
   )
     fail(
@@ -426,13 +429,37 @@ function checkEncryptedHandoff(file, workflow) {
   if (
     encrypt?.if !== "always()" ||
     !encrypt?.run?.includes("outcome-actual.enc") ||
-    !encrypt?.run?.includes("mv outcome-actual.enc outcome.enc")
+    !encrypt?.run?.includes(
+      'mv outcome-actual.enc "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc"',
+    )
   )
     fail(file, "scan must atomically replace the bootstrap failure outcome");
   if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2)
     fail(file, "scan matrix must retain max-parallel: 2");
   if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== false)
     fail(file, "scan matrix must finish every selected repository");
+  const dependencies = steps.find(
+    (step) => step?.name === "Install dependencies",
+  );
+  const toolchain = steps.find(
+    (step) => step?.name === "Install and verify pinned scanners",
+  );
+  const toolchainFailure = steps.find(
+    (step) => step?.name === "Record shared scanner toolchain failure",
+  );
+  const prepare = steps.find(
+    (step) => step?.name === "Prepare exact target and scanner evidence",
+  );
+  if (
+    dependencies?.["continue-on-error"] !== true ||
+    toolchain?.["continue-on-error"] !== true ||
+    !toolchainFailure?.run?.includes("SCANNER_UNAVAILABLE") ||
+    !prepare?.if?.includes("steps.toolchain.outcome == 'success'")
+  )
+    fail(
+      file,
+      "scanner setup failures must retain an authenticated shared outcome",
+    );
 
   const publishJob = workflow.jobs?.publish;
   const publish = (publishJob?.steps ?? []).find(
@@ -447,19 +474,18 @@ function checkEncryptedHandoff(file, workflow) {
     !publishRun.includes(
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     ) ||
-    !publishRun.includes(
-      `system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"`,
-    ) ||
+    !publishRun.includes("target_failures") ||
+    !publishRun.includes("shared_holds") ||
+    !publishRun.includes("security_holds") ||
+    !publishRun.includes("continuation_blocked") ||
     !publishRun.includes(
       `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
     ) ||
-    !publishRun.includes(
-      `printf 'system_failure=%s\\n' "$system_failure" >> "$GITHUB_OUTPUT"`,
-    ) ||
     /echo .*jq/iu.test(publishRun) ||
+    publishJob?.if !== "${{ always() }}" ||
     publishJob?.outputs?.reports !== "${{ steps.publish.outputs.reports }}" ||
-    publishJob?.outputs?.system_failure !==
-      "${{ steps.publish.outputs.system_failure }}"
+    publishJob?.outputs?.continuation_blocked !==
+      "${{ steps.publish.outputs.continuation_blocked }}"
   )
     fail(
       file,
@@ -476,10 +502,12 @@ function checkEncryptedHandoff(file, workflow) {
   if (
     !same(continuation?.needs, ["publish", "deploy"]) ||
     !continuation?.if?.includes(
-      "needs.publish.outputs.system_failure != 'true'",
-    )
+      "needs.publish.outputs.continuation_blocked != 'true'",
+    ) ||
+    !continuation?.if?.includes("inputs.total_remaining != '0'") ||
+    /needs\.scan\.result|system_failure/u.test(continuation?.if ?? "")
   )
-    fail(file, "system failures must suppress ordinary batch continuation");
+    fail(file, "only persisted holds may suppress ordinary batch continuation");
 }
 
 function checkPublisherBoundary(file, workflow) {

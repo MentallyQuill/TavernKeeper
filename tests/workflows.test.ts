@@ -215,9 +215,28 @@ describe("GitHub workflow security policy", () => {
     expect(providerSecretSteps.map((step) => step.name)).toEqual([
       "Contextually assess scanner evidence",
     ]);
+    const dependencies = steps.find(
+      (step) => step.name === "Install dependencies",
+    );
+    const toolchain = steps.find(
+      (step) => step.name === "Install and verify pinned scanners",
+    );
+    const toolchainFailure = steps.find(
+      (step) => step.name === "Record shared scanner toolchain failure",
+    );
+    expect(
+      dependencies?.continueOnError ?? dependencies?.["continue-on-error"],
+    ).toBe(true);
+    expect(toolchain?.continueOnError ?? toolchain?.["continue-on-error"]).toBe(
+      true,
+    );
+    expect(toolchainFailure?.run).toContain("SCANNER_UNAVAILABLE");
+    expect(steps[prepareIndex]?.if).toContain(
+      "steps.toolchain.outcome == 'success'",
+    );
   });
 
-  test("mixed batches deploy successes but stop ordinary continuation on a system failure", async () => {
+  test("publisher-authoritative mixed batches deploy and continue safely", async () => {
     const value = await workflow("scan-and-publish.yml");
     const publish = (value.jobs.publish.steps as Workflow[]).find(
       (step) => step.name === "Publish serialized batch",
@@ -225,20 +244,19 @@ describe("GitHub workflow security policy", () => {
 
     expect(value.jobs.publish.outputs).toMatchObject({
       reports: "${{ steps.publish.outputs.reports }}",
-      system_failure: "${{ steps.publish.outputs.system_failure }}",
+      continuation_blocked: "${{ steps.publish.outputs.continuation_blocked }}",
     });
+    expect(value.jobs.publish.if).toBe("${{ always() }}");
     expect(publish).toMatchObject({ id: "publish", shell: "bash" });
     expect(publish?.run).toContain(
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     );
-    expect(publish?.run).toContain(
-      `system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"`,
-    );
+    expect(publish?.run).toContain("continuation_blocked");
+    expect(publish?.run).toContain("target_failures");
+    expect(publish?.run).toContain("shared_holds");
+    expect(publish?.run).toContain("security_holds");
     expect(publish?.run).toContain(
       `printf 'reports=%s\\n' "$reports" >> "$GITHUB_OUTPUT"`,
-    );
-    expect(publish?.run).toContain(
-      `printf 'system_failure=%s\\n' "$system_failure" >> "$GITHUB_OUTPUT"`,
     );
     expect(publish?.run).not.toMatch(/echo .*jq/iu);
     expect(value.jobs.deploy.if).toBe(
@@ -246,7 +264,46 @@ describe("GitHub workflow security policy", () => {
     );
     expect(value.jobs.continue.needs).toEqual(["publish", "deploy"]);
     expect(value.jobs.continue.if).toContain(
-      "needs.publish.outputs.system_failure != 'true'",
+      "needs.publish.outputs.continuation_blocked != 'true'",
+    );
+    expect(value.jobs.continue.if).toContain("inputs.total_remaining != '0'");
+    expect(value.jobs.continue.if).not.toMatch(
+      /needs\.scan\.result|system_failure/u,
+    );
+    expect(value.on.workflow_call.inputs).toHaveProperty("total_remaining");
+    expect(value.on.workflow_call.inputs).toHaveProperty("runnable_remaining");
+    expect(value.on.workflow_call.inputs).not.toHaveProperty("remaining");
+  });
+
+  test("reconcile exposes rich queue state to the reusable scanner", async () => {
+    const value = await workflow("reconcile.yml");
+    expect(value.jobs.plan.outputs).toMatchObject({
+      total_remaining: "${{ steps.plan.outputs.total_remaining }}",
+      runnable_remaining: "${{ steps.plan.outputs.runnable_remaining }}",
+      delayed_retries: "${{ steps.plan.outputs.delayed_retries }}",
+      shared_holds: "${{ steps.plan.outputs.shared_holds }}",
+      next_wake_at: "${{ steps.plan.outputs.next_wake_at }}",
+      blocked: "${{ steps.plan.outputs.blocked }}",
+    });
+    expect(value.jobs.run.with).toMatchObject({
+      total_remaining: "${{ needs.plan.outputs.total_remaining }}",
+      runnable_remaining: "${{ needs.plan.outputs.runnable_remaining }}",
+    });
+  });
+
+  test("state migration exists only behind the protected staff workflow", async () => {
+    const values = await Promise.all(
+      workflowNames.map(async (name) => [name, await workflow(name)] as const),
+    );
+    const containingMigration = values
+      .filter(([, value]) => JSON.stringify(value).includes("state:migrate"))
+      .map(([name]) => name);
+    const staff = values.find(([name]) => name === "staff-operations.yml")![1];
+
+    expect(containingMigration).toEqual(["staff-operations.yml"]);
+    expect(staff.jobs.operate.environment).toBe("tavernkeeper-staff");
+    expect(staff.on.workflow_dispatch.inputs.operation.options).toContain(
+      "migrate",
     );
   });
 
@@ -309,7 +366,10 @@ describe("GitHub workflow security policy", () => {
     expect(upload).toMatchObject({
       uses: uploadArtifactAction,
       if: "always()",
-      with: { path: "outcome.enc", "retention-days": 1 },
+      with: {
+        path: "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc",
+        "retention-days": 1,
+      },
     });
     expect(download?.uses).toBe(downloadArtifactAction);
     expect(JSON.stringify(upload)).not.toMatch(
@@ -403,7 +463,11 @@ describe("GitHub workflow security policy", () => {
 
   test("workflow policy rejects plaintext scan artifact uploads", async () => {
     await expectPolicyFailure(
-      (text) => text.replace("path: outcome.enc", "path: candidate.json"),
+      (text) =>
+        text.replace(
+          "path: ${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc",
+          "path: candidate.json",
+        ),
       /scan artifact upload must always retain only outcome\.enc for one day/u,
     );
   });

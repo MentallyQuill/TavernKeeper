@@ -33,8 +33,10 @@ export interface PublishArtifactBatchInput {
 export interface PublishArtifactBatchResult {
   status: ArtifactBatchStatus;
   reports: number;
-  has_failures: boolean;
-  system_failure: boolean;
+  target_failures: number;
+  shared_holds: number;
+  security_holds: number;
+  continuation_blocked: boolean;
   terminal_failures: number;
 }
 
@@ -154,8 +156,7 @@ export async function publishArtifactBatch(
       failures.push(outcome.transition);
       state = recordFailure(state, {
         target: outcome.transition.target,
-        code: outcome.transition.code,
-        scope: outcome.transition.scope,
+        failure: outcome.transition.failure,
         at: outcome.transition.at,
       }).state;
       continue;
@@ -178,6 +179,13 @@ export async function publishArtifactBatch(
     generatedAt: input.generatedAt,
   });
   const hasFailures = failures.length > 0;
+  const targetFailures = failures.filter(
+    ({ failure }) => failure.domain === "target",
+  ).length;
+  const securityHolds = failures.filter(
+    ({ failure }) => failure.domain === "security",
+  ).length;
+  const sharedHolds = published.state.shared_holds.length;
   return {
     status: hasFailures
       ? published.published.length > 0
@@ -185,13 +193,16 @@ export async function publishArtifactBatch(
         : "deferred"
       : "published",
     reports: published.published.length,
-    has_failures: hasFailures,
-    system_failure: failures.some(({ scope }) => scope === "system"),
+    target_failures: targetFailures,
+    shared_holds: sharedHolds,
+    security_holds: securityHolds,
+    continuation_blocked: published.state.pause !== null || sharedHolds > 0,
     terminal_failures: failures.filter(({ target }) =>
-      published.state.retries.some(
+      published.state.target_retries.some(
         (retry) =>
           retry.repository_id === target.repository_id &&
           retry.target_sha === target.target_sha &&
+          retry.failure.domain === "target" &&
           retry.exhausted,
       ),
     ).length,

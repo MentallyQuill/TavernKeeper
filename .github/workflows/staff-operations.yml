@@ -6,7 +6,7 @@ on:
       operation:
         description: Reviewed queue operation
         type: choice
-        options: [pause, resume, retry]
+        options: [pause, resume, retry, migrate]
         required: true
       repository_id:
         description: Tavernary repository ID for retry only
@@ -51,7 +51,10 @@ jobs:
           REPOSITORY_ID: ${{ inputs.repository_id }}
           REASON_CODE: ${{ inputs.reason_code }}
         run: |
-          if [[ "$OPERATION" = "pause" ]]; then
+          if [[ "$OPERATION" = "migrate" ]]; then
+            npm run --silent state:migrate
+            exit 0
+          elif [[ "$OPERATION" = "pause" ]]; then
             request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" '{operation:$operation,reason_code:$reason_code}')"
           elif [[ "$OPERATION" = "retry" ]]; then
             request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" '{operation:$operation,repository_id:$repository_id}')"
@@ -89,7 +92,7 @@ jobs:
           done
           test "$push_succeeded" = "true"
       - name: Dispatch reconcile
-        if: ${{ inputs.operation != 'pause' }}
+        if: ${{ inputs.operation != 'pause' && inputs.operation != 'migrate' }}
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main

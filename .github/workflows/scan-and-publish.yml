@@ -6,14 +6,14 @@ on:
       requests_json:
         type: string
         required: true
-      remaining:
+      total_remaining:
         type: string
         required: false
         default: "0"
-      continue_backlog:
-        type: boolean
+      runnable_remaining:
+        type: string
         required: false
-        default: false
+        default: "0"
 permissions:
   contents: read
   issues: write
@@ -38,6 +38,7 @@ jobs:
         env:
           TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
           TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
+          TAVERNKEEPER_BOOTSTRAP_OUTCOME: ${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc
         shell: bash
         run: |
           node <<'NODE'
@@ -59,11 +60,14 @@ jobs:
             schema_version: 1,
             candidate: null,
             transition: {
-              schema_version: 1,
+              schema_version: 2,
               status: "failure",
               target,
-              code: "SCAN_BOOTSTRAP_FAILED",
-              scope: "system",
+              failure: {
+                code: "SCAN_BOOTSTRAP_FAILED",
+                domain: "shared",
+                component: "orchestrator",
+              },
               at: new Date().toISOString(),
             },
           };
@@ -84,7 +88,7 @@ jobs:
             cipher.final(),
           ]);
           writeFileSync(
-            "outcome.enc",
+            process.env.TAVERNKEEPER_BOOTSTRAP_OUTCOME,
             Buffer.concat([magic, nonce, cipher.getAuthTag(), ciphertext]),
             { flag: "wx" },
           );
@@ -99,15 +103,27 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - name: Install dependencies and pinned scanners
+      - name: Install dependencies
+        id: dependencies
+        continue-on-error: true
+        run: npm ci
+      - name: Install and verify pinned scanners
+        id: toolchain
+        if: steps.dependencies.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
-          npm ci
           npm run scanners:install
           npm run scanners:verify
           echo "$RUNNER_TEMP/tavernkeeper-tools-v1/bin" >> "$GITHUB_PATH"
+      - name: Record shared scanner toolchain failure
+        if: ${{ steps.dependencies.outcome == 'success' && steps.toolchain.outcome == 'failure' }}
+        shell: bash
+        run: |
+          node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"SCANNER_UNAVAILABLE",domain:"shared",component:"orchestrator"}) + "\n", {flag:"wx"})'
       - name: Prepare exact target and scanner evidence
         id: prepare
+        if: ${{ steps.dependencies.outcome == 'success' && steps.toolchain.outcome == 'success' }}
         continue-on-error: true
         env:
           TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
@@ -144,7 +160,7 @@ jobs:
         shell: bash
         run: |
           npm run --silent transition-result -- candidate.json transition.json phase-error.json
-          echo "system_failure=$(jq -r '.status == "failure" and .scope == "system"' transition.json)" >> "$GITHUB_OUTPUT"
+          echo "scan_failure=$(jq -r '.status == "failure"' transition.json)" >> "$GITHUB_OUTPUT"
       - name: Encrypt sanitized outcome
         if: always()
         env:
@@ -152,7 +168,7 @@ jobs:
         shell: bash
         run: |
           npm run --silent artifact-transport -- encrypt outcome-actual.enc candidate.json transition.json
-          mv outcome-actual.enc outcome.enc
+          mv outcome-actual.enc "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc"
       - name: Remove plaintext handoff files
         if: always()
         shell: bash
@@ -162,16 +178,16 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: scan-${{ matrix.request.repository_id }}
-          path: outcome.enc
+          path: ${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc
           if-no-files-found: error
           retention-days: 1
-      - name: Mark this repository failed after a system failure
-        if: ${{ steps.transition.outputs.system_failure == 'true' }}
+      - name: Mark this repository failed after a recorded scan failure
+        if: ${{ steps.transition.outputs.scan_failure == 'true' }}
         run: exit 1
 
   publish:
     needs: scan
-    if: ${{ always() && needs.scan.result != 'skipped' }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     environment: tavernkeeper-scanner
     permissions:
@@ -180,7 +196,11 @@ jobs:
     outputs:
       source_sha: ${{ steps.commit.outputs.source_sha }}
       reports: ${{ steps.publish.outputs.reports }}
-      system_failure: ${{ steps.publish.outputs.system_failure }}
+      target_failures: ${{ steps.publish.outputs.target_failures }}
+      shared_holds: ${{ steps.publish.outputs.shared_holds }}
+      security_holds: ${{ steps.publish.outputs.security_holds }}
+      continuation_blocked: ${{ steps.publish.outputs.continuation_blocked }}
+      terminal_failures: ${{ steps.publish.outputs.terminal_failures }}
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -219,30 +239,75 @@ jobs:
           result="$(npm run --silent publish -- artifacts)"
           printf '%s\n' "$result"
           reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"
-          system_failure="$(jq -er '.system_failure | select(type == "boolean") | tostring' <<< "$result")"
+          target_failures="$(jq -er '.target_failures | select(type == "number")' <<< "$result")"
+          shared_holds="$(jq -er '.shared_holds | select(type == "number")' <<< "$result")"
+          security_holds="$(jq -er '.security_holds | select(type == "number")' <<< "$result")"
+          continuation_blocked="$(jq -er '.continuation_blocked | select(type == "boolean") | tostring' <<< "$result")"
+          terminal_failures="$(jq -er '.terminal_failures | select(type == "number")' <<< "$result")"
           printf 'reports=%s\n' "$reports" >> "$GITHUB_OUTPUT"
-          printf 'system_failure=%s\n' "$system_failure" >> "$GITHUB_OUTPUT"
-      - name: Notify staff only after retry exhaustion
+          printf 'target_failures=%s\n' "$target_failures" >> "$GITHUB_OUTPUT"
+          printf 'shared_holds=%s\n' "$shared_holds" >> "$GITHUB_OUTPUT"
+          printf 'security_holds=%s\n' "$security_holds" >> "$GITHUB_OUTPUT"
+          printf 'continuation_blocked=%s\n' "$continuation_blocked" >> "$GITHUB_OUTPUT"
+          printf 'terminal_failures=%s\n' "$terminal_failures" >> "$GITHUB_OUTPUT"
+      - name: Reconcile secret-free operational incidents
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          if [[ "$(npm run --silent exhausted | jq 'length')" -gt 0 ]]; then
-            gh label create scanner-operations --color B60205 --description "TavernKeeper operational incidents" --force
-          fi
-          npm run --silent exhausted | jq -c '.[]' | while read -r failure; do
+          incidents="$(npm run --silent exhausted)"
+          gh label create scanner-operations --color B60205 --description "TavernKeeper operational incidents" --force
+          gh label create scanner-recovery --color D4C5F9 --description "TavernKeeper automatic recovery probes" --force
+
+          jq -c '.target_exhaustions[]' <<< "$incidents" | while read -r failure; do
             fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
-            code="$(jq -r '.error_code' <<< "$failure")"
-            scope="$(jq -r '.scope' <<< "$failure")"
+            code="$(jq -r '.failure.code' <<< "$failure")"
+            component="$(jq -r '.failure.component' <<< "$failure")"
             repository_id="$(jq -r '.repository_id' <<< "$failure")"
             target="$(jq -r '.target_sha' <<< "$failure")"
             existing="$(gh issue list --state all --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
             if [[ -z "$existing" ]]; then
               gh issue create \
                 --label scanner-operations \
-                --title "[scanner-operations] $scope failure exhausted" \
-                --body "TavernKeeper exhausted its three delayed retries.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nScope: \`$scope\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nNo external repository owner was contacted and no degraded report was published."
+                --title "[scanner-operations] target retry exhausted" \
+                --body "TavernKeeper exhausted three delayed retries for one exact target.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\nRepository ID: \`$repository_id\`\nTarget commit: \`$target\`\n\nUnrelated catalog work continues automatically."
+            fi
+          done
+
+          jq -c '.shared_holds[] | select(.notified)' <<< "$incidents" | while read -r hold; do
+            fingerprint="$(jq -r '.error_fingerprint' <<< "$hold")"
+            code="$(jq -r '.failure.code' <<< "$hold")"
+            component="$(jq -r '.failure.component' <<< "$hold")"
+            next_probe="$(jq -r '.next_probe_at' <<< "$hold")"
+            existing="$(gh issue list --state open --label scanner-recovery --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            if [[ -z "$existing" ]]; then
+              gh issue create \
+                --label scanner-recovery \
+                --title "[scanner-recovery] shared dependency is retrying" \
+                --body "TavernKeeper continues bounded automatic recovery probes.\n\nRecovery fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\nNext probe: \`$next_probe\`"
+            fi
+          done
+
+          gh issue list --state open --label scanner-recovery --limit 100 --json number,body --jq '.[] | @base64' | while read -r encoded; do
+            issue="$(printf '%s' "$encoded" | base64 --decode)"
+            number="$(jq -r '.number' <<< "$issue")"
+            fingerprint="$(jq -r '.body | capture("Recovery fingerprint: `(?<value>[0-9a-f]{64})`").value // empty' <<< "$issue")"
+            if [[ -n "$fingerprint" ]] && ! jq -e --arg fingerprint "$fingerprint" '.shared_holds[] | select(.error_fingerprint == $fingerprint)' <<< "$incidents" >/dev/null; then
+              gh issue close "$number" --comment "Automatic recovery succeeded; this shared hold is no longer active."
+            fi
+          done
+
+          jq -c '.security_holds[]' <<< "$incidents" | while read -r failure; do
+            fingerprint="$(jq -r '.error_fingerprint' <<< "$failure")"
+            code="$(jq -r '.failure.code' <<< "$failure")"
+            component="$(jq -r '.failure.component' <<< "$failure")"
+            existing="$(gh issue list --state open --label scanner-operations --search "$fingerprint in:body" --json number --jq '.[0].number // empty')"
+            if [[ -z "$existing" ]]; then
+              gh issue create \
+                --label scanner-operations \
+                --title "[scanner-operations] security hold requires repair" \
+                --body "TavernKeeper paused safely for a trusted-boundary failure.\n\nError fingerprint: \`$fingerprint\`\nCode: \`$code\`\nComponent: \`$component\`\n\nRepair and verify the external condition, then resume through the protected staff workflow."
             fi
           done
       - name: Create TavernKeeper Publisher token
@@ -291,7 +356,7 @@ jobs:
 
   continue:
     needs: [publish, deploy]
-    if: ${{ always() && needs.publish.result == 'success' && needs.deploy.result == 'success' && needs.publish.outputs.system_failure != 'true' && inputs.continue_backlog && inputs.remaining != '0' }}
+    if: ${{ always() && needs.publish.result == 'success' && needs.deploy.result == 'success' && needs.publish.outputs.continuation_blocked != 'true' && inputs.total_remaining != '0' }}
     runs-on: ubuntu-latest
     permissions:
       actions: write
