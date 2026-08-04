@@ -267,21 +267,41 @@ export function planBatch(
             [right.next_probe_at, right.error_fingerprint].join(":"),
           ),
       );
-    const recoveryTargets = [...manifest.repositories]
-      .filter((target) => !activeRepositoryIds.has(target.repository_id))
-      .sort((left, right) => {
-        if (
-          manifest.schema_version === 3 &&
-          "popularity_rank" in left.catalog_priority &&
-          "popularity_rank" in right.catalog_priority
-        )
+    const compareRecoveryTargets = (
+      left: CurrentTarget,
+      right: CurrentTarget,
+    ) => {
+      if (
+        manifest.schema_version === 3 &&
+        "popularity_rank" in left.catalog_priority &&
+        "popularity_rank" in right.catalog_priority
+      )
+        return (
+          left.catalog_priority.popularity_rank -
+            right.catalog_priority.popularity_rank ||
+          left.repository_id - right.repository_id
+        );
+      return left.repository_id - right.repository_id;
+    };
+    const availableRecoveryTargets = manifest.repositories.filter(
+      (target) => !activeRepositoryIds.has(target.repository_id),
+    );
+    const recoveryTargets = [
+      ...availableRecoveryTargets
+        .filter((target) => !retryByIdentity.has(targetIdentity(target)))
+        .sort(compareRecoveryTargets),
+      ...availableRecoveryTargets
+        .filter((target) => {
+          const retry = retryByIdentity.get(targetIdentity(target));
           return (
-            left.catalog_priority.popularity_rank -
-              right.catalog_priority.popularity_rank ||
-            left.repository_id - right.repository_id
+            retry?.failure.domain === "target" &&
+            !retry.exhausted &&
+            retry.next_retry_at !== null &&
+            Date.parse(retry.next_retry_at) <= nowMs
           );
-        return left.repository_id - right.repository_id;
-      });
+        })
+        .sort(compareRecoveryTargets),
+    ];
     const usedRepositoryIds = new Set<number>();
     const eligible: PlannedTarget[] = [];
     for (const hold of dueHolds) {

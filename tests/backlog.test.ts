@@ -449,6 +449,46 @@ describe("derived scan backlog", () => {
     ]);
   });
 
+  test("rotates a rebound shared probe away from a target in local backoff", () => {
+    const removedTarget = targetV3(100, { rank: 1 });
+    const shared = recordFailure(runningState(), {
+      target: identity(removedTarget),
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: "2026-08-01T11:00:00.000Z",
+    }).state;
+    const firstSubstitute = targetV3(200, { rank: 2 });
+    const nextSubstitute = targetV3(300, { rank: 3 });
+    const manifestValue = manifestV3([firstSubstitute, nextSubstitute]);
+    const firstPlan = planBatch(manifestValue, emptyIndex, shared, now, "3");
+    expect(firstPlan.targets[0]?.target.repository_id).toBe(200);
+
+    const failedSubstitute = recordFailure(shared, {
+      target: identity(firstSubstitute),
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: now,
+    }).state;
+    const nextPlan = planBatch(
+      manifestValue,
+      emptyIndex,
+      failedSubstitute,
+      now,
+      "3",
+    );
+
+    expect(nextPlan.targets[0]).toMatchObject({
+      recoveryFingerprint: shared.shared_holds[0]!.error_fingerprint,
+      target: { repository_id: 300 },
+    });
+  });
+
   test("keeps one queue position when an active repository advances SHA", () => {
     const activeTarget = target(1);
     const state = runningState({
