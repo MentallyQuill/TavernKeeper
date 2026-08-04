@@ -254,7 +254,17 @@ jobs:
           git add reports operations/state.json
           if ! git diff --cached --quiet; then
             git commit -m "chore(reports): publish completed scans"
-            git push origin HEAD:main
+            push_succeeded="false"
+            for attempt in 1 2 3; do
+              if git push origin HEAD:main; then
+                push_succeeded="true"
+                break
+              fi
+              if [[ "$attempt" -lt 3 ]]; then
+                sleep "$((attempt * 15))"
+              fi
+            done
+            test "$push_succeeded" = "true"
           fi
           echo "source_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 

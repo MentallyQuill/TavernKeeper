@@ -466,6 +466,13 @@ function checkPublisherBoundary(file, workflow) {
       file,
       "Publisher-authenticated push changed from the reviewed contract",
     );
+  if (
+    !pushStep?.run?.includes("for attempt in 1 2 3; do") ||
+    !pushStep?.run?.includes("if git push origin HEAD:main; then") ||
+    !pushStep?.run?.includes('sleep "$((attempt * 15))"') ||
+    !pushStep?.run?.includes('test "$push_succeeded" = "true"')
+  )
+    fail(file, "Publisher-authenticated push must retain bounded retries");
   const checkouts = steps.filter(
     (step) =>
       typeof step?.uses === "string" &&

@@ -278,7 +278,7 @@ describe("GitHub workflow security policy", () => {
     ]);
   });
 
-  test("the Publisher App token has one reviewed consumer", async () => {
+  test("the Publisher App token has one reviewed bounded push consumer", async () => {
     const value = await workflow("scan-and-publish.yml");
     const steps = value.jobs.publish.steps as Workflow[];
     const tokenSteps = steps.filter((step) =>
@@ -303,6 +303,9 @@ describe("GitHub workflow security policy", () => {
     });
     expect(consumers).toHaveLength(1);
     expect(consumers[0]!.run).toContain("git push origin HEAD:main");
+    expect(consumers[0]!.run).toContain("for attempt in 1 2 3; do");
+    expect(consumers[0]!.run).toContain('sleep "$((attempt * 15))"');
+    expect(consumers[0]!.run).toContain('test "$push_succeeded" = "true"');
     expect(consumers[0]!.run).not.toMatch(/--force|gh workflow run/iu);
   });
 
@@ -370,6 +373,14 @@ describe("GitHub workflow security policy", () => {
           "      - name: Extra token consumer\n        env:\n          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}\n        run: gh api user\n      - name: Commit reports and state\n",
         ),
       /Publisher App token is consumed outside the reviewed commit step/u,
+    );
+  });
+
+  test("workflow policy rejects removal of bounded Publisher push retries", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace("for attempt in 1 2 3; do", "for attempt in 1; do"),
+      /Publisher-authenticated push must retain bounded retries/u,
     );
   });
 
