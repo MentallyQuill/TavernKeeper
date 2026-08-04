@@ -43,10 +43,12 @@ reconciliation repairs missed wake-ups.
 Every selected repository finishes independently inside its bounded batch.
 The serialized publisher keeps every complete Technical Report V5 candidate,
 publishes the valid subset atomically, and queues only unsuccessful targets for
-retry. Target-local failures never stop unrelated catalog work. Shared
-dependencies recover through bounded automatic probes, while credential and
-trusted-boundary failures alone create a security hold that requires repair and
-an explicit protected resume.
+retry or manual quarantine. Reconciliation finishes the runnable primary
+catalog before admitting due automatic retries, so one repeatedly failing SHA
+cannot stay at the front of the backlog. Target-local failures never stop
+unrelated catalog work. Shared dependencies recover through bounded automatic
+probes, while credential and trusted-boundary failures alone create a security
+hold that requires repair and an explicit protected resume.
 
 Only Tavernary staff can initiate a targeted scan, through Tavernary's
 exact-GitHub-URL Action. TavernKeeper accepts only the authorized wake App's
@@ -57,10 +59,12 @@ repositories per batch and two concurrent repositories.
 Provider configuration is model-agnostic. `TAVERNKEEPER_MODEL` selects the
 configured OpenAI-compatible model without changing the report contract or
 policy. A provider, token, context, validation, or required-scanner failure
-cannot fall back to a degraded report. Target failures retry after 5 minutes,
-30 minutes, and 2 hours, then exhaust only that exact SHA. Shared transient
-failures probe after 5, 15, 30, and 60 minutes and every 3 hours thereafter;
-notification never disables automatic recovery.
+cannot fall back to a degraded report. Deterministic target failures remain
+quarantined until a new SHA or protected staff rescan. Transient target failures
+retry after the primary catalog pass and delays of 5 minutes, 30 minutes, and 2
+hours, then exhaust only that exact SHA. Shared transient failures probe after
+5, 15, 30, and 60 minutes and every 3 hours thereafter; notification never
+disables automatic recovery.
 
 Initial V3 catalog coverage follows Tavernary's complete popularity rank.
 TavernKeeper temporarily accepts V2 manifests with the legacy Top-30/new/old

@@ -70,9 +70,12 @@ the publisher dispatches another input-free batch.
 
 On the first staff resume, TavernKeeper records an immutable
 `coverage_started_at` timestamp. Manifest V3 initial coverage is strict
-`popularity_rank` order, with due retries ahead of new work. V2 remains a
-temporary compatibility path: current Top 30, submissions first cataloged on or
-after coverage start, and older projects. V2 new and old lanes sort by
+`popularity_rank` order. Reconciliation selects runnable primary catalog work
+before any due target retry. Only after that primary pass is empty may it admit
+one due automatic retry slot per exact target in the round. Manual quarantines
+remain visible in queue telemetry but are not runnable. V2 remains a temporary
+compatibility path: current Top 30, submissions first cataloged on or after
+coverage start, and older projects. V2 new and old lanes sort by
 `first_cataloged_at`, and thirty-day age boosts prevent starvation.
 
 The queue is derived. A target that advances before acquisition is coalesced to
@@ -108,9 +111,13 @@ strict synthesis and enforces deterministic risk floors after import.
 Operations state schema V2 separates three failure domains. Never edit state
 concurrently with publication.
 
-- `target`: retry the exact repository SHA after 5 minutes, 30 minutes, and 2
-  hours. A fourth failure exhausts only that SHA, creates one deduplicated staff
-  Issue, and leaves the rest of the catalog runnable.
+- `target`: classify deterministic failures as manual quarantines and transient
+  failures as automatic retries. A new manifest SHA is a new primary target;
+  otherwise a manual quarantine runs only through protected staff rescan.
+  Automatic retries wait for the primary catalog pass and then use delays of 5
+  minutes, 30 minutes, and 2 hours. A fourth failed attempt exhausts only that
+  exact SHA, creates one staff Issue keyed by repository ID plus SHA, and leaves
+  the rest of the catalog runnable.
 - `shared`: pause new catalog targets and admit one due recovery probe per
   complete failure fingerprint, with two probes maximum per batch. Delays are
   5, 15, 30, and 60 minutes, then 3 hours capped indefinitely. Four failures
