@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for MaxiPawlowski/story-orchestrator at commit d2d7122.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; MaxiPawlowski/story-orchestrator</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/MaxiPawlowski/story-orchestrator" rel="noopener noreferrer">MaxiPawlowski/story-orchestrator</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/MaxiPawlowski/story-orchestrator/commit/d2d7122117a80a6813faee5de7e4556dcc93541e" rel="noopener noreferrer">d2d7122</a></span>
+        <span>Reviewed <time datetime="2026-08-05T22:21:54.963Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>74 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mjf5-7g4m-gx5w applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in a package listed in the lockfile, but the scanner did not identify which package. Based on how this extension is built and shipped, the flagged package is most likely a development tool that never reaches end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mjf5-7g4m-gx5w to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory in file but removed package identity. The project ships a webpack production bundle (dist/index.js) loaded by SillyTavern; devDependencies and their transitive trees are not included in the shipped artifact. The six production dependencies (cytoscape, cytoscape-dagre, react 19.1.1, react-dom 19.1.1, yaml ^2.8.2, zustand ^5.0.8) use recent versions unlikely to carry this advisory. Without the specific package name and version, exact runtime reachability cannot be confirmed, but the project structure strongly indicates this is a dev-tooling advisory with no path to end-user execution.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally with package details visible, update the flagged dev dependency if a fixed version exists, and verify no production dependency is affected.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mjf5-7g4m-gx5w</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-395f-4hp3-45gv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security advisory was flagged in the lockfile without identifying the package. Given the extension&#39;s build process, the affected package is probably a development tool that does not ship to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-395f-4hp3-45gv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory but removed package identity. The shipped extension is a webpack bundle; only the six production runtime dependencies and their bundled code reach users. The large devDependency tree (storybook, webpack, babel, jest, playwright, eslint, postcss) is not shipped. Without the specific package, reachability cannot be precisely determined, but the advisory most likely targets build-time or test-time tooling with no runtime exposure in the browser extension context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package via local osv-scanner output, upgrade if a fix is available, and confirm it is not a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-395f-4hp3-45gv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6h2-p8h4-qcjw applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A low-severity security issue was found in a lockfile package. The package is likely a development tool that does not reach end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6h2-p8h4-qcjw to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a low-severity advisory with package details removed. The extension ships a webpack production bundle; devDependencies are excluded from the artifact. The low scanner severity further reduces concern. Without package identity, precise reachability is unknown, but the project structure indicates a dev-tooling advisory unlikely to affect the shipped extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Check local scanner output for the package name, update if a fixed version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6h2-p8h4-qcjw</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4x5r-pxfx-6jf8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A low-severity security advisory was flagged in the lockfile. The affected package is most likely a development dependency that does not ship to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4x5r-pxfx-6jf8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a low-severity advisory with package details removed. The shipped artifact is a webpack bundle excluding devDependencies. Low severity and the project&#39;s build structure suggest a dev-tooling advisory with no runtime path to end users. Exact package identity is unavailable, preventing precise reachability analysis.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the package locally, upgrade if a fix exists.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4x5r-pxfx-6jf8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8x88-c5mf-7j5w applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity advisory was found in the lockfile, but the package was not identified. Based on the extension&#39;s build process, the flagged package is probably a development tool that never reaches end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8x88-c5mf-7j5w to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory with package identity removed. The extension ships only a webpack production bundle; the extensive devDependency tree is not included. The six production dependencies use recent, well-maintained versions. Without the specific package name, exact reachability cannot be confirmed, but the advisory most likely targets build or test tooling with no browser-runtime exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run local scanner with package details, update the flagged dependency, and verify it is not a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8x88-c5mf-7j5w</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-9ppj-qmqm-q256 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity security issue was flagged in the lockfile without identifying the package. The extension&#39;s build process likely means this is a development tool that does not ship to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-9ppj-qmqm-q256 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory with package details removed. The shipped extension is a webpack bundle that excludes devDependencies. Production dependencies are minimal and use recent versions. Without package identity, precise reachability is unavailable, but the project structure strongly suggests a dev-tooling advisory with no path to end-user execution in the SillyTavern browser context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package locally, upgrade if a fix is available, confirm it is not a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-9ppj-qmqm-q256</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fv7c-fp4j-7gwp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity advisory was found in the lockfile, but the package was not identified. The extension&#39;s build process means the flagged package is probably a development tool that does not reach end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fv7c-fp4j-7gwp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory with package identity removed. The extension ships a webpack production bundle; devDependencies and their transitive trees are excluded. The six production runtime dependencies use recent versions. Without the specific package, exact reachability cannot be determined, but the advisory most likely targets build-time tooling with no runtime exposure in the shipped extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run local scanner with package details visible, update the flagged dependency, and verify no production dependency is affected.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fv7c-fp4j-7gwp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh29-5h37-fv8m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity security issue was found in a lockfile package. The affected package is likely a development tool that does not ship to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh29-5h37-fv8m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory with package details removed. The shipped artifact is a webpack bundle that excludes devDependencies. Medium severity and the project&#39;s build structure suggest a dev-tooling advisory with no runtime path to end users. Without package identity, precise reachability analysis is unavailable.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the package locally, upgrade if a fixed version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh29-5h37-fv8m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7rx3-28cr-v5wh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the project&#39;s dependencies. The project builds its code into a single bundle file, so many dependencies used only during development never reach people who install the extension. The risk to end users appears low, but the dependency should still be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7rx3-28cr-v5wh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory for a declared dependency in this lockfile. The scanner removed package details, so the specific affected package cannot be confirmed from the candidate alone. The project ships as a webpack bundle (dist/index.js) loaded by SillyTavern; devDependencies such as build tooling, Storybook, Jest, Playwright, Babel, ESLint, and TailwindCSS are not included in the shipped bundle and do not reach end users. The production dependencies are limited to react, react-dom, cytoscape, cytoscape-dagre, yaml, and zustand. Without identifying the exact package, runtime reachability and attacker-control paths cannot be definitively assessed, but the extension runs in a browser context with limited attack surface for most dependency vulnerability classes.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package, then update it to a non-vulnerable version. If it is a devDependency, note that it does not ship to end users but should still be updated for build-environment hygiene.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7rx3-28cr-v5wh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qj8w-gfj5-8c6v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the project&#39;s dependencies. Since the project bundles its code for distribution, development-only dependencies do not reach end users. The risk appears low, but updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qj8w-gfj5-8c6v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory for a declared dependency. Package details were removed by the scanner, preventing precise identification. The project&#39;s production dependency surface is small (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand) and the shipped artifact is a webpack bundle. DevDependencies are not shipped. The extension operates client-side in SillyTavern&#39;s browser environment, limiting the practical impact of most dependency vulnerabilities.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package, then update it to a non-vulnerable version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qj8w-gfj5-8c6v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qffp-2rhf-9h96 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a high-severity issue in a dependency, but the scanner did not specify which package. Because this extension bundles its code and only ships the bundle, many dependencies used during development never reach end users. The actual risk to users is likely low, but the dependency should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qffp-2rhf-9h96 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory for a declared dependency. The scanner removed package details, so the affected package cannot be confirmed. Despite the high scanner severity, the advisory severity alone does not determine end-user risk. The project ships a webpack bundle; devDependencies are excluded from the shipped artifact. The production dependencies are minimal and well-maintained. The extension runs in a browser context where most dependency vulnerability classes (e.g., path traversal, command injection in build tools) have no meaningful attack surface. Without knowing the specific package and whether it is a production or dev dependency, runtime reachability cannot be definitively determined.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package. If it is a production dependency bundled into dist/index.js, assess whether the vulnerable code path is reachable with attacker-controlled input. Update to a non-vulnerable version regardless.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qffp-2rhf-9h96</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5c6j-r48x-rmvq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a high-severity issue in a dependency, but did not specify which package. The extension only ships its bundled output, so development tools do not reach end users. The risk to users is likely low, but the dependency should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5c6j-r48x-rmvq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory for a declared dependency with package details removed. The project&#39;s shipped artifact is a webpack bundle that includes only production dependencies (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand). The extensive devDependencies (Storybook, Jest, Playwright, Babel, Webpack, ESLint, TailwindCSS) are build-time only and do not ship. Advisory severity alone is not an immediate-danger conclusion; without identifying the specific package, its dependency type, and runtime reachability, the practical risk to end users of this browser-based extension cannot be confirmed as material.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package. Update to a non-vulnerable version. If it is a production dependency, verify whether the vulnerable code path is reachable at runtime.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5c6j-r48x-rmvq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-9cx6-37pm-9jff applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a high-severity issue in a dependency but did not specify which package. Since the extension bundles its code for distribution, development-only dependencies do not reach end users. The risk to users appears low, but updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-9cx6-37pm-9jff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory for a declared dependency. Package details were removed by the scanner. The project is a SillyTavern extension that ships a webpack bundle; devDependencies are not included in the shipped artifact. The production dependency set is small and consists of well-maintained packages. Without confirming the specific affected package, whether it is a production or dev dependency, and whether attacker-controlled input reaches the vulnerable code path, the end-user risk cannot be confirmed as material despite the high scanner severity.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it to a non-vulnerable version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-9cx6-37pm-9jff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v2hh-gcrm-f6hx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a high-severity issue in a dependency but did not specify which package. The extension only ships its bundled output, so development tools do not reach end users. The risk to users is likely low, but the dependency should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2hh-gcrm-f6hx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory for a declared dependency with package details removed. The project ships a webpack bundle loaded by SillyTavern; only production dependencies are bundled. The devDependencies (build tooling, test frameworks, linters) are not shipped. The extension runs client-side in a browser context. Without identifying the specific affected package and its dependency type, runtime reachability and attacker-control paths cannot be assessed, but the project structure limits practical end-user exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package. Update to a non-vulnerable version. If it is a production dependency, verify runtime reachability of the vulnerable code path.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2hh-gcrm-f6hx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8qq5-rm4j-mr97 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a high-severity issue in a dependency but did not specify which package. The extension bundles its code, so development-only dependencies do not reach end users. The risk to users appears low, but updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8qq5-rm4j-mr97 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory for a declared dependency. The scanner removed package details, preventing identification of the affected package. The project&#39;s production dependencies are limited to react, react-dom, cytoscape, cytoscape-dagre, yaml, and zustand, all bundled via webpack. DevDependencies are not shipped. The browser-based execution context further limits the practical impact of common dependency vulnerability classes. Without confirming the specific package and its dependency type, the end-user risk cannot be confirmed as material.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it to a non-vulnerable version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8qq5-rm4j-mr97</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-968p-4wvh-cqc8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the project&#39;s dependencies. The extension bundles its code for distribution, so development-only dependencies do not reach end users. The risk appears low, but updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-968p-4wvh-cqc8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory for a declared dependency with package details removed. The project ships a webpack bundle; devDependencies are excluded from the shipped artifact. The production dependency surface is small and consists of well-maintained packages. The extension runs in a browser context. Without identifying the specific affected package, precise runtime reachability cannot be determined, but the project structure limits practical end-user exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it to a non-vulnerable version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-968p-4wvh-cqc8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w7jw-789q-3m8p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A critical-severity vulnerability was flagged in a dependency, but the affected package name was not provided. Given that this extension ships only a bundled JavaScript file and most of its dependencies are build-time tools that never reach end users, the flagged issue most likely affects development tooling rather than the extension itself.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w7jw-789q-3m8p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The lockfile declares six production dependencies (cytoscape, cytoscape-dagre, react 19.1.1, react-dom 19.1.1, yaml, zustand) and a large set of dev-only build and test tooling (babel, storybook, webpack, jest, playwright, eslint, tailwindcss, http-server, etc.). The shipped artifact is a webpack bundle loaded by SillyTavern in a browser context. The advisory package identity was stripped from scanner output, so exact runtime reachability cannot be confirmed. However, the production dependencies are recent mainstream libraries unlikely to carry a critical advisory, while the extensive dev tooling tree is the more probable match. Dev dependencies do not ship in the extension bundle and only execute on the developer&#39;s machine during build and test. Concrete end-user harm from this advisory is therefore unlikely.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit with package names visible, identify whether the affected package is a production or dev-only dependency, and upgrade or replace it. If it is dev-only, no end-user action is needed but updating is still good hygiene.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w7jw-789q-3m8p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-25h7-pfq9-p65f applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity vulnerability was flagged in a dependency, but the affected package name was not provided. Since this extension only ships a bundled file and most dependencies are development tools, the issue probably does not affect end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-25h7-pfq9-p65f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched in the lockfile. The affected package identity was removed from scanner output. The project&#39;s production dependencies are recent versions of mainstream libraries (react 19.1.1, yaml 2.8.2, zustand 5.0.8, cytoscape 3.28.1). The large dev-dependency tree (storybook, babel, webpack, jest, playwright, eslint, http-server) is the more probable source. Dev dependencies are not included in the shipped webpack bundle and only run during development. Without the specific package name, runtime reachability to end users cannot be confirmed, but the extension&#39;s browser-only deployment context and the likely dev-only nature of the match limit end-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit with package names visible to identify the affected package. If it is a dev-only dependency, update it for hygiene; if it is a production dependency, upgrade to a fixed version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-25h7-pfq9-p65f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-vmf3-w455-68vh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was flagged in a dependency. Without knowing which package is affected, and given that most dependencies are build tools that do not ship with the extension, end-user impact is likely minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-vmf3-w455-68vh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched in the lockfile without package identification. The project ships a webpack bundle for a SillyTavern browser extension. Production dependencies are recent mainstream libraries. The advisory most likely resides in the extensive dev-tooling tree, which does not ship to end users. Runtime reachability to extension users cannot be confirmed without the package name, but the deployment context limits practical impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via a named dependency audit and update it. No urgent end-user action is expected.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-vmf3-w455-68vh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2g4f-4pwh-qvx6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was flagged in a dependency. Since the affected package name is unknown and most dependencies are development tools, end-user impact is likely minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2g4f-4pwh-qvx6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched in the lockfile without package identification. The project&#39;s shipped artifact is a browser-extension webpack bundle. Production dependencies are recent mainstream libraries. The advisory most likely resides in dev tooling that does not ship to end users. Without the specific package name, runtime reachability cannot be confirmed, but the browser-only deployment context limits practical impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via a named dependency audit and update it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2g4f-4pwh-qvx6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w7fw-mjwx-w883 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A low-severity vulnerability was flagged in a dependency. Without knowing which package is affected, and given the low severity and development-tool context, end-user impact is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w7fw-mjwx-w883 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched in the lockfile without package identification. The project ships a webpack bundle for a SillyTavern browser extension. The advisory most likely resides in the dev-tooling tree, which does not ship to end users. The low scanner severity and the browser-only deployment context further limit practical impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via a named dependency audit and update it during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w7fw-mjwx-w883</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v39h-62p7-jpjc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity vulnerability was flagged in a dependency, but the affected package name was not provided. Since this extension only ships a bundled file and most dependencies are development tools, the issue probably does not affect end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v39h-62p7-jpjc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched in the lockfile without package identification. The project&#39;s production dependencies are recent mainstream libraries. The extensive dev-tooling tree is the more probable match. Dev dependencies do not ship in the extension bundle. Without the specific package name, runtime reachability to end users cannot be confirmed, but the browser-only deployment context and likely dev-only nature limit end-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit with package names visible to identify the affected package. Update it whether dev-only or production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v39h-62p7-jpjc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-h67p-54hq-rp68 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was flagged in a dependency. Without knowing which package is affected, and given that most dependencies are build tools, end-user impact is likely minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-h67p-54hq-rp68 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched in the lockfile without package identification. The project ships a webpack bundle for a SillyTavern browser extension. Production dependencies are recent mainstream libraries. The advisory most likely resides in dev tooling that does not ship to end users. Without the specific package name, runtime reachability cannot be confirmed, but the browser-only deployment context limits practical impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via a named dependency audit and update it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-h67p-54hq-rp68</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-q3j6-qgpj-74h6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity vulnerability was flagged in a dependency, but the affected package name was not provided. Since this extension only ships a bundled file and most dependencies are development tools, the issue probably does not affect end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-q3j6-qgpj-74h6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched in the lockfile without package identification. The project&#39;s production dependencies are recent mainstream libraries (react 19.1.1, yaml 2.8.2, zustand 5.0.8, cytoscape 3.28.1). The extensive dev-tooling tree is the more probable match. Dev dependencies do not ship in the extension bundle and only execute during development. Without the specific package name, runtime reachability to end users cannot be confirmed, but the browser-only deployment context and likely dev-only nature limit end-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit with package names visible to identify the affected package. Update it whether dev-only or production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-q3j6-qgpj-74h6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mp7j-qc5w-4988 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a medium-level security issue in one of the project&#39;s background packages. This package is most likely part of the development toolkit used to build the extension, not part of the extension itself that users run inside SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mp7j-qc5w-4988 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a dependency in the lockfile. The project&#39;s production dependencies are limited to cytoscape, cytoscape-dagre, react, react-dom, yaml, and zustand—well-established packages not commonly associated with this advisory. The lockfile also contains extensive devDependencies (babel, webpack, storybook, jest, playwright, tailwindcss, eslint) whose transitive trees are the more likely match. The shipped artifact is a webpack bundle (dist/index.js) that excludes devDependencies, so vulnerable build-tooling code would not reach the SillyTavern runtime. Without the exact package name (removed by the scanner), runtime reachability cannot be confirmed, but the overall dependency profile strongly suggests a build-time-only dependency.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mp7j-qc5w-4988</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-23c5-xmqv-rm74 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a high-level security issue in a background package. The flagged package is most likely a development tool used to compile the extension, not something that runs when the extension is used in SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-23c5-xmqv-rm74 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency. The scanner removed package details, preventing exact identification. The project&#39;s six production dependencies (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand) are not typically associated with this advisory ID. The extensive devDependency tree (storybook, webpack, babel, playwright, tailwindcss) is the more probable source. Since the extension ships a webpack bundle that excludes devDependencies, vulnerable build-tooling code would not execute in the SillyTavern runtime. Attacker-controlled input reaching the vulnerable code path at build time is unlikely in a local build workflow.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-23c5-xmqv-rm74</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a high-level security issue in a background package. This is most likely a development tool used during the build process, not part of the extension that runs in SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency with package details removed. The project&#39;s production dependencies are well-known packages (react 19.1.1, cytoscape, yaml, zustand) not commonly linked to this advisory. The devDependency tree includes extensive build tooling that is the more likely match. The shipped extension is a webpack bundle that does not include devDependencies, so the vulnerable code would not be present at runtime. Without the exact package name, runtime reachability cannot be definitively ruled out, but the dependency profile makes a build-time-only match most probable.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-23hp-3jrh-7fpw applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A tool flagged a critical security issue in a CSS processing package. This package is only used during the build step to process stylesheets and is not included in the extension that users run inside SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-23hp-3jrh-7fpw to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a critical-severity advisory (GHSA-23hp-3jrh-7fpw) against a lockfile dependency. The source context shows @adobe/css-tools version 4.4.4 at line 74-80, marked dev:true. This advisory corresponds to a ReDoS vulnerability in @adobe/css-tools CSS parsing. The package is a transitive dependency of the tailwindcss/postcss CSS processing toolchain used only at build time. The shipped extension is a webpack bundle (dist/index.js) that does not include devDependencies or CSS build tooling, so the vulnerable parsing code is not present at runtime. Attacker-controlled CSS would need to reach the build-time CSS processor, which is not a realistic attack vector for a locally-built SillyTavern extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update @adobe/css-tools to a patched version by refreshing devDependencies (npm update @adobe/css-tools or upgrading tailwindcss/postcss) during the next dependency maintenance cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-23hp-3jrh-7fpw</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-83g3-92jg-28cx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a high-level security issue in a background package. This is most likely a development tool used to build the extension, not something that runs when the extension is used in SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-83g3-92jg-28cx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency with package details removed. The project&#39;s production dependencies (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand) are not commonly associated with this advisory. The devDependency tree (storybook, webpack, babel, playwright, tailwindcss, eslint) is the more probable source. The extension ships a webpack bundle excluding devDependencies, so vulnerable build-tooling code would not execute in the SillyTavern runtime. Without the exact package name, definitive runtime reachability analysis is not possible, but the dependency profile indicates a build-time-only match.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-83g3-92jg-28cx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xv26-6w52-cph6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a critical security issue in a background package. This is most likely a development tool used during the build process, not part of the extension that runs in SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xv26-6w52-cph6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a critical-severity advisory against a lockfile dependency with package details removed. The project&#39;s six production dependencies are well-established packages not typically linked to this advisory. The extensive devDependency tree (storybook, webpack, babel, playwright, tailwindcss, eslint and their transitive dependencies) is the more probable source. The shipped extension is a webpack bundle that excludes devDependencies, so vulnerable code would not be present at runtime. Without the exact package name, runtime reachability cannot be definitively confirmed or ruled out, but the dependency profile strongly suggests a build-time-only dependency.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xv26-6w52-cph6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6rw7-vpxm-498p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a medium-level security issue in a background package. This is most likely a development tool used to build the extension, not something that runs when the extension is used in SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6rw7-vpxm-498p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a lockfile dependency with package details removed. The project&#39;s production dependencies (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand) are not commonly associated with this advisory. The devDependency tree is the more probable source. The extension ships a webpack bundle excluding devDependencies, so vulnerable build-tooling code would not execute in the SillyTavern runtime. Without the exact package name, definitive analysis is limited, but the dependency profile indicates a build-time-only match.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6rw7-vpxm-498p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2w6w-674q-4c4q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a critical security issue in a background package. This is most likely a development tool used during the build process, not part of the extension that runs in SillyTavern. The risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2w6w-674q-4c4q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a critical-severity advisory against a lockfile dependency with package details removed. The project&#39;s production dependencies are well-known packages not typically linked to this advisory. The extensive devDependency tree (storybook, webpack, babel, playwright, tailwindcss, eslint and their transitive dependencies) is the more probable source. The shipped extension is a webpack bundle that excludes devDependencies, so vulnerable code would not be present at runtime. Without the exact package name, runtime reachability cannot be definitively confirmed, but the dependency profile strongly suggests a build-time-only dependency.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the exact package and update it to a patched version during the next dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2w6w-674q-4c4q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xjpj-3mr7-gcpf applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in one of the project&#39;s dependencies, but we cannot tell which package it affects. Since this extension ships a bundled file and most of its dependencies are build-time tools that do not run for end users, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xjpj-3mr7-gcpf to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory in the lockfile, but the affected package name was removed from the scanner output. The project ships a webpack-bundled dist/index.js for browser-side use; only six production runtime dependencies (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand) are included in the bundle. The lockfile contains a very large dev-only dependency tree (babel, storybook, jest, playwright, eslint, webpack, tailwindcss). Without identifying the specific package, runtime reachability and attacker-controlled input paths cannot be confirmed. Most advisories in such trees map to build-time tools that never execute in the shipped extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with package names visible to identify the affected package. If it is a dev dependency, no urgent action is needed. If it is a production dependency, update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xjpj-3mr7-gcpf</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known vulnerability was flagged in a dependency, but the affected package is unknown. Because the extension only ships a small set of runtime libraries and most dependencies are development tools, the real-world risk is probably low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory in the lockfile with the affected package name removed. The extension bundles only its six runtime dependencies into the shipped output; the extensive dev dependency tree (storybook, babel, jest, playwright, webpack, eslint, tailwindcss) is not included in the production bundle. Without the specific package identity, runtime reachability cannot be determined. Browser-extension context further limits the attack surface for most server-oriented advisories.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via npm audit and update it. Dev-dependency advisories need no urgent fix; production-dependency advisories should be patched.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7r86-cg39-jmmj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security advisory was found in a dependency, but we do not know which package. The extension ships only a few runtime libraries, so the issue most likely affects a build-time tool with little impact on users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7r86-cg39-jmmj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched in the lockfile without the affected package name. The project&#39;s production bundle includes only react, react-dom, cytoscape, cytoscape-dagre, yaml, and zustand. The large dev dependency tree is excluded from the shipped artifact. Without confirming which package is affected and whether its vulnerable code path is reachable in the browser extension context, concrete user harm cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Use npm audit to identify and update the affected package. Prioritize production dependencies over dev dependencies.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7r86-cg39-jmmj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6g55-p6wh-862q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known vulnerability was flagged in a dependency, but the affected package is unknown. Since the extension bundles only a small set of runtime libraries, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6g55-p6wh-862q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory in the lockfile; the affected package name was stripped from the output. The shipped extension is a webpack bundle containing only six runtime dependencies. The extensive dev toolchain (babel, storybook, jest, playwright, webpack, eslint, tailwindcss, postcss) is not part of the production artifact. Without the specific package identity, runtime reachability and attacker input control cannot be assessed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package with npm audit and update it. Dev dependencies can be updated at the next maintenance cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6g55-p6wh-862q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w8wr-v893-vjvp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was found in a dependency, but we do not know which package. The extension only ships a few runtime libraries, so the risk to users is probably low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w8wr-v893-vjvp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched in the lockfile with the package name removed. The extension ships a webpack bundle with only six runtime dependencies; the large dev dependency tree is excluded from the production artifact. Without identifying the affected package, runtime reachability in the browser extension context cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the affected package and update it accordingly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w8wr-v893-vjvp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rf6f-7fwh-wjgh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity vulnerability was flagged in a dependency, but the affected package is unknown. The extension ships only a small set of runtime libraries, so the real-world impact is likely limited.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rf6f-7fwh-wjgh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory in the lockfile without the affected package name. The production bundle includes only react, react-dom, cytoscape, cytoscape-dagre, yaml, and zustand. The extensive dev toolchain is not shipped. Without the specific package identity, runtime reachability and concrete user harm cannot be determined.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via npm audit and update it. Production dependencies should be prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rf6f-7fwh-wjgh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4vvj-4cpr-p986 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was found in a dependency, but we do not know which package. The extension only ships a few runtime libraries, so the risk to users is probably low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4vvj-4cpr-p986 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched in the lockfile with the package name removed. The shipped extension bundles only six runtime dependencies; the large dev dependency tree is excluded. Without the specific package identity, runtime reachability cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the affected package and update it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4vvj-4cpr-p986</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8fgc-7cc6-rx7x applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A low-severity vulnerability was found in a dependency, but the affected package is unknown. The extension ships only a few runtime libraries, so the risk to users is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8fgc-7cc6-rx7x to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory in the lockfile with the package name removed. The extension ships a webpack bundle with only six runtime dependencies; the dev toolchain is excluded from the production artifact. Low scanner severity and the browser-extension deployment context further reduce the likelihood of concrete user harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the affected package and update it during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8fgc-7cc6-rx7x</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency scanner flagged a known security issue in a library used by this project. Without knowing exactly which library is affected, it is hard to say how serious this is for end users. Because this is a browser extension rather than a server program, most of these issues have limited real-world impact. Updating dependencies when convenient is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency declared in the lockfile. The scanner evidence does not identify the specific package or version. The project&#39;s production dependencies are limited to react, react-dom, cytoscape, cytoscape-dagre, yaml, and zustand, which are bundled into a client-side browser extension. If this advisory affects a build-time or Storybook dev dependency, it would not be present in the shipped artifact. If it affects a bundled production dependency, the browser-extension context limits the attack surface since there is no server-side listener and many common vulnerability classes (path traversal, SSRF) do not apply.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency update or audit to identify and upgrade the flagged package to a fixed version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xhpv-hc6g-r9c6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a known vulnerability in one of this project&#39;s dependencies, but the specific library was not identified. Since this is a browser extension, most dependency vulnerabilities have minimal practical risk for users. Updating libraries is still recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xhpv-hc6g-r9c6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a declared lockfile dependency. The specific package and version are not included in the evidence. This SillyTavern extension ships as a browser-side webpack bundle loaded in the SillyTavern web UI. Many advisories common in React and Storybook projects affect CSS-processing, test-runner, or build-server packages that are development-only and never reach the end-user artifact. For any production dependency that does ship, the browser context constrains exploitability since attacker-controlled input reaching the vulnerable code path is unlikely in this extension&#39;s data flow.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and upgrade it to a non-vulnerable version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xhpv-hc6g-r9c6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3v7f-55p6-f55p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity issue in a dependency. The exact library is unknown. In a browser extension context, medium-severity dependency issues typically pose minimal risk to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3v7f-55p6-f55p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a lockfile dependency. Package details were removed from the scanner output. Medium-severity advisories in JavaScript projects frequently involve ReDoS, prototype pollution, or information disclosure in libraries that are either dev-only or have limited reachability in a browser extension. The project&#39;s six production dependencies are all well-established UI libraries. Without the specific package identity, runtime reachability cannot be confirmed, but the browser-only execution model limits the practical impact of most advisory classes.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify and update the affected dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3v7f-55p6-f55p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3mfm-83xf-c92r applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity dependency vulnerability, but the specific library was not named. Because this is a browser extension with no server component, the practical risk to users is likely low. Updating dependencies is still good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3mfm-83xf-c92r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency without identifying the package. The project bundles a small set of production dependencies into a browser extension loaded within SillyTavern. High-severity advisories in the JavaScript ecosystem often target server-side packages pulled transitively by development tools such as Storybook, test runners, or webpack dev servers. These packages are not included in the production build. Even if a shipped dependency is affected, the browser extension has no open network listener and processes primarily local chat data, reducing the likelihood that an attacker can reach vulnerable code paths.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the flagged package via npm audit and upgrade to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3mfm-83xf-c92r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4c8g-83qw-93j6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a known vulnerability in a project dependency. The affected library could not be identified. For a browser-based extension, most such issues have limited impact. Keeping dependencies current is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory in the lockfile. The specific package name and version were removed from scanner output, preventing confirmation of whether the flagged dependency is a production or development package and whether the vulnerable code path has runtime reachability in the shipped bundle. The extension&#39;s production surface consists of react, react-dom, cytoscape, cytoscape-dagre, yaml, and zustand bundled into dist/index.js for browser execution. Advisories affecting build toolchain or Storybook dependencies would not ship to end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify and update the affected package.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4c8g-83qw-93j6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w5hq-g745-h8pq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific library was not provided. In a browser extension, this type of finding typically poses low practical risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w5hq-g745-h8pq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against an unidentified lockfile dependency. Without the package name and version, runtime reachability in the browser bundle cannot be assessed. Medium advisories in JavaScript projects commonly involve ReDoS or similar issues with constrained impact in a client-side extension context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify and upgrade the flagged dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w5hq-g745-h8pq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r292-9mhp-454m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity dependency issue. The affected library is unknown. For a browser extension, the practical risk is typically low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r292-9mhp-454m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a lockfile dependency. The package identity was removed from the evidence. The project is a client-side SillyTavern extension with a minimal production dependency set. Medium-severity advisories in this ecosystem frequently affect build or test tooling that does not ship in the production bundle. The browser execution model further limits practical exploitability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify and update the affected dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r292-9mhp-454m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f886-m6hf-6m8v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific library was not identified. In a browser extension context, this type of finding generally has low practical impact.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f886-m6hf-6m8v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a lockfile dependency without providing the package name or version. The shipped artifact is a browser extension bundle with six production dependencies. Without identifying the affected package, confirming whether it is bundled and whether the vulnerable code path is reachable in the extension&#39;s data flow is not possible. The client-side context limits the impact of most medium-severity vulnerability classes.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify and upgrade the flagged dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f886-m6hf-6m8v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8452-54wp-rmv6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known vulnerability in one of the project&#39;s dependencies. This project builds into a single bundled file for use inside SillyTavern, and many of its dependencies are only used during development and testing, not shipped to users. Without knowing exactly which package is affected, the practical risk to users is likely low, but the developer should update the dependency.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8452-54wp-rmv6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in package-lock.json. The project is a webpack-bundled SillyTavern browser extension whose shipped artifact is a single dist/index.js file. The lock file contains both production dependencies (cytoscape, cytoscape-dagre, react, react-dom, yaml, zustand) and numerous devDependencies (babel, storybook, webpack, jest, playwright, eslint, tailwindcss). All packages visible in the supplied source context are marked dev:true. Without the specific package name and version for this advisory, runtime reachability cannot be confirmed. If the advisory targets a dev-only build tool, it does not ship in the production bundle and poses no runtime risk to end users. If it targets a production dependency, the browser-extension context limits attacker control over vulnerable inputs. Advisory severity alone does not establish immediate danger.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with package details visible to identify the specific affected package. If it is a devDependency, updating is good hygiene but not urgent. If it is a production dependency, update to a patched version and verify the vulnerable code path is not reachable from user-controlled input.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8452-54wp-rmv6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qx2v-qp2m-jg93 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-severity vulnerability in one of the project&#39;s dependencies. Since this project ships a single bundled file and many dependencies are only used during development, the risk to end users is likely low. The developer should still update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qx2v-qp2m-jg93 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory against a dependency in package-lock.json. The project bundles via webpack to a single dist/index.js artifact for browser-side use in SillyTavern. The lock file includes extensive devDependencies for build, test, and linting tooling that do not ship in the production bundle. The specific affected package and version were not provided, so runtime reachability and attacker input control cannot be assessed. Given the bundled browser-extension architecture, dev-only advisories have no runtime impact, and production-dep advisories face limited attacker control in this context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific affected package using npm audit. Update to a patched version. If the package is a devDependency, the update is routine maintenance; if it is a production dependency, verify the vulnerable code path is not exercised by extension inputs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qx2v-qp2m-jg93</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r6q2-hw4h-h46w applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a high-severity vulnerability in one of the project&#39;s dependencies. However, this project bundles its code into a single file for SillyTavern, and many dependencies are development-only tools that never reach users. The actual risk depends on which package is affected, but is likely low given the project structure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r6q2-hw4h-h46w to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in package-lock.json. The project is a webpack-bundled browser extension shipping dist/index.js. The lock file contains both production and development dependencies; visible packages in the source context are all marked dev:true. Without the specific package identity, runtime reachability cannot be confirmed. The bundled extension architecture means dev-only dependencies do not reach end users, and production dependencies operate in a browser context with limited attacker-controlled input surfaces.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package via npm audit and update it. Confirm whether it is a production or development dependency to gauge urgency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r6q2-hw4h-h46w</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-52cp-r559-cp3m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a high-severity vulnerability in a dependency. This project ships a bundled file and uses many development-only tools, so the vulnerability may not affect end users. The developer should identify and update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-52cp-r559-cp3m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in package-lock.json. The project builds to a single webpack bundle for browser-side execution within SillyTavern. The lock file includes numerous devDependencies for tooling that are not included in the shipped artifact. The specific affected package was not identified in the scanner output, preventing a runtime reachability assessment. The browser-extension deployment model limits the attack surface for most dependency vulnerabilities.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Use npm audit to identify the specific package and update to a patched version. Assess whether the vulnerable code path is reachable in the production bundle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-52cp-r559-cp3m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-severity vulnerability in a dependency. Since this project bundles its code and uses many development-only tools, the risk to users is likely low. The developer should update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory against a dependency in package-lock.json. The project is a webpack-bundled SillyTavern extension whose production artifact is dist/index.js. The lock file contains both production dependencies and extensive devDependencies for build and test tooling. Without the specific package name, runtime reachability cannot be determined. Medium-severity advisories in dev-only build tools do not affect the shipped extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package using npm audit and update it. Determine whether it ships in the production bundle to assess urgency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-96hv-2xvq-fx4p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a high-severity vulnerability in a dependency. This project ships a bundled file for SillyTavern, and many of its dependencies are development tools that do not reach users. The actual risk depends on which package is affected but is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-96hv-2xvq-fx4p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in package-lock.json. The project bundles via webpack to a single browser-side artifact. The lock file includes both production and development dependencies; all packages visible in the supplied source context are marked dev:true. The specific affected package was not provided, so runtime reachability and attacker input control cannot be assessed. The bundled extension architecture limits practical risk for most dependency advisories.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific affected package via npm audit and update to a patched version. Verify whether the vulnerable code is included in the production bundle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-96hv-2xvq-fx4p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3ppc-4f35-3m26 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a high-severity vulnerability in a dependency. Because this project bundles its code into a single file and uses many development-only tools, the risk to end users is likely low. The developer should update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3ppc-4f35-3m26 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in package-lock.json. The project is a webpack-bundled browser extension for SillyTavern. The shipped artifact is a single dist/index.js file; devDependencies used for build, test, and linting are not included. The specific affected package and version were not provided, preventing runtime reachability analysis. The browser-extension context and bundled delivery model limit the attack surface for dependency vulnerabilities.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the affected package and update it. Confirm whether the vulnerable code ships in the production bundle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3ppc-4f35-3m26</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a high-severity vulnerability in a dependency. This project ships a bundled file and uses many development-only tools, so the vulnerability may not affect end users. The developer should identify and update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in package-lock.json. The project builds to a single webpack bundle for browser-side execution in SillyTavern. The lock file contains both production dependencies (cytoscape, react, yaml, zustand, etc.) and numerous devDependencies for build and test tooling. All packages visible in the supplied source context are marked dev:true. Without the specific package identity, runtime reachability cannot be confirmed. The bundled browser-extension architecture limits practical risk for most dependency advisories.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific affected package using npm audit and update to a patched version. Assess whether the vulnerable code path is reachable in the production bundle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-442j-39wm-28r2 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a low-severity issue in one of the project&#39;s dependencies. Because the project only ships a bundled file to users and most dependencies are used only during development, the actual risk to people using the extension is likely very small. The specific affected package could not be identified from the scanner output.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-442j-39wm-28r2 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a low-severity advisory (GHSA-442j-39wm-28r2) against a dependency in the lockfile. The package identity was stripped from the scanner output, preventing confirmation of whether it is a production or dev dependency. The project ships a webpack bundle (dist/index.js) loaded by SillyTavern; dev dependencies such as Babel, Storybook, Jest, Playwright, ESLint, and Webpack tooling do not reach end users. The production dependency set is minimal (cytoscape, cytoscape-dagre, react, react-dom, yaml, zustand) and consists of well-maintained packages. Without knowing the specific package, runtime reachability and attacker-control paths cannot be confirmed, but the project structure strongly suggests most lockfile entries are build-time transitive dependencies.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package and update it if feasible, especially if it is a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-442j-39wm-28r2</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-34x7-hfp2-rc4v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a high-severity dependency issue, but the affected package could not be identified. Since the extension only ships a bundled file and most dependencies are development tools that never reach users, the real-world danger is likely low. The high scanner rating alone does not mean users are actually at risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-34x7-hfp2-rc4v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory (GHSA-34x7-hfp2-rc4v) against a dependency in the lockfile. The package identity was stripped from the scanner output. The project ships a webpack bundle to end users; dev-only tooling dependencies do not reach the shipped artifact. The production dependencies are cytoscape, cytoscape-dagre, react, react-dom, yaml, and zustand, all current and well-maintained. Advisory severity alone does not establish end-user harm. Without confirming the specific package, whether it is a production or dev dependency, and whether attacker-controlled input reaches the vulnerable code path at runtime, the concrete risk to extension users cannot be established as material. The large lockfile size relative to the small production dependency set suggests most entries are dev-tooling transitive dependencies.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package. If it is a production dependency, update it promptly. If it is a dev dependency, update when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-34x7-hfp2-rc4v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-58qx-3vcg-4xpx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific package could not be identified. Since the extension ships only a bundled file and most dependencies are development-only, the actual risk to users is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-58qx-3vcg-4xpx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-58qx-3vcg-4xpx) against a dependency in the lockfile. The package identity was stripped from the scanner output, preventing determination of whether it is a production or dev dependency. The project ships a webpack bundle; dev dependencies do not reach end users. The production dependency set is small and consists of well-maintained packages. Without specific package identification, runtime reachability and attacker-control paths cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-58qx-3vcg-4xpx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-q8mj-m7cp-5q26 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific package could not be identified. The extension ships only a bundled file, so development-only dependencies do not reach users, making the actual risk likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-q8mj-m7cp-5q26 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-q8mj-m7cp-5q26) against a dependency in the lockfile. The package identity was stripped from the scanner output. The project ships a webpack bundle to end users; dev-only tooling dependencies do not reach the shipped artifact. The production dependencies are minimal and well-maintained. Without confirming the specific package and its dependency classification, concrete end-user harm cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-q8mj-m7cp-5q26</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2c7-rcm5-vvqj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a high-severity dependency issue, but the affected package could not be identified. The extension ships only a bundled file to users, and most dependencies are development tools, so the real-world danger is likely low despite the high scanner rating.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2c7-rcm5-vvqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory (GHSA-c2c7-rcm5-vvqj) against a dependency in the lockfile. The package identity was stripped from the scanner output. The project ships a webpack bundle; dev dependencies do not reach end users. The production dependency set is small and consists of current, well-maintained packages. Advisory severity alone does not establish end-user harm. Without specific package identification, dependency classification, and runtime reachability analysis, the concrete risk to extension users cannot be established as material. The lockfile is large relative to the small production dependency set, indicating most entries are dev-tooling transitive dependencies.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package. If it is a production dependency, update it promptly. If it is a dev dependency, update when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2c7-rcm5-vvqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-gvwx-54wh-qm9j applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific package could not be identified. The extension ships only a bundled file, so development-only dependencies do not reach users, making the actual risk likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-gvwx-54wh-qm9j to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-gvwx-54wh-qm9j) against a dependency in the lockfile. The package identity was stripped from the scanner output. The project ships a webpack bundle; dev dependencies do not reach end users. The production dependencies are minimal and well-maintained. Without specific package identification, runtime reachability and attacker-control paths cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-gvwx-54wh-qm9j</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2qvq-rjwj-gvw9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific package could not be identified. The extension ships only a bundled file, so development-only dependencies do not reach users, making the actual risk likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2qvq-rjwj-gvw9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-2qvq-rjwj-gvw9) against a dependency in the lockfile. The package identity was stripped from the scanner output. The project ships a webpack bundle; dev dependencies do not reach end users. The production dependencies are minimal and well-maintained. Without specific package identification, runtime reachability and attacker-control paths cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2qvq-rjwj-gvw9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-48c2-rrv3-qjmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a dependency, but the specific package could not be identified. The extension ships only a bundled file, so development-only dependencies do not reach users, making the actual risk likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-48c2-rrv3-qjmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-48c2-rrv3-qjmp) against a dependency in the lockfile. The package identity was stripped from the scanner output. The project ships a webpack bundle; dev dependencies do not reach end users. The production dependencies are minimal and well-maintained. Without specific package identification, runtime reachability and attacker-control paths cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-48c2-rrv3-qjmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-38r7-794h-5758 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor security notice was found for a package used by this extension. Because the extension runs in the browser and ships only a small set of well-known libraries, and because many packages in the lockfile are build-only tools that never reach end users, the real-world risk is low. Updating packages when convenient is good practice but not urgent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-38r7-794h-5758 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity OSV advisory was matched against a dependency in the lockfile. The project ships only a webpack production bundle (dist/index.js) with six production dependencies (cytoscape, cytoscape-dagre, react, react-dom, yaml, zustand), all well-known client-side libraries. The lockfile is approximately 791 KB, indicating a large transitive dependency tree dominated by devDependencies (Storybook, webpack, Babel, Playwright-based test runners) that are not included in the shipped bundle. Without the specific package name and version from the scanner candidate, exact runtime reachability cannot be confirmed, but the project&#39;s client-side browser context and limited production dependency surface constrain the practical impact of a low-severity advisory. Most low-severity npm advisories address issues such as minor ReDoS or informational leaks that have negligible impact in a browser extension processing authored story definitions.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it to a fixed version at the next maintenance opportunity. If the affected package is a devDependency, no user-facing action is required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-38r7-794h-5758</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A serious-sounding security notice was found for a package in this extension&#39;s dependency list. However, the extension only ships a small bundle of well-known browser libraries to end users, while most packages in the lockfile are build and test tools that never leave the developer&#39;s machine. The extension also runs inside the browser, which rules out many common server-side vulnerabilities. The practical risk to users is low, but the developer should identify and update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity OSV advisory was matched against a dependency in the lockfile. Advisory severity alone is not an immediate-danger conclusion. The project is a SillyTavern browser extension that ships a webpack bundle with only six production dependencies, all established client-side libraries. The lockfile size (approximately 791 KB) relative to the small production dependency set indicates the vast majority of transitive dependencies originate from devDependencies (Storybook 8.6.x, webpack, Babel, test-runner, axe-playwright) that are excluded from the shipped artifact. High-severity npm advisories frequently target server-side packages such as tar, ws, express, or socket.io that appear as transitive dependencies of build and test tooling; these vulnerabilities are not reachable in a client-side webpack bundle. The extension processes authored story JSON and LLM response text within the SillyTavern frontend, limiting the attack surface to data the user already controls. Without the specific package identity from the scanner candidate, full runtime reachability analysis is not possible, but the project context strongly suggests the advisory is either in a non-shipped devDependency树</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and version. If it is a devDependency or build tool, update it at the next maintenance cycle. If it is a production dependency, verify whether the vulnerable code path is reachable with user-controlled input in the shipped bundle and update to a fixed version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (3)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a harmless, standard code pattern from a popular utility library (lodash) bundled into the extension. It uses a fixed, hardcoded snippet to detect the global environment, not to run anything dangerous or user-controlled. This pattern is extremely common in bundled JavaScript and poses no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched dynamic execution in a minified webpack chunk. The relevant code is the standard lodash global-object resolution pattern: a fixed string literal is passed to the Function constructor to obtain the global this reference. This is a well-known, benign idiom used by lodash (module 9325) and appears in virtually every lodash bundle. No attacker-controlled or user-supplied data reaches this call; the argument is a compile-time constant. The surrounding code is the dagre graph-layout library, graphlib, and lodash utilities bundled for the cytoscape-dagre visualization used by the extension&#39;s Checkpoint Studio. There is no eval of dynamic content, no network exfiltration, and no concealed execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/dist/111.index.js#L1" rel="noopener noreferrer">dist/111.index.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a planning document describing how tests are organized. There is no password or API key present—just a description of test file names and folders. The scanner flagged ordinary text by mistake.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is inside a design-plan markdown document describing test-suite structure: fixture file naming patterns, golden-model output locations, and a deterministic-vs-live test runner toggle. It contains no secret value, no API key, and no credential material. The gitleaks generic-api-key rule produced a pattern match on descriptive text about test fixtures, not an actual exposed credential. The file role is documentation with no runtime execution path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/docs/plans/v2/03-extractor.md#L33" rel="noopener noreferrer">docs/plans/v2/03-extractor.md:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner flagged a word that looks like it could be part of a secret password or code. But looking at the actual document, the word &#39;key&#39; just refers to a data field name in test files. There is no real secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched the word &#39;key&#39; on line 33 of a planning markdown document. In context, &#39;key&#39; refers to a JSON object property name within test fixture expectations for blackboard delta evaluation, not a credential or secret. No credential value, API key, token, or secret material is present on this line or anywhere else in the surrounding source context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/f853fcb71ee6d9d20220272b4cfcecb7cd3dc827/docs/plans/v2/03-extractor.md#L33" rel="noopener noreferrer">docs/plans/v2/03-extractor.md:33</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Scanner removed package identities, limiting reachability analysis</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The scanner found security issues in the lockfile but did not say which packages were affected. The extension only ships a built bundle to users, so most flagged packages are likely development tools. The developer should check locally to identify and update the specific packages.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight OSV-scanner candidates have package details removed from the scanner output. The supplied lockfile context shows only the top-level dependency declarations and a small portion of the 791KB lockfile. The project ships a webpack production bundle (dist/index.js) with six minimal, recently-versioned production dependencies. The large devDependency tree includes storybook, webpack, babel, jest, playwright, eslint, and postcss ecosystems, which commonly trigger advisories but are not shipped to end users. Without specific package names and versions for each advisory, precise runtime reachability cannot be confirmed. The developer should run osv-scanner locally with full output to identify each flagged package, determine whether it is a production or dev dependency, and upgrade accordingly.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run osv-scanner or npm audit locally with full package details, classify each advisory as production or dev dependency, upgrade all flagged packages to fixed versions, and consider adding a dependency audit step to CI.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json#L1-L64" rel="noopener noreferrer">package-lock.json:1-64</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All eight advisories lack package identification due to scanner redaction</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The security scanner found eight known issues in dependencies but did not include which specific packages are affected. The project uses many tools for development that do not get shipped to end users, so most of these issues likely do not affect people who install the extension. Running the project&#39;s own audit tool would identify the exact packages so they can be updated.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The OSV-Scanner candidates report GHSA IDs and severity but state that package details were removed. The supplied file context is truncated to the first approximately 160 lines of a 791,840-byte file, showing direct dependencies and devDependencies but not the full transitive dependency tree. This prevents confirming which specific packages correspond to each advisory. The project structure strongly suggests most advisories are in devDependencies (Storybook, Jest, Playwright, Babel, Webpack, ESLint, TailwindCSS and their transitive trees), which are not included in the shipped webpack bundle. The production dependencies (react, react-dom, cytoscape, cytoscape-dagre, yaml, zustand) are minimal and well-maintained. Running npm audit against the full lockfile would resolve the identification gap.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit in the project root to obtain the full list of affected packages and their advisory mappings. Update each affected package to a non-vulnerable version. Prioritize any that are production dependencies bundled into dist/index.js.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json#L1-L161" rel="noopener noreferrer">package-lock.json:1-161</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisories identified without package-level detail</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>The scanner found eight dependency vulnerabilities but did not include which specific libraries are affected. Some may be in tools used only during development and not shipped to users. Running the project&#39;s own audit tool with full details would let the developer fix the right packages.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight scanner candidates are OSV-scanner advisories against the lockfile with package names removed from the evidence. The project has a small set of production dependencies (cytoscape, cytoscape-dagre, react, react-dom, yaml, zustand) and a large set of devDependencies for Storybook, Babel, ESLint, and webpack. Without knowing which specific packages are flagged for each advisory, it is not possible to distinguish advisories affecting shipped production code from those affecting build-only dependencies. The browser extension execution model further reduces the impact of common advisory classes such as path traversal, SSRF, and server-side prototype pollution. Running npm audit with package-level output would allow targeted remediation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to obtain package-level advisory details and upgrade flagged production and development dependencies to patched versions.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json#L1-L41" rel="noopener noreferrer">package-lock.json:1-41</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All eight advisories lack package identification, limiting runtime reachability analysis</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>The scanner did not include which specific packages are affected by these advisories. The extension only ships a bundled file to users, and most of its dependencies are development tools that never reach users. This makes it likely that most or all of these issues do not affect people who install the extension, but this cannot be confirmed without the package names.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The scanner output for all eight candidates stripped package details, leaving only GHSA identifiers and severity ratings. The visible lockfile portion (lines 1-641) shows only dev-marked Babel packages. The project ships a webpack production bundle per the README and package.json build script, meaning dev dependencies and their transitive vulnerabilities do not reach end users. The production dependency set is six packages, all current and well-maintained. Without knowing which specific packages each advisory targets, it is not possible to confirm whether any vulnerable code is bundled into the shipped artifact or whether attacker-controlled input reaches it. The large lockfile size relative to the small production dependency set indicates the majority of entries are dev-tooling transitive dependencies.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally with package details enabled to identify each affected package. Prioritize updates for any that are production dependencies; schedule updates for dev dependencies as maintenance.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json#L1-L64" rel="noopener noreferrer">package-lock.json:1-64</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Scanner candidates omit affected package names, limiting reachability analysis</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The scanner found security notices but did not include the names of the affected packages in the data provided for review. This means the reviewer cannot pinpoint exactly which library is involved. Based on how the extension is built and shipped, the risk appears low, but identifying the specific packages would allow a more precise assessment.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Both OSV-scanner candidates report advisory IDs and severity but do not include the affected package name or resolved version. The supplied source context covers only the first 41 lines of a 791 KB lockfile, showing the root project&#39;s direct dependencies and the beginning of its devDependencies. Without the specific package identity, it is not possible to confirm whether the advisory applies to a production dependency that ships in the webpack bundle or to a devDependency that is excluded. The project&#39;s architecture (client-side extension, six production dependencies, webpack bundling, authored-story input model) provides strong contextual evidence that the risk is low regardless, but a definitive reachability determination would require the package name and resolved version.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner locally with verbose output to obtain the specific package names and versions, then update affected packages to fixed versions.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MaxiPawlowski/story-orchestrator/blob/d2d7122117a80a6813faee5de7e4556dcc93541e/package-lock.json#L1-L41" rel="noopener noreferrer">package-lock.json:1-41</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>476 files &middot; 6971837 bytes</dd>
+      <dt>Contextual coverage</dt><dd>69 of 69 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/MaxiPawlowski/story-orchestrator/commit/d2d7122117a80a6813faee5de7e4556dcc93541e" rel="noopener noreferrer">d2d7122117a80a6813faee5de7e4556dcc93541e</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T22:21:54.963Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>267200 input &middot; 84684 output &middot; 42427 cache read &middot; 3213 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>86e37773df5984a482965598167aff6e6113be16a9d81f9b1d02ba5601470c23</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1082708357/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
