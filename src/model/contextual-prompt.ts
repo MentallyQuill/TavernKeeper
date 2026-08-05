@@ -19,8 +19,39 @@ export interface ContextualReviewRepair {
 
 function repairGuidance(diagnostic: ModelResponseDiagnostic) {
   switch (diagnostic) {
+    case "assessment_candidate_id":
+      return "Every assessment candidate_id must exactly match one supplied candidate_id, and every supplied candidate must appear exactly once.";
+    case "assessment_evidence_ids":
+      return "Every assessment evidence_ids value must be a non-empty array of unique supplied evidence IDs and must include the evidence ID belonging to that candidate.";
+    case "assessment_disposition":
+      return "Every disposition must be exactly one of expected_behavior, minor_weakness, material_vulnerability, or credible_malicious_behavior.";
+    case "assessment_impact":
+      return "Every impact must be exactly one of none, low, medium, high, or critical and must agree with the described concrete harm.";
+    case "assessment_exploitability":
+      return "Every exploitability must be exactly one of unlikely, plausible, or readily_exploitable.";
+    case "assessment_confidence":
+      return "Every confidence must be exactly one of low, medium, or high. credible_malicious_behavior requires high confidence.";
+    case "assessment_recommended_risk":
+      return "Every recommended_risk must be exactly low, material, or high and must follow the disposition, impact, exploitability, and confidence rules in this policy.";
+    case "assessment_technical_explanation":
+      return "Every technical_explanation must be non-empty plain text of no more than 1200 characters. Use no URLs, filesystem paths, code syntax, source quotations, or claims that a project is safe or trusted.";
+    case "assessment_layman_explanation":
+      return "Every layman_explanation must be non-empty plain text of no more than 600 characters, understandable without source code. Use no URLs, paths, code syntax, or safety or trust claims.";
     case "assessment_developer_action":
       return 'For every assessment, developer_action must be a non-empty plain-text string of no more than 600 characters. If no developer change is warranted, use the exact string "none". Never omit the key or return null, an array, an object, or an empty string. Do not include URLs, filesystem paths, code syntax, or claims that a project is safe or trusted.';
+    case "assessment_locations":
+      return "Do not include a locations key in any assessment. TavernKeeper attaches deterministic assessment locations after validation.";
+    case "assessment_schema":
+      return "Every assessment must contain exactly candidate_id, evidence_ids, disposition, impact, exploitability, confidence, recommended_risk, technical_explanation, layman_explanation, and developer_action, with one assessment per supplied candidate.";
+    case "observation_schema":
+      return "Every observation must contain exactly related_candidate_ids, evidence_ids, disposition, impact, exploitability, confidence, recommended_risk, title, technical_explanation, layman_explanation, developer_action, and locations. Use an empty observations array when no valid observation exists. Do not add observation_id.";
+    case "response_json":
+      return "Return one complete JSON object only, with no prose, markdown fence, second object, or truncated suffix.";
+    case "response_content":
+      return "Remove secret-shaped text, source quotations, URLs, paths, and code syntax from all narrative fields while preserving the required JSON structure.";
+    case "output_limit":
+    case "response_size":
+      return "Keep every narrative concise and return only the required keys so the complete JSON object fits within the response limit.";
     case "review_schema":
       return 'A completed response must contain exactly three top-level keys: status, assessments, and observations. Set status to the exact string "complete". assessments must be an array with exactly one object for every supplied candidate. observations must be an array, using an empty array when there are no observations. Do not add, remove, or rename top-level keys.';
     default:

@@ -53,6 +53,16 @@ function isToleratedParserWarning(value: unknown) {
   );
 }
 
+function coverageLimitation(value: unknown): ScannerDiagnostic | undefined {
+  const parsed = OpenGrepDiagnosticSchema.safeParse(value);
+  if (!parsed.success || parsed.data.level !== "warn") return undefined;
+  if (parsed.data.code === 3 && parsed.data.type === "Syntax error")
+    return "parser_syntax";
+  if (parsed.data.code === 2 && parsed.data.type === "Timeout")
+    return "rule_timeout";
+  return undefined;
+}
+
 function failureDiagnostic(errors: unknown[]): ScannerDiagnostic | undefined {
   const types = errors.flatMap((value) => {
     const parsed = OpenGrepDiagnosticSchema.safeParse(value);
@@ -100,13 +110,15 @@ function parseReport(root: string, stdout: string, exitCode: number) {
       "opengrep",
     );
   }
-  const hasOnlyToleratedParserWarnings = report.errors.every(
-    isToleratedParserWarning,
+  const hasOnlyRecognizedDiagnostics = report.errors.every(
+    (error) =>
+      isToleratedParserWarning(error) ||
+      coverageLimitation(error) !== undefined,
   );
   const hasWarningBackedExit =
     exitCode === 0 ||
     ((exitCode === 2 || exitCode === 3) && report.errors.length > 0);
-  if (!hasWarningBackedExit || !hasOnlyToleratedParserWarnings)
+  if (!hasWarningBackedExit || !hasOnlyRecognizedDiagnostics)
     throw new ScannerError(
       "SCANNER_FAILED",
       "system",
@@ -115,7 +127,7 @@ function parseReport(root: string, stdout: string, exitCode: number) {
       failureDiagnostic(report.errors),
     );
   try {
-    return report.results
+    const findings = report.results
       .map((value) => {
         const metadata = value.extra.metadata;
         return normalizeFinding({
@@ -134,6 +146,15 @@ function parseReport(root: string, stdout: string, exitCode: number) {
         });
       })
       .sort((left, right) => left.fingerprint.localeCompare(right.fingerprint));
+    const limitations = [
+      ...new Set(
+        report.errors.flatMap((error) => {
+          const limitation = coverageLimitation(error);
+          return limitation === undefined ? [] : [limitation];
+        }),
+      ),
+    ].sort();
+    return { findings, limitations };
   } catch {
     throw new ScannerError(
       "MALFORMED_SCANNER_OUTPUT",
@@ -195,10 +216,17 @@ export async function runOpenGrep({
       `OpenGrep exited with code ${result.value.exitCode}.`,
       "opengrep",
     );
+  const parsed = parseReport(root, result.value.stdout, result.value.exitCode);
   return {
     name: "opengrep",
     version,
-    status: "completed",
-    findings: parseReport(root, result.value.stdout, result.value.exitCode),
+    status:
+      parsed.limitations.length === 0
+        ? "completed"
+        : "completed-with-limitations",
+    ...(parsed.limitations.length === 0
+      ? {}
+      : { limitations: parsed.limitations }),
+    findings: parsed.findings,
   };
 }

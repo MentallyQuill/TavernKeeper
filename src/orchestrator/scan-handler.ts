@@ -182,14 +182,33 @@ export function validateScannerRuns(
       "Required scanner coverage set is incomplete.",
     );
   for (const run of runs) {
+    const expectedStatus = expectedScannerStatus(run.name, classification);
+    const limitedOpenGrep =
+      run.name === "opengrep" &&
+      expectedStatus === "completed" &&
+      run.status === "completed-with-limitations" &&
+      run.limitations !== undefined &&
+      run.limitations.length > 0 &&
+      run.limitations.every((limitation) =>
+        ["parser_syntax", "rule_timeout"].includes(limitation),
+      );
     if (
-      run.status !== expectedScannerStatus(run.name, classification) ||
+      (run.status !== expectedStatus && !limitedOpenGrep) ||
       run.version !== expectedVersions[run.name]
     )
       throw new ScannerError(
         "SCANNER_FAILED",
         "system",
         `Required scanner coverage is incomplete for ${run.name}.`,
+      );
+    if (
+      run.status !== "completed-with-limitations" &&
+      run.limitations !== undefined
+    )
+      throw new ScannerError(
+        "SCANNER_FAILED",
+        "system",
+        `Unexpected scanner coverage limitations for ${run.name}.`,
       );
     for (const finding of run.findings) FindingSchema.parse(finding);
   }

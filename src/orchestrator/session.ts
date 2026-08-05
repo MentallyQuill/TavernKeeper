@@ -15,6 +15,8 @@ import type { ScannerPins, ScannerPolicyV3 } from "../config/policy.js";
 import {
   buildScanPackage,
   RequiredScanPackageTools,
+  ScanPackageToolLimitationSchema,
+  ScanPackageToolStatusSchema,
 } from "../contracts/scan-package.js";
 import { FindingSchema } from "../contracts/reports.js";
 import { ScanReportV5Schema } from "../contracts/reports-v5.js";
@@ -32,6 +34,7 @@ import { inventoryRepository } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import {
   CompletedContextualReviewSchema,
+  ContextualReviewProgressSchema,
   reviewEvidenceGroups,
   type ContextualReviewPolicy,
   type ContextualReviewProvider,
@@ -132,7 +135,12 @@ const PreparedSessionObjectSchema = z.strictObject({
     z.strictObject({
       name: z.enum(RequiredScanPackageTools),
       version: VersionSchema,
-      status: z.enum(["completed", "not-applicable"]),
+      status: ScanPackageToolStatusSchema,
+      limitations: z
+        .array(ScanPackageToolLimitationSchema)
+        .min(1)
+        .max(2)
+        .optional(),
     }),
   ),
   findings: z.array(FindingSchema),
@@ -152,6 +160,13 @@ const ReviewBundleSchema = z.strictObject({
   session_id: DigestSchema,
   evidence_digest: DigestSchema,
   review: CompletedContextualReviewSchema,
+});
+
+const ReviewProgressBundleSchema = z.strictObject({
+  schema_version: z.literal(1),
+  session_id: DigestSchema,
+  evidence_digest: DigestSchema,
+  progress: ContextualReviewProgressSchema,
 });
 
 function runtimeInventory(prepared: PreparedSession) {
@@ -506,10 +521,11 @@ export async function prepareTargetSession({
           version: scannerVersion,
           status: "completed" as const,
         },
-        ...orderedRuns.map(({ name, version, status }) => ({
+        ...orderedRuns.map(({ name, version, status, limitations }) => ({
           name: name as (typeof RequiredScanPackageTools)[number],
           version,
           status,
+          ...(limitations === undefined ? {} : { limitations }),
         })),
       ],
       findings,
@@ -626,6 +642,19 @@ async function writeExclusive(path: string, value: unknown) {
   }
 }
 
+async function writeAtomic(path: string, value: unknown) {
+  const destination = resolve(path);
+  const temporary = `${destination}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(temporary, `${JSON.stringify(value, null, 2)}\n`, {
+      flag: "wx",
+    });
+    await rename(temporary, destination);
+  } finally {
+    await rm(temporary, { force: true });
+  }
+}
+
 export async function reviewPreparedSession({
   sessionRoot: sessionRootInput,
   provider,
@@ -640,10 +669,55 @@ export async function reviewPreparedSession({
   const sessionRoot = safeSessionRoot(sessionRootInput);
   const prepared = await loadPrepared(sessionRoot);
   const evidence = await loadEvidenceContext(sessionRoot, prepared);
+  const progressPath = resolve(sessionRoot, "review-progress.json");
+  const reviewPath = resolve(sessionRoot, "review.json");
+  if (await pathExists(reviewPath)) {
+    const existing = ReviewBundleSchema.parse(
+      JSON.parse(await readFile(reviewPath, "utf8")),
+    );
+    if (
+      existing.session_id !== prepared.session_id ||
+      existing.evidence_digest !== evidence.evidence_digest
+    )
+      throw new ScanPhaseError(
+        "CONTEXTUAL_REVIEW_INVALID",
+        "repository",
+        "Completed contextual review does not match prepared evidence.",
+      );
+    await rm(progressPath, { force: true });
+    return { status: "reviewed" as const, review: existing.review };
+  }
+  let progress: z.infer<typeof ContextualReviewProgressSchema> | undefined;
+  if (await pathExists(progressPath)) {
+    const progressBundle = ReviewProgressBundleSchema.parse(
+      JSON.parse(await readFile(progressPath, "utf8")),
+    );
+    if (
+      progressBundle.session_id !== prepared.session_id ||
+      progressBundle.evidence_digest !== evidence.evidence_digest
+    )
+      throw new ScanPhaseError(
+        "CONTEXTUAL_REVIEW_INVALID",
+        "repository",
+        "Contextual review progress does not match prepared evidence.",
+      );
+    progress = progressBundle.progress;
+  }
   const review = await reviewEvidenceGroups({
     groups: evidence.groups,
     provider,
     policy,
+    ...(progress === undefined ? {} : { progress }),
+    onProgress: async (nextProgress) =>
+      writeAtomic(
+        progressPath,
+        ReviewProgressBundleSchema.parse({
+          schema_version: 1,
+          session_id: prepared.session_id,
+          evidence_digest: evidence.evidence_digest,
+          progress: nextProgress,
+        }),
+      ),
     ...(expandContext === undefined ? {} : { expandContext }),
   });
   const bundle = ReviewBundleSchema.parse({
@@ -652,7 +726,8 @@ export async function reviewPreparedSession({
     evidence_digest: evidence.evidence_digest,
     review,
   });
-  await writeExclusive(resolve(sessionRoot, "review.json"), bundle);
+  await writeExclusive(reviewPath, bundle);
+  await rm(progressPath, { force: true });
   return { status: "reviewed" as const, review };
 }
 

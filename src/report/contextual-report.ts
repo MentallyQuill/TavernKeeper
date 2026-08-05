@@ -42,6 +42,25 @@ const originTool: Record<string, string | undefined> = {
   malcontent: "malcontent",
 };
 
+const coverageLimitationText = {
+  parser_syntax:
+    "OpenGrep could not parse some source files; findings from successfully analyzed files are included.",
+  rule_timeout:
+    "OpenGrep timed out on some rule and file combinations; findings from completed analyses are included.",
+} as const;
+
+function reportLimitations(
+  scanPackage: ScanPackageV1,
+  configured: readonly string[],
+) {
+  const scannerLimitations = scanPackage.tools.flatMap((tool) =>
+    (tool.limitations ?? []).map(
+      (limitation) => coverageLimitationText[limitation],
+    ),
+  );
+  return [...new Set([...configured, ...scannerLimitations])];
+}
+
 function candidateRoles(
   groups: readonly EvidenceContextGroup[],
   scanPackage: ScanPackageV1,
@@ -174,7 +193,11 @@ export function buildContextualReport(
         first_party_text_bytes: scanPackage.inventory.first_party_text.bytes,
         excluded: scanPackage.inventory.excluded,
       },
-      tools: scanPackage.tools,
+      tools: scanPackage.tools.map(({ name, version, status }) => ({
+        name,
+        version,
+        status: status === "completed-with-limitations" ? "completed" : status,
+      })),
       evidence_validation: {
         status: "completed" as const,
         validated_candidates: candidates.length,
@@ -185,7 +208,7 @@ export function buildContextualReport(
     assessments: input.review.assessments,
     observations: input.review.observations,
     counts,
-    limitations: [...options.limitations],
+    limitations: reportLimitations(scanPackage, options.limitations),
   };
   const identity = reportIdentity({
     ...withoutIdentity,

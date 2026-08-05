@@ -10,7 +10,8 @@ import {
 export interface ScannerRun {
   name: string;
   version: string;
-  status: "completed" | "not-applicable";
+  status: "completed" | "completed-with-limitations" | "not-applicable";
+  limitations?: ScannerDiagnostic[] | undefined;
   findings: Finding[];
 }
 

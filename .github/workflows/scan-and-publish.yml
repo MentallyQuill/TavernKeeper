@@ -127,7 +127,7 @@ jobs:
         id: review
         if: steps.prepare.outcome == 'success'
         continue-on-error: true
-        timeout-minutes: 16
+        timeout-minutes: 42
         env:
           TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
           TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
@@ -135,7 +135,25 @@ jobs:
           TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}
           TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
-        run: npm run --silent review-target
+        shell: bash
+        run: |
+          run_review() {
+            node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
+            if timeout --signal=TERM --kill-after=10s 20m npm run --silent review-target; then
+              rm -f phase-error.json
+              return 0
+            fi
+            return 1
+          }
+          if run_review; then
+            exit 0
+          fi
+          if jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null; then
+            rm -f phase-error.json
+            run_review
+          else
+            exit 1
+          fi
       - name: Finalize contextual V5 report
         id: finalize
         if: steps.review.outcome == 'success'

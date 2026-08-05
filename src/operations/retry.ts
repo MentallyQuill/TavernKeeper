@@ -51,13 +51,23 @@ export function recordFailure(
       ({ error_fingerprint }) => error_fingerprint === errorFingerprint,
     );
     const consecutiveFailures = (current?.consecutive_failures ?? 0) + 1;
+    const firstFailedAt =
+      current === undefined ||
+      Date.parse(input.at) < Date.parse(current.first_failed_at)
+        ? input.at
+        : current.first_failed_at;
+    const lastFailedAt =
+      current === undefined ||
+      Date.parse(input.at) > Date.parse(current.last_failed_at)
+        ? input.at
+        : current.last_failed_at;
     const hold: AutomaticRecoveryHold = {
       error_fingerprint: errorFingerprint,
       failure: input.failure,
-      first_failed_at: current?.first_failed_at ?? input.at,
-      last_failed_at: input.at,
+      first_failed_at: firstFailedAt,
+      last_failed_at: lastFailedAt,
       consecutive_failures: consecutiveFailures,
-      next_probe_at: scanRetryAt(input.at, consecutiveFailures),
+      next_probe_at: scanRetryAt(lastFailedAt, consecutiveFailures),
       chronic: consecutiveFailures >= 5,
     };
     automaticHolds = [

@@ -138,6 +138,117 @@ describe("scanner coordinator", () => {
     expect(adapters.malcontent).not.toHaveBeenCalled();
   });
 
+  test("attributes an untyped adapter failure to the scanner and repository", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => {
+        throw new Error("spawn exploded with an internal path");
+      }),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    await expect(runApplicableScanners(baseSpec, adapters)).rejects.toEqual(
+      expect.objectContaining({
+        name: "ScannerError",
+        code: "SCANNER_FAILED",
+        scope: "repository",
+        component: "opengrep",
+        message: "OpenGrep failed for this repository.",
+      }),
+    );
+  });
+
+  test("attributes an untyped Gitleaks failure to the scanner and repository", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => {
+        throw new Error("raw Gitleaks failure");
+      }),
+      opengrep: vi.fn(async () => completed("opengrep")),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    await expect(
+      runApplicableScanners(baseSpec, adapters),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "repository",
+      component: "gitleaks",
+      message: "Gitleaks failed for this repository.",
+    });
+  });
+
+  test("attributes an untyped OSV failure to the scanner and repository", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => completed("opengrep")),
+      osv: vi.fn(async () => {
+        throw new Error("raw OSV failure");
+      }),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    await expect(
+      runApplicableScanners(baseSpec, adapters),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "repository",
+      component: "osv-scanner",
+      message: "OSV-Scanner failed for this repository.",
+    });
+  });
+
+  test("attributes an untyped zizmor failure to the scanner and repository", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => completed("opengrep")),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => {
+        throw new Error("raw zizmor failure");
+      }),
+      malcontent: vi.fn(async () => notApplicable("malcontent")),
+    };
+
+    await expect(
+      runApplicableScanners(baseSpec, adapters),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "repository",
+      component: "zizmor",
+      message: "zizmor failed for this repository.",
+    });
+  });
+
+  test("attributes an untyped malcontent failure to the scanner and repository", async () => {
+    const adapters = {
+      staticScan: vi.fn(() => []),
+      gitleaks: vi.fn(async () => completed("gitleaks")),
+      opengrep: vi.fn(async () => completed("opengrep")),
+      osv: vi.fn(async () => notApplicable("osv-scanner")),
+      zizmor: vi.fn(async () => notApplicable("zizmor")),
+      malcontent: vi.fn(async () => {
+        throw new Error("raw malcontent failure");
+      }),
+    };
+
+    await expect(
+      runApplicableScanners(baseSpec, adapters),
+    ).rejects.toMatchObject({
+      code: "SCANNER_FAILED",
+      scope: "repository",
+      component: "malcontent",
+      message: "malcontent failed for this repository.",
+    });
+  });
+
   test("uses precomputed structural findings without retaining source files", async () => {
     const structuralFinding = normalizeFinding({
       origin: "tavernkeeper",

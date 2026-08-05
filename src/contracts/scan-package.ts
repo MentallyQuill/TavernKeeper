@@ -63,11 +63,60 @@ export const RequiredScanPackageTools = [
   "malcontent",
 ] as const;
 
-const ScanPackageToolSchema = z.strictObject({
-  name: z.enum(RequiredScanPackageTools),
-  version: VersionSchema,
-  status: z.enum(["completed", "not-applicable"]),
-});
+export const ScanPackageToolLimitationSchema = z.enum([
+  "parser_syntax",
+  "rule_timeout",
+]);
+export const ScanPackageToolStatusSchema = z.enum([
+  "completed",
+  "completed-with-limitations",
+  "not-applicable",
+]);
+
+const ScanPackageToolSchema = z
+  .strictObject({
+    name: z.enum(RequiredScanPackageTools),
+    version: VersionSchema,
+    status: ScanPackageToolStatusSchema,
+    limitations: z
+      .array(ScanPackageToolLimitationSchema)
+      .min(1)
+      .max(2)
+      .refine(
+        (limitations) =>
+          limitations.every(
+            (limitation, index) =>
+              index === 0 || limitations[index - 1]! < limitation,
+          ),
+        "Tool coverage limitations must be unique and sorted.",
+      )
+      .optional(),
+  })
+  .superRefine((tool, context) => {
+    if (
+      (tool.status === "completed-with-limitations") !==
+      (tool.limitations !== undefined)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["limitations"],
+        message:
+          "Only completed tools with limitations may declare limitations.",
+      });
+    if (
+      tool.status === "completed-with-limitations" &&
+      (tool.name !== "opengrep" ||
+        tool.limitations?.some(
+          (limitation) =>
+            limitation !== "parser_syntax" && limitation !== "rule_timeout",
+        ))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["limitations"],
+        message: "Only OpenGrep supports bounded coverage limitations.",
+      });
+  });
 
 const ScanPackageFindingSchema = z
   .strictObject({
@@ -129,7 +178,9 @@ export interface BuildScanPackageInput {
   ruleCatalogVersion: string;
   inventory: Inventory;
   classification: InventoryClassification;
-  tools: ReadonlyArray<Pick<ScannerRun, "name" | "version" | "status">>;
+  tools: ReadonlyArray<
+    Pick<ScannerRun, "name" | "version" | "status" | "limitations">
+  >;
   findings: readonly Finding[];
 }
 
@@ -215,7 +266,7 @@ export function validateScanPackageEvidence(input: unknown): ScanPackageV1 {
 
   const completedTools = new Set(
     scanPackage.tools
-      .filter(({ status }) => status === "completed")
+      .filter(({ status }) => status !== "not-applicable")
       .map(({ name }) => name),
   );
   for (const finding of scanPackage.findings) {
@@ -287,7 +338,12 @@ export function buildScanPackage(input: BuildScanPackageInput): ScanPackageV1 {
     left.fingerprint.localeCompare(right.fingerprint),
   );
   const tools = input.tools
-    .map(({ name, version, status }) => ({ name, version, status }))
+    .map(({ name, version, status, limitations }) => ({
+      name,
+      version,
+      status,
+      ...(limitations === undefined ? {} : { limitations }),
+    }))
     .sort(
       (left, right) =>
         RequiredScanPackageTools.indexOf(

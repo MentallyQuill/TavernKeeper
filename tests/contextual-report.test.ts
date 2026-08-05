@@ -238,6 +238,43 @@ function reportWithObservation(
 }
 
 describe("contextual V5 reports", () => {
+  test("publishes fixed prose for bounded OpenGrep coverage limitations", () => {
+    const limitedPackage = structuredClone(scanPackage);
+    const openGrep = limitedPackage.tools.find(
+      ({ name }) => name === "opengrep",
+    )!;
+    openGrep.status = "completed-with-limitations";
+    openGrep.limitations = ["parser_syntax", "rule_timeout"];
+
+    const report = buildContextualReport(
+      { scanPackage: limitedPackage, review, evidenceGroups: [group] },
+      {
+        targetSha,
+        completedAt: "2026-08-02T12:00:00.000Z",
+        reportVersion: 1,
+        supersedesReportId: null,
+        limitations: [
+          "This advisory review cannot prove the absence of unknown behavior.",
+        ],
+      },
+    );
+
+    expect(report.coverage.tools).toEqual(
+      expect.arrayContaining([
+        { name: "opengrep", version: "1.26.0", status: "completed" },
+      ]),
+    );
+    expect(report.limitations).toEqual(
+      expect.arrayContaining([
+        "OpenGrep could not parse some source files; findings from successfully analyzed files are included.",
+        "OpenGrep timed out on some rule and file combinations; findings from completed analyses are included.",
+      ]),
+    );
+    expect(renderReportV5Html(report)).toContain(
+      "OpenGrep could not parse some source files",
+    );
+  });
+
   test("binds every scanner candidate to a complete contextual assessment", () => {
     const report = validReport();
 

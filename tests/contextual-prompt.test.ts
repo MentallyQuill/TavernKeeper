@@ -93,5 +93,21 @@ describe("SillyTavern ecosystem context", () => {
     expect(reviewSchemaRepair.systemContent).toMatch(
       /observations must be an array/iu,
     );
+
+    const technicalRepair = buildContextualReviewPrompt(group, {
+      diagnostic: "assessment_technical_explanation",
+    });
+    expect(technicalRepair.systemContent).toMatch(
+      /technical_explanation must be non-empty plain text/iu,
+    );
+    expect(technicalRepair.systemContent).toMatch(/no URLs.*code syntax/iu);
+
+    const observationRepair = buildContextualReviewPrompt(group, {
+      diagnostic: "observation_schema",
+    });
+    expect(observationRepair.systemContent).toMatch(
+      /every observation must contain exactly/iu,
+    );
+    expect(observationRepair.systemContent).toMatch(/locations/iu);
   });
 });

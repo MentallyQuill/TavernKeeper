@@ -29,6 +29,7 @@ const downloadArtifactAction =
   "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const workflowNames = [
   "ci.yml",
+  "delayed-wake.yml",
   "deploy-pages.yml",
   "pages-reconcile.yml",
   "policy-rescan.yml",
@@ -133,14 +134,51 @@ describe("GitHub workflow security policy", () => {
   });
 
   test("reconciliation is bounded and all ordinary entry points converge", async () => {
-    const [reconcile, targeted, retry, policy] = await Promise.all([
-      workflow("reconcile.yml"),
-      workflow("targeted-scan.yml"),
-      workflow("retry.yml"),
-      workflow("policy-rescan.yml"),
-    ]);
+    const [reconcile, delayedWake, targeted, retry, policy] = await Promise.all(
+      [
+        workflow("reconcile.yml"),
+        workflow("delayed-wake.yml"),
+        workflow("targeted-scan.yml"),
+        workflow("retry.yml"),
+        workflow("policy-rescan.yml"),
+      ],
+    );
     expect(reconcile.jobs.run.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
+    );
+    expect(reconcile.jobs.plan.permissions).toEqual({
+      contents: "read",
+      actions: "write",
+    });
+    const scheduleWake = reconcile.jobs.plan.steps.find(
+      (step: Workflow) => step.name === "Schedule deterministic delayed wake",
+    );
+    expect(scheduleWake?.if).toContain(
+      "fromJSON(steps.plan.outputs.requests_json)[0] == null",
+    );
+    expect(scheduleWake?.if).toContain(
+      "steps.plan.outputs.total_remaining != '0'",
+    );
+    expect(scheduleWake?.if).toContain("steps.plan.outputs.next_wake_at != ''");
+    expect(scheduleWake?.run).toBe(
+      'gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"',
+    );
+    expect(delayedWake.on.workflow_dispatch.inputs.wake_at).toMatchObject({
+      type: "string",
+      required: true,
+    });
+    expect(delayedWake.concurrency).toEqual({
+      group: "tavernkeeper-delayed-wake",
+      "cancel-in-progress": true,
+    });
+    expect(delayedWake.jobs.wake["timeout-minutes"]).toBe(345);
+    const wait = delayedWake.jobs.wake.steps.find(
+      (step: Workflow) => step.name === "Wait for bounded wake time",
+    );
+    expect(wait?.run).toContain("new Date(wakeMs).toISOString() !== wakeAt");
+    expect(wait?.run).toContain("Math.min(20_400");
+    expect(JSON.stringify(delayedWake.jobs.wake)).toContain(
+      'gh workflow run reconcile.yml --repo \\"$GITHUB_REPOSITORY\\" --ref main',
     );
     expect(targeted.jobs.enqueue.environment).toBe("tavernkeeper-scanner");
     expect(JSON.stringify(targeted.jobs.enqueue)).toContain("targeted-scan");
@@ -198,6 +236,12 @@ describe("GitHub workflow security policy", () => {
       new URL("../package.json", import.meta.url),
       "utf8",
     );
+    const reviewConfig = JSON.parse(
+      await readFile(
+        new URL("../config/contextual-review.v2.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { timeoutMs: number };
 
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
     expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
@@ -207,8 +251,15 @@ describe("GitHub workflow security policy", () => {
     expect(steps[finalizeIndex]?.run).toBe(
       "npm run --silent finalize-target -- candidate.json",
     );
-    expect(steps[reviewIndex]?.run).toBe("npm run --silent review-target");
-    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(16);
+    expect(steps[reviewIndex]?.run).toContain("npm run --silent review-target");
+    expect(steps[reviewIndex]?.run).toContain('code == "MODEL_PROVIDER"');
+    expect(steps[reviewIndex]?.run).toContain('code:"MODEL_REVIEW_TIMEOUT"');
+    expect(steps[reviewIndex]?.run).toContain(
+      "timeout --signal=TERM --kill-after=10s 20m",
+    );
+    expect(steps[reviewIndex]?.run).toContain("rm -f phase-error.json");
+    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(42);
+    expect(reviewConfig.timeoutMs).toBe(300_000);
     expect(steps[reviewIndex]?.env).toMatchObject({
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
       TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
@@ -525,7 +576,7 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          /      - name: Contextually assess scanner evidence[\s\S]*?run: npm run --silent review-target\n/u,
+          /      - name: Contextually assess scanner evidence[\s\S]*?(?=      - name: Finalize contextual V5 report)/u,
           "",
         ),
       /contextual review must remain bounded between preparation and V5 finalization/u,
@@ -534,7 +585,7 @@ describe("GitHub workflow security policy", () => {
 
   test("workflow policy rejects an unbounded contextual review step", async () => {
     await expectPolicyFailure(
-      (text) => text.replace("        timeout-minutes: 16\n", ""),
+      (text) => text.replace("        timeout-minutes: 42\n", ""),
       /contextual review must remain bounded between preparation and V5 finalization/u,
     );
   });
@@ -688,7 +739,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 11 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 12 workflows/u),
     });
   });
 });

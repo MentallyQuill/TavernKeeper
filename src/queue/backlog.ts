@@ -96,7 +96,10 @@ export function planBatch(
     .sort(
       (left, right) =>
         Number(right.staff_requested === true) -
-          Number(left.staff_requested === true) || left.ticket - right.ticket,
+          Number(left.staff_requested === true) ||
+        Number(left.consecutive_failures > 0) -
+          Number(right.consecutive_failures > 0) ||
+        left.ticket - right.ticket,
     );
   const delayed = available.filter(
     ({ not_before }) => not_before !== null && Date.parse(not_before) > nowMs,
