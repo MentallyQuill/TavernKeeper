@@ -110,6 +110,16 @@ describe("GitHub workflow security policy", () => {
     ]);
     expect(policy.jobs.schedule.environment).toBe("tavernkeeper-staff");
     expect(staff.jobs.operate.environment).toBe("tavernkeeper-staff");
+    expect(staff.concurrency).toEqual({
+      group: "tavernkeeper-staff-operations",
+      "cancel-in-progress": false,
+    });
+    const commit = (staff.jobs.operate.steps as Workflow[]).find(
+      (step) => step.name === "Apply and commit validated staff operation",
+    );
+    expect(commit?.run).toContain("git fetch origin main");
+    expect(commit?.run).toContain("git reset --hard origin/main");
+    expect(commit?.run).toContain("run_operation");
     expect(deploy.jobs["authorize-manual"].environment).toBe(
       "tavernkeeper-staff",
     );

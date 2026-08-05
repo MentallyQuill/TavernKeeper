@@ -26,6 +26,30 @@ const canonicalPublisherPushLines = [
   "done",
   'test "$push_succeeded" = "true"',
 ];
+const canonicalStaffPublisherPushLines = [
+  'push_succeeded="false"',
+  "for attempt in 1 2 3; do",
+  '  if [[ "$attempt" -gt 1 ]]; then',
+  "    git fetch origin main",
+  "    git reset --hard origin/main",
+  "  fi",
+  "  run_operation",
+  "  git add operations/state.json",
+  "  if git diff --cached --quiet; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  '  git commit -m "chore(ops): apply staff queue operation"',
+  "  if git push origin HEAD:main; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  '  if [[ "$attempt" -lt 3 ]]; then',
+  '    sleep "$((attempt * 15))"',
+  "  fi",
+  "done",
+  'test "$push_succeeded" = "true"',
+];
 const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
@@ -179,19 +203,20 @@ function fail(file, message) {
   failures.push(`${file}: ${message}`);
 }
 
-function containsOnlyCanonicalPublisherPush(run) {
+function containsOnlyCanonicalPublisherPush(
+  run,
+  expectedLines = canonicalPublisherPushLines,
+) {
   const lines = run.split("\n");
-  const start = lines.findIndex(
-    (line) => line.trim() === canonicalPublisherPushLines[0],
-  );
+  const start = lines.findIndex((line) => line.trim() === expectedLines[0]);
   if (start < 0) return false;
   const indentation = /^\s*/u.exec(lines[start])?.[0] ?? "";
-  const hasCanonicalBlock = canonicalPublisherPushLines.every(
+  const hasCanonicalBlock = expectedLines.every(
     (line, index) => lines[start + index] === `${indentation}${line}`,
   );
   if (!hasCanonicalBlock) return false;
 
-  lines.splice(start, canonicalPublisherPushLines.length);
+  lines.splice(start, expectedLines.length);
   const residualCommandShape = lines
     .join("\n")
     .replace(/[^a-z]/giu, "")
@@ -623,7 +648,11 @@ function checkPublisherBoundary(file, workflow) {
       "Publisher-authenticated push changed from the reviewed contract",
     );
   const pushRun = pushStep?.run ?? "";
-  if (!containsOnlyCanonicalPublisherPush(pushRun))
+  const expectedPushLines =
+    file === "staff-operations.yml"
+      ? canonicalStaffPublisherPushLines
+      : canonicalPublisherPushLines;
+  if (!containsOnlyCanonicalPublisherPush(pushRun, expectedPushLines))
     fail(
       file,
       "Publisher-authenticated push must retain one canonical bounded retry block",
