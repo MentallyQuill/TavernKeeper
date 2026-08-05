@@ -1,6 +1,7 @@
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import { z } from "zod";
 import {
+  ContextualCompletedReviewResponseJsonSchema,
   ContextualAssessmentInputSchema,
   ContextualAssessmentSchema,
   ContextualObservationProgressSchema,
@@ -537,7 +538,8 @@ async function reviewGroup(
     attempt += 1
   ) {
     try {
-      const prompt = buildContextualReviewPrompt(group, repair);
+      const finalAttempt = attempt === spec.policy.maxImmediateAttempts;
+      const prompt = buildContextualReviewPrompt(group, repair, finalAttempt);
       const request = spec.provider.requestCompletion ?? requestTextCompletion;
       const completion = await request({
         endpoint: spec.provider.endpoint,
@@ -550,7 +552,9 @@ async function reviewGroup(
         userContent: prompt.userContent,
         responseJsonSchema: {
           name: "tavernkeeper_contextual_review",
-          schema: ContextualReviewResponseJsonSchema,
+          schema: finalAttempt
+            ? ContextualCompletedReviewResponseJsonSchema
+            : ContextualReviewResponseJsonSchema,
         },
         ...(spec.provider.fetchImpl === undefined
           ? {}
@@ -576,7 +580,7 @@ async function reviewGroup(
         completion.content,
         // Keep corrective feedback authoritative until the bounded final
         // attempt, then salvage only invalid non-empty narrative strings.
-        attempt === spec.policy.maxImmediateAttempts,
+        finalAttempt,
       );
       if (response.status === "needs_more_context") {
         const candidateIds = new Set(
@@ -600,7 +604,7 @@ async function reviewGroup(
             "repository",
             "Contextual review requires more source context.",
           );
-        if (attempt === spec.policy.maxImmediateAttempts)
+        if (finalAttempt)
           throw new ModelRequestError(
             "MODEL_CONTEXT_INCOMPLETE",
             "repository",

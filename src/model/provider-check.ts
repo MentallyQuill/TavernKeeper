@@ -82,32 +82,40 @@ export async function checkModelProviderCompatibility(
         "A benign compatibility fixture for TavernKeeper contextual review.",
     },
   });
-  const review = await reviewEvidenceGroups({
-    groups: [group],
-    provider: {
-      endpoint: request.endpoint,
-      apiKey: request.apiKey,
-      model: request.model,
-      ...(request.fetchImpl === undefined
-        ? {}
-        : { fetchImpl: request.fetchImpl }),
-      ...(request.resolveAddresses === undefined
-        ? {}
-        : { resolveAddresses: request.resolveAddresses }),
-    },
-    policy: {
-      version: "2",
-      promptVersion: "contextual-review-v3",
-      schemaVersion: "contextual-assessment-v1",
-      maxImmediateAttempts: 1,
-      maxOutputTokens: 8_192,
-      maxResponseBytes: 1_000_000,
-      timeoutMs: request.timeoutMs ?? 60_000,
-    },
-  });
+  const runCompatibilityReview = (maxImmediateAttempts: number) =>
+    reviewEvidenceGroups({
+      groups: [group],
+      provider: {
+        endpoint: request.endpoint,
+        apiKey: request.apiKey,
+        model: request.model,
+        ...(request.fetchImpl === undefined
+          ? {}
+          : { fetchImpl: request.fetchImpl }),
+        ...(request.resolveAddresses === undefined
+          ? {}
+          : { resolveAddresses: request.resolveAddresses }),
+      },
+      policy: {
+        version: "2",
+        promptVersion: "contextual-review-v4",
+        schemaVersion: "contextual-assessment-v1",
+        maxImmediateAttempts,
+        maxOutputTokens: 8_192,
+        maxResponseBytes: 1_000_000,
+        timeoutMs: request.timeoutMs ?? 60_000,
+      },
+    });
+  const reviews = [
+    await runCompatibilityReview(2),
+    await runCompatibilityReview(1),
+  ];
   if (
-    review.coverage.required !== candidateIds.length ||
-    review.coverage.completed !== candidateIds.length
+    reviews.some(
+      (review) =>
+        review.coverage.required !== candidateIds.length ||
+        review.coverage.completed !== candidateIds.length,
+    )
   )
     throw new Error("Provider compatibility review coverage is incomplete.");
   return {

@@ -15,7 +15,7 @@ import {
 const ids = ["a", "b", "c"].map((character) => character.repeat(64));
 const policy = {
   version: "2",
-  promptVersion: "contextual-review-v3",
+  promptVersion: "contextual-review-v4",
   schemaVersion: "contextual-assessment-v1",
   maxImmediateAttempts: 3,
   maxOutputTokens: 8_192,
@@ -579,7 +579,7 @@ describe("contextual evidence review", () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const invalidProgress: ContextualReviewProgress = {
       policy_version: "2",
-      prompt_version: "contextual-review-v3",
+      prompt_version: "contextual-review-v4",
       schema_version: "contextual-assessment-v1",
       model: "configured/model:thinking",
       provider: "provider.example",
@@ -685,6 +685,22 @@ describe("contextual evidence review", () => {
     );
     expect(requestCompletion.mock.calls[2]?.[0].systemContent).not.toContain(
       "assessment_layman_explanation",
+    );
+    expect(
+      JSON.stringify(
+        requestCompletion.mock.calls[1]?.[0].responseJsonSchema?.schema,
+      ),
+    ).toContain("needs_more_context");
+    expect(
+      JSON.stringify(
+        requestCompletion.mock.calls[2]?.[0].responseJsonSchema?.schema,
+      ),
+    ).not.toContain("needs_more_context");
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).not.toContain(
+      "needs_more_context is not permitted",
+    );
+    expect(requestCompletion.mock.calls[2]?.[0].systemContent).toContain(
+      "needs_more_context is not permitted",
     );
   });
 
