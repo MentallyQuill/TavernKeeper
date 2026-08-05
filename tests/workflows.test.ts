@@ -54,6 +54,7 @@ async function workflow(name: string): Promise<Workflow> {
 async function expectPolicyFailure(
   mutate: (workflow: string) => string,
   expected: RegExp,
+  mutatedWorkflow = "scan-and-publish.yml",
 ) {
   const root = await mkdtemp(join(tmpdir(), "tavernkeeper-workflow-policy-"));
   try {
@@ -63,7 +64,7 @@ async function expectPolicyFailure(
       workflowNames.map(async (name) =>
         writeFile(
           join(root, ".github", "workflows", name),
-          name === "scan-and-publish.yml"
+          name === mutatedWorkflow
             ? mutate(
                 await readFile(
                   new URL(`../.github/workflows/${name}`, import.meta.url),
@@ -112,6 +113,7 @@ describe("GitHub workflow security policy", () => {
     expect(staff.jobs.operate.environment).toBe("tavernkeeper-staff");
     expect(staff.concurrency).toEqual({
       group: "tavernkeeper-staff-operations",
+      queue: "max",
       "cancel-in-progress": false,
     });
     const commit = (staff.jobs.operate.steps as Workflow[]).find(
@@ -120,6 +122,10 @@ describe("GitHub workflow security policy", () => {
     expect(commit?.run).toContain("git fetch origin main");
     expect(commit?.run).toContain("git reset --hard origin/main");
     expect(commit?.run).toContain("run_operation");
+    expect(commit?.run).toContain(
+      "env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION",
+    );
+    expect(commit?.run).not.toContain("if git diff --cached --quiet; then");
     expect(deploy.jobs["authorize-manual"].environment).toBe(
       "tavernkeeper-staff",
     );
@@ -683,6 +689,23 @@ describe("GitHub workflow security policy", () => {
       (text) =>
         text.replace("for attempt in 1 2 3; do", "for attempt in 1; do"),
       /Publisher-authenticated push must retain one canonical bounded retry block/u,
+    );
+  });
+
+  test("workflow policy pins staff queuing and Publisher token isolation", async () => {
+    await expectPolicyFailure(
+      (text) => text.replace("  queue: max\n", ""),
+      /staff operations must retain their lossless serialized queue/u,
+      "staff-operations.yml",
+    );
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "env -u GH_TOKEN -u GITHUB_TOKEN npm run --silent state:migrate",
+          "npm run --silent state:migrate",
+        ),
+      /staff operation and Publisher token boundary changed/u,
+      "staff-operations.yml",
     );
   });
 

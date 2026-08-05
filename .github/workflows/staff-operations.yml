@@ -23,6 +23,7 @@ permissions:
 
 concurrency:
   group: tavernkeeper-staff-operations
+  queue: max
   cancel-in-progress: false
 
 jobs:
@@ -63,15 +64,15 @@ jobs:
         run: |
           run_operation() {
             if [[ "$OPERATION" = "migrate" ]]; then
-              npm run --silent state:migrate
+              env -u GH_TOKEN -u GITHUB_TOKEN npm run --silent state:migrate
             elif [[ "$OPERATION" = "pause" ]]; then
               request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" '{operation:$operation,reason_code:$reason_code}')"
-              TAVERNKEEPER_OPERATION="$request" npm run --silent retry
+              env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
             elif [[ "$OPERATION" = "retry" ]]; then
               request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" '{operation:$operation,repository_id:$repository_id}')"
-              TAVERNKEEPER_OPERATION="$request" npm run --silent retry
+              env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
             else
-              TAVERNKEEPER_OPERATION='{"operation":"resume"}' npm run --silent retry
+              env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION='{"operation":"resume"}' npm run --silent retry
             fi
           }
 
@@ -80,17 +81,13 @@ jobs:
           git config user.email "tavernkeeper@users.noreply.github.com"
           push_succeeded="false"
           for attempt in 1 2 3; do
-            if [[ "$attempt" -gt 1 ]]; then
-              git fetch origin main
-              git reset --hard origin/main
-            fi
+            git fetch origin main
+            git reset --hard origin/main
             run_operation
             git add operations/state.json
-            if git diff --cached --quiet; then
-              push_succeeded="true"
-              break
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(ops): apply staff queue operation"
             fi
-            git commit -m "chore(ops): apply staff queue operation"
             if git push origin HEAD:main; then
               push_succeeded="true"
               break
