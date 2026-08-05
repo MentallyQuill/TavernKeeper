@@ -67,6 +67,29 @@ const canonicalStaffPublisherRun =
     'git config user.email "tavernkeeper@users.noreply.github.com"',
     ...canonicalStaffPublisherPushLines,
   ].join("\n") + "\n";
+const canonicalContextualReviewRun = String.raw`run_review() {
+  node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
+  if timeout --signal=TERM --kill-after=5s 10m npm run --silent review-target; then
+    rm -f phase-error.json
+    return 0
+  fi
+  return 1
+}
+retryable_review_failure() {
+  jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
+}
+for pass in 1 2 3 4; do
+  if run_review; then
+    exit 0
+  fi
+  if ! retryable_review_failure || [[ "$pass" -eq 4 ]]; then
+    exit 1
+  fi
+  rm -f phase-error.json
+  sleep "$((pass * 5))"
+done
+exit 1
+`;
 const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
@@ -410,12 +433,7 @@ function checkContextualRuntime(file, workflow) {
     const reviewIndex = steps.findIndex(
       (step) =>
         step?.name === "Contextually assess scanner evidence" &&
-        typeof step?.run === "string" &&
-        step.run.includes("npm run --silent review-target") &&
-        step.run.includes('code == "MODEL_PROVIDER"') &&
-        step.run.includes('code:"MODEL_REVIEW_TIMEOUT"') &&
-        step.run.includes("timeout --signal=TERM --kill-after=10s 20m") &&
-        step.run.includes("rm -f phase-error.json"),
+        step?.run === canonicalContextualReviewRun,
     );
     const finalizeIndex = steps.findIndex(
       (step) =>
