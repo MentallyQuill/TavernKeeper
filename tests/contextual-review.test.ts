@@ -365,7 +365,23 @@ describe("contextual evidence review", () => {
         content: JSON.stringify({
           status: "complete",
           assessments: [assessment(ids[0]!, current.path, 2)],
-          observations: [],
+          observations: [
+            {
+              related_candidate_ids: [ids[0]!],
+              evidence_ids: [ids[0]!],
+              disposition: "minor_weakness",
+              impact: "low",
+              exploitability: "unlikely",
+              confidence: "medium",
+              recommended_risk: "low",
+              title: "Destination validation",
+              technical_explanation:
+                "The destination deserves an explicit validation boundary.",
+              layman_explanation: "The destination should be checked.",
+              developer_action: "Validate the destination before use.",
+              locations: [{ path: current.path, line_start: 2, line_end: 2 }],
+            },
+          ],
         }),
         usage: {
           inputTokens: 100,
@@ -392,6 +408,13 @@ describe("contextual evidence review", () => {
       }),
     ).rejects.toMatchObject({ code: "MODEL_PROVIDER" });
     expect(progress?.completed_group_ids).toEqual([groups[0]!.group_id]);
+    const serializedProgress = JSON.stringify(progress);
+    expect(serializedProgress).not.toContain(groups[0]!.path);
+    expect(serializedProgress).not.toMatch(/"path":/u);
+    expect(progress?.assessments[0]).not.toHaveProperty("locations");
+    expect(progress?.observations[0]?.locations).toEqual([
+      { line_start: 2, line_end: 2 },
+    ]);
 
     const resumedRequest = vi.fn(async () => ({
       completionId: "completion-second-group",
@@ -426,12 +449,60 @@ describe("contextual evidence review", () => {
       ids[0],
       ids[1],
     ]);
+    expect(result.observations[0]?.locations).toEqual([
+      { path: groups[0]!.path, line_start: 2, line_end: 2 },
+    ]);
     expect(result.usage).toEqual({
       inputTokens: 180,
       outputTokens: 70,
       cacheReadTokens: 0,
       reasoningTokens: 15,
     });
+  });
+
+  test("rejects repository paths in narratives before checkpointing", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const onProgress = vi.fn();
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-path-bearing-narrative",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [
+          {
+            ...assessment(ids[0]!, current.path, 2),
+            technical_explanation: `The issue is in ${current.path}.`,
+          },
+        ],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 80,
+        outputTokens: 30,
+        cacheReadTokens: 0,
+        reasoningTokens: 5,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+        onProgress,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      scope: "repository",
+    });
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(onProgress).not.toHaveBeenCalled();
   });
 
   test("rejects progress that is not the exact completed group prefix", async () => {
@@ -448,7 +519,6 @@ describe("contextual evidence review", () => {
         {
           ...assessment(ids[1]!, groups[1]!.path, 2),
           evidence_ids: [ids[1]!],
-          locations: [{ path: groups[1]!.path, line_start: 2, line_end: 2 }],
         },
       ],
       observations: [],

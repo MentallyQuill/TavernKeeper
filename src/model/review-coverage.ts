@@ -70,6 +70,32 @@ function canonicalCandidateLocation(
   return [{ path: group.path, line_start: lineStart, line_end: lineEnd }];
 }
 
+function validateNarrativesExcludePath(
+  group: EvidenceContextGroup,
+  response: CompletedResponse,
+) {
+  const repositoryPath = group.path.toLowerCase();
+  const narratives = [
+    ...response.assessments.flatMap((assessment) => [
+      assessment.technical_explanation,
+      assessment.layman_explanation,
+      assessment.developer_action,
+    ]),
+    ...response.observations.flatMap((observation) => [
+      observation.title,
+      observation.technical_explanation,
+      observation.layman_explanation,
+      observation.developer_action,
+    ]),
+  ];
+  if (
+    narratives.some((narrative) =>
+      narrative.toLowerCase().includes(repositoryPath),
+    )
+  )
+    evidenceError("Contextual review narrative repeated a repository path.");
+}
+
 export function validateCompletedGroupReview(
   group: EvidenceContextGroup,
   response: CompletedResponse,
@@ -85,6 +111,7 @@ export function validateCompletedGroupReview(
   );
   if (candidates.size !== group.candidates.length)
     evidenceError("Evidence group contains duplicate candidate identities.");
+  validateNarrativesExcludePath(group, response);
   if (
     response.assessments.length !== candidates.size ||
     response.assessments.some(

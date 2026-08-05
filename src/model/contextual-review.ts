@@ -1,11 +1,15 @@
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import { z } from "zod";
 import {
+  ContextualAssessmentInputSchema,
   ContextualAssessmentSchema,
+  ContextualObservationProgressSchema,
   ContextualObservationSchema,
   ContextualReviewResponseSchema,
   type ContextualAssessment,
+  type ContextualAssessmentInput,
   type ContextualObservation,
+  type ContextualObservationProgress,
   type ContextualReviewResponse,
 } from "./contextual-review-contract.js";
 import {
@@ -123,8 +127,8 @@ export const ContextualReviewProgressSchema = z
     provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
     endpoint_origin: z.url(),
     completed_group_ids: z.array(z.string().regex(/^[0-9a-f]{64}$/u)),
-    assessments: z.array(ContextualAssessmentSchema),
-    observations: z.array(ContextualObservationSchema),
+    assessments: z.array(ContextualAssessmentInputSchema),
+    observations: z.array(ContextualObservationProgressSchema),
     usage: UsageSchema,
     completion_ids: z.array(CompletionIdSchema),
   })
@@ -165,8 +169,9 @@ export const ContextualReviewProgressSchema = z
         message: "Progress assessment identities must be unique.",
       });
     if (
-      new Set(progress.observations.map(({ observation_id }) => observation_id))
-        .size !== progress.observations.length
+      new Set(
+        progress.observations.map((observation) => JSON.stringify(observation)),
+      ).size !== progress.observations.length
     )
       context.addIssue({
         code: "custom",
@@ -186,6 +191,12 @@ export const ContextualReviewProgressSchema = z
 export type ContextualReviewProgress = z.infer<
   typeof ContextualReviewProgressSchema
 >;
+
+interface ValidatedContextualReviewProgress {
+  progress: ContextualReviewProgress;
+  assessments: ContextualAssessment[];
+  observations: ContextualObservation[];
+}
 
 export interface ReviewEvidenceGroupsSpec {
   groups: readonly EvidenceContextGroup[];
@@ -363,7 +374,7 @@ function validatedProgress(
   input: ContextualReviewProgress | undefined,
   spec: ReviewEvidenceGroupsSpec,
   endpoint: URL,
-): ContextualReviewProgress | undefined {
+): ValidatedContextualReviewProgress | undefined {
   if (input === undefined) return undefined;
   const parsed = ContextualReviewProgressSchema.safeParse(input);
   if (!parsed.success)
@@ -391,7 +402,7 @@ function validatedProgress(
 
   const expectedAssessments: ContextualAssessment[] = [];
   const expectedObservations: ContextualObservation[] = [];
-  const observationGroups = new Map<string, ContextualObservation[]>();
+  const observationGroups = new Map<string, ContextualObservationProgress[]>();
   for (const observation of progress.observations) {
     const owner = completedGroups.find((group) => {
       const candidateIds = new Set(
@@ -414,11 +425,17 @@ function validatedProgress(
     const candidateIds = new Set(
       group.candidates.map(({ candidate_id }) => candidate_id),
     );
-    const assessments = progress.assessments
-      .filter(({ candidate_id }) => candidateIds.has(candidate_id))
-      .map(({ locations: _locations, ...assessment }) => assessment);
+    const assessments = progress.assessments.filter(({ candidate_id }) =>
+      candidateIds.has(candidate_id),
+    );
     const observations = (observationGroups.get(group.group_id) ?? []).map(
-      ({ observation_id: _observationId, ...observation }) => observation,
+      (observation) => ({
+        ...observation,
+        locations: observation.locations.map((location) => ({
+          path: group.path,
+          ...location,
+        })),
+      }),
     );
     const validated = validateCompletedGroupReview(group, {
       status: "complete",
@@ -428,16 +445,32 @@ function validatedProgress(
     expectedAssessments.push(...validated.assessments);
     expectedObservations.push(...validated.observations);
   }
+  const checkpointAssessments: ContextualAssessmentInput[] =
+    expectedAssessments.map(({ locations: _locations, ...assessment }) =>
+      ContextualAssessmentInputSchema.parse(assessment),
+    );
+  const checkpointObservations: ContextualObservationProgress[] =
+    expectedObservations.map(
+      ({ observation_id: _observationId, locations, ...observation }) =>
+        ContextualObservationProgressSchema.parse({
+          ...observation,
+          locations: locations.map(({ path: _path, ...location }) => location),
+        }),
+    );
   if (
-    JSON.stringify(expectedAssessments) !==
+    JSON.stringify(checkpointAssessments) !==
       JSON.stringify(progress.assessments) ||
-    JSON.stringify(expectedObservations) !==
+    JSON.stringify(checkpointObservations) !==
       JSON.stringify(progress.observations)
   )
     progressError(
       "Contextual review progress does not match completed evidence.",
     );
-  return progress;
+  return {
+    progress,
+    assessments: expectedAssessments,
+    observations: expectedObservations,
+  };
 }
 
 async function reviewGroup(
@@ -600,12 +633,13 @@ export async function reviewEvidenceGroups(
   const observations: ContextualObservation[] = [];
   const usage = zeroUsage();
   const completionIds: string[] = [];
-  const progress = validatedProgress(spec.progress, spec, endpoint);
-  if (progress !== undefined) {
-    assessments.push(...progress.assessments);
-    observations.push(...progress.observations);
-    addUsage(usage, progress.usage);
-    completionIds.push(...progress.completion_ids);
+  const validated = validatedProgress(spec.progress, spec, endpoint);
+  const progress = validated?.progress;
+  if (validated !== undefined) {
+    assessments.push(...validated.assessments);
+    observations.push(...validated.observations);
+    addUsage(usage, validated.progress.usage);
+    completionIds.push(...validated.progress.completion_ids);
   }
   const completedGroupIds = [...(progress?.completed_group_ids ?? [])];
   for (const group of spec.groups.slice(completedGroupIds.length)) {
@@ -623,8 +657,21 @@ export async function reviewEvidenceGroups(
           provider: endpoint.hostname,
           endpoint_origin: endpoint.origin,
           completed_group_ids: completedGroupIds,
-          assessments,
-          observations,
+          assessments: assessments.map(
+            ({ locations: _locations, ...assessment }) => assessment,
+          ),
+          observations: observations.map(
+            ({
+              observation_id: _observationId,
+              locations,
+              ...observation
+            }) => ({
+              ...observation,
+              locations: locations.map(
+                ({ path: _path, ...location }) => location,
+              ),
+            }),
+          ),
           usage,
           completion_ids: completionIds,
         }),

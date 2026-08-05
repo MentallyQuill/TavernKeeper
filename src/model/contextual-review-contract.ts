@@ -236,6 +236,24 @@ export const ContextualObservationInputSchema = z
   .strictObject(ObservationFields)
   .superRefine(validateObservation);
 
+const ProgressLocationSchema = z
+  .strictObject({
+    line_start: z.number().int().positive(),
+    line_end: z.number().int().positive(),
+  })
+  .refine((location) => location.line_end >= location.line_start, {
+    path: ["line_end"],
+    message: "Location end must be at least its start.",
+  });
+const { locations: _locations, ...ObservationProgressFields } =
+  ObservationFields;
+export const ContextualObservationProgressSchema = z
+  .strictObject({
+    ...ObservationProgressFields,
+    locations: z.array(ProgressLocationSchema).min(1).max(16),
+  })
+  .superRefine(validateObservation);
+
 export const ContextualObservationSchema = z
   .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
   .superRefine(validateObservation);
@@ -307,6 +325,9 @@ export type ContextualAssessmentInput = z.infer<
 export type ContextualObservation = z.infer<typeof ContextualObservationSchema>;
 export type ContextualObservationInput = z.infer<
   typeof ContextualObservationInputSchema
+>;
+export type ContextualObservationProgress = z.infer<
+  typeof ContextualObservationProgressSchema
 >;
 export type ContextualReviewResponse = z.infer<
   typeof ContextualReviewResponseSchema
