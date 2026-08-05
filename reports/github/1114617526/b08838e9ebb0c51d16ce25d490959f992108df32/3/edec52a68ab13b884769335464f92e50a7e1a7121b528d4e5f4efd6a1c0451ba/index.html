@@ -1,0 +1,804 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for mechamarmot/SillyTavern-LocalImage at commit b08838e.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; mechamarmot/SillyTavern-LocalImage</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/mechamarmot/SillyTavern-LocalImage" rel="noopener noreferrer">mechamarmot/SillyTavern-LocalImage</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/mechamarmot/SillyTavern-LocalImage/commit/b08838e9ebb0c51d16ce25d490959f992108df32" rel="noopener noreferrer">b08838e</a></span>
+        <span>Reviewed <time datetime="2026-08-05T00:43:43.297Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or high-risk concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 high</span>
+        <span>0 material</span>
+        <span>30 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or high-risk item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6h2-p8h4-qcjw applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a minor known security issue in one of the tools used to build this extension. Since it is likely in a build-only tool and not in the final extension users run, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6h2-p8h4-qcjw to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory against a declared dependency in the lockfile. The project&#39;s production dependencies are limited to React and React-DOM; the remaining declared packages are build-time dev dependencies (Babel, Webpack, ESLint) that are not shipped in the dist bundle. A low-severity advisory in this dependency tree is unlikely to affect end users of the built extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions during the next build cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6h2-p8h4-qcjw</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4x5r-pxfx-6jf8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a minor known security issue in a build tool. Because the tool is only used during development and is not included in the final product, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4x5r-pxfx-6jf8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory against a declared dependency. The lockfile shows the root package has only React and React-DOM as production dependencies; all other packages are devDependencies used during the build step. A low-severity advisory in build tooling does not propagate to the shipped dist output.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions during the next build cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4x5r-pxfx-6jf8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fv7c-fp4j-7gwp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a serious known issue in a dependency, but this project only ships a small React-based browser extension. The flagged package is most likely a build tool that does not end up in the final product users run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fv7c-fp4j-7gwp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory, but the project&#39;s dependency structure limits practical impact. The root package declares only React and React-DOM as production dependencies. The extensive Babel, Webpack, and ESLint dependency trees are devDependencies that are not included in the built extension output. Without confirmation that the flagged package is a runtime dependency, the advisory most likely affects build-time tooling only.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package, confirm whether it is a dev or production dependency, and update to a patched version. If it is a production dependency, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fv7c-fp4j-7gwp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qj8w-gfj5-8c6v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level known issue in a build tool. Since the tool is only used during development and is not part of the final extension, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qj8w-gfj5-8c6v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory against a declared dependency. The project ships only React and React-DOM as production dependencies; all other packages in the lockfile are devDependencies for the build pipeline. A medium-severity advisory in build tooling does not affect the runtime extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions during the next build cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qj8w-gfj5-8c6v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5c6j-r48x-rmvq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a serious known issue, but it is most likely in a build tool that does not get included in the final extension. The risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5c6j-r48x-rmvq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory. The project&#39;s production dependency surface is limited to React and React-DOM, with all other packages being devDependencies for Babel, Webpack, and ESLint. The flagged advisory is most likely in the build toolchain, which does not ship in the dist output. Without confirmation that the flagged package is a runtime dependency, the practical risk to end users is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package, confirm whether it is a dev or production dependency, and update to a patched version. If it is a production dependency, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5c6j-r48x-rmvq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xxjr-mmjv-4gpg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level known issue in a build tool. Because the tool is only used during development and is not included in the final product, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xxjr-mmjv-4gpg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory against a declared dependency. The lockfile shows the root package has only React and React-DOM as production dependencies; all other packages are devDependencies used during the build step. A medium-severity advisory in build tooling does not propagate to the shipped dist output.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions during the next build cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xxjr-mmjv-4gpg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v2hh-gcrm-f6hx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a serious known issue, but it is most likely in a build tool that does not get included in the final extension. The risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2hh-gcrm-f6hx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory. The project ships only React and React-DOM as production dependencies; the remaining packages are devDependencies for the Babel, Webpack, and ESLint build pipeline. The flagged advisory is most likely in build-time tooling that does not ship in the dist output. Without confirmation that the flagged package is a runtime dependency, the practical risk to end users is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package, confirm whether it is a dev or production dependency, and update to a patched version. If it is a production dependency, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2hh-gcrm-f6hx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f23m-r3pf-42rh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level known issue in a build tool. Since the tool is only used during development and is not part of the final extension, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f23m-r3pf-42rh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory against a declared dependency. The project&#39;s production dependencies are limited to React and React-DOM; all other packages are devDependencies for the build pipeline. A medium-severity advisory in build tooling does not affect the runtime extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions during the next build cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f23m-r3pf-42rh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-25h7-pfq9-p65f applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found that one of the tools used to build this extension has a known security flaw. Because this tool is only used during development and is not included in the final extension that users run, the practical risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-25h7-pfq9-p65f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known high-severity advisory against a declared dependency in the package-lock.json. The project&#39;s runtime dependencies are limited to React and React-DOM; the remaining dependency tree consists of build-time devDependencies (Babel, webpack, ESLint, terser). Vulnerabilities in build-tool transitive dependencies do not ship in the compiled extension output and are not exercised at runtime by end users. No evidence of malicious code, credential access, or runtime data flow was found.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected devDependencies to patched versions by running npm audit fix or manually bumping the vulnerable package in package-lock.json.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-25h7-pfq9-p65f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2g4f-4pwh-qvx6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-severity flaw in one of the development tools listed in this project. Since the tool is only used to build the extension and is not part of what users actually run, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2g4f-4pwh-qvx6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known medium-severity advisory against a declared dependency in the package-lock.json. The project&#39;s dependency tree is dominated by build-time devDependencies; the compiled extension output that runs in SillyTavern does not include these packages. No runtime data flow, credential handling, or network exfiltration is associated with this dependency finding.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version during the next build cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2g4f-4pwh-qvx6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v39h-62p7-jpjc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a known security issue in a build tool used by this project. The tool is not included in the final extension, so the risk to people using the extension is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v39h-62p7-jpjc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known high-severity advisory against a declared dependency in the package-lock.json. The project ships a compiled browser extension; the vulnerable package is part of the build toolchain rather than the runtime bundle. No evidence of runtime exploitation path, credential access, or malicious behavior was found in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v39h-62p7-jpjc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-h67p-54hq-rp68 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level flaw in a development dependency. Because it is only used during building and not shipped to users, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-h67p-54hq-rp68 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known medium-severity advisory against a declared dependency in the package-lock.json. The project&#39;s runtime surface is limited to React and React-DOM; the advisory targets a package in the build-time dependency tree. No runtime data flow or user-facing security impact was identified.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-h67p-54hq-rp68</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-q3j6-qgpj-74h6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-severity flaw in a build tool dependency. Since the tool is not part of the final extension users run, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-q3j6-qgpj-74h6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known high-severity advisory against a declared dependency in the package-lock.json. The vulnerable package is part of the development build toolchain (Babel, webpack, ESLint, or terser transitive dependencies). The compiled extension output does not include these packages, and no runtime exploitation path was identified in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-q3j6-qgpj-74h6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-23c5-xmqv-rm74 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a known security issue in a development tool used to build this extension. The tool is not shipped to users, so the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-23c5-xmqv-rm74 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known high-severity advisory against a declared dependency in the package-lock.json. The project&#39;s runtime dependencies are React and React-DOM; the advisory is associated with a build-time transitive dependency. No runtime data flow, credential handling, or malicious behavior was found.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-23c5-xmqv-rm74</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-severity flaw in a build-time dependency. Because it is not included in the extension that users run, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known high-severity advisory against a declared dependency in the package-lock.json. The vulnerable package belongs to the build toolchain rather than the runtime bundle. The extension&#39;s stated purpose is local image handling in SillyTavern, and no runtime exploitation path or malicious data flow was identified.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a known security issue in a development tool dependency. Since the tool is only used during building and is not shipped to users, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known high-severity advisory against a declared dependency in the package-lock.json. The project&#39;s runtime surface is limited to React and React-DOM; the advisory targets a package in the build-time dependency tree. No runtime data flow, credential access, or malicious behavior was identified in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7r86-cg39-jmmj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found that one of the project&#39;s build-tool dependencies has a known vulnerability. Since these tools are only used during development and are not included in the final extension that users install, the risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7r86-cg39-jmmj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a known advisory (GHSA-7r86-cg39-jmmj) against a declared dependency in package-lock.json. The project&#39;s production dependencies are limited to react and react-dom at ^18.2.0; the remaining dependencies are dev-only build tools (babel, webpack, terser, eslint). Vulnerable dependencies in this lockfile most likely reside in the dev toolchain, which does not ship to end users in the compiled dist/ output. No malicious code flow, exfiltration, or concealed execution is present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dev dependencies to patched versions.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7r86-cg39-jmmj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rf6f-7fwh-wjgh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known vulnerability was found in one of the project&#39;s development dependencies. These tools are used only to build the extension and are not shipped to users, so the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rf6f-7fwh-wjgh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-rf6f-7fwh-wjgh against a dependency in the lockfile. The project declares only react and react-dom as production dependencies; all other packages are devDependencies used for the webpack/babel build pipeline. The compiled extension output in dist/ would not include these build tools. No evidence of malicious data flow or credential handling is present.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version via npm audit fix or manual version bump.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rf6f-7fwh-wjgh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8fgc-7cc6-rx7x applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known vulnerability was found in a development dependency. Because it is low severity and only used during building, the risk is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8fgc-7cc6-rx7x to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory (GHSA-8fgc-7cc6-rx7x) against a dependency in package-lock.json. Given the project&#39;s dependency profile—react and react-dom in production, build tools in dev—the affected package is most likely a transitive dev dependency. Low-severity advisories in build tooling pose minimal risk to the shipped extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8fgc-7cc6-rx7x</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r5fr-rjxr-66jc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known vulnerability was found in a build-tool dependency. Since these tools are not included in the final extension, the risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r5fr-rjxr-66jc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-r5fr-rjxr-66jc against a dependency in the lockfile. The project&#39;s production dependencies are react and react-dom at ^18.2.0, which are unlikely to carry this advisory. The affected package is most likely a transitive dependency of the babel, webpack, terser, or eslint dev toolchain. Dev dependencies are not included in the compiled dist/ output that end users install.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r5fr-rjxr-66jc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3v7f-55p6-f55p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was found in a development dependency. Because it is only used during the build process and not shipped to users, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3v7f-55p6-f55p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-3v7f-55p6-f55p) against a dependency in package-lock.json. The project&#39;s only production dependencies are react and react-dom; all other declared packages are devDependencies for the build pipeline. The affected package is most likely a transitive dev dependency that does not ship in the compiled extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3v7f-55p6-f55p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4c8g-83qw-93j6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known vulnerability was found in a build-tool dependency. These tools are not included in the extension that users install, so the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6 against a dependency in the lockfile. The project declares react and react-dom as its only production dependencies; the remaining packages are devDependencies for babel, webpack, terser, and eslint. The affected package is most likely part of the build toolchain and would not be included in the dist/ output installed by end users. No malicious code or data flow is evident.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4c8g-83qw-93j6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f886-m6hf-6m8v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-severity vulnerability was found in a development dependency. Since it is only used during building and not shipped to users, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f886-m6hf-6m8v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-f886-m6hf-6m8v) against a dependency in package-lock.json. The project&#39;s production dependencies are limited to react and react-dom at ^18.2.0. The affected package is most likely a transitive dev dependency in the build toolchain, which does not ship in the compiled extension output.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f886-m6hf-6m8v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-52cp-r559-cp3m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known vulnerability was found in a build-tool dependency. These tools are not part of the extension that users install, so the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-52cp-r559-cp3m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-52cp-r559-cp3m against a dependency in the lockfile. The project&#39;s only production dependencies are react and react-dom at ^18.2.0. All other packages are devDependencies for the babel, webpack, terser, and eslint build pipeline. The affected package is most likely a transitive dev dependency that is not included in the compiled dist/ output. No malicious behavior is evident in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-52cp-r559-cp3m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3ppc-4f35-3m26 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known vulnerability in one of the tools used to build this extension. Since the extension is compiled before distribution, the vulnerable tool likely does not run on the user&#39;s machine. The developer should update their build tools to fix it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3ppc-4f35-3m26 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency declared in the lockfile. The project&#39;s dependency tree consists of production dependencies (react, react-dom) and build-time dev dependencies (babel, webpack, eslint, terser). The affected package is most likely a transitive dependency of the build toolchain rather than runtime code shipped to end users. The extension is compiled to a dist bundle, so dev dependencies do not execute in the end user&#39;s SillyTavern environment. The vulnerability should be remediated by updating dependencies but does not indicate malicious behavior.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions. Rebuild and verify the extension still functions correctly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3ppc-4f35-3m26</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known vulnerability in one of the tools used to build this extension. Since the extension is compiled before distribution, the vulnerable tool likely does not run on the user&#39;s machine. The developer should update their build tools to fix it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in the lockfile. Given the project&#39;s dependency structure, the affected package is most likely a transitive dependency of the webpack/babel/eslint build toolchain. These dev dependencies are used at build time by the developer and are not shipped to end users in the compiled dist output. The advisory should be addressed but does not represent a runtime threat to SillyTavern users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions. Rebuild and verify the extension still functions correctly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2c7-rcm5-vvqj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known vulnerability in one of the tools used to build this extension. Since the extension is compiled before distribution, the vulnerable tool likely does not run on the user&#39;s machine. The developer should update their build tools to fix it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2c7-rcm5-vvqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in the lockfile. The project&#39;s production dependencies are limited to react and react-dom, with the remaining dependencies being build-time dev tooling. The affected package is most likely a transitive dependency of the build toolchain that does not ship in the compiled extension output. Remediation is recommended but this does not indicate malicious intent or a direct runtime risk to users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions. Rebuild and verify the extension still functions correctly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2c7-rcm5-vvqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-48c2-rrv3-qjmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level vulnerability in one of the tools used to build this extension. Since the extension is compiled before distribution, the vulnerable tool likely does not run on the user&#39;s machine. The developer should update their build tools to fix it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-48c2-rrv3-qjmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory against a dependency in the lockfile. Based on the project&#39;s dependency structure, the affected package is most likely part of the build toolchain (babel, webpack, eslint, or their transitive dependencies). These are dev dependencies used at build time and are not included in the compiled dist output distributed to SillyTavern users. The vulnerability should be remediated but poses minimal risk to end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions. Rebuild and verify the extension still functions correctly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-48c2-rrv3-qjmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-38r7-794h-5758 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a low-level vulnerability in one of the tools used to build this extension. This is a minor issue that the developer should fix by updating their tools, but it is unlikely to affect users of the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-38r7-794h-5758 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory against a dependency in the lockfile. The project&#39;s dependency tree is dominated by build-time dev tooling, and the affected package is most likely a transitive dependency of that toolchain. Low-severity advisories in build dependencies for a client-side compiled extension represent minimal risk to end users. Remediation is still good hygiene.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions. Rebuild and verify the extension still functions correctly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-38r7-794h-5758</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known vulnerability in one of the tools used to build this extension. Since the extension is compiled before distribution, the vulnerable tool likely does not run on the user&#39;s machine. The developer should update their build tools to fix it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in the lockfile. The project&#39;s production dependencies are react and react-dom, with all other declared dependencies being build-time dev tooling. The affected package is most likely a transitive dependency of the webpack, babel, or eslint toolchain. Since the extension is compiled to a dist bundle before distribution, dev dependencies do not execute in the end user&#39;s SillyTavern environment. The advisory should be remediated by updating dependencies but does not indicate malicious behavior or a direct runtime threat to users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit and update affected dependencies to patched versions. Rebuild and verify the extension still functions correctly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/blob/b08838e9ebb0c51d16ce25d490959f992108df32/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (0)</summary>
+      <p>None.</p>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>13 files &middot; 799428 bytes</dd>
+      <dt>Contextual coverage</dt><dd>30 of 30 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/mechamarmot/SillyTavern-LocalImage/commit/b08838e9ebb0c51d16ce25d490959f992108df32" rel="noopener noreferrer">b08838e9ebb0c51d16ce25d490959f992108df32</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T00:43:43.297Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>13 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>1</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v1</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>28773 input &middot; 16381 output &middot; 4059 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>edec52a68ab13b884769335464f92e50a7e1a7121b528d4e5f4efd6a1c0451ba</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1114617526/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
