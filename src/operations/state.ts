@@ -356,3 +356,12 @@ export function resumeSystem(state: OperationsState, at: string) {
     emergency_stop: null,
   });
 }
+
+export function releaseAutomaticHolds(state: OperationsState, at: string) {
+  if (state.automatic_holds.length === 0) return state;
+  return OperationsStateSchema.parse({
+    ...state,
+    updated_at: at,
+    automatic_holds: [],
+  });
+}

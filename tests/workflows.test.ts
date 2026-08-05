@@ -34,6 +34,7 @@ const workflowNames = [
   "policy-rescan.yml",
   "provider-check.yml",
   "reconcile.yml",
+  "release-holds.yml",
   "retry.yml",
   "scan-and-publish.yml",
   "staff-operations.yml",
@@ -368,6 +369,36 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("release holds is staff-gated and restarts reconciliation", async () => {
+    const value = await workflow("release-holds.yml");
+    const job = value.jobs.release;
+    const steps = job.steps as Workflow[];
+    const apply = steps.find(
+      (step) => step.name === "Release automatic recovery holds",
+    );
+    const commit = steps.find(
+      (step) => step.name === "Commit released operational state",
+    );
+    const reconcile = steps.find(
+      (step) => step.name === "Dispatch backlog reconciliation",
+    );
+
+    expect(value.on).toEqual({ workflow_dispatch: null });
+    expect(value.concurrency).toEqual({
+      group: "tavernkeeper-global-scan",
+      "cancel-in-progress": false,
+    });
+    expect(job.environment).toBe("tavernkeeper-staff");
+    expect(apply?.env).toEqual({
+      TAVERNKEEPER_OPERATION: '{"operation":"release-holds"}',
+    });
+    expect(apply?.run).toBe("npm run --silent retry");
+    expect(commit?.run).toContain("git diff --quiet -- operations/state.json");
+    expect(reconcile?.run).toBe(
+      'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    );
+  });
+
   test("publisher authenticates every decrypted outcome against the requested batch", async () => {
     const value = await workflow("scan-and-publish.yml");
     const decrypt = (value.jobs.publish.steps as Workflow[]).find(
@@ -657,7 +688,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 10 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 11 workflows/u),
     });
   });
 });

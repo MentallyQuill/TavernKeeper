@@ -21,11 +21,13 @@
 ### Task 1: State transition and CLI contract
 
 **Files:**
+
 - Modify: `tests/operations-state.test.ts`
 - Modify: `src/operations/state.ts`
 - Modify: `src/cli/retry.ts`
 
 **Interfaces:**
+
 - Produces: `releaseAutomaticHolds(state: OperationsState, at: string): OperationsState`
 - Produces: `TAVERNKEEPER_OPERATION={"operation":"release-holds"}`
 
@@ -37,11 +39,13 @@
 ### Task 2: Manual GitHub Action
 
 **Files:**
+
 - Modify: `tests/workflows.test.ts`
 - Create: `.github/workflows/release-holds.yml`
 - Modify: `scripts/check-workflow-policy.mjs`
 
 **Interfaces:**
+
 - Consumes: `release-holds` retry CLI operation
 - Produces: manual `Release Holds` workflow
 
@@ -53,9 +57,11 @@
 ### Task 3: Verify, publish, and operate
 
 **Files:**
+
 - Modify: none
 
 **Interfaces:**
+
 - Consumes: merged `release-holds.yml` on `main`
 - Produces: released live holds and a dispatched reconciliation run
 
