@@ -460,49 +460,64 @@ describe("contextual evidence review", () => {
     });
   });
 
-  test("rejects repository paths in narratives before checkpointing", async () => {
-    const current = group("src/a.ts", [ids[0]!]);
-    const onProgress = vi.fn();
-    const requestCompletion = vi.fn(async () => ({
-      completionId: "completion-path-bearing-narrative",
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-      content: JSON.stringify({
-        status: "complete",
-        assessments: [
-          {
-            ...assessment(ids[0]!, current.path, 2),
-            technical_explanation: `The issue is in ${current.path}.`,
-          },
-        ],
-        observations: [],
-      }),
-      usage: {
-        inputTokens: 80,
-        outputTokens: 30,
-        cacheReadTokens: 0,
-        reasoningTokens: 5,
-      },
-    }));
-
-    await expect(
-      reviewEvidenceGroups({
-        groups: [current],
-        provider: {
-          endpoint: "https://provider.example/v1/chat/completions",
-          apiKey: "test-key",
-          model: "configured/model:thinking",
-          requestCompletion,
+  test("redacts every known repository path without retrying short filenames", async () => {
+    const groups = [group("a", [ids[0]!]), group("src/b.ts", [ids[1]!])];
+    const progress: ContextualReviewProgress[] = [];
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const current = groups.find((item) =>
+        request.userContent.includes(item.group_id),
+      )!;
+      const reviewed = assessment(
+        current.candidates[0]!.candidate_id,
+        current.path,
+        2,
+      );
+      return {
+        completionId: `completion-${progress.length + 1}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify({
+          status: "complete",
+          assessments: [
+            {
+              ...reviewed,
+              technical_explanation:
+                current === groups[0]
+                  ? "The issue is in src/b.ts and not inside data."
+                  : reviewed.technical_explanation,
+            },
+          ],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 80,
+          outputTokens: 30,
+          cacheReadTokens: 0,
+          reasoningTokens: 5,
         },
-        policy,
-        onProgress,
-      }),
-    ).rejects.toMatchObject({
-      code: "MODEL_EVIDENCE_INVALID",
-      scope: "repository",
+      } satisfies ModelCompletionResult;
     });
-    expect(requestCompletion).toHaveBeenCalledTimes(3);
-    expect(onProgress).not.toHaveBeenCalled();
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+      onProgress: async (value) => {
+        progress.push(structuredClone(value));
+      },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(result.assessments[0]?.technical_explanation).toBe(
+      "The issue is in file and not inside data.",
+    );
+    expect(JSON.stringify(progress)).not.toContain("src/b.ts");
+    expect(JSON.stringify(progress)).not.toMatch(/"path":/u);
   });
 
   test("rejects progress that is not the exact completed group prefix", async () => {

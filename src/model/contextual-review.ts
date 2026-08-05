@@ -437,11 +437,15 @@ function validatedProgress(
         })),
       }),
     );
-    const validated = validateCompletedGroupReview(group, {
-      status: "complete",
-      assessments,
-      observations,
-    });
+    const validated = validateCompletedGroupReview(
+      group,
+      {
+        status: "complete",
+        assessments,
+        observations,
+      },
+      spec.groups.map(({ path }) => path),
+    );
     expectedAssessments.push(...validated.assessments);
     expectedObservations.push(...validated.observations);
   }
@@ -577,7 +581,11 @@ async function reviewGroup(
         repair = undefined;
         continue;
       }
-      return validateCompletedGroupReview(group, response);
+      return validateCompletedGroupReview(
+        group,
+        response,
+        spec.groups.map(({ path }) => path),
+      );
     } catch (error) {
       lastError = error;
       if (!retryable(error) || attempt === spec.policy.maxImmediateAttempts)

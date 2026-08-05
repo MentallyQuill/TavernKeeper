@@ -70,39 +70,62 @@ function canonicalCandidateLocation(
   return [{ path: group.path, line_start: lineStart, line_end: lineEnd }];
 }
 
-function validateNarrativesExcludePath(
-  group: EvidenceContextGroup,
-  response: CompletedResponse,
+function escapeRegularExpression(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+}
+
+function redactKnownRepositoryPaths(
+  value: string,
+  repositoryPaths: readonly string[],
 ) {
-  const repositoryPath = group.path.toLowerCase();
-  const narratives = [
-    ...response.assessments.flatMap((assessment) => [
-      assessment.technical_explanation,
-      assessment.layman_explanation,
-      assessment.developer_action,
-    ]),
-    ...response.observations.flatMap((observation) => [
-      observation.title,
-      observation.technical_explanation,
-      observation.layman_explanation,
-      observation.developer_action,
-    ]),
-  ];
-  if (
-    narratives.some((narrative) =>
-      narrative.toLowerCase().includes(repositoryPath),
-    )
-  )
-    evidenceError("Contextual review narrative repeated a repository path.");
+  return [...new Set(repositoryPaths)]
+    .sort((left, right) => right.length - left.length)
+    .reduce((redacted, path) => {
+      const pattern = new RegExp(
+        `(^|[^\\p{L}\\p{N}._/-])${escapeRegularExpression(path)}(?=$|[^\\p{L}\\p{N}._/-])`,
+        "giu",
+      );
+      const replacement = path.length >= 4 ? "file" : "x";
+      return redacted.replace(
+        pattern,
+        (_match, prefix: string) => `${prefix}${replacement}`,
+      );
+    }, value);
+}
+
+function redactNarrativePaths(
+  response: CompletedResponse,
+  repositoryPaths: readonly string[],
+): CompletedResponse {
+  const redact = (value: string) =>
+    redactKnownRepositoryPaths(value, repositoryPaths);
+  return {
+    status: "complete",
+    assessments: response.assessments.map((assessment) => ({
+      ...assessment,
+      technical_explanation: redact(assessment.technical_explanation),
+      layman_explanation: redact(assessment.layman_explanation),
+      developer_action: redact(assessment.developer_action),
+    })),
+    observations: response.observations.map((observation) => ({
+      ...observation,
+      title: redact(observation.title),
+      technical_explanation: redact(observation.technical_explanation),
+      layman_explanation: redact(observation.layman_explanation),
+      developer_action: redact(observation.developer_action),
+    })),
+  };
 }
 
 export function validateCompletedGroupReview(
   group: EvidenceContextGroup,
   response: CompletedResponse,
+  repositoryPaths: readonly string[] = [group.path],
 ): {
   assessments: ContextualAssessment[];
   observations: ContextualObservation[];
 } {
+  const review = redactNarrativePaths(response, repositoryPaths);
   const candidates = new Map(
     group.candidates.map((candidate) => [candidate.candidate_id, candidate]),
   );
@@ -111,17 +134,16 @@ export function validateCompletedGroupReview(
   );
   if (candidates.size !== group.candidates.length)
     evidenceError("Evidence group contains duplicate candidate identities.");
-  validateNarrativesExcludePath(group, response);
   if (
-    response.assessments.length !== candidates.size ||
-    response.assessments.some(
+    review.assessments.length !== candidates.size ||
+    review.assessments.some(
       (assessment) => !candidates.has(assessment.candidate_id),
     )
   )
     evidenceError(
       "Contextual review did not assess every supplied candidate exactly once.",
     );
-  for (const assessment of response.assessments) {
+  for (const assessment of review.assessments) {
     const candidate = candidates.get(assessment.candidate_id)!;
     if (
       !assessment.evidence_ids.includes(candidate.evidence_id) ||
@@ -129,7 +151,7 @@ export function validateCompletedGroupReview(
     )
       evidenceError("Contextual review cited unknown candidate evidence.");
   }
-  for (const observation of response.observations) {
+  for (const observation of review.observations) {
     if (
       observation.related_candidate_ids.some(
         (candidateId) => !candidates.has(candidateId),
@@ -142,7 +164,7 @@ export function validateCompletedGroupReview(
     validateLocations(group, observation.locations);
   }
   const assessmentById = new Map(
-    response.assessments.map((assessment) => [
+    review.assessments.map((assessment) => [
       assessment.candidate_id,
       assessment,
     ]),
@@ -152,7 +174,7 @@ export function validateCompletedGroupReview(
       ...assessmentById.get(candidate.candidate_id)!,
       locations: canonicalCandidateLocation(group, candidate),
     })),
-    observations: response.observations
+    observations: review.observations
       .map((observation) => ({
         observation_id: createHash("sha256")
           .update(
