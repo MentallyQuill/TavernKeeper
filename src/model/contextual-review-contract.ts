@@ -25,6 +25,13 @@ const RepositoryPathSchema = z
     "Location path must be repository-relative.",
   );
 
+function publicNarrativeIsSafe(value: string) {
+  return (
+    !/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/u.test(value) &&
+    !UnsafePublicNarrative.some((pattern) => pattern.test(value))
+  );
+}
+
 const SafeTextSchema = (maximum: number) =>
   z
     .string()
@@ -32,12 +39,84 @@ const SafeTextSchema = (maximum: number) =>
     .min(1)
     .max(maximum)
     .refine(
-      (value) =>
-        !/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/u.test(
-          value,
-        ) && !UnsafePublicNarrative.some((pattern) => pattern.test(value)),
+      publicNarrativeIsSafe,
       "Assessment text contains unsafe characters.",
     );
+
+const NarrativeFallbacks = {
+  title: "Additional contextual observation",
+  technical_explanation:
+    "Detailed technical wording was omitted by the public report safety filter.",
+  layman_explanation:
+    "Detailed wording was omitted by the public report safety filter.",
+  developer_action:
+    "Review the cited evidence and confirm the intended behavior.",
+  requested_context: "Additional source context is required.",
+} as const;
+
+function record(value: unknown): Record<string, unknown> | undefined {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function safeNarrative(
+  value: unknown,
+  maximum: number,
+  fallback: string,
+): unknown {
+  if (typeof value !== "string") return value;
+  const parsed = SafeTextSchema(maximum).safeParse(value);
+  if (parsed.success) return parsed.data;
+  return value.trim() === "" ? value : fallback;
+}
+
+function sanitizeNarrativeObject(
+  value: unknown,
+  fields: ReadonlyArray<readonly [keyof typeof NarrativeFallbacks, number]>,
+): unknown {
+  const candidate = record(value);
+  if (candidate === undefined) return value;
+  const sanitized = { ...candidate };
+  for (const [field, maximum] of fields)
+    sanitized[field] = safeNarrative(
+      sanitized[field],
+      maximum,
+      NarrativeFallbacks[field],
+    );
+  return sanitized;
+}
+
+export function sanitizeContextualReviewNarratives(input: unknown): unknown {
+  const response = record(input);
+  if (response === undefined) return input;
+  if (response.status === "complete")
+    return {
+      ...response,
+      assessments: Array.isArray(response.assessments)
+        ? response.assessments.map((assessment) =>
+            sanitizeNarrativeObject(assessment, [
+              ["technical_explanation", 1_200],
+              ["layman_explanation", 600],
+              ["developer_action", 600],
+            ]),
+          )
+        : response.assessments,
+      observations: Array.isArray(response.observations)
+        ? response.observations.map((observation) =>
+            sanitizeNarrativeObject(observation, [
+              ["title", 200],
+              ["technical_explanation", 1_200],
+              ["layman_explanation", 600],
+              ["developer_action", 600],
+            ]),
+          )
+        : response.observations,
+    };
+  if (response.status === "needs_more_context")
+    return sanitizeNarrativeObject(response, [["requested_context", 600]]);
+  return input;
+}
 
 const LocationSchema = z
   .strictObject({
