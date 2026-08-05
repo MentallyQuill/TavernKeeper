@@ -22,7 +22,8 @@ permissions:
   actions: write
 
 concurrency:
-  group: tavernkeeper-global-scan
+  group: tavernkeeper-staff-operations
+  queue: max
   cancel-in-progress: false
 
 jobs:
@@ -45,23 +46,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Apply validated staff operation
-        env:
-          OPERATION: ${{ inputs.operation }}
-          REPOSITORY_ID: ${{ inputs.repository_id }}
-          REASON_CODE: ${{ inputs.reason_code }}
-        run: |
-          if [[ "$OPERATION" = "migrate" ]]; then
-            npm run --silent state:migrate
-            exit 0
-          elif [[ "$OPERATION" = "pause" ]]; then
-            request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" '{operation:$operation,reason_code:$reason_code}')"
-          elif [[ "$OPERATION" = "retry" ]]; then
-            request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" '{operation:$operation,repository_id:$repository_id}')"
-          else
-            request='{"operation":"resume"}'
-          fi
-          TAVERNKEEPER_OPERATION="$request" npm run --silent retry
       - name: Create TavernKeeper Publisher token
         id: publisher-token
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
@@ -71,17 +55,39 @@ jobs:
           owner: MentallyQuill
           repositories: TavernKeeper
           permission-contents: write
-      - name: Commit operational state
+      - name: Apply and commit validated staff operation
         env:
           GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+          OPERATION: ${{ inputs.operation }}
+          REPOSITORY_ID: ${{ inputs.repository_id }}
+          REASON_CODE: ${{ inputs.reason_code }}
         run: |
+          run_operation() {
+            if [[ "$OPERATION" = "migrate" ]]; then
+              env -u GH_TOKEN -u GITHUB_TOKEN npm run --silent state:migrate
+            elif [[ "$OPERATION" = "pause" ]]; then
+              request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" '{operation:$operation,reason_code:$reason_code}')"
+              env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
+            elif [[ "$OPERATION" = "retry" ]]; then
+              request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" '{operation:$operation,repository_id:$repository_id}')"
+              env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
+            else
+              env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION='{"operation":"resume"}' npm run --silent retry
+            fi
+          }
+
           gh auth setup-git
           git config user.name "TavernKeeper"
           git config user.email "tavernkeeper@users.noreply.github.com"
-          git add operations/state.json
-          git commit -m "chore(ops): apply staff queue operation"
           push_succeeded="false"
           for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            run_operation
+            git add operations/state.json
+            if ! git diff --cached --quiet; then
+              git commit -m "chore(ops): apply staff queue operation"
+            fi
             if git push origin HEAD:main; then
               push_succeeded="true"
               break
