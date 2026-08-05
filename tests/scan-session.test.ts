@@ -226,8 +226,8 @@ async function completeReview(root: string) {
       },
     },
     policy: {
-      version: "1",
-      promptVersion: "contextual-review-v1",
+      version: "2",
+      promptVersion: "contextual-review-v2",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 3,
       maxOutputTokens: 32_768,

@@ -25,7 +25,9 @@ describe("V5 technical history rendering", () => {
     expect(html).toContain("Scan history");
     expect(html).toContain("View report");
     expect(html).toContain("bbbbbbb");
-    expect(html).toContain("0 high &middot; 0 material &middot; 0 low");
+    expect(html).toContain(
+      "0 immediate danger &middot; 0 material &middot; 0 low",
+    );
     expect(html.indexOf("Aug 3, 2026")).toBeLessThan(
       html.indexOf("Aug 2, 2026"),
     );

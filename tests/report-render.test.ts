@@ -11,7 +11,7 @@ describe("V5 technical report HTML", () => {
     expect(html).toContain("TavernKeeper Scan Report");
     expect(html).toContain("Advisory reports for Tavernary");
     expect(html).toContain(
-      "No material or high-risk concern was identified in this review.",
+      "No material or immediate-danger concern was identified in this review.",
     );
     expect(html).toContain(
       'class="assessment-summary surface risk-mark risk-low"',

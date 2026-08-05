@@ -1,10 +1,11 @@
 import type { ScanReportV5 } from "../contracts/reports-v5.js";
 import {
-  assessmentSummary,
+  dangerBasisLabel,
+  deriveProjectAdvisory,
   escapeHtml,
   FAVICON_LINKS,
   formatPublicDate,
-  highestRisk,
+  projectAdvisorySummary,
   renderSiteHeader,
   shortSha,
   SCRIPT_FREE_CSP,
@@ -91,15 +92,17 @@ function contextualFinding(
   candidate: ScanReportV5["candidates"][number],
   assessment: ScanReportV5["assessments"][number],
 ) {
+  const advisory = deriveProjectAdvisory([assessment]);
+  const risk = advisory.risk;
   const label =
-    assessment.recommended_risk === "high"
-      ? "High danger"
-      : assessment.recommended_risk === "material"
+    risk === "high"
+      ? `Immediate danger — ${dangerBasisLabel(advisory.dangerBasis)}`
+      : risk === "material"
         ? "Material concern"
         : assessment.disposition === "minor_weakness"
           ? "Minor caution"
           : "Expected behavior";
-  return `<article class="finding risk-${escapeHtml(assessment.recommended_risk)}">
+  return `<article class="finding risk-${escapeHtml(risk)}">
     <h3>${escapeHtml(candidate.title)}</h3>
     <p class="label"><strong>${escapeHtml(label)}</strong> &middot; ${escapeHtml(assessment.confidence)} confidence</p>
     <p>${escapeHtml(assessment.layman_explanation)}</p>
@@ -123,6 +126,8 @@ function contextualObservation(
   report: ScanReportV5,
   observation: ScanReportV5["observations"][number],
 ) {
+  const advisory = deriveProjectAdvisory([observation]);
+  const risk = advisory.risk;
   const candidatesByEvidence = new Map(
     report.candidates.map((candidate) => [candidate.evidence_id, candidate]),
   );
@@ -143,9 +148,9 @@ function contextualObservation(
       )}</li>`;
     })
     .join("");
-  return `<article class="finding risk-${escapeHtml(observation.recommended_risk)}">
+  return `<article class="finding risk-${escapeHtml(risk)}">
     <h3>${escapeHtml(observation.title)}</h3>
-    <p><strong>${escapeHtml(observation.recommended_risk)} risk</strong> &middot; ${escapeHtml(observation.confidence)} confidence</p>
+    <p><strong>${escapeHtml(risk === "high" ? `Immediate danger — ${dangerBasisLabel(advisory.dangerBasis)}` : `${risk} risk`)}</strong> &middot; ${escapeHtml(observation.confidence)} confidence</p>
     <p>${escapeHtml(observation.layman_explanation)}</p>
     <details><summary>Technical assessment</summary>
       <p>${escapeHtml(observation.technical_explanation)}</p>
@@ -160,8 +165,12 @@ export function renderReportV5Html(input: unknown) {
   const report = sanitizeReportV5(input);
   const commitUrl = `${report.canonical_url}/commit/${report.target_sha}`;
   const historyUrl = `${SITE_ROOT}reports/github/${report.repository_id}/history/`;
-  const risk = highestRisk(report.counts.recommended_risk);
-  const summary = assessmentSummary(report.counts.recommended_risk);
+  const advisory = deriveProjectAdvisory([
+    ...report.assessments,
+    ...report.observations,
+  ]);
+  const risk = advisory.risk;
+  const summary = projectAdvisorySummary(advisory);
   const assessmentByCandidate = new Map(
     report.assessments.map((assessment) => [
       assessment.candidate_id,
@@ -173,13 +182,13 @@ export function renderReportV5Html(input: unknown) {
     assessment: assessmentByCandidate.get(candidate.candidate_id)!,
   }));
   const concerning = rendered.filter(
-    ({ assessment }) => assessment.recommended_risk !== "low",
+    ({ assessment }) => deriveProjectAdvisory([assessment]).risk !== "low",
   );
   const concerningObservations = report.observations.filter(
-    (observation) => observation.recommended_risk !== "low",
+    (observation) => deriveProjectAdvisory([observation]).risk !== "low",
   );
   const relatedObservations = report.observations.filter(
-    (observation) => observation.recommended_risk === "low",
+    (observation) => deriveProjectAdvisory([observation]).risk === "low",
   );
   const cautions = rendered.filter(
     ({ assessment }) => assessment.disposition === "minor_weakness",
@@ -192,8 +201,8 @@ export function renderReportV5Html(input: unknown) {
       .sort((left, right) => {
         const order = { high: 0, material: 1, low: 2 };
         return (
-          order[left.assessment.recommended_risk] -
-            order[right.assessment.recommended_risk] ||
+          order[deriveProjectAdvisory([left.assessment]).risk] -
+            order[deriveProjectAdvisory([right.assessment]).risk] ||
           left.candidate.candidate_id.localeCompare(
             right.candidate.candidate_id,
           )
@@ -206,12 +215,12 @@ export function renderReportV5Html(input: unknown) {
   const primaryFindings = [
     ...concerning.map((item) => ({
       id: item.candidate.candidate_id,
-      risk: item.assessment.recommended_risk,
+      risk: deriveProjectAdvisory([item.assessment]).risk,
       html: contextualFinding(report, item.candidate, item.assessment),
     })),
     ...concerningObservations.map((observation) => ({
       id: observation.observation_id,
-      risk: observation.recommended_risk,
+      risk: deriveProjectAdvisory([observation]).risk,
       html: contextualObservation(report, observation),
     })),
   ]
@@ -251,15 +260,15 @@ export function renderReportV5Html(input: unknown) {
       <h2 id="assessment-summary-title">${escapeHtml(summary)}</h2>
       <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
       <p class="risk-counts">
-        <span>${escapeHtml(report.counts.recommended_risk.high)} high</span>
-        <span>${escapeHtml(report.counts.recommended_risk.material)} material</span>
-        <span>${escapeHtml(report.counts.recommended_risk.low)} low</span>
+        <span>${escapeHtml(advisory.counts.high)} immediate danger</span>
+        <span>${escapeHtml(advisory.counts.material)} material</span>
+        <span>${escapeHtml(advisory.counts.low)} low</span>
       </p>
     </section>
 
     <section class="report-section" aria-labelledby="assessment-title">
       <h2 id="assessment-title">What this review found</h2>
-      ${primaryFindings.length === 0 ? "<p>No material or high-risk item was identified.</p>" : primaryFindings}
+      ${primaryFindings.length === 0 ? "<p>No material or immediate-danger item was identified.</p>" : primaryFindings}
     ${cautions.length === 0 ? "" : `<h3>Minor cautions</h3>${reviewItems(cautions)}`}
     <details class="expected">
       <summary>Expected scanner matches (${escapeHtml(expected.length)})</summary>

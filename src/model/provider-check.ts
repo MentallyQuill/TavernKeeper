@@ -96,8 +96,8 @@ export async function checkModelProviderCompatibility(
         : { resolveAddresses: request.resolveAddresses }),
     },
     policy: {
-      version: "1",
-      promptVersion: "contextual-review-v1",
+      version: "2",
+      promptVersion: "contextual-review-v2",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 1,
       maxOutputTokens: 8_192,

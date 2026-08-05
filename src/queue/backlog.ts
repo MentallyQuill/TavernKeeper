@@ -93,7 +93,11 @@ export function planBatch(
   );
   const available = [...state.scan_queue.entries]
     .filter(({ repository_id }) => !activeRepositoryIds.has(repository_id))
-    .sort((left, right) => left.ticket - right.ticket);
+    .sort(
+      (left, right) =>
+        Number(right.staff_requested === true) -
+          Number(left.staff_requested === true) || left.ticket - right.ticket,
+    );
   const delayed = available.filter(
     ({ not_before }) => not_before !== null && Date.parse(not_before) > nowMs,
   );

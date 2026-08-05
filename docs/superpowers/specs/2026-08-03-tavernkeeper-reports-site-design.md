@@ -73,11 +73,16 @@ There are only two controls:
 
 - a search field covering repository name, commit SHA, and displayed assessment
   terms; and
-- a native risk filter for All, High, Material, and Low/no material concern.
+- a native risk filter for All, Immediate danger, Material, and Low/no material
+  concern.
 
-The filter uses the highest published recommendation: High when any high item
-exists, otherwise Material when any material item exists, otherwise Low/no
-material concern.
+The filter uses TavernKeeper's deterministic project advisory. Immediate
+danger requires either high-confidence credible malicious or compromised
+behavior, or a high-confidence critical vulnerability that is readily
+exploitable in the shipped project. Other material vulnerabilities, including
+critical dependency advisories without proven runtime reachability and
+attacker control, remain Material. Otherwise the report is Low/no material
+concern.
 
 Results are newest first. Each compact result contains repository name, a
 plain-language assessment summary, completion date, shortened commit, risk
@@ -90,7 +95,8 @@ IDs, byte counts, and policy versions do not appear in the directory.
 The report opens with:
 
 - repository identity and short commit;
-- a plain-language assessment summary derived only from published counts;
+- a plain-language assessment summary derived deterministically from published
+  assessment and observation fields;
 - the existing advisory limitation; and
 - links to repository history and Tavernary.
 

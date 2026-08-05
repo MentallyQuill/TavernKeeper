@@ -26,7 +26,7 @@ import { redactSource } from "./redaction.js";
 import { validateCompletedGroupReview } from "./review-coverage.js";
 
 export interface ContextualReviewPolicy {
-  version: "1";
+  version: "2";
   promptVersion: typeof CONTEXTUAL_PROMPT_VERSION;
   schemaVersion: typeof CONTEXTUAL_SCHEMA_VERSION;
   maxImmediateAttempts: number;
@@ -51,7 +51,7 @@ export interface ContextualReviewProvider {
 const CountSchema = z.number().int().nonnegative();
 export const CompletedContextualReviewSchema = z
   .strictObject({
-    policy_version: z.literal("1"),
+    policy_version: z.literal("2"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -249,7 +249,7 @@ function addUsage(total: ModelUsage, usage: ModelUsage) {
 
 function validatePolicy(policy: ContextualReviewPolicy) {
   if (
-    policy.version !== "1" ||
+    policy.version !== "2" ||
     policy.promptVersion !== CONTEXTUAL_PROMPT_VERSION ||
     policy.schemaVersion !== CONTEXTUAL_SCHEMA_VERSION ||
     !Number.isInteger(policy.maxImmediateAttempts) ||
@@ -457,7 +457,7 @@ export async function reviewEvidenceGroups(
       "Contextual observation identities must be unique.",
     );
   return CompletedContextualReviewSchema.parse({
-    policy_version: "1",
+    policy_version: "2",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,
     schema_version: CONTEXTUAL_SCHEMA_VERSION,
     model: spec.provider.model,

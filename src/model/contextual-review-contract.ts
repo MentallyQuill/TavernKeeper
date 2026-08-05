@@ -73,6 +73,31 @@ export const ItemRiskSchema = z.enum(["low", "material", "high"]);
 
 function riskContradictsDisposition(assessment: {
   disposition: z.infer<typeof DispositionSchema>;
+  impact: z.infer<typeof ImpactSchema>;
+  exploitability: z.infer<typeof ExploitabilitySchema>;
+  confidence: z.infer<typeof AssessmentConfidenceSchema>;
+  recommended_risk: z.infer<typeof ItemRiskSchema>;
+}) {
+  const lowDisposition = ["expected_behavior", "minor_weakness"].includes(
+    assessment.disposition,
+  );
+  const immediateMaterialDanger =
+    assessment.disposition === "material_vulnerability" &&
+    assessment.impact === "critical" &&
+    assessment.exploitability === "readily_exploitable" &&
+    assessment.confidence === "high";
+  return (
+    (lowDisposition && assessment.recommended_risk !== "low") ||
+    (assessment.disposition === "material_vulnerability" &&
+      assessment.recommended_risk !==
+        (immediateMaterialDanger ? "high" : "material")) ||
+    (assessment.disposition === "credible_malicious_behavior" &&
+      assessment.recommended_risk !== "high")
+  );
+}
+
+function legacyRiskContradictsDisposition(assessment: {
+  disposition: z.infer<typeof DispositionSchema>;
   recommended_risk: z.infer<typeof ItemRiskSchema>;
 }) {
   const lowDisposition = ["expected_behavior", "minor_weakness"].includes(
@@ -103,10 +128,22 @@ const AssessmentFields = {
 function validateAssessment(
   assessment: {
     disposition: z.infer<typeof DispositionSchema>;
+    impact: z.infer<typeof ImpactSchema>;
+    exploitability: z.infer<typeof ExploitabilitySchema>;
+    confidence: z.infer<typeof AssessmentConfidenceSchema>;
     recommended_risk: z.infer<typeof ItemRiskSchema>;
   },
   context: z.core.$RefinementCtx,
 ) {
+  if (
+    assessment.disposition === "credible_malicious_behavior" &&
+    assessment.confidence !== "high"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["confidence"],
+      message: "Credible malicious behavior requires high confidence.",
+    });
   if (riskContradictsDisposition(assessment))
     context.addIssue({
       code: "custom",
@@ -126,6 +163,20 @@ export const ContextualAssessmentSchema = z
   })
   .superRefine((assessment, context) => {
     validateAssessment(assessment, context);
+  });
+
+export const PublishedContextualAssessmentSchema = z
+  .strictObject({
+    ...AssessmentFields,
+    locations: z.array(LocationSchema).min(1).max(16),
+  })
+  .superRefine((assessment, context) => {
+    if (legacyRiskContradictsDisposition(assessment))
+      context.addIssue({
+        code: "custom",
+        path: ["recommended_risk"],
+        message: "Recommended risk contradicts the assessment disposition.",
+      });
   });
 
 const ObservationFields = {
@@ -148,10 +199,22 @@ function validateObservation(
     related_candidate_ids: string[];
     evidence_ids: string[];
     disposition: z.infer<typeof DispositionSchema>;
+    impact: z.infer<typeof ImpactSchema>;
+    exploitability: z.infer<typeof ExploitabilitySchema>;
+    confidence: z.infer<typeof AssessmentConfidenceSchema>;
     recommended_risk: z.infer<typeof ItemRiskSchema>;
   },
   context: z.core.$RefinementCtx,
 ) {
+  if (
+    observation.disposition === "credible_malicious_behavior" &&
+    observation.confidence !== "high"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["confidence"],
+      message: "Credible malicious behavior requires high confidence.",
+    });
   if (riskContradictsDisposition(observation))
     context.addIssue({
       code: "custom",
@@ -176,6 +239,26 @@ export const ContextualObservationInputSchema = z
 export const ContextualObservationSchema = z
   .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
   .superRefine(validateObservation);
+
+export const PublishedContextualObservationSchema = z
+  .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
+  .superRefine((observation, context) => {
+    if (legacyRiskContradictsDisposition(observation))
+      context.addIssue({
+        code: "custom",
+        path: ["recommended_risk"],
+        message: "Recommended risk contradicts the assessment disposition.",
+      });
+    if (
+      new Set(observation.related_candidate_ids).size !==
+        observation.related_candidate_ids.length ||
+      new Set(observation.evidence_ids).size !== observation.evidence_ids.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Observation identifiers must be unique.",
+      });
+  });
 
 const CompleteReviewResponseSchema = z
   .strictObject({

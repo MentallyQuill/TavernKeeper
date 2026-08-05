@@ -5,7 +5,7 @@ import {
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import type { ModelResponseDiagnostic } from "./openai-compatible-client.js";
 
-export const CONTEXTUAL_PROMPT_VERSION = "contextual-review-v1";
+export const CONTEXTUAL_PROMPT_VERSION = "contextual-review-v2";
 export const CONTEXTUAL_SCHEMA_VERSION = "contextual-assessment-v1";
 
 export interface ContextualReviewPrompt {
@@ -33,7 +33,9 @@ ${ecosystemContext()}
 
 Review every supplied scanner candidate using its actual code, data flow, destination, timing, disclosure, file role, and stated project purpose. Scanner names, keywords, and scanner severity are candidate-locating evidence, not a final security conclusion.
 
-For every candidate, return exactly one assessment. Allowed disposition values are expected_behavior, minor_weakness, material_vulnerability, and credible_malicious_behavior. Allowed impact values are none, low, medium, high, and critical. Allowed exploitability values are unlikely, plausible, and readily_exploitable. Allowed confidence values are low, medium, and high. Allowed recommended_risk values are low, material, and high. recommended_risk must agree with disposition: expected_behavior or minor_weakness requires low; material_vulnerability requires material or high; credible_malicious_behavior requires high.
+For dependency advisories, analyze the dependency version actually present in the shipped version, whether the vulnerable code has runtime reachability, whether attacker control reaches the vulnerable input, and what concrete user harm can result. Advisory severity alone is not an immediate-danger conclusion.
+
+For every candidate, return exactly one assessment. Allowed disposition values are expected_behavior, minor_weakness, material_vulnerability, and credible_malicious_behavior. Allowed impact values are none, low, medium, high, and critical. Allowed exploitability values are unlikely, plausible, and readily_exploitable. Allowed confidence values are low, medium, and high. Allowed recommended_risk values are low, material, and high. recommended_risk must agree with the complete assessment: expected_behavior or minor_weakness requires low. material_vulnerability requires material unless the impact is critical, exploitability is readily_exploitable, and confidence is high; only that combination requires high. credible_malicious_behavior is valid only with high confidence and requires high. High risk means immediate danger, so uncertainty must remain material rather than high.
 
 Return exactly one JSON object and no prose or markdown. Do not add keys that are not listed here. A completed response has exactly these top-level keys: status="complete", assessments, and observations. Each assessment has exactly these keys: candidate_id, evidence_ids, disposition, impact, exploitability, confidence, recommended_risk, technical_explanation, layman_explanation, and developer_action. Do not return assessment locations; TavernKeeper attaches each candidate's deterministic scanner location after validation. Each assessment must use a supplied candidate_id, cite one or more supplied evidence_ids, and give concise explanations and developer action. Use developer_action="none" when no change is warranted. Each optional observation has exactly these keys: related_candidate_ids, evidence_ids, disposition, impact, exploitability, confidence, recommended_risk, title, technical_explanation, layman_explanation, developer_action, and locations. Every observation location has exactly path, line_start, and line_end copied from supplied source context. Do not add an observation ID; TavernKeeper assigns it deterministically after validation.
 

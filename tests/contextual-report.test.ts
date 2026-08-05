@@ -113,8 +113,8 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "1",
-  prompt_version: "contextual-review-v1",
+  policy_version: "2",
+  prompt_version: "contextual-review-v2",
   schema_version: "contextual-assessment-v1",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
@@ -212,7 +212,7 @@ function reportWithObservation(
                 : risk === "material"
                   ? "plausible"
                   : "unlikely",
-            confidence: "medium",
+            confidence: risk === "high" ? "high" : "medium",
             recommended_risk: risk,
             title: "Related request handling",
             technical_explanation:
@@ -338,12 +338,17 @@ describe("contextual V5 reports", () => {
       const html = renderReportV5Html(reportWithObservation(risk));
 
       expect(html).not.toContain(
-        "<p>No material or high-risk item was identified.</p>",
+        "<p>No material or immediate-danger item was identified.</p>",
       );
       expect(html.indexOf("What this review found")).toBeLessThan(
         html.indexOf("Related request handling"),
       );
-      expect(html).toContain(`<strong>${risk} risk</strong>`);
+      if (risk === "high") {
+        expect(html).toContain("<strong>Immediate danger");
+        expect(html).toContain("Malicious or compromised behavior");
+      } else {
+        expect(html).toContain("<strong>material risk</strong>");
+      }
       expect(html).not.toContain("Related contextual observations");
     },
   );

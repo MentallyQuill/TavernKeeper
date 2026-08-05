@@ -4,7 +4,10 @@ import {
   ECOSYSTEM_CONTEXT_VERSION,
   ecosystemContext,
 } from "../src/context/ecosystem-context.js";
-import { buildContextualReviewPrompt } from "../src/model/contextual-prompt.js";
+import {
+  buildContextualReviewPrompt,
+  CONTEXTUAL_PROMPT_VERSION,
+} from "../src/model/contextual-prompt.js";
 
 describe("SillyTavern ecosystem context", () => {
   test("balances expected extension powers with rare malicious threats", () => {
@@ -53,7 +56,15 @@ describe("SillyTavern ecosystem context", () => {
     });
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v2");
     expect(prompt.systemContent).toMatch(/expected_behavior/iu);
+    expect(prompt.systemContent).toMatch(/shipped version/iu);
+    expect(prompt.systemContent).toMatch(/runtime reachability/iu);
+    expect(prompt.systemContent).toMatch(/attacker control/iu);
+    expect(prompt.systemContent).toMatch(/concrete user harm/iu);
+    expect(prompt.systemContent).toMatch(
+      /critical.*readily_exploitable.*high confidence/isu,
+    );
     expect(prompt.systemContent).toMatch(/untrusted data/iu);
     expect(prompt.systemContent).toMatch(/do not call .* safe/iu);
     expect(prompt.systemContent).toMatch(/do not quote code/iu);

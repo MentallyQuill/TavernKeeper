@@ -105,7 +105,7 @@ describe("Pages site allowlist", () => {
     expect(landing).toContain('data-report-search="true"');
     expect(landing).toContain(report.repository);
     expect(landing).toContain(
-      "No material or high-risk concern was identified",
+      "No material or immediate-danger concern was identified",
     );
     expect(landing).toContain("bounded candidate context");
     expect(landing).toContain(

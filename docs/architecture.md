@@ -142,11 +142,19 @@ deterministic minimum-risk floors and produces the final project assessment:
 - `low` / teal includes expected behavior, no concerns, minor sensitivities,
   and small hardening weaknesses;
 - `material` / orange represents a meaningful potential vulnerability;
-- `high` / red represents credible malicious behavior or a critical,
-  high-confidence, readily exploitable vulnerability.
+- `high` / red represents high-confidence credible malicious or compromised
+  behavior, or a high-confidence critical vulnerability that is readily
+  exploitable in the shipped project.
+
+For dependency advisories, the contextual policy must establish the shipped
+version, runtime reachability, attacker control, and concrete user harm.
+Scanner or advisory severity alone cannot produce red. Uncertainty remains
+material/orange.
 
 Freshness is separate. An older assessment retains its risk color and gains a
 clock marker while an updated scan is pending. Gray means no completed final
 assessment, and dark teal means the source type is unsupported. No state means
 safe, trusted, verified, or certified. Results never hide, quarantine, rank, or
 delist Tavernary projects automatically.
+This includes red reports: complete immediate-danger reports remain published
+so the community can see the warning and its specific basis.

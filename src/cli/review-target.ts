@@ -24,7 +24,7 @@ export async function reviewConfiguredTarget(environment: NodeJS.ProcessEnv) {
       model: requiredEnvironment(environment, "TAVERNKEEPER_MODEL"),
     },
     policy: await loadContextualReviewPolicy(
-      join(repositoryRoot, "config", "contextual-review.v1.json"),
+      join(repositoryRoot, "config", "contextual-review.v2.json"),
     ),
     expandContext: async (group, _request, attempt) =>
       expandEvidenceContextGroup(

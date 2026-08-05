@@ -43,7 +43,7 @@ describe("report directory search", () => {
       reportCard: "",
       risk: "low",
       search:
-        "mentallyquill recursion 1bce1fa no material or high-risk concern",
+        "mentallyquill recursion 1bce1fa no material or immediate-danger concern",
     });
     const wandlight = new ElementDouble({
       reportCard: "",

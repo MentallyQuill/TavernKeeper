@@ -8,8 +8,12 @@ sanitized Technical Report V5 artifacts through GitHub Pages.
 
 TavernKeeper does **not** certify that software is safe and does not assign the
 color shown on Tavernary. Tavernary independently synthesizes each complete V5
-report, applies non-lowerable risk floors, and presents `low`, `material`, or
-`high` risk separately from report freshness.
+report, applies deterministic risk rules, and presents `low`, `material`, or
+`high` risk separately from report freshness. `high` means immediate danger:
+high-confidence credible malicious or compromised behavior, or a
+high-confidence critical vulnerability that is readily exploitable in the
+shipped project. Scanner severity or a critical dependency advisory alone is
+not enough.
 
 ## Safety boundary
 
@@ -52,6 +56,9 @@ exact-GitHub-URL Action. TavernKeeper accepts only the authorized wake App's
 repository-ID hint and resolves the repository again from Tavernary's public
 manifest. Public Issues do not trigger scans. Automatic work is limited to five
 repositories per batch and two concurrent repositories.
+Due staff-requested scans run before ordinary due tickets. They do not bypass
+an emergency stop, automatic recovery hold, retry cooldown, exact-SHA checks,
+batch limit, or concurrency limit.
 
 Provider configuration is model-agnostic. `TAVERNKEEPER_MODEL` selects the
 configured OpenAI-compatible model without changing the report contract or
@@ -76,6 +83,10 @@ fallback during rollout. Durable tickets preserve that initial order: a failed
 project receives a new tail ticket, and projects discovered later receive still
 higher tickets, so neither can starve the other. See [operations](docs/operations.md),
 [architecture](docs/architecture.md), and [rule documentation](docs/rules.md).
+
+Every complete report remains public regardless of risk. An immediate-danger
+report is an awareness signal, never an automatic hide, quarantine, ranking,
+or delisting instruction.
 
 ## Local verification
 
