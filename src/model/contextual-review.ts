@@ -7,6 +7,7 @@ import {
   ContextualObservationSchema,
   ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
+  sanitizeContextualReviewNarratives,
   type ContextualAssessment,
   type ContextualAssessmentInput,
   type ContextualObservation,
@@ -216,6 +217,13 @@ export interface ReviewEvidenceGroupsSpec {
   ) => Promise<EvidenceContextGroup>;
 }
 
+export class ContextualReviewProgressError extends ModelRequestError {
+  constructor(message: string) {
+    super("MODEL_EVIDENCE_INVALID", "repository", message);
+    this.name = "ContextualReviewProgressError";
+  }
+}
+
 function extractSingleJsonObject(content: string): unknown {
   const trimmed = content.trim();
   const fenced = /^```(?:json)?\s*([\s\S]*?)\s*```$/iu.exec(trimmed);
@@ -275,7 +283,10 @@ function extractSingleJsonObject(content: string): unknown {
   }
 }
 
-function parseReviewResponse(content: string) {
+function parseReviewResponse(
+  content: string,
+  sanitizeUnsafeNarratives = false,
+) {
   if (redactSource(content) !== content)
     throw new ModelRequestError(
       "MODEL_EVIDENCE_INVALID",
@@ -284,6 +295,14 @@ function parseReviewResponse(content: string) {
       "response_content",
     );
   const extracted = extractSingleJsonObject(content);
+  const decodedContent = JSON.stringify(extracted);
+  if (redactSource(decodedContent) !== decodedContent)
+    throw new ModelRequestError(
+      "MODEL_EVIDENCE_INVALID",
+      "repository",
+      "Contextual reviewer returned encoded secret-shaped text.",
+      "response_content",
+    );
   const wireEnvelope = z
     .strictObject({ review: z.unknown() })
     .safeParse(extracted);
@@ -295,7 +314,9 @@ function parseReviewResponse(content: string) {
       "review_schema",
     );
   const parsed = ContextualReviewResponseSchema.safeParse(
-    wireEnvelope.data.review,
+    sanitizeUnsafeNarratives
+      ? sanitizeContextualReviewNarratives(wireEnvelope.data.review)
+      : wireEnvelope.data.review,
   );
   if (!parsed.success) {
     const path = parsed.error.issues[0]?.path ?? [];
@@ -379,7 +400,7 @@ function retryable(error: unknown) {
 }
 
 function progressError(message: string): never {
-  throw new ModelRequestError("MODEL_EVIDENCE_INVALID", "repository", message);
+  throw new ContextualReviewProgressError(message);
 }
 
 function validatedProgress(
@@ -449,15 +470,27 @@ function validatedProgress(
         })),
       }),
     );
-    const validated = validateCompletedGroupReview(
-      group,
-      {
-        status: "complete",
-        assessments,
-        observations,
-      },
-      spec.groups.map(({ path }) => path),
-    );
+    let validated;
+    try {
+      validated = validateCompletedGroupReview(
+        group,
+        {
+          status: "complete",
+          assessments,
+          observations,
+        },
+        spec.groups.map(({ path }) => path),
+      );
+    } catch (error) {
+      if (
+        error instanceof ModelRequestError &&
+        error.code === "MODEL_EVIDENCE_INVALID"
+      )
+        progressError(
+          "Contextual review progress failed authoritative evidence replay.",
+        );
+      throw error;
+    }
     expectedAssessments.push(...validated.assessments);
     expectedObservations.push(...validated.observations);
   }
@@ -539,7 +572,12 @@ async function reviewGroup(
         );
       addUsage(usage, completion.usage);
       completionIds.push(completion.completionId);
-      const response = parseReviewResponse(completion.content);
+      const response = parseReviewResponse(
+        completion.content,
+        // Keep corrective feedback authoritative until the bounded final
+        // attempt, then salvage only invalid non-empty narrative strings.
+        attempt === spec.policy.maxImmediateAttempts,
+      );
       if (response.status === "needs_more_context") {
         const candidateIds = new Set(
           group.candidates.map((candidate) => candidate.candidate_id),

@@ -145,6 +145,57 @@ describe("contextual evidence review", () => {
     ).toBe(false);
   });
 
+  test("replaces unsafe narrative strings without discarding a valid assessment", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(
+      async () =>
+        ({
+          completionId: `completion-unsafe-narrative-${requestCompletion.mock.calls.length}`,
+          endpointOrigin: "https://provider.example",
+          provider: "provider.example",
+          content: reviewContent({
+            status: "complete",
+            assessments: [
+              {
+                ...assessment(ids[0]!, current.path, 2),
+                technical_explanation:
+                  "const leakedValue = sourceValue; see https://example.invalid/details",
+                layman_explanation: "A".repeat(601),
+              },
+            ],
+            observations: [],
+          }),
+          usage: {
+            inputTokens: 100,
+            outputTokens: 40,
+            cacheReadTokens: 0,
+            reasoningTokens: 10,
+          },
+        }) satisfies ModelCompletionResult,
+    );
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(result.assessments[0]?.technical_explanation).toBe(
+      "Detailed technical wording was omitted by the public report safety filter.",
+    );
+    expect(result.assessments[0]?.layman_explanation).toBe(
+      "Detailed wording was omitted by the public report safety filter.",
+    );
+    expect(JSON.stringify(result)).not.toContain("leakedValue");
+    expect(JSON.stringify(result)).not.toContain("example.invalid");
+  });
+
   test("accepts one fenced JSON object from a non-strict provider", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async () => ({
@@ -825,6 +876,46 @@ describe("contextual evidence review", () => {
         assessments: [unsafe],
         observations: [],
       }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+  });
+
+  test("refuses secret-shaped narrative hidden behind JSON Unicode escapes", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const encoded = reviewContent({
+      status: "complete",
+      assessments: [
+        {
+          ...assessment(ids[0]!, current.path, 2),
+          layman_explanation: `The key was sk-nano-${"z".repeat(32)}.`,
+        },
+      ],
+      observations: [],
+    }).replace("sk-", "\\u0073\\u006b\\u002d");
+    expect(encoded).not.toContain("sk-");
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-escaped-secret-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: encoded,
       usage: {
         inputTokens: 100,
         outputTokens: 40,

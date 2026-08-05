@@ -388,6 +388,95 @@ describe("three-phase contextual scan session", () => {
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  test("discards an invalid internal checkpoint and restarts the bounded review", async () => {
+    const { root, prepared } = await preparedSession();
+    const evidence = JSON.parse(
+      await readFile(join(root, "evidence-context.json"), "utf8"),
+    ) as {
+      evidence_digest: string;
+      groups: Array<{
+        group_id: string;
+        candidates: Array<{ candidate_id: string; evidence_id: string }>;
+      }>;
+    };
+    const candidate = evidence.groups[0]!.candidates[0]!;
+    await writeFile(
+      join(root, "review-progress.json"),
+      `${JSON.stringify(
+        {
+          schema_version: 1,
+          session_id: prepared.session_id,
+          evidence_digest: evidence.evidence_digest,
+          progress: {
+            policy_version: "2",
+            prompt_version: "contextual-review-v3",
+            schema_version: "contextual-assessment-v1",
+            model: "configured/model:thinking",
+            provider: "provider.example",
+            endpoint_origin: "https://provider.example",
+            completed_group_ids: [evidence.groups[0]!.group_id],
+            assessments: [
+              {
+                candidate_id: candidate.candidate_id,
+                evidence_ids: ["f".repeat(64)],
+                disposition: "minor_weakness",
+                impact: "low",
+                exploitability: "unlikely",
+                confidence: "medium",
+                recommended_risk: "low",
+                technical_explanation: "The flow should be hardened.",
+                layman_explanation: "This behavior deserves a small caution.",
+                developer_action: "Document the destination.",
+              },
+            ],
+            observations: [],
+            usage: {
+              inputTokens: 100,
+              outputTokens: 50,
+              cacheReadTokens: 0,
+              reasoningTokens: 10,
+            },
+            completion_ids: ["completion-stale"],
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+
+    await expect(completeReview(root)).resolves.toMatchObject({
+      status: "reviewed",
+      review: { coverage: { required: 1, completed: 1 } },
+    });
+    await expect(
+      readFile(join(root, "review-progress.json"), "utf8"),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("discards a schema-invalid internal checkpoint and restarts the review", async () => {
+    const { root, prepared } = await preparedSession();
+    const evidence = JSON.parse(
+      await readFile(join(root, "evidence-context.json"), "utf8"),
+    ) as { evidence_digest: string };
+    await writeFile(
+      join(root, "review-progress.json"),
+      `${JSON.stringify({
+        schema_version: 1,
+        session_id: prepared.session_id,
+        evidence_digest: evidence.evidence_digest,
+        progress: {},
+      })}\n`,
+    );
+
+    await expect(completeReview(root)).resolves.toMatchObject({
+      status: "reviewed",
+      review: { coverage: { required: 1, completed: 1 } },
+    });
+    await expect(
+      readFile(join(root, "review-progress.json"), "utf8"),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   test("publishes the acquired SHA without consulting a newer manifest", async () => {
     const { root } = await preparedSession();
     await completeReview(root);

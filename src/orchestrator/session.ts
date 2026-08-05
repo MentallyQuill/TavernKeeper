@@ -34,6 +34,7 @@ import { inventoryRepository } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import {
   CompletedContextualReviewSchema,
+  ContextualReviewProgressError,
   ContextualReviewProgressSchema,
   reviewEvidenceGroups,
   type ContextualReviewPolicy,
@@ -689,37 +690,52 @@ export async function reviewPreparedSession({
   }
   let progress: z.infer<typeof ContextualReviewProgressSchema> | undefined;
   if (await pathExists(progressPath)) {
-    const progressBundle = ReviewProgressBundleSchema.parse(
-      JSON.parse(await readFile(progressPath, "utf8")),
-    );
+    let decodedProgress: unknown;
+    try {
+      decodedProgress = JSON.parse(await readFile(progressPath, "utf8"));
+    } catch (error) {
+      if (!(error instanceof SyntaxError)) throw error;
+    }
+    const progressBundle =
+      ReviewProgressBundleSchema.safeParse(decodedProgress);
     if (
-      progressBundle.session_id !== prepared.session_id ||
-      progressBundle.evidence_digest !== evidence.evidence_digest
+      !progressBundle.success ||
+      progressBundle.data.session_id !== prepared.session_id ||
+      progressBundle.data.evidence_digest !== evidence.evidence_digest
     )
-      throw new ScanPhaseError(
-        "CONTEXTUAL_REVIEW_INVALID",
-        "repository",
-        "Contextual review progress does not match prepared evidence.",
-      );
-    progress = progressBundle.progress;
+      await rm(progressPath, { force: true });
+    else progress = progressBundle.data.progress;
   }
-  const review = await reviewEvidenceGroups({
-    groups: evidence.groups,
-    provider,
-    policy,
-    ...(progress === undefined ? {} : { progress }),
-    onProgress: async (nextProgress) =>
-      writeAtomic(
-        progressPath,
-        ReviewProgressBundleSchema.parse({
-          schema_version: 1,
-          session_id: prepared.session_id,
-          evidence_digest: evidence.evidence_digest,
-          progress: nextProgress,
-        }),
-      ),
-    ...(expandContext === undefined ? {} : { expandContext }),
-  });
+  const reviewFrom = (checkpoint?: typeof progress) =>
+    reviewEvidenceGroups({
+      groups: evidence.groups,
+      provider,
+      policy,
+      ...(checkpoint === undefined ? {} : { progress: checkpoint }),
+      onProgress: async (nextProgress) =>
+        writeAtomic(
+          progressPath,
+          ReviewProgressBundleSchema.parse({
+            schema_version: 1,
+            session_id: prepared.session_id,
+            evidence_digest: evidence.evidence_digest,
+            progress: nextProgress,
+          }),
+        ),
+      ...(expandContext === undefined ? {} : { expandContext }),
+    });
+  let review;
+  try {
+    review = await reviewFrom(progress);
+  } catch (error) {
+    if (
+      progress === undefined ||
+      !(error instanceof ContextualReviewProgressError)
+    )
+      throw error;
+    await rm(progressPath, { force: true });
+    review = await reviewFrom();
+  }
   const bundle = ReviewBundleSchema.parse({
     schema_version: 1,
     session_id: prepared.session_id,
