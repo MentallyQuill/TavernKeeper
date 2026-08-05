@@ -1,0 +1,205 @@
+{
+  "schema_version": 5,
+  "report_id": "c407e3cb023f86935f0b24e691a8f8ffd2041131baa5b34894cbbcc22cd1d40f",
+  "report_digest": "c407e3cb023f86935f0b24e691a8f8ffd2041131baa5b34894cbbcc22cd1d40f",
+  "report_version": 1,
+  "supersedes_report_id": null,
+  "scanner_version": "0.1.0",
+  "scanner_policy_version": "3",
+  "rule_catalog_version": "1",
+  "package_schema_version": 1,
+  "contextual_review_policy_version": "1",
+  "ecosystem_context_version": "sillytavern-community-v1",
+  "prompt_version": "contextual-review-v1",
+  "assessment_schema_version": "contextual-assessment-v1",
+  "source_id": "github-1311856766",
+  "provider": "github",
+  "repository_id": 1311856766,
+  "repository": "selinawynters-ops/ParamSentinel",
+  "canonical_url": "https://github.com/selinawynters-ops/ParamSentinel",
+  "target_sha": "eb848ced8be1686086098eeb04fa88bd4a9ae596",
+  "completed_at": "2026-08-05T00:07:15.370Z",
+  "assessment_method": "deterministic-evidence-contextual-review",
+  "contextual_reviewer": {
+    "provider": "nano-gpt.com",
+    "model": "zai-org/glm-5.2:thinking"
+  },
+  "review_usage": {
+    "input_tokens": 4094,
+    "output_tokens": 695,
+    "cache_read_tokens": 0,
+    "reasoning_tokens": 0
+  },
+  "history": {
+    "base_sha": null,
+    "commits": 2
+  },
+  "coverage": {
+    "inventory": {
+      "files": 14,
+      "bytes": 114413,
+      "first_party_text_files": 14,
+      "first_party_text_bytes": 114413,
+      "excluded": {
+        "dependency_lockfiles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "vendored_dependencies": {
+          "files": 0,
+          "bytes": 0
+        },
+        "generated_bundles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "minified_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "binaries": {
+          "files": 0,
+          "bytes": 0
+        },
+        "archives": {
+          "files": 0,
+          "bytes": 0
+        },
+        "oversized_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "unsafe_entries": {
+          "files": 0,
+          "bytes": 0
+        }
+      }
+    },
+    "tools": [
+      {
+        "name": "inventory",
+        "version": "0.1.0",
+        "status": "completed"
+      },
+      {
+        "name": "tavernkeeper-static",
+        "version": "3",
+        "status": "completed"
+      },
+      {
+        "name": "gitleaks",
+        "version": "8.30.1",
+        "status": "completed"
+      },
+      {
+        "name": "opengrep",
+        "version": "1.26.0",
+        "status": "completed"
+      },
+      {
+        "name": "osv-scanner",
+        "version": "2.4.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "zizmor",
+        "version": "1.28.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "malcontent",
+        "version": "1.25.7",
+        "status": "not-applicable"
+      }
+    ],
+    "evidence_validation": {
+      "status": "completed",
+      "validated_candidates": 1
+    }
+  },
+  "review_coverage": {
+    "required": 1,
+    "completed": 1
+  },
+  "candidates": [
+    {
+      "candidate_id": "12c30f37a87526a79e23562c50bf3fe1d4bb9125ce224561f2d9071697c6f296",
+      "evidence_id": "12c30f37a87526a79e23562c50bf3fe1d4bb9125ce224561f2d9071697c6f296",
+      "origin": "tavernkeeper",
+      "scanner_version": "3",
+      "rule_id": "credential-exfiltration",
+      "category": "credential-theft",
+      "scanner_severity": "high",
+      "scanner_confidence": "high",
+      "path": "server-plugin/index.mjs",
+      "line_start": 157,
+      "line_end": 157,
+      "evidence_sha": "eb848ced8be1686086098eeb04fa88bd4a9ae596",
+      "file_role": "production",
+      "title": "Credential access and network transmission in one file",
+      "explanation": "A credential source and an outbound network operation were detected in the same file.",
+      "remediation": "Review the data flow, remove unintended credential transmission, and restrict any required destination."
+    }
+  ],
+  "assessments": [
+    {
+      "candidate_id": "12c30f37a87526a79e23562c50bf3fe1d4bb9125ce224561f2d9071697c6f296",
+      "evidence_ids": [
+        "12c30f37a87526a79e23562c50bf3fe1d4bb9125ce224561f2d9071697c6f296"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "technical_explanation": "The file retrieves a stored Custom API key via SillyTavern's secret management and sends it as the standard Anthropic x-api-key header to an endpoint derived from the user-supplied custom_url. This matches the project's stated purpose: an optional server plugin that proxies eligible Claude requests through Navy's Anthropic-compatible endpoint using the user's own stored Custom API key. The key is not persisted elsewhere, not logged, and only transmitted to the user-configured endpoint for the legitimate request. The credential source and network sink coexist because the adapter's function is to forward authenticated API calls.",
+      "layman_explanation": "This plugin reads the API key you already saved in SillyTavern and sends it to the API endpoint you configured, so it can make requests on your behalf. That is exactly what the plugin says it does and is normal behavior for an API adapter.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "server-plugin/index.mjs",
+          "line_start": 157,
+          "line_end": 157
+        }
+      ]
+    }
+  ],
+  "observations": [],
+  "counts": {
+    "candidates": 1,
+    "assessments": 1,
+    "observations": 0,
+    "items": 1,
+    "disposition": {
+      "expected_behavior": 1,
+      "minor_weakness": 0,
+      "material_vulnerability": 0,
+      "credible_malicious_behavior": 0
+    },
+    "impact": {
+      "none": 1,
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "exploitability": {
+      "unlikely": 1,
+      "plausible": 0,
+      "readily_exploitable": 0
+    },
+    "confidence": {
+      "low": 0,
+      "medium": 0,
+      "high": 1
+    },
+    "recommended_risk": {
+      "low": 1,
+      "material": 0,
+      "high": 0
+    }
+  },
+  "limitations": [
+    "This advisory review cannot prove the absence of unknown behavior."
+  ]
+}
