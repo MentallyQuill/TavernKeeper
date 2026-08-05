@@ -198,6 +198,12 @@ describe("GitHub workflow security policy", () => {
       new URL("../package.json", import.meta.url),
       "utf8",
     );
+    const reviewConfig = JSON.parse(
+      await readFile(
+        new URL("../config/contextual-review.v2.json", import.meta.url),
+        "utf8",
+      ),
+    ) as { timeoutMs: number };
 
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
     expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
@@ -209,8 +215,13 @@ describe("GitHub workflow security policy", () => {
     );
     expect(steps[reviewIndex]?.run).toContain("npm run --silent review-target");
     expect(steps[reviewIndex]?.run).toContain('code == "MODEL_PROVIDER"');
+    expect(steps[reviewIndex]?.run).toContain('code:"MODEL_REVIEW_TIMEOUT"');
+    expect(steps[reviewIndex]?.run).toContain(
+      "timeout --signal=TERM --kill-after=10s 20m",
+    );
     expect(steps[reviewIndex]?.run).toContain("rm -f phase-error.json");
-    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(16);
+    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(42);
+    expect(reviewConfig.timeoutMs).toBe(300_000);
     expect(steps[reviewIndex]?.env).toMatchObject({
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
       TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
@@ -536,7 +547,7 @@ describe("GitHub workflow security policy", () => {
 
   test("workflow policy rejects an unbounded contextual review step", async () => {
     await expectPolicyFailure(
-      (text) => text.replace("        timeout-minutes: 16\n", ""),
+      (text) => text.replace("        timeout-minutes: 42\n", ""),
       /contextual review must remain bounded between preparation and V5 finalization/u,
     );
   });

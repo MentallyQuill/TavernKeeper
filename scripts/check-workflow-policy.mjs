@@ -366,6 +366,8 @@ function checkContextualRuntime(file, workflow) {
         typeof step?.run === "string" &&
         step.run.includes("npm run --silent review-target") &&
         step.run.includes('code == "MODEL_PROVIDER"') &&
+        step.run.includes('code:"MODEL_REVIEW_TIMEOUT"') &&
+        step.run.includes("timeout --signal=TERM --kill-after=10s 20m") &&
         step.run.includes("rm -f phase-error.json"),
     );
     const finalizeIndex = steps.findIndex(
@@ -377,7 +379,7 @@ function checkContextualRuntime(file, workflow) {
       prepareIndex < 0 ||
       reviewIndex !== prepareIndex + 1 ||
       finalizeIndex !== reviewIndex + 1 ||
-      steps[reviewIndex]?.["timeout-minutes"] !== 16
+      steps[reviewIndex]?.["timeout-minutes"] !== 42
     )
       fail(
         file,
