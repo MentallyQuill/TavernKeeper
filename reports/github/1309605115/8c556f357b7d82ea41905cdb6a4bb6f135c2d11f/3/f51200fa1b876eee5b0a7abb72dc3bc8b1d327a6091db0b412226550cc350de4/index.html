@@ -1,0 +1,1807 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for MentallyQuill/Tavernary at commit 8c556f3.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; MentallyQuill/Tavernary</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/MentallyQuill/Tavernary" rel="noopener noreferrer">MentallyQuill/Tavernary</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/MentallyQuill/Tavernary/commit/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f" rel="noopener noreferrer">8c556f3</a></span>
+        <span>Reviewed <time datetime="2026-08-05T21:51:00.232Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>87 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow checks out code without turning off a default behavior that leaves a temporary credential in the checkout. No later step in this workflow actually uses raw git commands that could expose that credential, so the practical danger is very low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout step does not explicitly set persist-credentials to false, so the default GITHUB_TOKEN may remain in the local git config for subsequent steps. However, the subsequent steps in this workflow use the GitHub CLI and Node scripts rather than raw git commands, so there is no visible data flow that would exfiltrate the persisted token. The risk is theoretical and depends on a future step introducing git commands that leak the credential.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on the checkout step if no subsequent step requires git-authenticated operations.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/publish-project-transaction.yml#L75-L79" rel="noopener noreferrer">.github/workflows/publish-project-transaction.yml:75-79</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The checkout step saves a temporary access token in the runner&#39;s git configuration by default. Since this workflow does not save or share any files from the runner, the token is discarded when the runner is destroyed. It would be slightly cleaner to disable this default, but there is no real danger here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action defaults persist-credentials to true, which writes the GITHUB_TOKEN into the local git config on the ephemeral runner. This workflow does not upload artifacts or share the workspace, so the persisted token is not exposed beyond the runner lifecycle. Setting persist-credentials false would be cleaner since no git push follows the checkout, but the practical risk is negligible on an ephemeral runner without artifact upload.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on the checkout step since no subsequent git operations require the persisted token.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L24-L25" rel="noopener noreferrer">.github/workflows/admit-issue.yml:24-25</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-jr45-8vmc-qm54 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security advisory was flagged for a supporting library, but this project is a read-only static website. The flagged issue likely affects only the build or development tools, not the live site visitors interact with.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jr45-8vmc-qm54 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a non-vulnerable version during routine maintenance when the specific package and advisory are identified.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jr45-8vmc-qm54</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow grants permission to trigger other workflows to all jobs, but only one job actually needs that ability. Tightening permissions per job would be safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow-level actions:write permission is required by the retry job, which uses gh workflow run to re-dispatch review workflows on a schedule. However, the permission is applied to both jobs, so the review job also receives actions:write even though it only calls gh api for issue and pull data. Job-level permission scoping would reduce the blast radius if either job&#39;s steps were compromised.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Move actions:write to the retry job&#39;s permissions block and set a narrower permission set on the review job.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/review-catalog-policy.yml#L30" rel="noopener noreferrer">.github/workflows/review-catalog-policy.yml:30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A supporting library used by this project has a known issue, but because the project publishes a simple static website, the risk to site visitors is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a non-vulnerable version during routine maintenance when the specific package and advisory are identified.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity flag was raised for a dependency, but the project is a static website without a live server component. The issue most likely affects build-time tooling rather than the site visitors see.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched, but the specific package name was removed from scanner output. The project deploys a static Next.js export. High-severity npm advisories commonly affect server-side middleware, SSR pipelines, or build tooling that does not run in the browser for a static export. Without the specific package, advisory, and vulnerable version, and given the static-site deployment model, runtime reachability and attacker input paths are uncertain but likely limited.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package from the lockfile and update it to a non-vulnerable version. Prioritize confirmation that the vulnerable code path is not reachable in the build pipeline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6g55-p6wh-862q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dependency in this project was flagged with a high-severity advisory, but because the published site is static and has no live server, the practical risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6g55-p6wh-862q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package and advisory, then update to a non-vulnerable version during routine dependency maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6g55-p6wh-862q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity advisory was flagged for a supporting library, but the static nature of the website means the vulnerable code is unlikely to affect site visitors.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched for a lockfile dependency, but the package identifier was omitted from the scanner evidence. The project builds a static export; its runtime surface is browser-only rendering of pre-built content. Without the specific package and version, the vulnerable code path cannot be confirmed as reachable. Many transitive dependencies in the lockfile are only used during build or test steps.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package from the lockfile and update it to a patched version when performing routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A supporting library has a known issue, but since this project produces a static website, the risk to visitors is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a non-vulnerable version during routine maintenance once the specific package is identified.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f88m-g3jw-g9cj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity flag was raised for a dependency, but this is a static website. The flagged issue probably affects build or testing tools rather than the live site.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f88m-g3jw-g9cj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched against a lockfile dependency, with the package name omitted from scanner evidence. The project deploys a static export; it has no server-side request handling, no dynamic endpoints, and no credential processing in production. The advisory most likely affects a transitive build or test dependency absent from the shipped static output. Without the specific package, runtime reachability cannot be confirmed but is unlikely.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package and advisory from the lockfile, then update to a patched version during routine dependency maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f88m-g3jw-g9cj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow grants repository write access to all jobs, but only the review job needs it. Limiting write access to the job that actually commits changes would be safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow-level contents:write permission is needed by the review job to commit policy review state back to the repository. However, it is also granted to the retry job, which only reads state files and dispatches workflows. Job-level scoping would prevent the retry job from having unnecessary write access to repository contents.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set contents:write only on the review job and use contents:read for the retry job.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/review-catalog-policy.yml#L27" rel="noopener noreferrer">.github/workflows/review-catalog-policy.yml:27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4cwx-7wf7-3272 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dependency was flagged with a high-severity advisory, but because the project publishes only a static website, the issue is unlikely to affect site visitors.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4cwx-7wf7-3272 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package and advisory from the lockfile, then update to a non-vulnerable version during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4cwx-7wf7-3272</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qx2v-qp2m-jg93 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a medium-severity vulnerability in one of this project&#39;s dependencies. Because Tavernary is a static website with no server, no login, and no sensitive data, the practical risk to visitors is low. The flagged dependency may also be a development-only tool that never reaches end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qx2v-qp2m-jg93 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version when convenient, prioritizing any that are production dependencies. Run npm audit to identify the specific package and advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qx2v-qp2m-jg93</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow checks out code using a default setting that leaves a short-lived, repository-only access token stored in the checkout folder during the automated run. This is a common minor hardening gap. Because the workflow does not appear to save or upload the checkout folder anywhere, the token is very unlikely to leak. Adding one line to the checkout step would close the gap entirely.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout step at lines 35-39 uses actions/checkout without persist-credentials: false, so the default GITHUB_TOKEN is written into the local git config for the duration of the job. The artipacked rule flags this because any artifact upload that includes the .git directory could expose that token. The supplied source shows no upload-artifact steps; the workflow writes only to RUNNER_TEMP and GITHUB_OUTPUT. The runner is ephemeral (ubuntu-latest) and the token is the repository-scoped default GITHUB_TOKEN rather than a long-lived secret. The risk is therefore limited to a hardening gap rather than a concrete exposure path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add persist-credentials: false to the actions/checkout step to prevent the default GITHUB_TOKEN from being stored in the local git config during the job.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/project-submission-lifecycle.yml#L35-L39" rel="noopener noreferrer">.github/workflows/project-submission-lifecycle.yml:35-39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a medium-severity vulnerability in a dependency. Since this project produces a static website with no server or sensitive data, the real-world risk is low. The vulnerable package may be a build-time-only tool.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version when convenient. Use npm audit to confirm the specific package and whether it is a production or development dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a high-severity vulnerability in a dependency. While the severity sounds alarming, this project is a static website with no server, no logins, and no sensitive data, so the practical danger to users is low. The vulnerable package may also be a development tool that never ships to visitors.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version. Use npm audit to identify the specific package and confirm whether it is a production or development dependency. Prioritize this update due to the high advisory severity, even though runtime impact appears limited.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow grants issue-writing permission to all jobs, but only the review job uses it. Scoping the permission to the job that needs it would be safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow-level issues:write permission is needed by the review job to create or update advisory review issues via gh api. The retry job does not interact with issues and does not need this permission. Applying permissions at the job level would reduce unnecessary access on the retry job.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set issues:write only on the review job and omit it from the retry job.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/review-catalog-policy.yml#L28" rel="noopener noreferrer">.github/workflows/review-catalog-policy.yml:28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A workflow step prints a status reason using a template expression inside a shell command. The reason value is generated by the project&#39;s own planning code, not by user-submitted text, so it is very unlikely an attacker could abuse it. Moving the value through an environment variable instead would be a small hardening improvement.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression ${{ steps.plan.outputs.reason }} is expanded into a bash run step. The reason output originates from plan.reasonCode, which is produced by the local planProjectPublication module and written to GITHUB_OUTPUT at line 294. The value is an internally generated classification code, not a direct pass-through of issue or PR body text, so an attacker cannot inject arbitrary shell content through it. However, using a template expression directly in a run step is a pattern that zizmor correctly identifies; routing the value through an environment variable would provide defense in depth against any future change that widens the output surface.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace the inline template expression with an environment variable populated from steps.plan.outputs.reason, then reference that variable in the echo command.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/publish-project-transaction.yml#L322" rel="noopener noreferrer">.github/workflows/publish-project-transaction.yml:322</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a medium-severity vulnerability in a dependency. Because this is a static website with no server or sensitive data, the risk to visitors is low. The flagged package may be a development-only tool.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a dependency in the lockfile. The project is a static catalog site with no server runtime, no credential handling, and no runtime user input processing. The production dependency set is small and well-known. Dev dependencies are excluded from the static export. The advisory severity does not by itself establish that vulnerable code is reachable or that attacker-controlled input reaches it in this project&#39;s deployment model.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version when convenient. Run npm audit to identify the specific package and advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool flagged a high-severity vulnerability in a dependency. Although the severity is high, this project is a static website with no server, no logins, and no sensitive data, so the practical risk to users is low. The vulnerable package may also be a development tool that never reaches visitors.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version. Use npm audit to identify the specific package and confirm whether it is a production or development dependency. Prioritize this update due to the high advisory severity, even though runtime impact appears limited.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (64)</summary>
+      <article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow passes a GitHub issue number into a command. Issue numbers are always simple numbers assigned by GitHub, so there is no way for a submitter to inject malicious code through this value.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression interpolates steps.admission.outputs.issue_number into a gh CLI invocation. This output originates from github.event.issue.number, which is a GitHub-assigned sequential integer that issue authors cannot control or alter. Integer values cannot produce shell or template injection. The edited trigger does not change the issue number, which is immutable.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L49" rel="noopener noreferrer">.github/workflows/admit-issue.yml:49</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses the repository&#39;s default branch name to dispatch another workflow. Only repository administrators can change the default branch, so issue submitters cannot manipulate this value.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression interpolates github.event.repository.default_branch into a --ref argument. This value is set by repository administrators and is not influenced by issue authors or external contributors. In an issues-triggered workflow running with the repository&#39;s own GITHUB_TOKEN, this is standard ref resolution with no attacker-controlled input path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L93" rel="noopener noreferrer">.github/workflows/admit-issue.yml:93</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a long string of letters and numbers, thinking it might be a secret API key. It is actually a commit identifier used to lock a GitHub Action to a specific, verified version. Locking actions this way is a security best practice, not a leaked password or key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value on line 15 is a 40-character hex SHA-1 commit hash used to pin the actions/create-github-app-token GitHub Action to an immutable commit. It is part of a pinnedActions map alongside other pinned action SHAs. This is a test file that validates workflow configuration. Pinning actions to commit SHAs is a recommended supply-chain hardening practice, not credential exposure. The gitleaks generic-api-key rule produced a false positive on the hex string pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/06928f3838de7368eb496e7a82c5e8a844928e15/tests/unit/workflows.test.ts#L15" rel="noopener noreferrer">tests/unit/workflows.test.ts:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This permission is required to publish the website to GitHub Pages. It is a standard, documented permission for deployment workflows and does not grant unintended access.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The pages: write permission on line 21 is a required permission for the official GitHub Pages deployment workflow. Without it, the deploy-pages job cannot publish content to GitHub Pages. This is the documented minimum permission set for Pages deployments and is scoped to the pages service only.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/deploy-pages.yml#L21" rel="noopener noreferrer">.github/workflows/deploy-pages.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This workflow checks out the repository and runs some processing, but never uploads or saves any files that could capture credentials. This is a standard CI checkout pattern with no persistence risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags potential credential persistence when checkout-provided tokens could be captured in uploaded artifacts. This workflow checks out the default branch and runs an inline Node script but shows no upload-artifact step or any other mechanism that persists or exposes repository contents or the git credential helper beyond the ephemeral runner. The GITHUB_TOKEN is scoped via the workflow permissions block and stays within the runner environment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-project-owner-request.yml#L25-L28" rel="noopener noreferrer">.github/workflows/triage-project-owner-request.yml:25-28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This script uses a built-in automation token to talk to GitHub&#39;s own servers, which is exactly what the token is designed for. The token never leaves GitHub and is not sent anywhere unexpected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The GITHUB_TOKEN environment variable is read and placed in an Authorization header for an outbound fetch to the official GitHub REST API hostname. This is a standard GitHub Actions automation pattern: the platform-provided token authenticates to the platform&#39;s own API. The destination is the intended and only recipient. There is no exfiltration to a third party, no concealed endpoint, and no dynamic URL construction that could redirect the token elsewhere. The path parameter is a GitHub API resource path used for kit withdrawal issue processing.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/kits/apply-withdrawal.mjs#L183" rel="noopener noreferrer">scripts/kits/apply-withdrawal.mjs:183</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a build automation script that uses a GitHub access token to talk to GitHub&#39;s own API for routine repository tasks. The token never leaves GitHub and is used exactly as intended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This tooling script reads GITHUB_TOKEN from the environment and uses it only in the Authorization header for requests to the official GitHub API. The token authenticates workflow-dispatch and issue-comment API calls against the project&#39;s own repository, which is the standard and intended use of a CI-provided GitHub token. No token value is logged, written to disk, sent to a third-party endpoint, or embedded in request bodies.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/retry-fork-dependencies.mjs#L100" rel="noopener noreferrer">scripts/submissions/retry-fork-dependencies.mjs:100</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This script reads a GitHub access token and sends it only to GitHub&#39;s own API to download reaction data from GitHub issues. That is exactly what the token is for and is a normal part of the project&#39;s automated data-refresh tooling.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged credential source is process.env.GITHUB_TOKEN, used as a Bearer token in an Authorization header sent via fetch to api.github.com. The destination is GitHub&#39;s official REST API endpoint for issue reactions, constructed from process.env.GITHUB_REPOSITORY and a kit&#39;s source_issue_number. The project purpose describes automated GitHub workflow refresh operations that snapshot provider-derived data. Sending a GitHub token to the GitHub API is the standard and correct authentication pattern for this CI tooling script.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/kits/refresh-reactions.mjs#L142-L157" rel="noopener noreferrer">scripts/kits/refresh-reactions.mjs:142-157</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a standard GitHub Actions checkout setting that saves a temporary access token so the workflow can create branches and pull requests. That is exactly what this workflow needs to do, and there is no sign that the token is being copied into any uploaded file or shared anywhere outside the temporary build machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags the default persist-credentials behavior of actions/checkout, which writes the GITHUB_TOKEN into the local git config so subsequent git push and branch operations succeed. This workflow&#39;s stated purpose is to create review pull requests for project owner requests, which requires git write access. The checkout uses fetch-depth 0 and ref main to inspect full repository state before generating and pushing a branch. No artifact upload step is visible in the supplied source that would expose the .git directory or its embedded token to untrusted consumers. The persisted credential is scoped to the ephemeral runner, used only for legitimate in-workflow git operations, and discarded when the runner terminates. The scanner&#39;s own confidence is low, consistent with a pattern match on the checkout step rather than a confirmed exfiltration path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/generate-project-owner-request.yml#L39-L43" rel="noopener noreferrer">.github/workflows/generate-project-owner-request.yml:39-43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This script uses a GitHub access token to talk to GitHub&#39;s own API so it can automatically manage submission issues and labels in the project&#39;s repository. The token is only sent to GitHub, which is exactly what it is meant for. It is not stolen or sent anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file is a CI/automation triage script (file_role tooling) that reads GITHUB_TOKEN from the process environment and sends it only to the official GitHub REST API endpoint to authenticate issue and label management calls for the repository&#39;s own Kit-submission workflow. The token is used for its intended purpose—authorizing GitHub API requests that create labels, read issues, and post validation comments within the same repository. There is no transmission to third-party or non-GitHub destinations, no logging of the token value, and no persistence of credentials. This is standard GitHub Actions automation behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/triage-kit-issue.mjs#L100" rel="noopener noreferrer">scripts/submissions/triage-kit-issue.mjs:100</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a GitHub automation helper script. It uses the standard GitHub token provided automatically to actions in order to update issues on GitHub itself. The token is only sent to the official GitHub API, which is exactly what it is designed for.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This tooling script reads GITHUB_TOKEN from the execution environment and includes it as a Bearer token in an Authorization header sent to the official GitHub API. This is the standard, intended pattern for GitHub Actions automation that manages repository issues, labels, and comments. The destination is the legitimate API endpoint, the token is the standard built-in action token, and there is no routing to third-party endpoints or concealment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/admit-issue.mjs#L236" rel="noopener noreferrer">scripts/submissions/admit-issue.mjs:236</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow checks out the full repository history, which is needed for the build. It does not save any artifacts that could accidentally expose the temporary workflow token, so the flagged risk does not apply here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags checkout with fetch-depth 0 as a potential vector for persisting the GITHUB_TOKEN in uploaded artifacts. This workflow performs a static site build and deploys directly to GitHub Pages; it does not upload reusable workflow artifacts that could capture or redistribute the temporary action token. The full checkout is needed for commit validation and history-based build steps. No credential persistence path exists in the observed data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/deploy-pages.yml#L39-L42" rel="noopener noreferrer">.github/workflows/deploy-pages.yml:39-42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a routine maintenance workflow that checks out the repository, updates catalog data files, and commits those changes back. It is manually triggered, does not upload any files that could contain secrets, and uses only the standard temporary token GitHub provides to actions. No credential exposure occurs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines are a standard actions/checkout step with fetch-depth 0, needed for the subsequent git commit and push operations. The workflow is manually triggered via workflow_dispatch, restricted to refs/heads/main, and performs catalog data backfill by running project scripts, committing JSON changes, and pushing to main. No artifacts are uploaded, no secrets are read or exfiltrated, and the only token used is the default ephemeral GITHUB_TOKEN scoped to contents:write. The artipacked heuristic flags checkout-plus-push patterns, but this workflow does not persist credentials in artifacts or git history.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/backfill-repository-identities.yml#L24-L27" rel="noopener noreferrer">.github/workflows/backfill-repository-identities.yml:24-27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script uses a standard GitHub token to authenticate with GitHub&#39;s official API. This is normal behavior for an automation script that interacts with GitHub issues and workflows.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The script reads the GITHUB_TOKEN environment variable and passes it as a Bearer token to the official GitHub API endpoint via the Authorization header. This is standard and required for GitHub API automation, such as dispatching workflows and reading issues, which matches the script&#39;s stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/retry-frontend-dependencies.mjs#L111" rel="noopener noreferrer">scripts/submissions/retry-frontend-dependencies.mjs:111</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This script reads a GitHub access token and uses it to ask GitHub&#39;s own API for project README files. The token is sent only to GitHub, which is exactly what the token is for. This is normal behavior for a tool that builds a catalog of public GitHub repositories.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a catalog-enrichment tooling script that fetches README content from the GitHub REST API. A GitHub token is read from a configured secret or the GH_TOKEN environment variable and sent as a Bearer Authorization header to api.github.com. The destination is GitHub&#39;s own first-party API endpoint, the token is used for its intended authentication purpose, and the request fetches repository metadata for catalog indexing. No third-party or unexpected destination receives the credential.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/catalog/readme-source.mjs#L33-L39" rel="noopener noreferrer">scripts/catalog/readme-source.mjs:33-39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a token being sent over the network and flagged it. Looking at the code, the token is the normal GitHub action credential and it is sent only to GitHub&#39;s own service to perform routine issue management tasks.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The rule matched because a credential source and a network request appear together. Examining the actual data flow, the token is the standard GITHUB_TOKEN environment variable and the network call targets the official GitHub REST API. The token authorizes the action to read and modify repository issues as part of issue admission automation. There is no exfiltration, redirection, logging of the token value, or transmission to any destination other than the GitHub API.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/admit-issue.mjs#L236-L246" rel="noopener noreferrer">scripts/submissions/admit-issue.mjs:236-246</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This workflow checks out the project code and runs a help-request labeling script. It does not save any files or secrets to GitHub artifacts, so the flagged credential-persistence concern does not apply here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged checkout step uses a pinned commit SHA and targets the repository default branch. The workflow does not upload artifacts, persist credentials to artifacts, or expose the GITHUB_TOKEN beyond passing it as an environment variable to a local triage script. No artifact-based credential persistence path exists in the supplied source.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-help-request.yml#L24-L27" rel="noopener noreferrer">.github/workflows/triage-help-request.yml:24-27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a checkout step that might expose credentials through uploaded files. In practice, this job only checks out code with read-only access and never uploads any artifacts. The special token it creates later is used for a single API call and is not saved anywhere, so there is no credential leakage path.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags checkout steps where a persistent token could leak through artifacts. In this workflow the checkout at the flagged location runs under permissions limited to contents read, and no artifacts are uploaded in that job. The separately created GitHub App token is scoped to a single repository with actions write permission, used transiently in a CLI API call via an environment variable, and never written to disk or included in any artifact. The pages artifact uploaded in the build job contains only the static site export. All action versions are pinned to commit hashes.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/deploy-pages.yml#L125-L126" rel="noopener noreferrer">.github/workflows/deploy-pages.yml:125-126</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This script automates project-submission review by talking to GitHub. It uses a standard GitHub automation token to authenticate with GitHub&#39;s own API so it can read issues, post comments, and manage labels. The token is sent only to GitHub, which is the service that issued it and the intended destination. This is normal and expected for repository automation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This file is CI automation tooling that manages GitHub project submission issues. A helper function reads a GITHUB_TOKEN environment variable and includes it as a bearer credential in requests to the GitHub REST API. The only network destination is the official GitHub API hostname, which is exactly the intended audience for that token. The function is used by nearby triage routines to create and update issue comments and labels. No other environment variables, local secret files, model-provider keys, or user-supplied credentials are read, and no third-party or unlisted endpoint receives the token.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/triage-issue.mjs#L421" rel="noopener noreferrer">scripts/submissions/triage-issue.mjs:421</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This automation can write changes back to the repository. That is needed here because the workflow imports security reports and saves the results into the repository. The permission is declared explicitly and the workflow only runs on a schedule or from the main branch.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow grants contents: write at the top level, which is required because the job checks out the main branch with fetch-depth 0 and later commits imported report data back to the repository. The job outputs reference steps.commit.outputs.changed and steps.commit.outputs.sha, confirming that a commit-and-push step is part of this workflow. The permission is explicitly scoped rather than granted via write-all, and the job is restricted to schedule or main-branch execution with a concurrency group.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/import-tavernkeeper-reports.yml#L20" rel="noopener noreferrer">.github/workflows/import-tavernkeeper-reports.yml:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CI automation script that uses GitHub&#39;s built-in authentication token to talk to GitHub&#39;s own API for managing help-issue labels. The token goes only to GitHub, which is exactly what it is designed for. There is no sign of the token being sent anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file is a GitHub Actions help-issue triage tool. It reads the standard GITHUB_TOKEN environment variable and sends it as a Bearer token to the official api.github.com endpoint for issue and label management. The token is used only for its intended GitHub API authentication purpose, is not logged or persisted, and is not transmitted to any third-party destination. This is the conventional pattern for GitHub Actions automation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/help/triage-help-issue.mjs#L213-L223" rel="noopener noreferrer">scripts/help/triage-help-issue.mjs:213-223</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow checks out the full repository history, which is normal for a workflow that needs to update files and push changes. No artifacts are created or uploaded, so there is no risk of accidentally saving credentials in an artifact.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged checkout step uses fetch-depth 0, which is standard for workflows that must synchronize and commit back to the repository. No artifact upload steps exist in this workflow, so there is no credential persistence through artifacts. The zizmor finding is a low-confidence heuristic match with no concrete data flow supporting it.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/apply-kit-withdrawal.yml#L26-L29" rel="noopener noreferrer">.github/workflows/apply-kit-withdrawal.yml:26-29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>This automation can create or update issues in the repository. A workflow that imports and reconciles security reports would plausibly create tracking issues for findings. The permission is declared explicitly and the workflow is restricted to scheduled or main-branch runs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/import-tavernkeeper-reports.yml#L21" rel="noopener noreferrer">.github/workflows/import-tavernkeeper-reports.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The pattern looks suspicious at a glance because a token and a network request are in the same function, but the token is only sent to GitHub&#39;s official API as intended. There is no credential theft or leakage.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched because a credential source and a network call appear together. Examining the actual flow, the credential is the GitHub Actions runtime token and the fetch target is the official GitHub API endpoint. The token is used solely as a bearer credential for authenticated requests to that API, which is its designated purpose. The API path is concatenated from a controlled resource identifier, not an attacker-influenced external URL. No credential value is logged, written to disk, or transmitted to any destination other than the GitHub API.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/kits/apply-withdrawal.mjs#L183-L193" rel="noopener noreferrer">scripts/kits/apply-withdrawal.mjs:183-193</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a normal GitHub Actions workflow that checks out the repository, runs catalog enrichment scripts, and commits results. It does not upload any files or artifacts that could accidentally expose credentials. The flagged checkout step is standard practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags potential credential persistence through artifacts, but the flagged lines 42-45 are a standard actions/checkout step with fetch-depth 0. The workflow contains no upload-artifact steps. Secrets (GITHUB_TOKEN, GH_TOKEN, and enrichment API credentials) are passed as environment variables to npm scripts that perform git commits and GitHub API reporting. The runner is ephemeral and no artifacts are published that could retain credentials. The checkout action&#39;s default token persistence is confined to the temporary runner filesystem and is not exposed beyond the job.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/enrich-catalog.yml#L42-L45" rel="noopener noreferrer">.github/workflows/enrich-catalog.yml:42-45</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a risk about tokens leaking through saved artifacts, but this workflow never saves artifacts, so the risk does not apply.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked concern is about GITHUB_TOKEN persistence in checkout state being exposed through uploaded artifacts. This checkout step in the retry job reads local JSON state files and dispatches workflows; no artifacts are uploaded. The token in the checkout is ephemeral and destroyed with the runner.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/review-catalog-policy.yml#L43" rel="noopener noreferrer">.github/workflows/review-catalog-policy.yml:43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses GitHub&#39;s built-in temporary token to talk to GitHub&#39;s own API for managing issue labels and comments. This is exactly what the token is designed for, and it expires when the workflow ends. There is no credential theft or suspicious network activity.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The credential in question is the ephemeral GITHUB_TOKEN provided automatically by GitHub Actions, not a user-supplied secret or model-provider API key. The outbound network call targets the GitHub API at api.github.com, which is the intended destination for this token. The workflow uses the token to manage issue labels and comments as part of its stated kit-withdrawal automation purpose. This is the canonical pattern for GitHub Actions workflows that interact with repository issues. No third-party or unexpected destination is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/apply-kit-withdrawal.yml#L64" rel="noopener noreferrer">.github/workflows/apply-kit-withdrawal.yml:64</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same behavior seen in the related finding: the script uses a GitHub automation token to call GitHub&#39;s own API for managing issues and labels. The token only goes to GitHub and is used for its intended purpose. Nothing about this suggests credential theft or misuse.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The data flow flagged here is the same GitHub API helper assessed in the companion candidate. The GITHUB_TOKEN environment variable is used solely as a bearer credential for requests to the official GitHub API endpoint. The request path is a relative API path passed by triage functions within this same tooling file, and the only destination is GitHub. There is no indication the token is logged, persisted to disk, embedded in issue bodies, or sent anywhere other than the GitHub API. This matches the project purpose of automating submission triage through GitHub issues.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/triage-issue.mjs#L421-L431" rel="noopener noreferrer">scripts/submissions/triage-issue.mjs:421-431</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script uses GitHub&#39;s own token to contact GitHub&#39;s own API to triage help issues. This is normal and expected for a repository automation tool.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The same credential access and network call are co-located in this file, but the destination is the official GitHub API and the credential is the standard GITHUB_TOKEN used for repository issue triage. The data flow is proportionate to the stated tooling purpose, with no exfiltration, obfuscation, or third-party endpoint.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/help/triage-help-issue.mjs#L213" rel="noopener noreferrer">scripts/help/triage-help-issue.mjs:213</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Same as other issue-number usages: the value is a simple number from GitHub, not user-controlled text, so no injection is possible.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same pattern as other issue_number interpolations. The value derives from the immutable GitHub-assigned issue number, an integer that cannot carry injection payloads.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L94" rel="noopener noreferrer">.github/workflows/admit-issue.yml:94</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The value passed into the command is a GitHub issue number, which is always a number and cannot contain malicious code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same issue_number interpolation pattern. The output is a GitHub-assigned integer with no attacker control path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L79" rel="noopener noreferrer">.github/workflows/admit-issue.yml:79</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner noticed a token and a network request in the same file. The token is a GitHub API key and the request goes to GitHub&#39;s own API to retrieve repository information for the catalog. Sending the key to GitHub is the correct and expected use of that key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags the co-occurrence of credential access and a network call in the same file. Here the credential is a GitHub API token and the network call is a fetch to api.github.com with the token supplied as a standard Bearer header. The file role is tooling for catalog enrichment, the project purpose explicitly states it indexes public GitHub project information, and the token is transmitted only to GitHub&#39;s first-party API for authenticated metadata retrieval. This is proportionate and disclosed by the project&#39;s stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/catalog/readme-source.mjs#L33" rel="noopener noreferrer">scripts/catalog/readme-source.mjs:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a token being sent over the network, but the destination is GitHub&#39;s own API and the token is the normal one GitHub Actions provides for managing issues. This is the expected way a submission-triage automation script works, not a theft attempt.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched pattern detects a credential source (process.env.GITHUB_TOKEN) reaching a network sink (fetch to api.github.com). Examining the actual data flow, the credential is a standard GitHub Actions token and the sole network destination is the official GitHub REST API used for repository issue and label management. The token is never written to disk, logged, or directed to any non-GitHub host. The capability is proportional to the stated project purpose of automating Kit-submission triage, and the behavior is visible in source. This is legitimate automation, not credential exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/triage-kit-issue.mjs#L100-L110" rel="noopener noreferrer">scripts/submissions/triage-kit-issue.mjs:100-110</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a standard GitHub automation workflow that checks out the project&#39;s own code to process project-owner request closures. It uses GitHub&#39;s built-in temporary token with appropriate permissions for closing issues and pull requests. The checkout is pinned to a specific version and pulls from the main branch, not from untrusted pull-request code. No evidence of credential leakage was found.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags potential GITHUB_TOKEN persistence through artifacts when actions/checkout is used. The flagged lines are a checkout step pinned to a specific commit SHA, fetching only the default branch at depth 1. The workflow uses the standard GITHUB_TOKEN with contents:write and issues:write permissions, which is appropriate for a lifecycle workflow that closes issues and PRs. The checkout targets the repository default branch rather than pull-request head, which is a security best practice that avoids executing untrusted PR code. No artifact upload steps are visible in the provided source; the Node script writes only to RUNNER_TEMP, which is ephemeral. The GITHUB_TOKEN persisted in the checkout&#39;s git config is scoped, short-lived, and cleaned up with the ephemeral runner. There is no evidence of credential exfiltration or persistence beyond the runner lifecycle.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/project-owner-request-lifecycle.yml#L34-L38" rel="noopener noreferrer">.github/workflows/project-owner-request-lifecycle.yml:34-38</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This permission lets the workflow securely identify itself to GitHub Pages for deployment using a short-lived token. It is the standard, recommended setup for publishing Pages sites and does not expose other repository secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The id-token: write permission on line 22 is required for GitHub Pages deployments that use the official actions/deploy-pages action with OIDC token exchange. It allows the workflow to request an OIDC token for the Pages deployment identity. This is the documented configuration for secure Pages publishing and does not grant broad repository or secret access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/deploy-pages.yml#L22" rel="noopener noreferrer">.github/workflows/deploy-pages.yml:22</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This workflow needs Git credentials to publish approved catalog updates, so keeping them available during the job is intentional and normal. The credentials are not leaked or saved anywhere outside the temporary job environment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked finding concerns default credential persistence from actions/checkout. This workflow is a manually dispatched publish pipeline that explicitly commits and pushes to main using the GITHUB_TOKEN. Credential persistence is the intended mechanism enabling the git push at line 73. The workflow runs only on refs/heads/main, is triggered by workflow_dispatch with a numeric issue number, and uses pinned action SHAs. No artifact upload of credentials occurs, and the token scope is appropriate for the stated publish purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/apply-kit-submission.yml#L26-L29" rel="noopener noreferrer">.github/workflows/apply-kit-submission.yml:26-29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged that the workflow&#39;s checkout step saves a GitHub access token in the local git configuration. This is expected here because the workflow&#39;s job is to refresh catalog data and commit those changes back to the repository, which requires git write access. No artifacts are uploaded that could leak the token, and the token is temporary and limited to this repository.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags the checkout step with fetch-depth 0, which by default persists the scoped GITHUB_TOKEN into .git/config. This workflow needs git write access to commit refreshed catalog snapshots back to the repository, so credential persistence is intentional and proportionate. No upload-artifact step exists in the visible workflow, so there is no artifact-based credential exfiltration path. The token is the standard ephemeral repository-scoped GITHUB_TOKEN with contents:write, used for its stated purpose of committing catalog data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/refresh-catalog.yml#L49-L52" rel="noopener noreferrer">.github/workflows/refresh-catalog.yml:49-52</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The checkout uses a commit hash provided by a trusted maintainer who manually triggered the workflow. No files are saved as artifacts, so there is no token leakage path.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout uses a user-supplied merge_sha as the ref and fetch-depth 0 for full history. The workflow_dispatch trigger can only be invoked by repository collaborators with write access, so the ref input is not attacker-controlled from an external perspective. No artifacts are uploaded, so the artipacked token-persistence vector does not apply.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/review-catalog-policy.yml#L82-L86" rel="noopener noreferrer">.github/workflows/review-catalog-policy.yml:82-86</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses the repository&#39;s default branch name, which only administrators can set. Issue authors have no way to change this value.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Interpolates github.event.repository.default_branch, an admin-controlled value, into a --ref argument. Issue submitters cannot influence the repository&#39;s default branch. This is standard workflow dispatch usage in an issues-triggered context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L78" rel="noopener noreferrer">.github/workflows/admit-issue.yml:78</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This script uses a standard GitHub automation token to talk to GitHub&#39;s own API. It creates issues and triggers review workflows as part of the project&#39;s catalog maintenance. The token goes to GitHub and nowhere else, which is exactly how it is designed to be used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The tooling script reads GITHUB_TOKEN from the process environment and transmits it only to the official GitHub API endpoint via an Authorization Bearer header. The token is used for legitimate repository automation: creating issues, reusing open issues, and dispatching triage workflows. The destination matches the token issuer. No third-party or attacker-controlled sink is present. The file role is a maintenance utility invoked in CI.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/backfill-fork-dependencies.mjs#L289-L299" rel="noopener noreferrer">scripts/submissions/backfill-fork-dependencies.mjs:289-299</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner matched because a token is sent over the internet. However, the token is sent to GitHub&#39;s official API to authorize automation tasks, which is exactly what it is designed for.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a network sink carrying a secret. The secret is the GITHUB_TOKEN, and the network sink is a fetch call to api.github.com. This data flow is the intended and standard method for authenticating to the GitHub REST API within a GitHub Actions context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/retry-frontend-dependencies.mjs#L111-L121" rel="noopener noreferrer">scripts/submissions/retry-frontend-dependencies.mjs:111-121</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner noticed that checking out code leaves a temporary access token on the build machine. In this workflow nothing uploads, caches, or shares the build machine&#39;s files, so the token stays on a machine that is destroyed immediately after the job finishes. No real exposure path exists.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags the default persist-credentials behavior of actions/checkout, which stores the ephemeral GITHUB_TOKEN in the local .git/config on the runner. In this workflow there is no upload-artifact step, no cache step, and no mechanism that exports the workspace contents. The workspace is destroyed when the ephemeral ubuntu-latest runner terminates. The token is the default repository-scoped GITHUB_TOKEN with a short lifetime, and the checkout action is pinned by SHA. No data flow exposes the persisted credential outside the ephemeral runner.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-kit-submission.yml#L25-L26" rel="noopener noreferrer">.github/workflows/triage-kit-submission.yml:25-26</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses the repository&#39;s own default branch name in a shell command. That value is set by the repository owner and cannot be manipulated by outside users, so there is no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression at line 160 interpolates github.event.repository.default_branch, which is repository metadata determined by the repository configuration. It is not derived from user-supplied event payloads such as issue titles, PR bodies, comments, or branch names created by external contributors. Without attacker control over the interpolated value, template expansion cannot produce code injection.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/publish-project-transaction.yml#L160" rel="noopener noreferrer">.github/workflows/publish-project-transaction.yml:160</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The value is a GitHub issue number, always a simple number, so no code injection is possible.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same issue_number interpolation pattern. The value is a GitHub-assigned integer with no path for attacker-controlled content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L69" rel="noopener noreferrer">.github/workflows/admit-issue.yml:69</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The value inserted into the command is a Git commit hash produced by the workflow itself, not user-supplied text. There is no way for an outside party to inject commands through this path.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The template expression at line 84 references steps.commit.outputs.sha, which is set at line 82 from git rev-parse HEAD within the same workflow run. This is an internally generated commit hash, not externally controlled input. The only workflow input is issue_number with type number, which constrains it to numeric values. There is no attacker-controlled data reaching this template expansion, so no code injection is possible.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/apply-kit-submission.yml#L84" rel="noopener noreferrer">.github/workflows/apply-kit-submission.yml:84</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow passes a commit identifier it just created itself into a deployment command. No outside or user-supplied content reaches this value, so there is no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression expands an internally-generated workflow output, not attacker-controlled input. The value originates from a prior step that sets it via git rev-parse HEAD, producing a deterministic hex commit hash. There is no untrusted data path into this expression, so template injection is not achievable.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/apply-kit-withdrawal.yml#L186" rel="noopener noreferrer">.github/workflows/apply-kit-withdrawal.yml:186</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This automation runs inside a temporary GitHub server that is discarded after the job finishes. It does not save or upload any files that could contain credentials, so there is no realistic way for a token to be exposed or persisted.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow checks out the repository, sets up Node.js, and runs a local script with the scoped ephemeral GITHUB_TOKEN. There are no artifact upload steps, no cache steps, and no steps that would publish the workspace or .git directory. Permissions are narrowly scoped to contents:read, issues:read, and actions:write. The artipacked heuristic flags checkout-based credential persistence, but without any artifact or cache persistence step there is no path for the token to leave the ephemeral runner. The scanner itself reports low confidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/retry-fork-dependencies.yml#L30-L31" rel="noopener noreferrer">.github/workflows/retry-fork-dependencies.yml:30-31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a standard GitHub Actions workflow that checks out code and runs a script. The scanner flagged the checkout step because it temporarily stores a token on the runner, but nothing in this workflow saves or uploads files that could carry that token away. The actions are pinned to exact versions and permissions are limited. This is normal CI behavior with no real risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags actions/checkout because persist-credentials defaults to true, writing a token into .git/config on the runner. This workflow checks out the repository, sets up Node.js, runs a local script with GITHUB_TOKEN passed via environment, and produces no uploaded artifacts. There is no upload-artifact or cache step that could persist the .git directory or its embedded credential off the ephemeral runner. Both actions are pinned by commit SHA, permissions are explicitly scoped to contents:read, issues:read, actions:write, and the token never leaves the runner. The default credential persistence is expected for a CI checkout and poses no concrete exfiltration path in this workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/retry-frontend-dependencies.yml#L26-L27" rel="noopener noreferrer">.github/workflows/retry-frontend-dependencies.yml:26-27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This workflow uses the built-in GitHub token to talk to GitHub&#39;s own API to manage project issues. The token only goes to GitHub and is used for exactly the purpose the workflow name describes. This is normal automation, not credential theft.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags the co-occurrence of a credential source and a network call in the same file. The credential is the standard GitHub-provided GITHUB_TOKEN passed through an environment variable, and the sole network destination is api.github.com over HTTPS. This is the expected pattern for a GitHub Actions workflow that validates issue triage requests by calling the GitHub REST API. The token is repository-scoped via the permissions block and is never written to logs, files, or any destination outside the GitHub API.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-project-owner-request.yml#L51" rel="noopener noreferrer">.github/workflows/triage-project-owner-request.yml:51</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This automation runs a daily retry script using a standard, read-mostly GitHub token. It does not save any files or secrets to artifacts or caches, so there is no risk of credentials leaking through persisted workflow outputs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow checks out the repository, sets up Node.js, and runs a project script with the ambient GITHUB_TOKEN passed via environment. Permissions are scoped to contents read, issues read, and actions write. There is no artifact upload, cache save, or other step that would persist the token or repository secrets beyond the ephemeral runner. The artipacked heuristic fired on the checkout step, but no credential persistence path exists in this workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/retry-project-submission-enrichment.yml#L22-L23" rel="noopener noreferrer">.github/workflows/retry-project-submission-enrichment.yml:22-23</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a potential risk of leaking GitHub credentials through saved workflow files. However, this workflow does not save or upload the project files anywhere, so the risk does not apply here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags a theoretical risk where the GitHub Actions token persisted by actions/checkout in the .git directory could be exfiltrated if the workspace is uploaded as an artifact or cached. This workflow does not upload any artifacts and only caches npm dependencies via setup-node, which does not include the workspace directory. Therefore, the credential persistence risk is not present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/ci.yml#L97-L98" rel="noopener noreferrer">.github/workflows/ci.yml:97-98</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner warned about a potential credential leak when downloading the full git history. Because this workflow never saves the downloaded files as a workflow artifact, there is no way for the credentials to be exposed through this path.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags actions/checkout with fetch-depth: 0 due to the theoretical risk of the persisted GITHUB_TOKEN being leaked if the workspace is cached or uploaded as an artifact. This workflow performs builds and tests but does not upload the workspace as an artifact. The only caching enabled is for npm dependencies, which does not include the git workspace. The risk is not applicable.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/ci.yml#L26-L29" rel="noopener noreferrer">.github/workflows/ci.yml:26-29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner warns that saving login details during checkout could leak if files are later shared as downloadable artifacts. This workflow needs those saved credentials to push report changes back to the repository, and no step that uploads shared artifacts is present in the supplied source, so the warned-about risk does not apply here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags the combination of actions/checkout with default persist-credentials alongside artifact uploads. The checkout step here uses a SHA-pinned v7 action with fetch-depth 0 against the main branch. The job requires git push to commit imported reports, so credential persistence in the local git configuration is necessary for its stated purpose. The visible source context contains no upload-artifact step, and the scanner itself reports low confidence. Without an artifact upload that exposes the workspace or git directory, the token-persistence risk does not materialize.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/import-tavernkeeper-reports.yml#L38-L42" rel="noopener noreferrer">.github/workflows/import-tavernkeeper-reports.yml:38-42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow passes the repository&#39;s default branch name to an API query. Because that name comes from the repository settings and not from any user submission, it cannot be used to inject commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression at line 100 interpolates github.event.repository.default_branch into a GitHub CLI API parameter. This value is repository configuration metadata, not user-controlled input from issue or pull-request content. The scanner flags any template expression in a run block, but this particular source is not attacker-influenced and cannot cause code injection.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/publish-project-transaction.yml#L100" rel="noopener noreferrer">.github/workflows/publish-project-transaction.yml:100</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner flagged this file because it mentions a secret and makes a network request in the same place. Looking at what the code actually does, the request goes to GitHub&#39;s official API and the token is used only to authenticate those calls. Nothing is being leaked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The static-analysis rule flagged the co-occurrence of a credential source and a network call. Examining the actual data flow, the only network sink is a fetch to the official GitHub API hostname, and the credential is used solely as a Bearer token in that request&#39;s headers. The script dispatches GitHub Actions workflows and reads issue comments on the project&#39;s own repository. There is no secondary destination, no exfiltration path, and no concealment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/retry-fork-dependencies.mjs#L100-L110" rel="noopener noreferrer">scripts/submissions/retry-fork-dependencies.mjs:100-110</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow reads the repository&#39;s own default branch name and passes it to a planning script. This value is set by the repository owner and cannot be manipulated by outside contributors, so it poses no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression ${{ github.event.repository.default_branch }} at line 274 is expanded into a Node script string. This context value is the default branch of the repository that owns the workflow, controlled by the repository maintainer, not by external issue submitters or fork contributors. It is a standard GitHub Actions context reference used to pass the repository&#39;s own default branch into planning logic. There is no attacker-controlled data path reaching this expression.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/publish-project-transaction.yml#L274" rel="noopener noreferrer">.github/workflows/publish-project-transaction.yml:274</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses the repository&#39;s own default branch name to decide which branch to run a follow-up workflow on. That name is set by the repository owner, not by outside users, so it cannot be abused to inject commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression expands github.event.repository.default_branch, which is the default branch name of the repository the workflow runs in. This is repository-owner-controlled metadata, not attacker-controlled input such as an issue title, comment body, or fork-supplied payload. The expanded value is passed as the --ref argument to a gh workflow run command targeting another workflow in the same repository. There is no data flow from an untrusted external actor into a shell evaluation context, so no code injection is achievable.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/project-submission-lifecycle.yml#L134" rel="noopener noreferrer">.github/workflows/project-submission-lifecycle.yml:134</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The same credential and network usage described above is the only such flow in this file: a GitHub token is sent to GitHub&#39;s API to fetch reaction data, which is then saved locally. This is consistent with the project&#39;s documented automation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This candidate flags the co-location of credential access and a network sink in the same file. The credential is process.env.GITHUB_TOKEN and the sole network destination is api.github.com using GitHub&#39;s documented API versioning and Accept headers. The data returned is written to the local data/snapshots directory. No alternate destination, obfuscation, or secondary exfiltration path is present. The flow matches the project&#39;s stated automated snapshot refresh purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/kits/refresh-reactions.mjs#L142" rel="noopener noreferrer">scripts/kits/refresh-reactions.mjs:142</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a long string of letters and numbers and thought it might be a secret password or key. It is actually a fixed version identifier for a GitHub automation tool, used in a test that checks the project&#39;s automation is properly locked to specific versions. No secret is present.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a 40-character hex commit SHA used to pin the actions/create-github-app-token GitHub Action in a test file that validates workflow action pinning. It is not a credential, API key, or secret. The surrounding code maps action names to pinned commit SHAs and is part of a unit test that reads GitHub workflow YAML files to verify pinning practices. Gitleaks matched the hex string against a generic API-key pattern, producing a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/tests/unit/workflows.test.ts#L15" rel="noopener noreferrer">tests/unit/workflows.test.ts:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This automated workflow runs only when a maintainer manually starts it, uses pinned versions of official actions, and does not save any files or data that could trap credentials. The only secret is a short-lived, repository-scoped token that GitHub generates fresh for each run and destroys afterward. There is no realistic way for a credential to leak here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked heuristic flagged the checkout step, but the full workflow shows no artifact upload steps, no cache persistence, and no pull-request trigger. The workflow is manually dispatched only. Both actions are pinned to full commit hashes. The only secret used is the default ephemeral GITHUB_TOKEN, scoped to contents read, issues write, and actions write, which matches the stated purpose of validating submissions and dispatching a downstream workflow. The theoretical concern of token persistence in the runner&#39;s git config does not apply because the runner environment is destroyed after job completion and no artifact or cache step captures it.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-submission.yml#L25-L26" rel="noopener noreferrer">.github/workflows/triage-submission.yml:25-26</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner worried that checkout leaves login credentials sitting where they could be stolen. In this workflow, only trusted maintainers can start it, it runs on the main branch, and no step is shown that would package up the working folder for outsiders. The credentials only exist on the temporary build machine and are discarded when it shuts down. They are also needed so the workflow can actually open the review pull request it is designed to create.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged step is a standard actions/checkout with full history on main. The artipacked pattern requires two conditions: credential persistence in the local git config AND a subsequent exposure path (typically upload-artifact of the workspace, or commit of .git internals to a context reachable by an untrusted actor). The provided evidence shows neither: the trigger is workflow_dispatch only, gated by maintainer labels on main, and the visible portion contains no upload-artifact step. The persisted token lives only in the ephemeral runner&#39;s git configuration, which is destroyed when the job ends. The workflow&#39;s stated purpose is creating review pull requests, which legitimately requires write git credentials, so disabling persist-credentials would break the PR-creation flow.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/generate-project-submission.yml#L39-L43" rel="noopener noreferrer">.github/workflows/generate-project-submission.yml:39-43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This automation has the ability to trigger other automated processes in the repository. The project says this is needed to publish catalog updates after reports are imported. The permission is listed individually rather than as a blanket grant, and the workflow only runs on a fixed schedule or from the main branch.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow grants actions: write at the top level, which is required to dispatch downstream workflows. The project documentation states that a successful snapshot commit dispatches a Pages deployment, and the job outputs reference a commit step that performs that dispatch. The permission is declared explicitly and individually rather than via a blanket write-all grant. The job runs only on schedule or against the main branch and is gated by a concurrency lock. No evidence indicates the permission is used beyond its stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/import-tavernkeeper-reports.yml#L19" rel="noopener noreferrer">.github/workflows/import-tavernkeeper-reports.yml:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The value passed into the command is a GitHub issue number, which is always a number and cannot be manipulated by issue authors.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same issue_number interpolation pattern. The value derives from the immutable GitHub-assigned issue number and cannot carry injection payloads.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/admit-issue.yml#L59" rel="noopener noreferrer">.github/workflows/admit-issue.yml:59</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner noticed that a token and a network request appear in the same file. Looking at the actual code, the token is the standard GitHub automation credential and the request goes to GitHub&#39;s official API for creating issues and triggering workflows. This is normal and intended behavior for a CI maintenance script.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The candidate flags the co-occurrence of credential access and a network call in the same file. The credential is GITHUB_TOKEN from the environment, and the sole network destination is the official GitHub API. The token authenticates repository operations consistent with the file&#39;s stated tooling purpose. There is no evidence of redirection, logging, or transmission to any endpoint other than the GitHub API.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/scripts/submissions/backfill-fork-dependencies.mjs#L289" rel="noopener noreferrer">scripts/submissions/backfill-fork-dependencies.mjs:289</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Workflow permissions are narrowly scoped</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The automation only asks for the limited permissions it needs to read repository and issue data and trigger actions, which is appropriate for its task.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The workflow declares contents:read, issues:read, and actions:write, which matches its stated purpose of retrying fork-dependent submission issues. No broader write scopes are requested, reducing the blast radius of the ephemeral GITHUB_TOKEN.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/retry-fork-dependencies.yml#L17-L20" rel="noopener noreferrer">.github/workflows/retry-fork-dependencies.yml:17-20</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Scoped token permissions reduce workflow risk</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The workflow uses only the minimal permissions it needs and no extra secrets, which is good practice.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The workflow declares explicit permissions limited to contents read, issues read, and actions write, and passes only the ambient GITHUB_TOKEN to the retry script. No additional secrets are referenced and no persistence mechanism is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/retry-project-submission-enrichment.yml#L9-L12" rel="noopener noreferrer">.github/workflows/retry-project-submission-enrichment.yml:9-12</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Scoped permissions and pinned actions reduce workflow risk</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The workflow follows good practices: it limits what it can do, avoids duplicate runs, and uses fixed versions of its tools. No change is needed.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The workflow declares least-privilege permissions (contents read, issues write), uses concurrency to cancel stale runs, and pins both checkout and setup-node actions to full commit SHAs. The GITHUB_TOKEN is only forwarded to the triage script as an environment variable, which is the intended use for issue labeling.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-help-request.yml#L12-L15" rel="noopener noreferrer">.github/workflows/triage-help-request.yml:12-15</a></li><li><a href="https://github.com/MentallyQuill/Tavernary/blob/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f/.github/workflows/triage-help-request.yml#L24-L27" rel="noopener noreferrer">.github/workflows/triage-help-request.yml:24-27</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>2147 files &middot; 13333987 bytes</dd>
+      <dt>Contextual coverage</dt><dd>84 of 84 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/MentallyQuill/Tavernary/commit/8c556f357b7d82ea41905cdb6a4bb6f135c2d11f" rel="noopener noreferrer">8c556f357b7d82ea41905cdb6a4bb6f135c2d11f</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T21:51:00.232Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>252049 input &middot; 72571 output &middot; 43657 cache read &middot; 13415 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>f51200fa1b876eee5b0a7abb72dc3bc8b1d327a6091db0b412226550cc350de4</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1309605115/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>

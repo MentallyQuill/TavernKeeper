@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for mekineer-com/OpenAlma at commit ab04dfd.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; mekineer-com/OpenAlma</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/mekineer-com/OpenAlma" rel="noopener noreferrer">mekineer-com/OpenAlma</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/mekineer-com/OpenAlma/commit/ab04dfdbf8e2a011db3528512cf547d15bdae79c" rel="noopener noreferrer">ab04dfd</a></span>
+        <span>Reviewed <time datetime="2026-08-05T21:49:06.923Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>28 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-3038 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a known security issue. If you install fresh, you will likely get the fixed version. If you reuse an old environment, you might keep a vulnerable version. Since the launcher only runs on your own computer, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-3038 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a lower-bound-only version constraint in a requirements file for a local-only launcher service. The greater-than-or-equal constraint allows installing patched versions on fresh environments, but also permits vulnerable versions to remain in pre-existing virtual environments without triggering an upgrade. The launcher binds to localhost only, limiting attack surface to the local machine.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-3038</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1471 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a known security issue. Fresh installs should get the fixed version, but old environments could keep a vulnerable one. Because the launcher runs only on your computer, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1471 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. The constraint overlaps the advisory&#39;s affected version range, but fresh installs resolve to the latest available version which is likely patched. The service runs on localhost only, reducing exposure to remote attack.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1471</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-59g5-xgcq-4qw3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a serious known security issue. However, because the launcher only runs on your own computer and fresh installs should get the fixed version, the practical risk is low. The main concern is if you reuse an old installation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-59g5-xgcq-4qw3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. While the scanner severity is high, the greater-than-or-equal constraint means fresh installs will resolve to the latest version, which is likely patched. The launcher service binds to localhost, so remote exploitation is not feasible without local access. The primary concern is a stale virtual environment retaining a vulnerable version, but the project setup instructions direct users to create a fresh venv.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the affected dependency to a specific patched version to ensure vulnerable versions are never retained in stale environments.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-59g5-xgcq-4qw3</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-h75v-3vvj-5mfj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a known security issue. Fresh installs should get the fixed version, but old environments could keep a vulnerable one. Since the launcher runs only on your computer, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-h75v-3vvj-5mfj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. The constraint allows both vulnerable and patched versions. Fresh installs resolve to the latest version, but stale environments may retain a vulnerable version. The service is localhost-only, limiting exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-h75v-3vvj-5mfj</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-gmj6-6f8f-6699 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a known security issue. Fresh installs should get the fixed version, but old environments could keep a vulnerable one. Because the launcher runs only on your computer, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-gmj6-6f8f-6699 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. The constraint overlaps the affected version range but also permits patched versions. The launcher runs on localhost, reducing the attack surface to local users only.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-gmj6-6f8f-6699</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-vffw-93wf-4j4q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a minor known security issue. Fresh installs should get the fixed version, and the launcher only runs on your computer, so the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-vffw-93wf-4j4q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. The low scanner severity and localhost-only deployment further reduce practical risk. Fresh installs resolve to the latest version which is likely patched.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-vffw-93wf-4j4q</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-3040 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a known security issue. Fresh installs should get the fixed version, but old environments could keep a vulnerable one. Since the launcher runs only on your computer, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-3040 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. The constraint allows both vulnerable and patched versions. The service is localhost-only, limiting exposure to local users. Fresh installs resolve to the latest version.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-3040</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1475 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the launcher has a known security issue. Fresh installs should get the fixed version, but old environments could keep a vulnerable one. Because the launcher runs only on your computer, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1475 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a lower-bound-only version constraint. The constraint overlaps the affected version range but also permits patched versions. The launcher binds to localhost, so remote exploitation is not feasible without local access.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin affected dependencies to specific patched versions or use compatible-release constraints instead of open-ended lower bounds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1475</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1852 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1852 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1852</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1851 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1851 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1851</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-3037 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-3037 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-3037</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5rvq-cxj2-64vf applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5rvq-cxj2-64vf to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known high-severity advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5rvq-cxj2-64vf</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1473 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1473 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1473</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-cpwx-vrp4-4pq7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-cpwx-vrp4-4pq7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-cpwx-vrp4-4pq7</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-3036 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-3036 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-3036</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-3041 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses a dependency that has a known security issue, but because it asks for the latest version, it might automatically get the fixed version. Since this tool runs locally on your machine, the risk is low. It is best practice to specify exact safe versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-3041 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The requirements file declares an open-ended version constraint for a dependency with a known advisory. Because the constraint allows installing the latest available version, users may receive a patched release. The launcher is a local-first utility, limiting exposure to external attackers. The lack of strict version pinning creates a risk that a vulnerable version could be resolved in certain environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the dependency to a specific patched version to ensure a secure and predictable baseline.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-3041</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-pp6c-gr5w-3c5g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by this local launcher tool has a known security issue in older versions. The version requirements allow older, vulnerable versions to be installed, though in practice a fresh install usually gets the fixed version. Since the tool runs only on your own machine, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-pp6c-gr5w-3c5g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched against a dependency declared with a lower-bound-only version constraint in a requirements file for a local launcher web UI. The constraint permits installation of versions known to contain a vulnerability, likely in a transitive web-framework dependency handling multipart form data. However, the launcher binds to localhost, fresh pip installs typically resolve to the latest patched version, and the practical impact is limited to local denial of service of a management tool. The advisory severity reflects the upstream library risk, not the deployment context here.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin the affected dependency to a minimum version that excludes known-vulnerable releases, or add a lock file to ensure reproducible, patched installs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-pp6c-gr5w-3c5g</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v9pg-7xvm-68hf applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known issue exists in an older version of a templating library used by this local tool. The risk is very low because the tool runs on your machine and fresh installs usually get the fixed version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v9pg-7xvm-68hf to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched against a dependency declared with a broad lower-bound constraint. The likely affected package is a templating library used for rendering the launcher web UI. The vulnerability in the affected version range is low severity and the service is local-only, limiting both reachability and impact. Fresh installs would typically receive a patched version under the current constraint.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Raise the minimum version constraint for the affected dependency to exclude the vulnerable version range.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v9pg-7xvm-68hf</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mj87-hwqh-73pj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library that handles web form submissions has a known issue where specially crafted input could slow down or crash the tool. Since the tool runs only on your own machine, the risk is low, and fresh installs usually get the fixed version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mj87-hwqh-73pj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency with a lower-bound-only constraint. The advisory likely concerns a multipart form-data parsing library susceptible to regular-expression denial of service. The launcher may accept form submissions for settings configuration, providing a potential entry point. However, the service is localhost-bound, limiting the attacker to local users, and the impact is denial of service of a management utility. Fresh installs typically resolve to a patched version.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Raise the minimum version of the affected form-handling dependency to exclude known-vulnerable versions.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mj87-hwqh-73pj</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-wp53-j4wj-2cfg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another high-severity issue was found in a web framework library used by this local tool. The issue could allow someone to crash the tool with crafted requests, but since it runs only on your machine, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-wp53-j4wj-2cfg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A second high-severity advisory was matched against a dependency declared with a broad lower-bound constraint, likely affecting a transitive web-framework component handling request parsing. The vulnerability could allow denial of service through crafted requests. The launcher is localhost-bound, constraining exploitability to local users, and the impact is limited to disrupting a management tool. Fresh pip installs would typically receive a patched transitive version.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin the direct dependency to a version that transitively requires a patched version of the affected component, or add a lock file.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-wp53-j4wj-2cfg</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-h5c8-rqwp-cp95 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate known issue exists in an older version of a library used by this local tool. The risk is low because the tool runs on your machine and fresh installs usually get the fixed version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-h5c8-rqwp-cp95 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency with a lower-bound-only version constraint. The affected package is likely a templating or web-framework component. The vulnerability severity is moderate and the service is local-only, reducing both reachability and impact. Fresh installs would generally receive a patched version under the current constraint.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Raise the minimum version constraint for the affected dependency to exclude the vulnerable version range.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-h5c8-rqwp-cp95</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-q2x7-8rv6-6q7h applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate known issue was found in a library used by this local tool. Since the tool runs only on your machine, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-q2x7-8rv6-6q7h to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a dependency declared with a broad lower-bound constraint. The affected package may be a form-handling or web-framework library. The vulnerability is moderate in severity and the localhost-only deployment limits practical exploitability and impact. Fresh installs typically resolve to patched versions.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Raise the minimum version constraint for the affected dependency to exclude known-vulnerable versions.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-q2x7-8rv6-6q7h</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6jv3-5f52-599m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known issue exists in an older version of a library used by this local tool. The risk is very low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6jv3-5f52-599m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched against a dependency with a lower-bound-only constraint. The affected package is likely a templating or configuration library. The vulnerability is low severity and the service is local-only, making practical exploitation unlikely and impact minimal. Fresh installs would typically receive a patched version.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Raise the minimum version constraint for the affected dependency to exclude the vulnerable version range.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6jv3-5f52-599m</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-3039 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate known issue was found in a Python library used by this local tool. Since the tool runs only on your machine, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-3039 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity Python ecosystem advisory was matched against a dependency declared with a broad lower-bound constraint. The affected package and specific vulnerability details were not provided, but the localhost-only deployment of the launcher limits practical exploitability and impact. Fresh installs would typically resolve to a patched version under the current constraint.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Raise the minimum version constraint for the affected dependency to exclude known-vulnerable versions, or add a lock file for reproducible installs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-3039</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1474 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The dependency list uses open-ended version numbers, so anyone installing today would almost certainly get a version with the security fix already applied. The scanner flagged a known issue but did not provide enough detail to confirm which package or whether it actually affects this project. The risk is low because the software runs locally and the latest versions are used by default.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1474 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory was matched against one of the five dependencies declared with lower-bound-only version constraints. Because all constraints use the greater-than-or-equal operator without an upper bound, a fresh install resolves to the latest published version, which is typically already patched for a medium-severity advisory. The advisory package details were not supplied, so the specific vulnerable code path, whether it is reachable in this launcher, and whether attacker-controlled input reaches it cannot be confirmed. Concrete harm is limited because this requirements file supports a local launcher web UI on loopback, narrowing the attack surface.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin each dependency to a known-patched version range rather than relying solely on open-ended lower bounds, so installs are reproducible and guaranteed patched.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1474</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory PYSEC-2026-1472 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Same situation as the other flagged dependency: open-ended version requirements mean users get the latest, likely-patched version. The scanner did not include enough detail to confirm which package is affected or whether the issue actually matters for this local tool. Risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory PYSEC-2026-1472 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This second advisory was matched against the same requirements file. As with the first candidate, all dependencies use lower-bound-only constraints, meaning pip resolves to the newest release, which generally includes fixes for medium-severity issues. Without the specific advisory text identifying the affected package, the fix version, and the vulnerability type, runtime reachability and attacker-control analysis cannot be completed. The launcher is a local tool bound to loopback, reducing exposure to external attackers.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add upper or exact version pins for each dependency to a confirmed-patched release so that installs are deterministic and protected against regressions.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>PYSEC-2026-1472</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt" rel="noopener noreferrer">launcher/requirements.txt</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (0)</summary>
+      <p>None.</p>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>All dependencies use open-ended lower-bound version constraints</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The launcher lists its library requirements with very loose version rules. If you install fresh, you get the latest safe versions. If you reuse an old setup, you might keep versions with known security problems. Since the launcher only runs on your own computer, the overall risk is low, but tightening the version rules would make things safer.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Every dependency in this requirements file uses a greater-than-or-equal constraint with no upper bound. This means pip will install the latest available version on fresh installs, which is typically patched. However, in pre-existing virtual environments, pip will not upgrade a package that already satisfies the constraint, so vulnerable versions can persist indefinitely. Eight advisories were matched across the five declared dependencies, indicating multiple packages have known issues in version ranges that overlap these constraints. The launcher service runs on localhost only, which significantly limits the attack surface for most of these advisories.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace all open-ended lower-bound constraints with pinned versions or compatible-release ranges that exclude known-vulnerable versions. Consider adding a lockfile or regular dependency scanning to catch new advisories.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt#L1-L5" rel="noopener noreferrer">launcher/requirements.txt:1-5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All dependencies use lower-bound-only version constraints without a lock file</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The tool lists its library requirements with loose version rules that say any version at or above a minimum is acceptable. This means older, buggy versions could sometimes be installed. Using exact version pins or a lock file would prevent this.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The requirements file specifies five direct dependencies using only greater-than-or-equal constraints and no lock file is present. This allows pip to install any version at or above the minimum, including versions with known vulnerabilities. While fresh installs typically resolve to the latest patched versions, cached environments or dependency resolution edge cases could result in vulnerable versions being installed. Adding a lock file or tightening minimum version constraints would ensure patched versions are always selected.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a lock file or tighten all minimum version constraints to exclude known-vulnerable version ranges across all five declared dependencies.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/mekineer-com/OpenAlma/blob/ab04dfdbf8e2a011db3528512cf547d15bdae79c/launcher/requirements.txt#L1-L5" rel="noopener noreferrer">launcher/requirements.txt:1-5</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>31 files &middot; 201248 bytes</dd>
+      <dt>Contextual coverage</dt><dd>26 of 26 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/mekineer-com/OpenAlma/commit/ab04dfdbf8e2a011db3528512cf547d15bdae79c" rel="noopener noreferrer">ab04dfdbf8e2a011db3528512cf547d15bdae79c</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T21:49:06.923Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>27810 input &middot; 28725 output &middot; 4613 cache read &middot; 761 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>8989cc2307eccda50c5122294c68401a4b1b178f3514c5827f21b5e2d75350fa</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1190054879/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
