@@ -3,6 +3,8 @@ import { z } from "zod";
 import {
   ContextualAssessmentSchema,
   ContextualObservationSchema,
+  PublishedContextualAssessmentSchema,
+  PublishedContextualObservationSchema,
 } from "../model/contextual-review-contract.js";
 import {
   ConfidenceSchema,
@@ -150,13 +152,13 @@ export const ContextualCountsV5Schema = z.strictObject({
 });
 
 type ReviewItem =
-  | z.infer<typeof ContextualAssessmentSchema>
-  | z.infer<typeof ContextualObservationSchema>;
+  | z.infer<typeof PublishedContextualAssessmentSchema>
+  | z.infer<typeof PublishedContextualObservationSchema>;
 
 export function buildContextualCountsV5(
   candidates: number,
-  assessments: readonly z.infer<typeof ContextualAssessmentSchema>[],
-  observations: readonly z.infer<typeof ContextualObservationSchema>[],
+  assessments: readonly z.infer<typeof PublishedContextualAssessmentSchema>[],
+  observations: readonly z.infer<typeof PublishedContextualObservationSchema>[],
 ) {
   const counts = {
     candidates,
@@ -242,12 +244,28 @@ export const ScanReportV5Schema = z
       completed: CountSchema,
     }),
     candidates: z.array(CandidateV5Schema),
-    assessments: z.array(ContextualAssessmentSchema),
-    observations: z.array(ContextualObservationSchema),
+    assessments: z.array(PublishedContextualAssessmentSchema),
+    observations: z.array(PublishedContextualObservationSchema),
     counts: ContextualCountsV5Schema,
     limitations: z.array(SafeTextSchema(600)).min(1).max(20),
   })
   .superRefine((report, context) => {
+    if (report.contextual_review_policy_version === "2") {
+      for (const [index, assessment] of report.assessments.entries())
+        if (!ContextualAssessmentSchema.safeParse(assessment).success)
+          context.addIssue({
+            code: "custom",
+            path: ["assessments", index],
+            message: "Policy 2 assessment violates immediate-danger rules.",
+          });
+      for (const [index, observation] of report.observations.entries())
+        if (!ContextualObservationSchema.safeParse(observation).success)
+          context.addIssue({
+            code: "custom",
+            path: ["observations", index],
+            message: "Policy 2 observation violates immediate-danger rules.",
+          });
+    }
     if (report.report_id !== report.report_digest)
       context.addIssue({
         code: "custom",

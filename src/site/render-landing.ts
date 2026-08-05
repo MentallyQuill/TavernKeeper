@@ -3,11 +3,11 @@ import type {
   ReportIndexV5,
 } from "../contracts/reports-v5.js";
 import {
-  assessmentSummary,
+  deriveIndexedProjectAdvisory,
   escapeHtml,
   formatPublicDate,
-  highestRisk,
   FAVICON_LINKS,
+  projectAdvisorySummary,
   renderSiteHeader,
   shortSha,
   SITE_STYLES,
@@ -139,8 +139,9 @@ const LANDING_STYLES = `
 `;
 
 function renderReportCard(entry: ReportIndexEntryV5) {
-  const risk = highestRisk(entry.counts.recommended_risk);
-  const summary = assessmentSummary(entry.counts.recommended_risk);
+  const advisory = deriveIndexedProjectAdvisory(entry);
+  const risk = advisory.risk;
+  const summary = projectAdvisorySummary(advisory);
   const search = [entry.repository, entry.target_sha, risk, summary]
     .join(" ")
     .toLocaleLowerCase();
@@ -153,9 +154,9 @@ function renderReportCard(entry: ReportIndexEntryV5) {
       <p class="report-summary">${escapeHtml(summary)}</p>
       <div class="report-meta">
         <span>Commit <code>${escapeHtml(shortSha(entry.target_sha))}</code></span>
-        <span>${escapeHtml(entry.counts.recommended_risk.high)} high</span>
-        <span>${escapeHtml(entry.counts.recommended_risk.material)} material</span>
-        <span>${escapeHtml(entry.counts.recommended_risk.low)} low</span>
+        <span>${escapeHtml(advisory.counts.high)} immediate danger</span>
+        <span>${escapeHtml(advisory.counts.material)} material</span>
+        <span>${escapeHtml(advisory.counts.low)} low</span>
       </div>
       <div class="report-actions">
         <a href="${escapeHtml(entry.report_url)}">View report</a>
@@ -212,10 +213,10 @@ export function renderLandingHtml(index: ReportIndexV5) {
           <label class="control" for="report-query">Search reports
             <input id="report-query" type="search" placeholder="Repository or commit" autocomplete="off">
           </label>
-          <label class="control" for="report-risk">Highest recommendation
+          <label class="control" for="report-risk">Project advisory
             <select id="report-risk">
               <option value="all">All reports</option>
-              <option value="high">High</option>
+              <option value="high">Immediate danger</option>
               <option value="material">Material</option>
               <option value="low">Low / no material concern</option>
             </select>

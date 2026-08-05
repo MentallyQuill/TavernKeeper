@@ -78,6 +78,48 @@ describe("durable backlog planning", () => {
     });
   });
 
+  test("selects due staff requests before ordinary tickets without bypassing cooldowns", () => {
+    const targets = Array.from({ length: 6 }, (_, index) =>
+      target(index + 1, index + 1),
+    );
+    let state = queued(...targets);
+    state = appendQueuedTarget(state, targets[5]!, { staffRequested: true });
+
+    expect(
+      planBatch(manifest(...targets), emptyIndex, state, now, "3").targets.map(
+        ({ target: value }) => value.repository_id,
+      ),
+    ).toEqual([6, 1, 2, 3, 4]);
+
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.map((entry) =>
+          entry.repository_id === 6
+            ? {
+                ...entry,
+                consecutive_failures: 1,
+                total_failures: 1,
+                not_before: "2026-08-04T13:00:00.000Z",
+                last_failure: {
+                  code: "SCANNER_FAILED",
+                  domain: "target" as const,
+                  component: "opengrep" as const,
+                },
+                last_failed_at: now,
+              }
+            : entry,
+        ),
+      },
+    };
+    expect(
+      planBatch(manifest(...targets), emptyIndex, state, now, "3").targets.map(
+        ({ target: value }) => value.repository_id,
+      ),
+    ).toEqual([1, 2, 3, 4, 5]);
+  });
+
   test("a cooling early ticket is skipped then regains priority when due", () => {
     const targets = [target(41, 1), target(42, 2), target(43, 3)];
     let state = queued(...targets);

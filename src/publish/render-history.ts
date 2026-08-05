@@ -3,11 +3,11 @@ import {
   type ReportIndexEntryV5,
 } from "../contracts/reports-v5.js";
 import {
-  assessmentSummary,
+  deriveIndexedProjectAdvisory,
   escapeHtml,
   FAVICON_LINKS,
   formatPublicDate,
-  highestRisk,
+  projectAdvisorySummary,
   renderSiteHeader,
   shortSha,
   SCRIPT_FREE_CSP,
@@ -60,16 +60,17 @@ export function renderHistoryHtml(input: readonly unknown[]) {
     throw new Error("Repository history entries must share one identity.");
   const conclusions = reports
     .map((report) => {
-      const risk = highestRisk(report.counts.recommended_risk);
+      const advisory = deriveIndexedProjectAdvisory(report);
+      const risk = advisory.risk;
       return `<li class="history-item surface risk-mark risk-${risk}">
         <article>
           <div class="history-item-top">
             <h2><a href="${escapeHtml(report.report_url)}"><code>${escapeHtml(shortSha(report.target_sha))}</code></a></h2>
             <time datetime="${escapeHtml(report.completed_at)}">${escapeHtml(formatPublicDate(report.completed_at))}</time>
           </div>
-          <p class="history-summary">${escapeHtml(assessmentSummary(report.counts.recommended_risk))}</p>
+          <p class="history-summary">${escapeHtml(projectAdvisorySummary(advisory))}</p>
           <p class="history-meta">
-            <span>${escapeHtml(report.counts.recommended_risk.high)} high &middot; ${escapeHtml(report.counts.recommended_risk.material)} material &middot; ${escapeHtml(report.counts.recommended_risk.low)} low</span>
+            <span>${escapeHtml(advisory.counts.high)} immediate danger &middot; ${escapeHtml(advisory.counts.material)} material &middot; ${escapeHtml(advisory.counts.low)} low</span>
             <span>${escapeHtml(report.coverage.review_completed)} of ${escapeHtml(report.coverage.review_required)} candidates assessed</span>
           </p>
           <p class="history-action"><a href="${escapeHtml(report.report_url)}">View report</a></p>

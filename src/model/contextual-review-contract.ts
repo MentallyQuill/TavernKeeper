@@ -96,6 +96,22 @@ function riskContradictsDisposition(assessment: {
   );
 }
 
+function legacyRiskContradictsDisposition(assessment: {
+  disposition: z.infer<typeof DispositionSchema>;
+  recommended_risk: z.infer<typeof ItemRiskSchema>;
+}) {
+  const lowDisposition = ["expected_behavior", "minor_weakness"].includes(
+    assessment.disposition,
+  );
+  return (
+    (lowDisposition && assessment.recommended_risk !== "low") ||
+    (assessment.disposition === "material_vulnerability" &&
+      assessment.recommended_risk === "low") ||
+    (assessment.disposition === "credible_malicious_behavior" &&
+      assessment.recommended_risk !== "high")
+  );
+}
+
 const AssessmentFields = {
   candidate_id: IdentifierSchema,
   evidence_ids: z.array(IdentifierSchema).min(1).max(16),
@@ -147,6 +163,20 @@ export const ContextualAssessmentSchema = z
   })
   .superRefine((assessment, context) => {
     validateAssessment(assessment, context);
+  });
+
+export const PublishedContextualAssessmentSchema = z
+  .strictObject({
+    ...AssessmentFields,
+    locations: z.array(LocationSchema).min(1).max(16),
+  })
+  .superRefine((assessment, context) => {
+    if (legacyRiskContradictsDisposition(assessment))
+      context.addIssue({
+        code: "custom",
+        path: ["recommended_risk"],
+        message: "Recommended risk contradicts the assessment disposition.",
+      });
   });
 
 const ObservationFields = {
@@ -209,6 +239,26 @@ export const ContextualObservationInputSchema = z
 export const ContextualObservationSchema = z
   .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
   .superRefine(validateObservation);
+
+export const PublishedContextualObservationSchema = z
+  .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
+  .superRefine((observation, context) => {
+    if (legacyRiskContradictsDisposition(observation))
+      context.addIssue({
+        code: "custom",
+        path: ["recommended_risk"],
+        message: "Recommended risk contradicts the assessment disposition.",
+      });
+    if (
+      new Set(observation.related_candidate_ids).size !==
+        observation.related_candidate_ids.length ||
+      new Set(observation.evidence_ids).size !== observation.evidence_ids.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Observation identifiers must be unique.",
+      });
+  });
 
 const CompleteReviewResponseSchema = z
   .strictObject({

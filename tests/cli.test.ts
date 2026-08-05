@@ -245,7 +245,7 @@ describe("JSON-only orchestration CLIs", () => {
     ]);
   });
 
-  test("persists a forced rescan behind the current queue and ahead of later arrivals", () => {
+  test("persists a forced rescan ticket and selects it ahead of ordinary due work", () => {
     const first = target(1);
     const second = target(2);
     const targeted = target(42);
@@ -330,7 +330,10 @@ describe("JSON-only orchestration CLIs", () => {
       now: "2026-07-31T18:02:00.000Z",
       scannerPolicyVersion: "2",
     });
-    expect(matrix.include[2]).toMatchObject({
+    expect(matrix.include.map(({ repository_id }) => repository_id)).toEqual([
+      42, 1, 2, 43,
+    ]);
+    expect(matrix.include[0]).toMatchObject({
       repository_id: 42,
       reason: "staff",
       report_version: 2,

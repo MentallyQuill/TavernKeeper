@@ -90,7 +90,11 @@ in catalog order. Any failure removes that target from its old position and
 assigns it the next tail ticket, behind every project currently assigned to be
 scanned. Projects discovered afterward receive higher tickets, so a growing
 catalog cannot repeatedly push an older failure backward. Targeted rescans use
-the same tail and never bypass existing work.
+durable tickets and are marked as staff requested. Once due, staff requests are
+selected before ordinary due tickets so an approved investigation does not
+wait behind the full catalog. Priority never bypasses an emergency stop,
+automatic hold, retry cooldown, exact-SHA validation, batch size, or
+concurrency limit.
 
 ## Scan lifecycle
 
@@ -111,7 +115,11 @@ For every exact target, TavernKeeper:
 The model may classify candidate evidence as expected behavior, a minor
 weakness, a material vulnerability, or credible malicious behavior. It does
 not assign Tavernary's final project color. Tavernary performs a separate
-strict synthesis and enforces deterministic risk floors after import.
+strict synthesis and enforces deterministic project risk after import. High is
+reserved for high-confidence credible malicious or compromised behavior, or a
+high-confidence critical vulnerability that is readily exploitable in the
+shipped project. A critical advisory with only plausible runtime exploitation
+remains material.
 
 ## Durable recovery
 
@@ -217,6 +225,9 @@ targets.
 No production candidate waits for review, dismissal, or recoloring. Scanner,
 context, model, schema, coverage, evidence, sanitizer, or tool incompleteness
 publishes nothing and enters the classified retry path.
+Complete high/immediate-danger reports are published through the same path as
+all other results. They remain visible in TavernKeeper and Tavernary and never
+automatically hide, quarantine, downrank, or delist a project.
 
 ## Release checks
 
