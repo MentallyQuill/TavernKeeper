@@ -401,8 +401,16 @@ export const ContextualReviewWireResponseSchema = z.strictObject({
   review: z.union([CompleteReviewResponseSchema, MoreContextResponseSchema]),
 });
 
+const ContextualCompletedReviewWireResponseSchema = z.strictObject({
+  review: CompleteReviewResponseSchema,
+});
+
 export const ContextualReviewResponseJsonSchema = z.toJSONSchema(
   ContextualReviewWireResponseSchema,
+) as Record<string, unknown>;
+
+export const ContextualCompletedReviewResponseJsonSchema = z.toJSONSchema(
+  ContextualCompletedReviewWireResponseSchema,
 ) as Record<string, unknown>;
 
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;

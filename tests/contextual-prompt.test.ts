@@ -57,7 +57,7 @@ describe("SillyTavern ecosystem context", () => {
     const prompt = buildContextualReviewPrompt(group);
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
-    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v3");
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v4");
     expect(prompt.systemContent).toMatch(
       /top-level object.*key named review.*status="complete"/isu,
     );
@@ -76,6 +76,18 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.userContent).toContain(injection);
     expect(prompt.userContent).toContain(groupId);
     expect(prompt.userContent).toContain("BEGIN_UNTRUSTED_REPOSITORY_DATA");
+
+    const completionRequired = buildContextualReviewPrompt(
+      group,
+      undefined,
+      true,
+    );
+    expect(completionRequired.systemContent).toMatch(
+      /needs_more_context is not permitted/iu,
+    );
+    expect(completionRequired.systemContent).not.toMatch(
+      /if the supplied evidence is genuinely insufficient.*needs_more_context/isu,
+    );
 
     const developerActionRepair = buildContextualReviewPrompt(group, {
       diagnostic: "assessment_developer_action",
