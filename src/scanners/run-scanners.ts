@@ -7,7 +7,11 @@ import { runMalcontent } from "./malcontent.js";
 import { runOpenGrep } from "./opengrep.js";
 import { runOsv } from "./osv.js";
 import { scanStaticRules, type StaticSourceFile } from "./static-rules.js";
-import { ScannerError, type ScannerRun } from "./types.js";
+import {
+  ScannerError,
+  type ScannerComponent,
+  type ScannerRun,
+} from "./types.js";
 import { runZizmor } from "./zizmor.js";
 
 export interface ScannerExecutables {
@@ -66,6 +70,24 @@ function temporaryRoot(value: string | undefined) {
   return value === undefined ? {} : { temporaryRoot: value };
 }
 
+async function runScanner(
+  component: ScannerComponent,
+  displayName: string,
+  operation: () => Promise<ScannerRun>,
+): Promise<ScannerRun> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof ScannerError) throw error;
+    throw new ScannerError(
+      "SCANNER_FAILED",
+      "repository",
+      `${displayName} failed for this repository.`,
+      component,
+    );
+  }
+}
+
 function validateClassification(classification: InventoryClassification) {
   for (const name of ["osv", "zizmor", "malcontent"] as const) {
     if (
@@ -105,53 +127,63 @@ export async function runApplicableScanners(
     },
   ];
   runs.push(
-    await adapters.gitleaks({
-      root: spec.root,
-      history: spec.history,
-      runner: spec.runner,
-      version: spec.pins.gitleaks.version,
-      ...executable(spec.executables, "gitleaks"),
-      ...temporaryRoot(spec.temporaryRoot),
-    }),
+    await runScanner("gitleaks", "Gitleaks", () =>
+      adapters.gitleaks({
+        root: spec.root,
+        history: spec.history,
+        runner: spec.runner,
+        version: spec.pins.gitleaks.version,
+        ...executable(spec.executables, "gitleaks"),
+        ...temporaryRoot(spec.temporaryRoot),
+      }),
+    ),
   );
   runs.push(
-    await adapters.opengrep({
-      root: spec.root,
-      rulesRoot: spec.rulesRoot,
-      runner: spec.runner,
-      version: spec.pins.opengrep.version,
-      ...executable(spec.executables, "opengrep"),
-    }),
+    await runScanner("opengrep", "OpenGrep", () =>
+      adapters.opengrep({
+        root: spec.root,
+        rulesRoot: spec.rulesRoot,
+        runner: spec.runner,
+        version: spec.pins.opengrep.version,
+        ...executable(spec.executables, "opengrep"),
+      }),
+    ),
   );
   runs.push(
-    await adapters.osv({
-      root: spec.root,
-      inputs: spec.classification.scannerInputs.osv,
-      runner: spec.runner,
-      version: spec.pins.osvScanner.version,
-      ...executable(spec.executables, "osvScanner"),
-      ...temporaryRoot(spec.temporaryRoot),
-    }),
+    await runScanner("osv-scanner", "OSV-Scanner", () =>
+      adapters.osv({
+        root: spec.root,
+        inputs: spec.classification.scannerInputs.osv,
+        runner: spec.runner,
+        version: spec.pins.osvScanner.version,
+        ...executable(spec.executables, "osvScanner"),
+        ...temporaryRoot(spec.temporaryRoot),
+      }),
+    ),
   );
   runs.push(
-    await adapters.zizmor({
-      root: spec.root,
-      inputs: spec.classification.scannerInputs.zizmor,
-      runner: spec.runner,
-      version: spec.pins.zizmor.version,
-      ...executable(spec.executables, "zizmor"),
-      ...temporaryRoot(spec.temporaryRoot),
-    }),
+    await runScanner("zizmor", "zizmor", () =>
+      adapters.zizmor({
+        root: spec.root,
+        inputs: spec.classification.scannerInputs.zizmor,
+        runner: spec.runner,
+        version: spec.pins.zizmor.version,
+        ...executable(spec.executables, "zizmor"),
+        ...temporaryRoot(spec.temporaryRoot),
+      }),
+    ),
   );
   runs.push(
-    await adapters.malcontent({
-      root: spec.root,
-      inputs: spec.classification.scannerInputs.malcontent,
-      runner: spec.runner,
-      version: spec.pins.malcontent.version,
-      ...executable(spec.executables, "malcontent"),
-      ...temporaryRoot(spec.temporaryRoot),
-    }),
+    await runScanner("malcontent", "malcontent", () =>
+      adapters.malcontent({
+        root: spec.root,
+        inputs: spec.classification.scannerInputs.malcontent,
+        runner: spec.runner,
+        version: spec.pins.malcontent.version,
+        ...executable(spec.executables, "malcontent"),
+        ...temporaryRoot(spec.temporaryRoot),
+      }),
+    ),
   );
   return runs;
 }
