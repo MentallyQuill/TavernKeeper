@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for amiantos/writers-guild at commit adaf2b2.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; amiantos/writers-guild</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/amiantos/writers-guild" rel="noopener noreferrer">amiantos/writers-guild</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/amiantos/writers-guild/commit/adaf2b2ed11b3333dd3ce04081c4899b4654df00" rel="noopener noreferrer">adaf2b2</a></span>
+        <span>Reviewed <time datetime="2026-08-05T18:11:41.230Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>29 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-395f-4hp3-45gv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in a tool used only during development (not in the actual app that users run). Since this tool is not part of the finished product, the risk to end users is very low. It would only matter if someone tricked a developer into processing a specially crafted file during development.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-395f-4hp3-45gv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory targets a dependency declared in the root package-lock.json. The root package.json declares only devDependencies (concurrently, oxfmt, oxlint), and all visible entries in the lockfile are marked dev: true and optional: true. The production server and client code live in separate subdirectories with their own package.json files not covered by this lockfile. The vulnerable package is therefore a development-only tool or its transitive dependency, with no runtime reachability in the shipped application. Exploitation would require an attacker to craft malicious input that triggers the vulnerability during a development workflow such as linting or formatting, which is unlikely in normal use.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version when available. No urgent action is required since this does not affect the production application.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-395f-4hp3-45gv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a fixed commit hash for a GitHub Action. If the tag were ever moved to malicious code, it could run in the workflow, but major action tags are generally protected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 105 references actions/github-script@v7 by major-version tag rather than a pinned SHA. Tag-based references can be moved by the action maintainer, introducing a supply-chain risk if the tag is reassigned to malicious code. The action runs in the test job and uses the GITHUB_TOKEN to comment on PRs. Impact is limited because the token scope is narrow and the script only creates comments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/github-script to a full commit SHA for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L105" rel="noopener noreferrer">.github/workflows/test.yml:105</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The lint job does not declare its own permissions, so it may inherit broader access than it needs. It only runs linting and does not use the GitHub token for anything sensitive.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The lint job has no explicit `permissions` block. It runs only checkout, setup-node, npm install, and npm run lint. No step uses the GITHUB_TOKEN for write operations. The risk is that default repository permissions could grant more access than necessary, but no step exercises write capabilities.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit `permissions: contents: read` block to the lint job to follow least-privilege conventions.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L10-L27" rel="noopener noreferrer">.github/workflows/test.yml:10-27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The checkout action is referenced by version tag (@v4) instead of a fixed commit hash. If the action&#39;s repository were compromised, a new version could run in this workflow. This is a common practice and a low-risk supply-chain hygiene issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 15 uses `actions/checkout@v4` pinned to a floating major version tag rather than a SHA. This is a widely adopted convention but does not provide full supply-chain protection against tag re-pointing.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning actions to a commit SHA for stronger supply-chain integrity, though this is optional for a hobbyist project.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L15" rel="noopener noreferrer">.github/workflows/test.yml:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w7jw-789q-3m8p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A serious security issue was found, but it is in a development-only tool that is not included in the app people actually use. Even though the issue is rated critical, it cannot affect users of the finished product. It would only be a concern if an attacker could manipulate files that a developer processes with these tools.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w7jw-789q-3m8p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This critical-severity advisory targets a dependency in the root package-lock.json. The root project declares only devDependencies (concurrently, oxfmt, oxlint) with no production dependencies. All visible lockfile entries are marked dev: true. The production application code resides in server/ and vue_client/ subdirectories with their own separate dependency manifests. The vulnerable code therefore has no runtime reachability in the deployed application. While the advisory severity is critical, the dev-only context means attacker-controlled input would need to reach the vulnerable code path during a development task such as building, linting, or formatting, which is not a plausible attack vector for end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version when convenient. The critical rating warrants attention but does not represent production risk for this project structure.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w7jw-789q-3m8p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The setup-node action is referenced by version tag (@v4) instead of a fixed commit hash. Same low-risk supply-chain hygiene concern as the checkout action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 18 uses `actions/setup-node@v4` pinned to a floating major version tag rather than a SHA.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning actions to a commit SHA for stronger supply-chain integrity, though this is optional for a hobbyist project.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L18" rel="noopener noreferrer">.github/workflows/test.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a fixed commit hash for a GitHub Action. If the tag were moved to malicious code, it could execute in CI, but this is unlikely for well-known actions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 37 references actions/setup-node@v4 by major-version tag. This is a common pattern but does not provide immutability guarantees. The action installs Node.js and configures npm cache; it does not handle secrets directly in this job.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L37" rel="noopener noreferrer">.github/workflows/test.yml:37</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a fixed commit hash for the Codecov upload action. If the tag were moved to malicious code, it could access the Codecov token, but this is unlikely for a widely used action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 86 references codecov/codecov-action@v5 by major-version tag. This step receives the CODECOV_TOKEN secret and uploads coverage files. A tag reassignment could expose the token, but the action is widely used and the step is continue-on-error.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin codecov/codecov-action to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L86" rel="noopener noreferrer">.github/workflows/test.yml:86</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a fixed commit hash for a GitHub Action. If the tag were moved to malicious code, it could execute in CI, but this is unlikely for well-known actions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 61 references actions/setup-node@v4 by major-version tag in the test job matrix. Same supply-chain consideration as other unpinned references; the action configures Node.js and npm cache.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L61" rel="noopener noreferrer">.github/workflows/test.yml:61</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The checkout action in the format job is referenced by version tag (@v4) instead of a fixed commit hash. Same low-risk supply-chain hygiene concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 34 uses `actions/checkout@v4` pinned to a floating major version tag rather than a SHA. This is the format job&#39;s checkout step.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning actions to a commit SHA for stronger supply-chain integrity, though this is optional for a hobbyist project.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L34" rel="noopener noreferrer">.github/workflows/test.yml:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The format job does not declare its own permissions, so it may inherit broader access than it needs. It only checks formatting and does not use the GitHub token for anything sensitive.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The format job has no explicit `permissions` block. It runs only checkout, setup-node, npm install, and npm run format:check. No step uses the GITHUB_TOKEN for write operations.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit `permissions: contents: read` block to the format job to follow least-privilege conventions.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L29-L46" rel="noopener noreferrer">.github/workflows/test.yml:29-46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a fixed commit hash for the Codecov upload action. If the tag were moved to malicious code, it could access the Codecov token, but this is unlikely for a widely used action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 95 references codecov/codecov-action@v5 by major-version tag for the client coverage upload. This step also receives the CODECOV_TOKEN secret. Same supply-chain consideration as the server coverage step.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin codecov/codecov-action to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L95" rel="noopener noreferrer">.github/workflows/test.yml:95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The checkout action saves a GitHub token in the local git config by default. If someone later uploaded the git folder as an artifact, the token could leak. In this workflow, only coverage JSON files are uploaded, so the token is not exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags actions/checkout@v4 at lines 57-58 because persist-credentials defaults to true, leaving the GITHUB_TOKEN in .git/config. However, the only artifacts uploaded in this workflow are specific coverage JSON files via codecov-action, not the .git directory. There is no evidence of .git directory exfiltration, so the practical risk is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on checkout steps if credential persistence is not needed, or ensure no artifacts include the .git directory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L57-L58" rel="noopener noreferrer">.github/workflows/test.yml:57-58</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The test job does not specify which permissions its GitHub token should have. Without explicit limits, the token may have broader access than necessary. The job only needs to read code and post a PR comment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test job (lines 48-127) has no explicit permissions block. The github-script step at line 105 calls github.rest.issues.createComment, which requires pull-requests: write. Without an explicit permissions declaration, the job relies on default token permissions, which may be broader than needed. For pull_request events from forks, the GITHUB_TOKEN is typically read-only, so the comment step would fail silently due to continue-on-error. Adding an explicit minimal permissions block would follow least-privilege principles.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit permissions block to the test job with only the scopes needed, such as contents: read and pull-requests: write for the comment step.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L48-L127" rel="noopener noreferrer">.github/workflows/test.yml:48-127</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow does not declare explicit permissions at the top level. The test job needs write access to comment on pull requests, but without explicit permission declarations, all jobs may inherit broader access than necessary. This is a common CI hygiene gap.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> No workflow-level `permissions` block is present. The test job uses `actions/github-script@v7` to create a PR comment, which requires `pull-requests: write`. Without explicit per-job permissions, all jobs inherit the repository default token permissions, which may be broader than needed. The CODECOV_TOKEN secret is passed to the codecov action but that is a separate secret, not the GITHUB_TOKEN.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a workflow-level or per-job `permissions` block declaring only the access each job needs (e.g., `contents: read` for lint/format, `contents: read` and `pull-requests: write` for the test job&#39;s PR comment step).</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L1-L127" rel="noopener noreferrer">.github/workflows/test.yml:1-127</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a fixed commit hash for the checkout action. If the tag were moved to malicious code, it could execute in CI, but this is unlikely for a well-known action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 58 references actions/checkout@v4 by major-version tag in the test job. Same supply-chain consideration as other unpinned references. The checkout action has access to the repository contents and, with persist-credentials defaulting to true, the GITHUB_TOKEN.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L58" rel="noopener noreferrer">.github/workflows/test.yml:58</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (11)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify the onboarding preset endpoint works correctly. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file (onboarding.test.js) as part of a supertest request body sent to the onboarding preset endpoint. The value is a placeholder test fixture used to exercise API key validation and preset creation logic. No real credential is present; the value has been redacted in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L254" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:254</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file using fake, redacted API keys to check that the app can create different AI provider connections. No real secret is exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a placeholder API key used inside a unit test for a provider factory. The supplied source context shows the values are already redacted placeholders, and the test only verifies that provider objects are instantiated correctly. No real credential is present, and the test does not transmit credentials anywhere.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/services/__tests__/provider-factory.test.js#L50" rel="noopener noreferrer">server/src/services/__tests__/provider-factory.test.js:50</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify the skip-onboarding flow. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file as part of a supertest request body creating a preset before testing the skip endpoint. It is a placeholder test fixture, not a live credential.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L319" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:319</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify DeepSeek preset creation. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file as part of a supertest request body for the onboarding preset endpoint. It is a placeholder test fixture used to validate preset creation behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L140" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:140</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify the default preset is set correctly. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file as part of a supertest request body creating a DeepSeek preset to verify default preset assignment. It is a placeholder test fixture.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L264" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:264</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that needs fake API keys to test how the app creates different AI provider connections. The flagged value is just a dummy placeholder used in tests, not a real secret, and it never goes anywhere outside the tests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is inside a unit test file for a provider factory. The matched value is a placeholder API key assigned to a test preset object used only to exercise provider instantiation logic. The value has been redacted in the supplied evidence, and the surrounding test cases use similar placeholder credentials solely to satisfy the apiKey field shape. No real credential is present, and the value is not used for authentication or sent to any external destination.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/af74f2a9a751a83d6a1a68a2872c8820d6de72ac/server/src/services/__tests__/provider-factory.test.js#L50" rel="noopener noreferrer">server/src/services/__tests__/provider-factory.test.js:50</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The checkout action stores GitHub credentials in the local git config by default, but this workflow never uploads any artifacts, so there is no path for those credentials to be leaked through artifacts.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags credential persistence via checkout&#39;s default persist-credentials behavior. However, this workflow contains no `upload-artifact` steps. The codecov action sends coverage data to an external service, not to GitHub artifacts. Without artifact upload, there is no exfiltration path for the persisted .git/config credentials.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L33-L34" rel="noopener noreferrer">.github/workflows/test.yml:33-34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify AI Horde preset creation with an optional key. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file as part of a supertest request body for the AI Horde provider preset endpoint. It is a placeholder test fixture exercising optional API key handling.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L191" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:191</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify the full onboarding flow. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file as part of a supertest request body creating a DeepSeek preset during the full onboarding flow test. It is a placeholder test fixture.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L383" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:383</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The checkout action stores GitHub credentials in the local git config by default, but this workflow never uploads any artifacts, so there is no path for those credentials to be leaked through artifacts.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags credential persistence via checkout&#39;s default persist-credentials behavior in the lint job. However, the lint job contains no `upload-artifact` steps. Without artifact upload, there is no exfiltration path for the persisted .git/config credentials.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L14-L15" rel="noopener noreferrer">.github/workflows/test.yml:14-15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake API key used as test data in a test file to verify Anthropic API key prefix validation. It is not a real credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value appears in a test file as part of a supertest request body testing that an invalid Anthropic API key prefix is rejected. It is a placeholder test fixture.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/routes/__tests__/onboarding.test.js#L171" rel="noopener noreferrer">server/src/routes/__tests__/onboarding.test.js:171</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Additional unpinned action references in the test job</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Additional actions in the test job (codecov-action@v5 and github-script@v7) are also pinned to floating version tags rather than commit SHAs, consistent with the flagged checkout and setup-node steps.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Lines 86, 95, and 105 use codecov/codecov-action@v5 and actions/github-script@v7, all pinned to floating major version tags. These were not separately flagged by the scanner but follow the same unpinned pattern.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning all third-party actions (codecov-action, github-script) to commit SHAs for consistency with supply-chain best practices.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L86" rel="noopener noreferrer">.github/workflows/test.yml:86</a></li><li><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L95" rel="noopener noreferrer">.github/workflows/test.yml:95</a></li><li><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/.github/workflows/test.yml#L105" rel="noopener noreferrer">.github/workflows/test.yml:105</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Placeholder API keys in provider factory tests</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test file uses dummy API keys to simulate setup for different AI services, which is standard practice and harmless.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Multiple test cases in this file use redacted placeholder API key values to construct provider presets. This is normal for unit testing provider instantiation and does not represent credential exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/amiantos/writers-guild/blob/adaf2b2ed11b3333dd3ce04081c4899b4654df00/server/src/services/__tests__/provider-factory.test.js#L50" rel="noopener noreferrer">server/src/services/__tests__/provider-factory.test.js:50</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>173 files &middot; 3375526 bytes</dd>
+      <dt>Contextual coverage</dt><dd>27 of 27 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/amiantos/writers-guild/commit/adaf2b2ed11b3333dd3ce04081c4899b4654df00" rel="noopener noreferrer">adaf2b2ed11b3333dd3ce04081c4899b4654df00</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T18:11:41.230Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v3</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>31883 input &middot; 12280 output &middot; 2761 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>be274a08a699eb7f5076376cbf511d9d2bf0191293350cb3e653858bc7dee2be</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1091890012/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
