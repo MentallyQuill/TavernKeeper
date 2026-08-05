@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   ContextualAssessmentSchema,
+  ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
 } from "../src/model/contextual-review-contract.js";
 
@@ -23,6 +24,23 @@ const materialAssessment = {
 };
 
 describe("contextual review contract", () => {
+  test("exports a strict object-root wire schema for structured output", () => {
+    expect(ContextualReviewResponseJsonSchema).toMatchObject({
+      type: "object",
+      properties: { review: { anyOf: expect.any(Array) } },
+      required: ["review"],
+      additionalProperties: false,
+    });
+    expect(
+      (
+        ContextualReviewResponseJsonSchema.properties as Record<
+          string,
+          Record<string, unknown>
+        >
+      ).review,
+    ).not.toHaveProperty("oneOf");
+  });
+
   test("accepts a complete expected-behavior assessment", () => {
     expect(
       ContextualAssessmentSchema.parse({

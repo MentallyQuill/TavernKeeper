@@ -97,7 +97,7 @@ export async function checkModelProviderCompatibility(
     },
     policy: {
       version: "2",
-      promptVersion: "contextual-review-v2",
+      promptVersion: "contextual-review-v3",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 1,
       maxOutputTokens: 8_192,

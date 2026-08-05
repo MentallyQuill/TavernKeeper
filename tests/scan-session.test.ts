@@ -201,20 +201,22 @@ async function completeReview(root: string) {
           endpointOrigin: "https://provider.example",
           provider: "provider.example",
           content: JSON.stringify({
-            status: "complete",
-            assessments: evidence.candidates.map((candidate) => ({
-              candidate_id: candidate.candidate_id,
-              evidence_ids: [candidate.evidence_id],
-              disposition: "minor_weakness",
-              impact: "low",
-              exploitability: "unlikely",
-              confidence: "medium",
-              recommended_risk: "low",
-              technical_explanation: "The flow should be hardened.",
-              layman_explanation: "This behavior deserves a small caution.",
-              developer_action: "Document the destination.",
-            })),
-            observations: [],
+            review: {
+              status: "complete",
+              assessments: evidence.candidates.map((candidate) => ({
+                candidate_id: candidate.candidate_id,
+                evidence_ids: [candidate.evidence_id],
+                disposition: "minor_weakness",
+                impact: "low",
+                exploitability: "unlikely",
+                confidence: "medium",
+                recommended_risk: "low",
+                technical_explanation: "The flow should be hardened.",
+                layman_explanation: "This behavior deserves a small caution.",
+                developer_action: "Document the destination.",
+              })),
+              observations: [],
+            },
           }),
           usage: {
             inputTokens: 100,
@@ -227,7 +229,7 @@ async function completeReview(root: string) {
     },
     policy: {
       version: "2",
-      promptVersion: "contextual-review-v2",
+      promptVersion: "contextual-review-v3",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 3,
       maxOutputTokens: 32_768,
@@ -299,7 +301,7 @@ describe("three-phase contextual scan session", () => {
           evidence_digest: evidence.evidence_digest,
           progress: {
             policy_version: "2",
-            prompt_version: "contextual-review-v2",
+            prompt_version: "contextual-review-v3",
             schema_version: "contextual-assessment-v1",
             model: "configured/model:thinking",
             provider: "provider.example",
@@ -371,7 +373,7 @@ describe("three-phase contextual scan session", () => {
         },
         policy: {
           version: "2",
-          promptVersion: "contextual-review-v2",
+          promptVersion: "contextual-review-v3",
           schemaVersion: "contextual-assessment-v1",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,

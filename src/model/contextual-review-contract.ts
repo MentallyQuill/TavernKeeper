@@ -318,6 +318,14 @@ export const ContextualReviewResponseSchema = z.discriminatedUnion("status", [
   MoreContextResponseSchema,
 ]);
 
+export const ContextualReviewWireResponseSchema = z.strictObject({
+  review: z.union([CompleteReviewResponseSchema, MoreContextResponseSchema]),
+});
+
+export const ContextualReviewResponseJsonSchema = z.toJSONSchema(
+  ContextualReviewWireResponseSchema,
+) as Record<string, unknown>;
+
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;
 export type ContextualAssessmentInput = z.infer<
   typeof ContextualAssessmentInputSchema

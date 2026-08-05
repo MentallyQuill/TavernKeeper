@@ -30,6 +30,15 @@ describe("OpenAI-compatible contextual-review transport", () => {
       ),
     );
     const endpoint = "https://nano-gpt.com/api/v1/chat/completions";
+    const responseJsonSchema = {
+      name: "contextual_review",
+      schema: {
+        type: "object",
+        properties: { status: { type: "string" } },
+        required: ["status"],
+        additionalProperties: false,
+      },
+    };
 
     const result = await requestTextCompletion({
       endpoint,
@@ -38,6 +47,7 @@ describe("OpenAI-compatible contextual-review transport", () => {
       maxOutputTokens: 8_192,
       systemContent: "Trusted review policy.",
       userContent: "Delimited untrusted evidence.",
+      responseJsonSchema,
       fetchImpl,
       resolveAddresses: async () => ["104.21.10.20"],
     });
@@ -62,7 +72,10 @@ describe("OpenAI-compatible contextual-review transport", () => {
       stream: false,
       temperature: 0,
       max_tokens: 8_192,
-      response_format: { type: "json_object" },
+      response_format: {
+        type: "json_schema",
+        json_schema: { ...responseJsonSchema, strict: true },
+      },
     });
     expect(result).toMatchObject({
       content: '{"status":"complete"}',
@@ -70,6 +83,85 @@ describe("OpenAI-compatible contextual-review transport", () => {
     });
     expect(JSON.stringify(result)).not.toContain("private chain of thought");
   });
+
+  test("falls back once to JSON object mode when a provider rejects JSON Schema", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(null, { status: 400 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            id: "chatcmpl-json-fallback",
+            model: "configured/model",
+            choices: [
+              {
+                message: { content: '{"status":"complete"}' },
+                finish_reason: "stop",
+              },
+            ],
+            usage: { input_tokens: 1, output_tokens: 1 },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        responseJsonSchema: {
+          name: "contextual_review",
+          schema: { type: "object" },
+        },
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).resolves.toMatchObject({ content: '{"status":"complete"}' });
+
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(
+      JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body)).response_format,
+    ).toMatchObject({ type: "json_schema" });
+    expect(
+      JSON.parse(String(fetchImpl.mock.calls[1]?.[1]?.body)).response_format,
+    ).toEqual({ type: "json_object" });
+  });
+
+  test.each([
+    [401, "MODEL_AUTHENTICATION"],
+    [429, "MODEL_QUOTA"],
+    [500, "MODEL_PROVIDER"],
+  ] as const)(
+    "does not retry non-format HTTP %i failures",
+    async (status, code) => {
+      const fetchImpl = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(new Response(null, { status }));
+
+      await expect(
+        requestTextCompletion({
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model",
+          maxOutputTokens: 100,
+          systemContent: "System",
+          userContent: "User",
+          responseJsonSchema: {
+            name: "contextual_review",
+            schema: { type: "object" },
+          },
+          fetchImpl,
+          resolveAddresses: async () => ["93.184.216.34"],
+        }),
+      ).rejects.toMatchObject({ code });
+
+      expect(fetchImpl).toHaveBeenCalledOnce();
+    },
+  );
 
   test("accepts beta providers that return final text as content parts", async () => {
     const result = await requestTextCompletion({

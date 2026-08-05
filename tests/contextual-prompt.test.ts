@@ -57,7 +57,10 @@ describe("SillyTavern ecosystem context", () => {
     const prompt = buildContextualReviewPrompt(group);
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
-    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v2");
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v3");
+    expect(prompt.systemContent).toMatch(
+      /top-level object.*key named review.*status="complete"/isu,
+    );
     expect(prompt.systemContent).toMatch(/expected_behavior/iu);
     expect(prompt.systemContent).toMatch(/shipped version/iu);
     expect(prompt.systemContent).toMatch(/runtime reachability/iu);
@@ -88,7 +91,7 @@ describe("SillyTavern ecosystem context", () => {
       diagnostic: "review_schema",
     });
     expect(reviewSchemaRepair.systemContent).toMatch(
-      /exactly three top-level keys/iu,
+      /top-level object must contain exactly one key named review/iu,
     );
     expect(reviewSchemaRepair.systemContent).toMatch(
       /observations must be an array/iu,
