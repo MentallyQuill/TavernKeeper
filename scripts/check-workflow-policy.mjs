@@ -40,6 +40,7 @@ const allowedTriggers = {
     "workflow_call",
     "workflow_dispatch",
   ],
+  "release-holds.yml": ["workflow_dispatch"],
   "retry.yml": ["schedule", "workflow_dispatch"],
   "scan-and-publish.yml": ["workflow_call"],
   "staff-operations.yml": ["workflow_dispatch"],
@@ -80,6 +81,10 @@ const permissionProfiles = {
       plan: { contents: "read" },
       run: undefined,
     },
+  },
+  "release-holds.yml": {
+    workflow: { contents: "read", actions: "write" },
+    jobs: { release: { contents: "read", actions: "write" } },
   },
   "retry.yml": {
     workflow: {
@@ -122,6 +127,7 @@ const permissionProfiles = {
 const protectedManual = new Set([
   "policy-rescan.yml",
   "provider-check.yml",
+  "release-holds.yml",
   "staff-operations.yml",
 ]);
 const mutationJobs = {
@@ -130,6 +136,10 @@ const mutationJobs = {
   "scan-and-publish.yml": {
     job: "publish",
     environment: "tavernkeeper-scanner",
+  },
+  "release-holds.yml": {
+    job: "release",
+    environment: "tavernkeeper-staff",
   },
   "staff-operations.yml": {
     job: "operate",

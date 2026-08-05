@@ -5,6 +5,7 @@ import {
   initialOperationsState,
   parseOperationsState,
   pauseSystem,
+  releaseAutomaticHolds,
   resumeSystem,
   serializeOperationsState,
 } from "../src/operations/state.js";
@@ -55,6 +56,51 @@ describe("secret-free operations state V3", () => {
 
     expect(resumeSystem(paused, secondResume).coverage_started_at).toBe(
       firstResume,
+    );
+  });
+
+  test("releases automatic holds without changing staff stops or queued work", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const held = parseOperationsState({
+      ...pauseSystem(initialOperationsState(at), {
+        kind: "staff",
+        reasonCode: "STAFF_PAUSE",
+        at,
+      }),
+      automatic_holds: [
+        {
+          error_fingerprint: failureFingerprint(failure),
+          failure,
+          first_failed_at: at,
+          last_failed_at: at,
+          consecutive_failures: 5,
+          next_probe_at: "2026-08-04T06:00:00.000Z",
+          chronic: true,
+        },
+      ],
+      scan_queue: {
+        next_ticket: 2,
+        entries: [entry(42, 1)],
+      },
+    });
+    const releasedAt = "2026-08-05T12:00:00.000Z";
+
+    expect(releaseAutomaticHolds(held, releasedAt)).toEqual({
+      ...held,
+      updated_at: releasedAt,
+      automatic_holds: [],
+    });
+  });
+
+  test("leaves operational state unchanged when no automatic holds exist", () => {
+    const state = initialOperationsState(at);
+
+    expect(releaseAutomaticHolds(state, "2026-08-05T12:00:00.000Z")).toBe(
+      state,
     );
   });
 

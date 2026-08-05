@@ -5,6 +5,7 @@ import { z } from "zod";
 import {
   parseOperationsState,
   pauseSystem,
+  releaseAutomaticHolds,
   resumeSystem,
   serializeOperationsState,
 } from "../operations/state.js";
@@ -23,6 +24,7 @@ const OperationSchema = z.discriminatedUnion("operation", [
     reason_code: z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/u),
   }),
   z.strictObject({ operation: z.literal("resume") }),
+  z.strictObject({ operation: z.literal("release-holds") }),
   z.strictObject({
     operation: z.literal("retry"),
     repository_id: z.number().int().positive(),
@@ -47,18 +49,20 @@ async function main() {
         })
       : operation.operation === "resume"
         ? resumeSystem(state, now)
-        : parseOperationsState({
-            ...state,
-            updated_at: now,
-            scan_queue: {
-              ...state.scan_queue,
-              entries: state.scan_queue.entries.map((entry) =>
-                entry.repository_id === operation.repository_id
-                  ? { ...entry, not_before: null }
-                  : entry,
-              ),
-            },
-          });
+        : operation.operation === "release-holds"
+          ? releaseAutomaticHolds(state, now)
+          : parseOperationsState({
+              ...state,
+              updated_at: now,
+              scan_queue: {
+                ...state.scan_queue,
+                entries: state.scan_queue.entries.map((entry) =>
+                  entry.repository_id === operation.repository_id
+                    ? { ...entry, not_before: null }
+                    : entry,
+                ),
+              },
+            });
   await writeFile(path, serializeOperationsState(next));
   return { status: operation.operation };
 }
