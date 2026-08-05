@@ -69,7 +69,7 @@ const canonicalStaffPublisherRun =
   ].join("\n") + "\n";
 const canonicalContextualReviewRun = String.raw`run_review() {
   node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
-  if timeout --signal=TERM --kill-after=5s 10m npm run --silent review-target; then
+  if timeout --signal=TERM --kill-after=5s 20m npm run --silent review-target; then
     rm -f phase-error.json
     return 0
   fi
@@ -78,11 +78,11 @@ const canonicalContextualReviewRun = String.raw`run_review() {
 retryable_review_failure() {
   jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
 }
-for pass in 1 2 3 4; do
+for pass in 1 2 3; do
   if run_review; then
     exit 0
   fi
-  if ! retryable_review_failure || [[ "$pass" -eq 4 ]]; then
+  if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then
     exit 1
   fi
   rm -f phase-error.json
@@ -444,7 +444,7 @@ function checkContextualRuntime(file, workflow) {
       prepareIndex < 0 ||
       reviewIndex !== prepareIndex + 1 ||
       finalizeIndex !== reviewIndex + 1 ||
-      steps[reviewIndex]?.["timeout-minutes"] !== 42
+      steps[reviewIndex]?.["timeout-minutes"] !== 62
     )
       fail(
         file,
