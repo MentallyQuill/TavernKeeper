@@ -10,6 +10,7 @@ import {
   serializeOperationsState,
 } from "../operations/state.js";
 import { dueRetries } from "../operations/retry.js";
+import { prioritizeQueuedTargetRetry } from "../queue/durable-queue.js";
 import {
   isDirectExecution,
   readJsonFile,
@@ -52,16 +53,8 @@ async function main() {
         : operation.operation === "release-holds"
           ? releaseAutomaticHolds(state, now)
           : parseOperationsState({
-              ...state,
+              ...prioritizeQueuedTargetRetry(state, operation.repository_id),
               updated_at: now,
-              scan_queue: {
-                ...state.scan_queue,
-                entries: state.scan_queue.entries.map((entry) =>
-                  entry.repository_id === operation.repository_id
-                    ? { ...entry, not_before: null }
-                    : entry,
-                ),
-              },
             });
   await writeFile(path, serializeOperationsState(next));
   return { status: operation.operation };

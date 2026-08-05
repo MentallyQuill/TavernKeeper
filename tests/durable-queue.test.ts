@@ -6,6 +6,7 @@ import { initialOperationsState } from "../src/operations/state.js";
 import {
   appendQueuedTarget,
   dueQueueEntries,
+  prioritizeQueuedTargetRetry,
   removeSuccessfulTarget,
   replaceQueuedTargetSha,
   rotateFailedTarget,
@@ -79,6 +80,28 @@ describe("durable scan ticket operations", () => {
         ({ repository_id }) => repository_id,
       ),
     ).toEqual([42, 43, 44]);
+  });
+
+  test("marks an exact staff retry runnable and priority without resetting history", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    state = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at,
+    }).state;
+
+    const retried = prioritizeQueuedTargetRetry(state, 42);
+
+    expect(retried.scan_queue.entries[0]).toMatchObject({
+      repository_id: 42,
+      consecutive_failures: 1,
+      total_failures: 1,
+      not_before: null,
+      staff_requested: true,
+    });
+    expect(() => prioritizeQueuedTargetRetry(state, 404)).toThrow(
+      /not queued/iu,
+    );
   });
 
   test("moves each failure exactly once to the current tail", () => {
