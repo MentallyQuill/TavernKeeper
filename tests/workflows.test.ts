@@ -29,6 +29,7 @@ const downloadArtifactAction =
   "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const workflowNames = [
   "ci.yml",
+  "delayed-wake.yml",
   "deploy-pages.yml",
   "pages-reconcile.yml",
   "policy-rescan.yml",
@@ -133,14 +134,51 @@ describe("GitHub workflow security policy", () => {
   });
 
   test("reconciliation is bounded and all ordinary entry points converge", async () => {
-    const [reconcile, targeted, retry, policy] = await Promise.all([
-      workflow("reconcile.yml"),
-      workflow("targeted-scan.yml"),
-      workflow("retry.yml"),
-      workflow("policy-rescan.yml"),
-    ]);
+    const [reconcile, delayedWake, targeted, retry, policy] = await Promise.all(
+      [
+        workflow("reconcile.yml"),
+        workflow("delayed-wake.yml"),
+        workflow("targeted-scan.yml"),
+        workflow("retry.yml"),
+        workflow("policy-rescan.yml"),
+      ],
+    );
     expect(reconcile.jobs.run.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
+    );
+    expect(reconcile.jobs.plan.permissions).toEqual({
+      contents: "read",
+      actions: "write",
+    });
+    const scheduleWake = reconcile.jobs.plan.steps.find(
+      (step: Workflow) => step.name === "Schedule deterministic delayed wake",
+    );
+    expect(scheduleWake?.if).toContain(
+      "fromJSON(steps.plan.outputs.requests_json)[0] == null",
+    );
+    expect(scheduleWake?.if).toContain(
+      "steps.plan.outputs.total_remaining != '0'",
+    );
+    expect(scheduleWake?.if).toContain("steps.plan.outputs.next_wake_at != ''");
+    expect(scheduleWake?.run).toBe(
+      'gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"',
+    );
+    expect(delayedWake.on.workflow_dispatch.inputs.wake_at).toMatchObject({
+      type: "string",
+      required: true,
+    });
+    expect(delayedWake.concurrency).toEqual({
+      group: "tavernkeeper-delayed-wake",
+      "cancel-in-progress": true,
+    });
+    expect(delayedWake.jobs.wake["timeout-minutes"]).toBe(345);
+    const wait = delayedWake.jobs.wake.steps.find(
+      (step: Workflow) => step.name === "Wait for bounded wake time",
+    );
+    expect(wait?.run).toContain("new Date(wakeMs).toISOString() !== wakeAt");
+    expect(wait?.run).toContain("Math.min(20_400");
+    expect(JSON.stringify(delayedWake.jobs.wake)).toContain(
+      'gh workflow run reconcile.yml --repo \\"$GITHUB_REPOSITORY\\" --ref main',
     );
     expect(targeted.jobs.enqueue.environment).toBe("tavernkeeper-scanner");
     expect(JSON.stringify(targeted.jobs.enqueue)).toContain("targeted-scan");
@@ -701,7 +739,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 11 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 12 workflows/u),
     });
   });
 });

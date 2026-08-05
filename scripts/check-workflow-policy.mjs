@@ -30,6 +30,7 @@ const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
+  "delayed-wake.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "pages-reconcile.yml": ["schedule", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
@@ -51,6 +52,10 @@ const permissionProfiles = {
   "ci.yml": {
     workflow: { contents: "read" },
     jobs: { check: undefined, "scanner-toolchain": undefined },
+  },
+  "delayed-wake.yml": {
+    workflow: { contents: "read", actions: "write" },
+    jobs: { wake: { contents: "read", actions: "write" } },
   },
   "deploy-pages.yml": {
     workflow: { contents: "read", pages: "write", "id-token": "write" },
@@ -78,7 +83,7 @@ const permissionProfiles = {
     },
     jobs: {
       sync: { contents: "read" },
-      plan: { contents: "read" },
+      plan: { contents: "read", actions: "write" },
       run: undefined,
     },
   },
@@ -664,6 +669,50 @@ function checkScannerToolchain(file, workflow) {
     );
 }
 
+function checkDelayedWake(file, workflow) {
+  if (file === "reconcile.yml") {
+    const schedule = (workflow.jobs?.plan?.steps ?? []).find(
+      (step) => step?.name === "Schedule deterministic delayed wake",
+    );
+    if (
+      !schedule?.if?.includes(
+        "fromJSON(steps.plan.outputs.requests_json)[0] == null",
+      ) ||
+      !schedule.if.includes("steps.plan.outputs.total_remaining != '0'") ||
+      !schedule.if.includes("steps.plan.outputs.next_wake_at != ''") ||
+      schedule?.env?.TAVERNKEEPER_WAKE_AT !==
+        "${{ steps.plan.outputs.next_wake_at }}" ||
+      schedule?.run !==
+        'gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"'
+    )
+      fail(file, "idle durable work must schedule its exact next wake");
+  }
+  if (file === "delayed-wake.yml") {
+    const wait = (workflow.jobs?.wake?.steps ?? []).find(
+      (step) => step?.name === "Wait for bounded wake time",
+    );
+    const dispatch = (workflow.jobs?.wake?.steps ?? []).find(
+      (step) => step?.name === "Dispatch reconciliation",
+    );
+    if (
+      !same(Object.keys(workflow.on?.workflow_dispatch?.inputs ?? {}), [
+        "wake_at",
+      ]) ||
+      workflow.on?.workflow_dispatch?.inputs?.wake_at?.required !== true ||
+      !same(workflow.concurrency, {
+        group: "tavernkeeper-delayed-wake",
+        "cancel-in-progress": true,
+      }) ||
+      workflow.jobs?.wake?.["timeout-minutes"] !== 345 ||
+      !wait?.run?.includes("new Date(wakeMs).toISOString() !== wakeAt") ||
+      !wait?.run?.includes("Math.min(20_400") ||
+      dispatch?.run !==
+        'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main'
+    )
+      fail(file, "delayed wake must be validated, bounded, and resumable");
+  }
+}
+
 const names = (await readdir(workflowRoot))
   .filter((name) => /\.ya?ml$/u.test(name))
   .sort();
@@ -693,6 +742,7 @@ for (const file of names) {
   checkPublisherBoundary(file, workflow);
   checkTargetedAuthority(file, workflow);
   checkScannerToolchain(file, workflow);
+  checkDelayedWake(file, workflow);
 }
 
 const policyFile = "config/scanner-policy.v3.json";

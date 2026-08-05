@@ -78,6 +78,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      actions: write
     outputs:
       requests_json: ${{ steps.plan.outputs.requests_json }}
       total_remaining: ${{ steps.plan.outputs.total_remaining }}
@@ -124,6 +125,13 @@ jobs:
             echo "- Automatic recovery circuits: $(jq -r '.automatic_holds' <<< "$planned")"
             echo "- Recovery probes in this batch: $(jq -r '.recovery_probes' <<< "$planned")"
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Schedule deterministic delayed wake
+        if: ${{ fromJSON(steps.plan.outputs.requests_json)[0] == null && steps.plan.outputs.total_remaining != '0' && steps.plan.outputs.next_wake_at != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAVERNKEEPER_WAKE_AT: ${{ steps.plan.outputs.next_wake_at }}
+        shell: bash
+        run: gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"
 
   run:
     needs: plan

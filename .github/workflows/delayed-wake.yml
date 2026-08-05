@@ -1,0 +1,46 @@
+name: Delayed scan wake
+
+on:
+  workflow_dispatch:
+    inputs:
+      wake_at:
+        description: Exact UTC time at which reconciliation should resume
+        required: true
+        type: string
+
+concurrency:
+  group: tavernkeeper-delayed-wake
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  wake:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Wait for bounded wake time
+        env:
+          TAVERNKEEPER_WAKE_AT: ${{ inputs.wake_at }}
+        shell: bash
+        run: |
+          delay_seconds="$(node -e '
+            const wakeAt = process.env.TAVERNKEEPER_WAKE_AT;
+            const wakeMs = Date.parse(wakeAt);
+            if (!Number.isFinite(wakeMs) || new Date(wakeMs).toISOString() !== wakeAt) {
+              throw new Error("wake_at must be an exact UTC ISO timestamp");
+            }
+            const delaySeconds = Math.max(0, Math.min(20_400, Math.ceil((wakeMs - Date.now()) / 1_000)));
+            process.stdout.write(String(delaySeconds));
+          ')"
+          sleep "$delay_seconds"
+      - name: Dispatch reconciliation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main
