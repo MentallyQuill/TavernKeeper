@@ -15,7 +15,7 @@ import {
 const ids = ["a", "b", "c"].map((character) => character.repeat(64));
 const policy = {
   version: "2",
-  promptVersion: "contextual-review-v2",
+  promptVersion: "contextual-review-v3",
   schemaVersion: "contextual-assessment-v1",
   maxImmediateAttempts: 3,
   maxOutputTokens: 8_192,
@@ -79,6 +79,10 @@ function assessment(candidateId: string, _path: string, _line: number) {
   } as const;
 }
 
+function reviewContent(review: unknown) {
+  return JSON.stringify({ review });
+}
+
 describe("contextual evidence review", () => {
   test("reviews every file group and covers every candidate exactly once", async () => {
     const groups = [
@@ -93,7 +97,7 @@ describe("contextual evidence review", () => {
         completionId: `completion-${current.path.replaceAll("/", "-")}`,
         endpointOrigin: "https://provider.example",
         provider: "provider.example",
-        content: JSON.stringify({
+        content: reviewContent({
           status: "complete",
           assessments: current.candidates.map((candidate) =>
             assessment(
@@ -147,7 +151,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-fenced",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: `\`\`\`json\n${JSON.stringify({
+      content: `\`\`\`json\n${reviewContent({
         status: "complete",
         assessments: [assessment(ids[0]!, current.path, 2)],
         observations: [],
@@ -182,7 +186,7 @@ describe("contextual evidence review", () => {
         completionId: `completion-${requestCompletion.mock.calls.length}`,
         endpointOrigin: "https://provider.example",
         provider: "provider.example",
-        content: JSON.stringify({
+        content: reviewContent({
           status: "complete",
           assessments: [
             requestCompletion.mock.calls.length === 1
@@ -233,7 +237,7 @@ describe("contextual evidence review", () => {
       content:
         requestCompletion.mock.calls.length === 1
           ? "not usable JSON"
-          : JSON.stringify({
+          : reviewContent({
               status: "complete",
               assessments: [assessment(ids[0]!, current.path, 2)],
               observations: [],
@@ -267,7 +271,7 @@ describe("contextual evidence review", () => {
       completionId: `completion-invalid-${requestCompletion.mock.calls.length}`,
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [
           {
@@ -309,7 +313,7 @@ describe("contextual evidence review", () => {
       completionId: `completion-repeat-${requestCompletion.mock.calls.length}`,
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [
           {
@@ -362,7 +366,7 @@ describe("contextual evidence review", () => {
         completionId: "completion-first-group",
         endpointOrigin: "https://provider.example",
         provider: "provider.example",
-        content: JSON.stringify({
+        content: reviewContent({
           status: "complete",
           assessments: [assessment(ids[0]!, current.path, 2)],
           observations: [
@@ -420,7 +424,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-second-group",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [assessment(ids[1]!, groups[1]!.path, 2)],
         observations: [],
@@ -476,7 +480,7 @@ describe("contextual evidence review", () => {
         completionId: `completion-${progress.length + 1}`,
         endpointOrigin: "https://provider.example",
         provider: "provider.example",
-        content: JSON.stringify({
+        content: reviewContent({
           status: "complete",
           assessments: [
             {
@@ -524,7 +528,7 @@ describe("contextual evidence review", () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const invalidProgress: ContextualReviewProgress = {
       policy_version: "2",
-      prompt_version: "contextual-review-v2",
+      prompt_version: "contextual-review-v3",
       schema_version: "contextual-assessment-v1",
       model: "configured/model:thinking",
       provider: "provider.example",
@@ -572,7 +576,7 @@ describe("contextual evidence review", () => {
         completionId: `completion-repair-context-${call}`,
         endpointOrigin: "https://provider.example",
         provider: "provider.example",
-        content: JSON.stringify(
+        content: reviewContent(
           call === 1
             ? {
                 status: "complete",
@@ -639,7 +643,7 @@ describe("contextual evidence review", () => {
       completionId: `completion-${requestCompletion.mock.calls.length}`,
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify(
+      content: reviewContent(
         requestCompletion.mock.calls.length === 1
           ? {
               status: "needs_more_context",
@@ -690,7 +694,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-incomplete",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [assessment(ids[0]!, current.path, 2)],
         observations: [],
@@ -731,7 +735,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-invented",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [invented],
         observations: [],
@@ -764,7 +768,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-invented-observation",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [assessment(ids[0]!, current.path, 2)],
         observations: [
@@ -816,7 +820,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-secret",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [unsafe],
         observations: [],
@@ -854,7 +858,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-generic-secret",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [unsafe],
         observations: [],
@@ -916,7 +920,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-mismatch",
       endpointOrigin: "https://attacker.example",
       provider: "attacker.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [assessment(ids[0]!, current.path, 2)],
         observations: [],
@@ -953,7 +957,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-context-required",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "needs_more_context",
         candidate_ids: [ids[0]!],
         requested_context: "Include the destination configuration.",
@@ -990,7 +994,7 @@ describe("contextual evidence review", () => {
       completionId: `completion-unresolved-${requestCompletion.mock.calls.length}`,
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "needs_more_context",
         candidate_ids: [ids[0]!],
         requested_context: "More context is still required.",
@@ -1029,7 +1033,7 @@ describe("contextual evidence review", () => {
       completionId: "completion-observation",
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: JSON.stringify({
+      content: reviewContent({
         status: "complete",
         assessments: [assessment(ids[0]!, current.path, 2)],
         observations: [

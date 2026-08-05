@@ -5,6 +5,7 @@ import {
   ContextualAssessmentSchema,
   ContextualObservationProgressSchema,
   ContextualObservationSchema,
+  ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
   type ContextualAssessment,
   type ContextualAssessmentInput,
@@ -282,8 +283,19 @@ function parseReviewResponse(content: string) {
       "Contextual reviewer returned secret-shaped text.",
       "response_content",
     );
+  const extracted = extractSingleJsonObject(content);
+  const wireEnvelope = z
+    .strictObject({ review: z.unknown() })
+    .safeParse(extracted);
+  if (!wireEnvelope.success)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "repository",
+      "Contextual reviewer returned an invalid response envelope.",
+      "review_schema",
+    );
   const parsed = ContextualReviewResponseSchema.safeParse(
-    extractSingleJsonObject(content),
+    wireEnvelope.data.review,
   );
   if (!parsed.success) {
     const path = parsed.error.issues[0]?.path ?? [];
@@ -503,6 +515,10 @@ async function reviewGroup(
         timeoutMs: spec.policy.timeoutMs,
         systemContent: prompt.systemContent,
         userContent: prompt.userContent,
+        responseJsonSchema: {
+          name: "tavernkeeper_contextual_review",
+          schema: ContextualReviewResponseJsonSchema,
+        },
         ...(spec.provider.fetchImpl === undefined
           ? {}
           : { fetchImpl: spec.provider.fetchImpl }),

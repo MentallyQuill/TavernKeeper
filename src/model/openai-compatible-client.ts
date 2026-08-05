@@ -32,6 +32,10 @@ export interface TextCompletionRequest extends ProviderConnectivityRequest {
   systemContent: string;
   userContent: string;
   maxResponseBytes?: number;
+  responseJsonSchema?: {
+    name: string;
+    schema: Record<string, unknown>;
+  };
 }
 
 export type ModelRequestErrorCode =
@@ -417,34 +421,68 @@ export async function requestTextCompletion(
     );
   await resolvePublicModelEndpoint(endpoint, request.resolveAddresses);
 
-  let response: Response;
-  try {
-    response = await (request.fetchImpl ?? fetch)(request.endpoint, {
-      method: "POST",
-      redirect: "manual",
-      signal: AbortSignal.timeout(request.timeoutMs ?? 600_000),
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: request.systemContent },
-          { role: "user", content: request.userContent },
-        ],
-        stream: false,
-        temperature: 0,
-        max_tokens: request.maxOutputTokens,
-        response_format: { type: "json_object" },
-      }),
-    });
-  } catch {
+  const responseJsonSchema = request.responseJsonSchema;
+  if (
+    responseJsonSchema !== undefined &&
+    (!/^[A-Za-z0-9_-]{1,64}$/u.test(responseJsonSchema.name) ||
+      responseJsonSchema.schema === null ||
+      Array.isArray(responseJsonSchema.schema))
+  )
     throw new ModelRequestError(
-      "MODEL_PROVIDER",
+      "MODEL_CONFIGURATION",
       "system",
-      "Configured model request failed.",
+      "Configured response JSON Schema is invalid.",
     );
+
+  const responseFormat = (useJsonSchema: boolean) =>
+    useJsonSchema && responseJsonSchema !== undefined
+      ? {
+          type: "json_schema",
+          json_schema: {
+            name: responseJsonSchema.name,
+            strict: true,
+            schema: responseJsonSchema.schema,
+          },
+        }
+      : { type: "json_object" };
+  const send = async (useJsonSchema: boolean) => {
+    try {
+      return await (request.fetchImpl ?? fetch)(request.endpoint, {
+        method: "POST",
+        redirect: "manual",
+        signal: AbortSignal.timeout(request.timeoutMs ?? 600_000),
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: request.systemContent },
+            { role: "user", content: request.userContent },
+          ],
+          stream: false,
+          temperature: 0,
+          max_tokens: request.maxOutputTokens,
+          response_format: responseFormat(useJsonSchema),
+        }),
+      });
+    } catch {
+      throw new ModelRequestError(
+        "MODEL_PROVIDER",
+        "system",
+        "Configured model request failed.",
+      );
+    }
+  };
+
+  let response = await send(responseJsonSchema !== undefined);
+  if (
+    responseJsonSchema !== undefined &&
+    (response.status === 400 || response.status === 422)
+  ) {
+    await response.body?.cancel();
+    response = await send(false);
   }
   if (!response.ok) classifyHttpError(response);
   if (response.url !== "") {

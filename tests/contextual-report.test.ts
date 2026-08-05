@@ -114,7 +114,7 @@ const group: EvidenceContextGroup = {
 };
 const review: CompletedContextualReview = {
   policy_version: "2",
-  prompt_version: "contextual-review-v2",
+  prompt_version: "contextual-review-v3",
   schema_version: "contextual-assessment-v1",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
