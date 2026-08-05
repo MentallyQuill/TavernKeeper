@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ganon3264/focus at commit ca33c86.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ganon3264/focus</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ganon3264/focus" rel="noopener noreferrer">ganon3264/focus</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ganon3264/focus/commit/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a" rel="noopener noreferrer">ca33c86</a></span>
+        <span>Reviewed <time datetime="2026-08-05T00:26:00.591Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or high-risk concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 high</span>
+        <span>0 material</span>
+        <span>25 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or high-risk item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This is a test file that loads one of the project&#39;s own JavaScript files to test it. The way it loads the file uses a risky function, but because it only reads a local file from the project itself and never touches outside input, it is not a security danger. It is just a slightly messy way to load code for testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval reads a local repository JavaScript file from a known relative path and executes it to load the module under test within a mock environment. The input is not user-controlled or network-derived, so there is no injection vector. Using eval to load source is a code-quality weakness; a module loader or vm sandbox would be preferable, but the data flow poses no security risk in this test context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider replacing eval with require or a vm-based loader for cleaner and safer test module loading.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-delete-mode.js#L74" rel="noopener noreferrer">tests/frontend/test-delete-mode.js:74</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (17)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads one of the project&#39;s own local JavaScript files so it can run tests against it. It only reads files already inside the repository and does not fetch or execute anything from the internet or from user input.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval call occurs inside a test file that constructs a mock DOM and global environment, then reads a local committed source file from the repository and evaluates it to bring its definitions into scope for unit testing. The path is built from __dirname with relative segments pointing only to repository-local source. No network content, user input, or remote data flows into the eval. This is a common hobbyist pattern for testing browser-oriented scripts that are not packaged as modules.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-edit-message.js#L101" rel="noopener noreferrer">tests/frontend/test-edit-message.js:101</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file loads another script from the project itself to test it. It uses a basic method to run the script in the test environment, which is normal for testing purposes and does not pose a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval call reads a local JavaScript file from the repository using a hardcoded relative path and executes it within the test environment. This is a common pattern in hobbyist test suites to load browser-oriented scripts that rely on mocked global objects like window and document. There is no external input, network fetch, or obfuscation involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-scroll-manager.js#L44" rel="noopener noreferrer">tests/frontend/test-scroll-manager.js:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads the project&#39;s own JavaScript code into the test runner so it can check how the code behaves. It only uses code that is already part of the project and does not touch the internet or any user data, so it is not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched eval call occurs inside a frontend test harness. The test reads a local repository source file via fs.readFileSync and evals it in the test process to expose bare functions for unit assertions. No network, user input, or external data is involved; the evaluated content is committed project source. This is a common hobbyist test-loading pattern and poses no security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-status-panel.js#L72" rel="noopener noreferrer">tests/frontend/test-status-panel.js:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file loads one of the project&#39;s own JavaScript files so it can be tested. It only reads a local file that ships with the project and does not run anything from outside or from user input.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call reads a committed local source file from the repository&#39;s own static directory to load a browser-oriented module into the Node test environment. The path is hardcoded and relative to the test file, not derived from user input or network data. This is a common hobbyist pattern for testing scripts that rely on global scope rather than module exports. No external destination, obfuscation, or persistence is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-state-manager.js#L28" rel="noopener noreferrer">tests/frontend/test-state-manager.js:28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is part of a test file. It loads one of the project&#39;s own JavaScript files into the test environment so the tests can check how it works. It does not run anything from outside the project or handle any secrets, so it is not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged dynamic execution occurs in a frontend unit test file. The test sets up browser-like globals such as window, document, localStorage, fetch, and htmx, then reads a local static UI JavaScript file from the repository and evaluates it in the test process so the module can be exercised under Node. The evaluated content is a committed local source file, not user input, network data, or remote content. There is no credential access, network exfiltration, persistence, or obfuscation. This is a common hobbyist pattern for loading browser-oriented modules in a Node test harness.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-list-manager.js#L24" rel="noopener noreferrer">tests/frontend/test-list-manager.js:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is test code that loads one of the project&#39;s own files into memory so the tests can run. It only uses files already in the repository and does not execute anything from outside, so it is not a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call occurs inside a frontend test file. It reads a local repository source file (static/js/ui/lightbox.js) via fs.readFileSync and evaluates it in the test process to attach the module&#39;s functions to a mocked global window object. No external or user-supplied input reaches eval; the evaluated content is the project&#39;s own committed source. This is a common hobbyist test-harness pattern for loading non-module browser scripts under Node.js.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-lightbox.js#L78" rel="noopener noreferrer">tests/frontend/test-lightbox.js:78</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses eval only to load a local project file during automated tests so the test can run browser code in Node. It does not evaluate anything from users or the internet, so it is not a security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval call occurs inside a unit test file. It reads a local, committed JavaScript source file using a relative path constructed with path.join and evaluates it in the test context to load browser-oriented code under Node.js. No user input, network data, or untrusted content is passed to eval. This is a common hobbyist pattern for testing non-module browser scripts and does not introduce a runtime security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-extract-data.js#L23" rel="noopener noreferrer">tests/frontend/test-extract-data.js:23</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads another file from the same project so it can test the code. It uses a blunt method to do so, but only on a fixed local file with no outside input, so there is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call reads a local project source file via a relative path and executes it to load a browser-oriented module into the test&#39;s global scope. This is a common hobbyist test-harness pattern for modules that attach to window rather than exporting. The path is fixed and internal to the repository; no external or user-controlled input reaches eval, and no network or persistence behavior is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-message-renderer.js#L46" rel="noopener noreferrer">tests/frontend/test-message-renderer.js:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file loading one of the project&#39;s own JavaScript files so it can be tested. It only reads files already in the repository and does not use any external or user-controlled input, so there is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval reads a local, repository-relative JavaScript file from the test directory and executes it in the test process. This is a common hobbyist pattern for loading a browser-oriented IIFE module that attaches exports to a mocked global window object during Node.js tests. The path is constructed from __dirname and fixed relative segments, no user input or network data reaches eval, and the file role is test-only.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-message-pruner.js#L84" rel="noopener noreferrer">tests/frontend/test-message-pruner.js:84</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test script loading the project&#39;s own frontend code so it can be tested. It only reads a fixed file from the repository itself and does not run anything from outside or from user input.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged dynamic execution occurs inside a frontend unit test file. The test reads a local, hardcoded source file from the repository and evaluates it in the Node test environment to load frontend code that attaches to global objects rather than using module exports. No untrusted input, network data, or user-controlled paths are involved, and the behavior is confined to the test harness.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-reasoning-visibility.js#L24" rel="noopener noreferrer">tests/frontend/test-reasoning-visibility.js:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a potentially dangerous command to load a local file for testing purposes. Because it only reads a specific file already in the project and only runs during tests, it does not pose a security risk to users of the application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval statement reads a local, hardcoded source file from the project repository to load it into the test environment. This is a common pattern for testing frontend scripts that are not structured as Node.js modules. It does not process external or user-supplied input and only executes during the test phase.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-api-paths.js#L7" rel="noopener noreferrer">tests/frontend/test-api-paths.js:7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads the project&#39;s own notification code so it can be tested. It uses eval only to run code that already belongs to the project, not anything from users or the internet. This is a normal way for small hobbyist projects to test browser code outside a browser.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval reads a local repository file (static/js/ui/notifications.js) via fs.readFileSync and evaluates it to load browser-oriented UI code into a Node test harness. The evaluated content is committed project source, not user input, network data, or untrusted configuration. The file role is test, and the surrounding code sets up deterministic timers and DOM mocks before evaluating the module. No exfiltration, persistence, obfuscation, or external destinations are present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-notifications.js#L58" rel="noopener noreferrer">tests/frontend/test-notifications.js:58</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads another file from the same project to test its color-related functions. The code being loaded is part of the project itself, not anything from the internet or from user input. There is no security risk here; it is just an unconventional way to test code that was not designed to be imported normally.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval call occurs inside a test file. Its sole input is a source file read from the local repository tree via fs.readFileSync using a path relative to the test directory. No external, user-controlled, or network-sourced data reaches the eval. The purpose is to load a non-modular frontend script and expose its internal functions for unit testing. There is no network call, credential access, persistence, or obfuscation. This is a common hobbyist pattern for testing browser-oriented scripts that lack module exports.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-theme-manager.js#L83" rel="noopener noreferrer">tests/frontend/test-theme-manager.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads one of the project&#39;s own JavaScript files so the tests can run it. It only reads files already inside the project folder and does not contact the internet or handle secrets. This is a normal, if informal, way to test browser-style code outside a browser.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval reads a local repository JavaScript file via fs.readFileSync from a relative path inside the project and executes it to load a browser-oriented IIFE module into the Node test environment. This is a common hobbyist test harness pattern for modules that attach to window/global without exporting. No network, external input, credential access, persistence, or obfuscation is involved. The executed code is committed project source, not attacker-controlled data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-file-staging.js#L83" rel="noopener noreferrer">tests/frontend/test-file-staging.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a potentially dangerous command to load another file, but this is happening inside a test script and only loads a file that is already part of the project. It does not use any outside information, so it is safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call is used in a test file to load a local, repository-controlled JavaScript file into the test environment. This allows the test to mock browser globals before the module script executes. The path is constructed using relative directory traversal and does not incorporate any external or user-controlled input, making it a standard test setup pattern rather than a security vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-backup-manager.js#L35" rel="noopener noreferrer">tests/frontend/test-backup-manager.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a potentially dangerous command to load another file from the project for testing purposes. Because it only loads files that are already part of the project and runs only during tests, it does not pose a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged the use of eval at line 44. The code evaluates the contents of a local file read from the repository&#39;s static directory to load it into the test environment. This is a common pattern in hobbyist Node.js tests to execute browser-oriented JavaScript files that lack module exports. The evaluated code is part of the repository itself, not external or user-supplied input, and runs within a local test context. There is no network fetching, obfuscation, or credential handling involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-edit-entity.js#L44" rel="noopener noreferrer">tests/frontend/test-edit-entity.js:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a dynamic execution feature to load another file from the same project for testing. It does not run any code from outside the project, so it is not a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged eval call executes a local source file read via fs.readFileSync within a Node.js test script to expose browser-oriented functions to the test harness. No untrusted or external input is passed to eval.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using Node&#39;s vm module or refactoring the source file to support standard module exports instead of eval for better test maintainability, though this is not a security issue.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-char-editor.js#L69" rel="noopener noreferrer">tests/frontend/test-char-editor.js:69</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Local file loaded via eval in test harness</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test uses a shortcut to load project code so it can be tested. It only uses files already in the project and does not pose a security threat.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The test script reads a local JavaScript file using fs.readFileSync and passes it to eval to attach its functions to the global scope for testing. This is a common workaround for testing browser-oriented code in Node.js and does not process external input.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-char-editor.js#L68-L69" rel="noopener noreferrer">tests/frontend/test-char-editor.js:68-69</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Local file loaded via eval in test harness</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test loads one of the project&#39;s own files using a function that can run arbitrary code. Since it only uses a fixed local file and no outside input, it is not a real threat, but a safer loading method would be better practice.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The test reads a static JavaScript file from the repository and executes it with eval to populate the mock global environment. The path is hardcoded and relative, and no external data influences the content. This is a test-only pattern with no runtime exposure, but eval-based loading is fragile and could mask errors or accidental global pollution.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Use require or a vm sandbox instead of eval to load the module under test.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-delete-mode.js#L74" rel="noopener noreferrer">tests/frontend/test-delete-mode.js:74</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test harness loads local source via eval</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test loads the project&#39;s own code file to test it. Since it only uses files already in the repository and runs only during tests, this is normal for this kind of project.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The test file sets up mock globals and then evaluates a repository-local file to test its functions. The evaluated content is a committed source file within the project, not external or user-supplied data, so the dynamic execution is scoped to the test environment and matches the stated testing purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-edit-message.js#L101" rel="noopener noreferrer">tests/frontend/test-edit-message.js:101</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test harness uses eval to load local module</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The test loads project code in a rough way that works but is not ideal for maintenance. It is not a security problem, just a code-quality nitpick.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Using eval to load a local file works for this test but is fragile and can mask syntax errors or accidental global pollution. A module wrapper or a test bundler would be more maintainable, though this does not introduce a security risk in the test context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider wrapping the loaded module for testability instead of evaling the file contents; no security change required.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-file-staging.js#L83" rel="noopener noreferrer">tests/frontend/test-file-staging.js:83</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test harness loads local module via eval</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test is just loading the project&#39;s own code to test it. Nothing from outside the project is executed.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The test file mocks browser globals and then uses eval with fs.readFileSync to load a fixed local module file for testing. No external or user-controlled data is involved, and execution is confined to the test process.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-message-pruner.js#L84" rel="noopener noreferrer">tests/frontend/test-message-pruner.js:84</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Local source loaded into test harness via eval</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test runs the project&#39;s own notification code in a simulated environment. Nothing from outside the project is executed.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The eval target is produced by reading a path constructed from __dirname and fixed relative segments pointing to the project&#39;s own static JS directory. No external or user-controlled data reaches the eval. The test harness mocks globals and timers before evaluation, consistent with unit testing browser UI code in Node.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-notifications.js#L57-L58" rel="noopener noreferrer">tests/frontend/test-notifications.js:57-58</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Use of eval in test harness</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test uses a risky-looking way to load its own code for testing. It is not dangerous here because only local project code is involved, but a more standard loading method would be cleaner.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Using eval to load module source into the test process works but is fragile and bypasses normal module isolation. A require or module-loader shim would be safer and more maintainable, though this does not introduce a security vulnerability in the test context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider replacing eval-based loading with a require or module shim for maintainability and clearer isolation.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a/tests/frontend/test-status-panel.js#L72" rel="noopener noreferrer">tests/frontend/test-status-panel.js:72</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>222 files &middot; 2312669 bytes</dd>
+      <dt>Contextual coverage</dt><dd>18 of 18 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ganon3264/focus/commit/ca33c86d35ab21ffd3f5f1580c2288880f9ad44a" rel="noopener noreferrer">ca33c86d35ab21ffd3f5f1580c2288880f9ad44a</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T00:26:00.591Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>1</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v1</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>82017 input &middot; 17066 output &middot; 17146 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>c24777d2538b74ca3168468a11a28c2ffc6a4b3f031e88b39d2eb10ea92b46e1</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1305306157/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
