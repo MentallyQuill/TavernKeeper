@@ -1,0 +1,231 @@
+{
+  "schema_version": 5,
+  "report_id": "04fdab5ed443441dc6923ba37adae99881b35a24c0aa9bd29150ff890037e89f",
+  "report_digest": "04fdab5ed443441dc6923ba37adae99881b35a24c0aa9bd29150ff890037e89f",
+  "report_version": 1,
+  "supersedes_report_id": null,
+  "scanner_version": "0.1.0",
+  "scanner_policy_version": "3",
+  "rule_catalog_version": "1",
+  "package_schema_version": 1,
+  "contextual_review_policy_version": "2",
+  "ecosystem_context_version": "sillytavern-community-v1",
+  "prompt_version": "contextual-review-v2",
+  "assessment_schema_version": "contextual-assessment-v1",
+  "source_id": "github-1169709495",
+  "provider": "github",
+  "repository_id": 1169709495,
+  "repository": "mattjaybe/SillyTavern-EchoText",
+  "canonical_url": "https://github.com/mattjaybe/SillyTavern-EchoText",
+  "target_sha": "35a7940f77691807be08c4e2e153118341a90c6e",
+  "completed_at": "2026-08-05T17:10:45.695Z",
+  "assessment_method": "deterministic-evidence-contextual-review",
+  "contextual_reviewer": {
+    "provider": "nano-gpt.com",
+    "model": "zai-org/glm-5.2:thinking"
+  },
+  "review_usage": {
+    "input_tokens": 4833,
+    "output_tokens": 927,
+    "cache_read_tokens": 911,
+    "reasoning_tokens": 0
+  },
+  "history": {
+    "base_sha": null,
+    "commits": 20
+  },
+  "coverage": {
+    "inventory": {
+      "files": 23,
+      "bytes": 1514341,
+      "first_party_text_files": 23,
+      "first_party_text_bytes": 1514341,
+      "excluded": {
+        "dependency_lockfiles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "vendored_dependencies": {
+          "files": 0,
+          "bytes": 0
+        },
+        "generated_bundles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "minified_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "binaries": {
+          "files": 0,
+          "bytes": 0
+        },
+        "archives": {
+          "files": 0,
+          "bytes": 0
+        },
+        "oversized_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "unsafe_entries": {
+          "files": 0,
+          "bytes": 0
+        }
+      }
+    },
+    "tools": [
+      {
+        "name": "inventory",
+        "version": "0.1.0",
+        "status": "completed"
+      },
+      {
+        "name": "tavernkeeper-static",
+        "version": "3",
+        "status": "completed"
+      },
+      {
+        "name": "gitleaks",
+        "version": "8.30.1",
+        "status": "completed"
+      },
+      {
+        "name": "opengrep",
+        "version": "1.26.0",
+        "status": "completed"
+      },
+      {
+        "name": "osv-scanner",
+        "version": "2.4.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "zizmor",
+        "version": "1.28.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "malcontent",
+        "version": "1.25.7",
+        "status": "not-applicable"
+      }
+    ],
+    "evidence_validation": {
+      "status": "completed",
+      "validated_candidates": 1
+    }
+  },
+  "review_coverage": {
+    "required": 1,
+    "completed": 1
+  },
+  "candidates": [
+    {
+      "candidate_id": "483f472a367e38f47337c39db30b240767efc0fdafbb1ef4cb6d3e79d0d925c9",
+      "evidence_id": "483f472a367e38f47337c39db30b240767efc0fdafbb1ef4cb6d3e79d0d925c9",
+      "origin": "opengrep",
+      "scanner_version": "1.26.0",
+      "rule_id": "tavernkeeper.dynamic-execution.javascript-eval",
+      "category": "dynamic-execution",
+      "scanner_severity": "medium",
+      "scanner_confidence": "high",
+      "path": "index.js",
+      "line_start": 48,
+      "line_end": 48,
+      "evidence_sha": "35a7940f77691807be08c4e2e153118341a90c6e",
+      "file_role": "production",
+      "title": "OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval",
+      "explanation": "OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.",
+      "remediation": "Review the matched code path and remove or constrain the flagged behavior when it is not required."
+    }
+  ],
+  "assessments": [
+    {
+      "candidate_id": "483f472a367e38f47337c39db30b240767efc0fdafbb1ef4cb6d3e79d0d925c9",
+      "evidence_ids": [
+        "483f472a367e38f47337c39db30b240767efc0fdafbb1ef4cb6d3e79d0d925c9"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "low",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "technical_explanation": "The `new Function(xhr.responseText)()` call is a module-loading mechanism. The XHR target URL is constructed from BASE_URL (derived from the extension's own script tag src) concatenated with hardcoded relative paths such as 'lib/config.js'. No user-controlled or remote input flows into the URL or the executed code. The fetched content is the extension's own bundled sub-modules, which is a common pattern in SillyTavern extensions that do not use ES module imports. The synchronous XHR and dynamic execution are proportionate to the stated purpose of loading the extension's internal library files.",
+      "layman_explanation": "The extension loads its own internal code files from its own folder and runs them so the extension can work. It does not download or run code from anywhere unexpected, and no user input controls what gets loaded or executed. This is a normal way for this type of extension to load its pieces.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "index.js",
+          "line_start": 48,
+          "line_end": 48
+        }
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "c210279d14caf6dfa3544ff4f09fc35c26cac1f385700f2f22436c8c44874926",
+      "related_candidate_ids": [
+        "483f472a367e38f47337c39db30b240767efc0fdafbb1ef4cb6d3e79d0d925c9"
+      ],
+      "evidence_ids": [
+        "483f472a367e38f47337c39db30b240767efc0fdafbb1ef4cb6d3e79d0d925c9"
+      ],
+      "disposition": "minor_weakness",
+      "impact": "low",
+      "exploitability": "unlikely",
+      "confidence": "medium",
+      "recommended_risk": "low",
+      "title": "Synchronous XHR for module loading",
+      "technical_explanation": "The module loader uses XMLHttpRequest in synchronous mode (xhr.open('GET', moduleUrl, false)). Synchronous XHR is deprecated and blocks the main thread, which can cause UI jank or warnings in modern browsers. This does not introduce a security vulnerability but is a code-quality and compatibility concern.",
+      "layman_explanation": "The extension loads its code files in a way that freezes the page briefly until each file is ready. This is not a security problem but can make the interface feel less responsive and may cause browser warnings in the future.",
+      "developer_action": "Consider migrating to async loading or ES module imports to avoid blocking the main thread and future browser compatibility issues.",
+      "locations": [
+        {
+          "path": "index.js",
+          "line_start": 38,
+          "line_end": 42
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "candidates": 1,
+    "assessments": 1,
+    "observations": 1,
+    "items": 2,
+    "disposition": {
+      "expected_behavior": 1,
+      "minor_weakness": 1,
+      "material_vulnerability": 0,
+      "credible_malicious_behavior": 0
+    },
+    "impact": {
+      "none": 0,
+      "low": 2,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "exploitability": {
+      "unlikely": 2,
+      "plausible": 0,
+      "readily_exploitable": 0
+    },
+    "confidence": {
+      "low": 0,
+      "medium": 1,
+      "high": 1
+    },
+    "recommended_risk": {
+      "low": 2,
+      "material": 0,
+      "high": 0
+    }
+  },
+  "limitations": [
+    "This advisory review cannot prove the absence of unknown behavior."
+  ]
+}
