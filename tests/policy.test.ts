@@ -12,11 +12,11 @@ import {
 describe("deterministic scanner policy", () => {
   test("loads the versioned contextual review policy without a token budget", async () => {
     const policy = await loadContextualReviewPolicy(
-      "config/contextual-review.v1.json",
+      "config/contextual-review.v2.json",
     );
     expect(policy).toMatchObject({
-      version: "1",
-      promptVersion: "contextual-review-v1",
+      version: "2",
+      promptVersion: "contextual-review-v2",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 3,
     });

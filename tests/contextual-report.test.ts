@@ -113,8 +113,8 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "1",
-  prompt_version: "contextual-review-v1",
+  policy_version: "2",
+  prompt_version: "contextual-review-v2",
   schema_version: "contextual-assessment-v1",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
@@ -212,7 +212,7 @@ function reportWithObservation(
                 : risk === "material"
                   ? "plausible"
                   : "unlikely",
-            confidence: "medium",
+            confidence: risk === "high" ? "high" : "medium",
             recommended_risk: risk,
             title: "Related request handling",
             technical_explanation:

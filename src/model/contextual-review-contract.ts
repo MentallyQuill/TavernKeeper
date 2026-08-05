@@ -73,15 +73,24 @@ export const ItemRiskSchema = z.enum(["low", "material", "high"]);
 
 function riskContradictsDisposition(assessment: {
   disposition: z.infer<typeof DispositionSchema>;
+  impact: z.infer<typeof ImpactSchema>;
+  exploitability: z.infer<typeof ExploitabilitySchema>;
+  confidence: z.infer<typeof AssessmentConfidenceSchema>;
   recommended_risk: z.infer<typeof ItemRiskSchema>;
 }) {
   const lowDisposition = ["expected_behavior", "minor_weakness"].includes(
     assessment.disposition,
   );
+  const immediateMaterialDanger =
+    assessment.disposition === "material_vulnerability" &&
+    assessment.impact === "critical" &&
+    assessment.exploitability === "readily_exploitable" &&
+    assessment.confidence === "high";
   return (
     (lowDisposition && assessment.recommended_risk !== "low") ||
     (assessment.disposition === "material_vulnerability" &&
-      assessment.recommended_risk === "low") ||
+      assessment.recommended_risk !==
+        (immediateMaterialDanger ? "high" : "material")) ||
     (assessment.disposition === "credible_malicious_behavior" &&
       assessment.recommended_risk !== "high")
   );
@@ -103,10 +112,22 @@ const AssessmentFields = {
 function validateAssessment(
   assessment: {
     disposition: z.infer<typeof DispositionSchema>;
+    impact: z.infer<typeof ImpactSchema>;
+    exploitability: z.infer<typeof ExploitabilitySchema>;
+    confidence: z.infer<typeof AssessmentConfidenceSchema>;
     recommended_risk: z.infer<typeof ItemRiskSchema>;
   },
   context: z.core.$RefinementCtx,
 ) {
+  if (
+    assessment.disposition === "credible_malicious_behavior" &&
+    assessment.confidence !== "high"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["confidence"],
+      message: "Credible malicious behavior requires high confidence.",
+    });
   if (riskContradictsDisposition(assessment))
     context.addIssue({
       code: "custom",
@@ -148,10 +169,22 @@ function validateObservation(
     related_candidate_ids: string[];
     evidence_ids: string[];
     disposition: z.infer<typeof DispositionSchema>;
+    impact: z.infer<typeof ImpactSchema>;
+    exploitability: z.infer<typeof ExploitabilitySchema>;
+    confidence: z.infer<typeof AssessmentConfidenceSchema>;
     recommended_risk: z.infer<typeof ItemRiskSchema>;
   },
   context: z.core.$RefinementCtx,
 ) {
+  if (
+    observation.disposition === "credible_malicious_behavior" &&
+    observation.confidence !== "high"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["confidence"],
+      message: "Credible malicious behavior requires high confidence.",
+    });
   if (riskContradictsDisposition(observation))
     context.addIssue({
       code: "custom",
