@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import {
   classifyFailure,
   type FailureDescriptor,
+  type FailureFallback,
 } from "../operations/failure.js";
 
 export async function readJsonFile(path: string): Promise<unknown> {
@@ -56,17 +57,23 @@ export function isDirectExecution(metaUrl: string) {
   );
 }
 
-export function safeCliErrorRecord(error: unknown): FailureDescriptor {
-  return classifyFailure(error);
+export function safeCliErrorRecord(
+  error: unknown,
+  fallback?: FailureFallback,
+): FailureDescriptor {
+  return classifyFailure(error, fallback);
 }
 
-export function runJsonCli(main: () => Promise<unknown>) {
+export function runJsonCli(
+  main: () => Promise<unknown>,
+  fallback?: FailureFallback,
+) {
   void main()
     .then((result) => {
       process.stdout.write(`${JSON.stringify(result)}\n`);
     })
     .catch(async (error: unknown) => {
-      const record = safeCliErrorRecord(error);
+      const record = safeCliErrorRecord(error, fallback);
       const failureOutput = process.env.TAVERNKEEPER_ERROR_OUTPUT;
       if (failureOutput !== undefined)
         try {

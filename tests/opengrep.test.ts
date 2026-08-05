@@ -283,7 +283,7 @@ describe("OpenGrep adapter", () => {
     });
   });
 
-  test("classifies a syntax diagnostic without persisting its path", async () => {
+  test("preserves findings with a bounded syntax coverage limitation", async () => {
     const runner = new OpenGrepRunner(
       resultJson("src/index.ts", [
         {
@@ -302,15 +302,14 @@ describe("OpenGrep adapter", () => {
         runner,
         version: "1.26.0",
       }),
-    ).rejects.toMatchObject({
-      code: "SCANNER_FAILED",
-      scope: "system",
-      component: "opengrep",
-      diagnostic: "parser_syntax",
+    ).resolves.toMatchObject({
+      status: "completed-with-limitations",
+      limitations: ["parser_syntax"],
+      findings: [expect.objectContaining({ path: "src/index.ts" })],
     });
   });
 
-  test("classifies a rule timeout without persisting scanner output", async () => {
+  test("preserves findings with a bounded rule-timeout limitation", async () => {
     const runner = new OpenGrepRunner(
       resultJson("src/index.ts", [{ code: 2, level: "warn", type: "Timeout" }]),
     );
@@ -322,10 +321,14 @@ describe("OpenGrep adapter", () => {
         runner,
         version: "1.26.0",
       }),
-    ).rejects.toMatchObject({ diagnostic: "rule_timeout" });
+    ).resolves.toMatchObject({
+      status: "completed-with-limitations",
+      limitations: ["rule_timeout"],
+      findings: [expect.objectContaining({ path: "src/index.ts" })],
+    });
   });
 
-  test("prefers deterministic syntax when a run also times out", async () => {
+  test("reports each bounded limitation once when syntax and timeout both occur", async () => {
     const runner = new OpenGrepRunner(
       resultJson("src/index.ts", [
         { code: 2, level: "warn", type: "Timeout" },
@@ -340,8 +343,34 @@ describe("OpenGrep adapter", () => {
         runner,
         version: "1.26.0",
       }),
-    ).rejects.toMatchObject({ diagnostic: "parser_syntax" });
+    ).resolves.toMatchObject({
+      status: "completed-with-limitations",
+      limitations: ["parser_syntax", "rule_timeout"],
+    });
   });
+
+  test.each([
+    { code: 2, level: "warn", type: "Syntax error" },
+    { code: 3, level: "error", type: "Syntax error" },
+    { code: 3, level: "warn", type: "Timeout" },
+    { code: 2, level: "error", type: "Timeout" },
+  ])(
+    "rejects a near-match partial coverage diagnostic %#",
+    async (diagnostic) => {
+      const runner = new OpenGrepRunner(
+        resultJson("src/index.ts", [diagnostic]),
+      );
+
+      await expect(
+        runOpenGrep({
+          root: "C:/scan/repository",
+          rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+          runner,
+          version: "1.26.0",
+        }),
+      ).rejects.toMatchObject({ code: "SCANNER_FAILED" });
+    },
+  );
 
   test.each([
     {

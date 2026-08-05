@@ -83,6 +83,37 @@ describe("operation failure domains", () => {
     expect(failureFingerprint(opengrep)).toMatch(/^[a-f0-9]{64}$/u);
   });
 
+  test("uses phase attribution for an untyped exception", () => {
+    expect(
+      classifyFailure(new Error("body deliberately ignored"), {
+        code: "CLI_FAILED",
+        domain: "target",
+        component: "finalization",
+      }),
+    ).toEqual({
+      code: "CLI_FAILED",
+      domain: "target",
+      component: "finalization",
+    });
+  });
+
+  test("uses phase attribution for an untyped platform error code", () => {
+    expect(
+      classifyFailure(
+        { code: "ENOENT", message: "body deliberately ignored" },
+        {
+          code: "CLI_FAILED",
+          domain: "target",
+          component: "finalization",
+        },
+      ),
+    ).toEqual({
+      code: "ENOENT",
+      domain: "target",
+      component: "finalization",
+    });
+  });
+
   test("preserves bounded scanner diagnostics", () => {
     expect(
       classifyFailure({

@@ -158,6 +158,67 @@ describe("Scan Package V1", () => {
     ).toThrow(/finding origin/iu);
   });
 
+  test("accepts findings from OpenGrep completed with bounded limitations", () => {
+    const openGrepFinding = normalizeFinding({
+      origin: "opengrep",
+      ruleId: "tavernkeeper.dynamic-execution.node-shell",
+      category: "dynamic-execution",
+      severity: "high",
+      confidence: "high",
+      path: sourceFile.path,
+      lineStart: 3,
+      lineEnd: 3,
+      evidenceSha: targetSha,
+      title: "Dynamic process execution",
+      explanation: "A committed scanner rule matched this location.",
+    });
+    const tools = toolRuns.map((tool) =>
+      tool.name === "opengrep"
+        ? {
+            ...tool,
+            status: "completed-with-limitations" as const,
+            limitations: ["parser_syntax" as const],
+          }
+        : tool,
+    );
+
+    expect(
+      buildScanPackage({ ...input(), tools, findings: [openGrepFinding] }),
+    ).toMatchObject({
+      tools: expect.arrayContaining([
+        expect.objectContaining({
+          name: "opengrep",
+          status: "completed-with-limitations",
+          limitations: ["parser_syntax"],
+        }),
+      ]),
+    });
+  });
+
+  test("rejects incomplete or non-OpenGrep limited coverage metadata", () => {
+    const missingLimitations = toolRuns.map((tool) =>
+      tool.name === "opengrep"
+        ? { ...tool, status: "completed-with-limitations" as const }
+        : tool,
+    );
+    expect(() =>
+      buildScanPackage({ ...input(), tools: missingLimitations }),
+    ).toThrow(/limitations/iu);
+
+    const wrongTool = toolRuns.map((tool) =>
+      tool.name === "gitleaks"
+        ? {
+            ...tool,
+            status: "completed-with-limitations" as const,
+            limitations: ["parser_syntax" as const],
+          }
+        : tool,
+    );
+    expect(() => buildScanPackage({ ...input(), tools: wrongTool })).toThrow(
+      /only opengrep/iu,
+    );
+  });
+
   test("rejects unknown paths, invalid lines, and changed fingerprints", () => {
     const valid = buildScanPackage(input());
     const unknownPath = structuredClone(valid);

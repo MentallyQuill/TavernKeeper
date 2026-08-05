@@ -135,7 +135,17 @@ jobs:
           TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}
           TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
-        run: npm run --silent review-target
+        shell: bash
+        run: |
+          if npm run --silent review-target; then
+            exit 0
+          fi
+          if jq -e '.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null; then
+            rm -f phase-error.json
+            npm run --silent review-target
+          else
+            exit 1
+          fi
       - name: Finalize contextual V5 report
         id: finalize
         if: steps.review.outcome == 'success'

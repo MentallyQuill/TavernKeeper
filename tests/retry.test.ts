@@ -21,6 +21,14 @@ const target: Target = {
   target_sha: "a".repeat(40),
   canonical_url: "https://github.com/owner/repo",
 };
+const secondTarget: Target = {
+  ...target,
+  source_id: "github-43",
+  repository_id: 43,
+  repository: "owner/second-repo",
+  target_sha: "b".repeat(40),
+  canonical_url: "https://github.com/owner/second-repo",
+};
 
 function queuedState() {
   return appendQueuedTarget(
@@ -30,6 +38,35 @@ function queuedState() {
 }
 
 describe("automatic scan recovery", () => {
+  test("shared hold timestamps are independent of failure arrival order", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const state = appendQueuedTarget(queuedState(), secondTarget);
+    const newestFirst = recordFailure(state, {
+      target: secondTarget,
+      failure,
+      at: "2026-08-04T00:00:30.000Z",
+    }).state;
+
+    const repeated = recordFailure(newestFirst, {
+      target,
+      failure,
+      at: "2026-08-04T00:00:10.000Z",
+    }).state;
+
+    expect(repeated.automatic_holds).toEqual([
+      expect.objectContaining({
+        first_failed_at: "2026-08-04T00:00:10.000Z",
+        last_failed_at: "2026-08-04T00:00:30.000Z",
+        consecutive_failures: 2,
+        next_probe_at: "2026-08-04T00:30:30.000Z",
+      }),
+    ]);
+  });
+
   test("every failure rotates the target while systemic failures add automatic backoff", () => {
     for (const domain of ["target", "shared", "security"] as const) {
       const failed = recordFailure(queuedState(), {

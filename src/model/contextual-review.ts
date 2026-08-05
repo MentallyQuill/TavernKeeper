@@ -49,6 +49,15 @@ export interface ContextualReviewProvider {
 }
 
 const CountSchema = z.number().int().nonnegative();
+const UsageSchema = z.strictObject({
+  inputTokens: CountSchema,
+  outputTokens: CountSchema,
+  cacheReadTokens: CountSchema,
+  reasoningTokens: CountSchema,
+});
+const CompletionIdSchema = z
+  .string()
+  .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u);
 export const CompletedContextualReviewSchema = z
   .strictObject({
     policy_version: z.literal("2"),
@@ -60,15 +69,8 @@ export const CompletedContextualReviewSchema = z
     coverage: z.strictObject({ required: CountSchema, completed: CountSchema }),
     assessments: z.array(ContextualAssessmentSchema),
     observations: z.array(ContextualObservationSchema),
-    usage: z.strictObject({
-      inputTokens: CountSchema,
-      outputTokens: CountSchema,
-      cacheReadTokens: CountSchema,
-      reasoningTokens: CountSchema,
-    }),
-    completion_ids: z.array(
-      z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u),
-    ),
+    usage: UsageSchema,
+    completion_ids: z.array(CompletionIdSchema),
   })
   .superRefine((review, context) => {
     let endpoint: URL;
@@ -112,10 +114,86 @@ export type CompletedContextualReview = z.infer<
   typeof CompletedContextualReviewSchema
 >;
 
+export const ContextualReviewProgressSchema = z
+  .strictObject({
+    policy_version: z.literal("2"),
+    prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
+    schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
+    model: z.string().trim().min(1).max(200),
+    provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
+    endpoint_origin: z.url(),
+    completed_group_ids: z.array(z.string().regex(/^[0-9a-f]{64}$/u)),
+    assessments: z.array(ContextualAssessmentSchema),
+    observations: z.array(ContextualObservationSchema),
+    usage: UsageSchema,
+    completion_ids: z.array(CompletionIdSchema),
+  })
+  .superRefine((progress, context) => {
+    let endpoint: URL;
+    try {
+      endpoint = new URL(progress.endpoint_origin);
+    } catch {
+      return;
+    }
+    if (
+      endpoint.origin !== progress.endpoint_origin ||
+      endpoint.protocol !== "https:" ||
+      endpoint.hostname !== progress.provider
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["endpoint_origin"],
+        message:
+          "Review progress provider identity must match its HTTPS origin.",
+      });
+    if (
+      new Set(progress.completed_group_ids).size !==
+      progress.completed_group_ids.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["completed_group_ids"],
+        message: "Completed review group identities must be unique.",
+      });
+    if (
+      new Set(progress.assessments.map(({ candidate_id }) => candidate_id))
+        .size !== progress.assessments.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["assessments"],
+        message: "Progress assessment identities must be unique.",
+      });
+    if (
+      new Set(progress.observations.map(({ observation_id }) => observation_id))
+        .size !== progress.observations.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["observations"],
+        message: "Progress observation identities must be unique.",
+      });
+    if (
+      new Set(progress.completion_ids).size !== progress.completion_ids.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["completion_ids"],
+        message: "Progress completion identities must be unique.",
+      });
+  });
+
+export type ContextualReviewProgress = z.infer<
+  typeof ContextualReviewProgressSchema
+>;
+
 export interface ReviewEvidenceGroupsSpec {
   groups: readonly EvidenceContextGroup[];
   provider: ContextualReviewProvider;
   policy: ContextualReviewPolicy;
+  progress?: ContextualReviewProgress | undefined;
+  onProgress?:
+    ((progress: ContextualReviewProgress) => Promise<void>) | undefined;
   expandContext?: (
     group: EvidenceContextGroup,
     request: Extract<
@@ -277,6 +355,91 @@ function retryable(error: unknown) {
   );
 }
 
+function progressError(message: string): never {
+  throw new ModelRequestError("MODEL_EVIDENCE_INVALID", "repository", message);
+}
+
+function validatedProgress(
+  input: ContextualReviewProgress | undefined,
+  spec: ReviewEvidenceGroupsSpec,
+  endpoint: URL,
+): ContextualReviewProgress | undefined {
+  if (input === undefined) return undefined;
+  const parsed = ContextualReviewProgressSchema.safeParse(input);
+  if (!parsed.success)
+    progressError("Contextual review progress failed bounded validation.");
+  const progress = parsed.data;
+  if (
+    progress.model !== spec.provider.model ||
+    progress.provider !== endpoint.hostname ||
+    progress.endpoint_origin !== endpoint.origin
+  )
+    progressError("Contextual review progress provider identity changed.");
+  const completedGroups = spec.groups.slice(
+    0,
+    progress.completed_group_ids.length,
+  );
+  if (
+    completedGroups.length !== progress.completed_group_ids.length ||
+    completedGroups.some(
+      (group, index) => group.group_id !== progress.completed_group_ids[index],
+    )
+  )
+    progressError(
+      "Contextual review progress is not the completed group prefix.",
+    );
+
+  const expectedAssessments: ContextualAssessment[] = [];
+  const expectedObservations: ContextualObservation[] = [];
+  const observationGroups = new Map<string, ContextualObservation[]>();
+  for (const observation of progress.observations) {
+    const owner = completedGroups.find((group) => {
+      const candidateIds = new Set(
+        group.candidates.map(({ candidate_id }) => candidate_id),
+      );
+      return observation.related_candidate_ids.every((candidateId) =>
+        candidateIds.has(candidateId),
+      );
+    });
+    if (owner === undefined)
+      progressError(
+        "Contextual review progress contains an unowned observation.",
+      );
+    observationGroups.set(owner.group_id, [
+      ...(observationGroups.get(owner.group_id) ?? []),
+      observation,
+    ]);
+  }
+  for (const group of completedGroups) {
+    const candidateIds = new Set(
+      group.candidates.map(({ candidate_id }) => candidate_id),
+    );
+    const assessments = progress.assessments
+      .filter(({ candidate_id }) => candidateIds.has(candidate_id))
+      .map(({ locations: _locations, ...assessment }) => assessment);
+    const observations = (observationGroups.get(group.group_id) ?? []).map(
+      ({ observation_id: _observationId, ...observation }) => observation,
+    );
+    const validated = validateCompletedGroupReview(group, {
+      status: "complete",
+      assessments,
+      observations,
+    });
+    expectedAssessments.push(...validated.assessments);
+    expectedObservations.push(...validated.observations);
+  }
+  if (
+    JSON.stringify(expectedAssessments) !==
+      JSON.stringify(progress.assessments) ||
+    JSON.stringify(expectedObservations) !==
+      JSON.stringify(progress.observations)
+  )
+    progressError(
+      "Contextual review progress does not match completed evidence.",
+    );
+  return progress;
+}
+
 async function reviewGroup(
   initialGroup: EvidenceContextGroup,
   spec: ReviewEvidenceGroupsSpec,
@@ -392,11 +555,6 @@ async function reviewGroup(
             ? error.diagnostic
             : "review_schema",
       };
-      if (
-        repair !== undefined &&
-        JSON.stringify(repair) === JSON.stringify(nextRepair)
-      )
-        throw error;
       repair = nextRepair;
     }
   }
@@ -442,10 +600,35 @@ export async function reviewEvidenceGroups(
   const observations: ContextualObservation[] = [];
   const usage = zeroUsage();
   const completionIds: string[] = [];
-  for (const group of spec.groups) {
+  const progress = validatedProgress(spec.progress, spec, endpoint);
+  if (progress !== undefined) {
+    assessments.push(...progress.assessments);
+    observations.push(...progress.observations);
+    addUsage(usage, progress.usage);
+    completionIds.push(...progress.completion_ids);
+  }
+  const completedGroupIds = [...(progress?.completed_group_ids ?? [])];
+  for (const group of spec.groups.slice(completedGroupIds.length)) {
     const reviewed = await reviewGroup(group, spec, usage, completionIds);
     assessments.push(...reviewed.assessments);
     observations.push(...reviewed.observations);
+    completedGroupIds.push(group.group_id);
+    if (spec.onProgress !== undefined)
+      await spec.onProgress(
+        ContextualReviewProgressSchema.parse({
+          policy_version: "2",
+          prompt_version: CONTEXTUAL_PROMPT_VERSION,
+          schema_version: CONTEXTUAL_SCHEMA_VERSION,
+          model: spec.provider.model,
+          provider: endpoint.hostname,
+          endpoint_origin: endpoint.origin,
+          completed_group_ids: completedGroupIds,
+          assessments,
+          observations,
+          usage,
+          completion_ids: completionIds,
+        }),
+      );
   }
   if (
     new Set(observations.map((item) => item.observation_id)).size !==

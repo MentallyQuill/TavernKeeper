@@ -207,7 +207,9 @@ describe("GitHub workflow security policy", () => {
     expect(steps[finalizeIndex]?.run).toBe(
       "npm run --silent finalize-target -- candidate.json",
     );
-    expect(steps[reviewIndex]?.run).toBe("npm run --silent review-target");
+    expect(steps[reviewIndex]?.run).toContain("npm run --silent review-target");
+    expect(steps[reviewIndex]?.run).toContain('code == "MODEL_PROVIDER"');
+    expect(steps[reviewIndex]?.run).toContain("rm -f phase-error.json");
     expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(16);
     expect(steps[reviewIndex]?.env).toMatchObject({
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
@@ -525,7 +527,7 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          /      - name: Contextually assess scanner evidence[\s\S]*?run: npm run --silent review-target\n/u,
+          /      - name: Contextually assess scanner evidence[\s\S]*?(?=      - name: Finalize contextual V5 report)/u,
           "",
         ),
       /contextual review must remain bounded between preparation and V5 finalization/u,

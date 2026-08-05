@@ -363,7 +363,10 @@ function checkContextualRuntime(file, workflow) {
     const reviewIndex = steps.findIndex(
       (step) =>
         step?.name === "Contextually assess scanner evidence" &&
-        step?.run === "npm run --silent review-target",
+        typeof step?.run === "string" &&
+        step.run.includes("npm run --silent review-target") &&
+        step.run.includes('code == "MODEL_PROVIDER"') &&
+        step.run.includes("rm -f phase-error.json"),
     );
     const finalizeIndex = steps.findIndex(
       (step) =>

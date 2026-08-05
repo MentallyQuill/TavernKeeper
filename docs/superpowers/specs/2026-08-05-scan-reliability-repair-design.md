@@ -44,7 +44,7 @@ The fallback contains only an allowlisted domain and component. Exception messag
 
 ## Stage 2: Honest partial OpenGrep coverage
 
-Tool coverage gains a backward-compatible `completed-with-limitations` status and an optional bounded `limitations` list. The only limitation codes initially supported are `parser_syntax` and `rule_timeout`.
+Internal Scan Package tool coverage gains a `completed-with-limitations` status and a bounded `limitations` list. The only limitation codes initially supported are `parser_syntax` and `rule_timeout`.
 
 OpenGrep may return completed-with-limitations only when all reported errors are one of:
 
@@ -54,7 +54,7 @@ OpenGrep may return completed-with-limitations only when all reported errors are
 
 Exit status must still be 0, 2, or 3 and nonzero status 2 or 3 must be backed by at least one recognized diagnostic. Any unknown code, level, type, malformed diagnostic, malformed finding, unexpected exit status, command timeout, output limit, or launch failure remains fatal.
 
-Valid findings are preserved. The Scan Package and Technical Report record OpenGrep as `completed-with-limitations`, and the public report adds fixed prose explaining that some files or rule/file combinations were not analyzed. No scanner-supplied paths or messages are persisted in the limitation.
+Valid findings are preserved. The internal Scan Package records OpenGrep as `completed-with-limitations`. Technical Report V5 retains its existing public tool-status contract and adds fixed prose to its existing `limitations` collection explaining that some files or rule/file combinations were not analyzed. No scanner-supplied paths or messages are persisted in the limitation.
 
 ## Stage 3: Contextual-review recovery
 
@@ -68,7 +68,7 @@ The progress file is removed after a complete review and is never uploaded as pa
 
 ## Compatibility
 
-Existing Scan Package V1 and Report V5 documents remain valid because tool limitations are optional and existing tool statuses are unchanged. New reports can additionally use `completed-with-limitations`. Report identities continue to cover the complete report content.
+Existing Scan Package V1 and Report V5 documents remain valid because internal tool limitations are optional and the public Report V5 tool schema is unchanged. Report identities continue to cover the complete report content.
 
 Prepared sessions add optional tool limitation data while retaining schema version 5. The field is optional for compatibility with already-created local fixtures; newly prepared sessions always emit it when present.
 
@@ -77,7 +77,7 @@ Prepared sessions add optional tool limitation data while retaining schema versi
 - Reversed same-fingerprint failure timestamps publish successfully and produce identical automatic-hold time bounds regardless of request order.
 - Untyped review and finalization failures are target-local; untyped publication failures remain shared publication failures; typed failures retain their existing domain.
 - Recognized OpenGrep syntax and rule-timeout diagnostics preserve findings and emit bounded limitations; unknown and malformed diagnostics remain fatal.
-- Scan Package, Report V5, sanitizer, renderer, and fixtures accept and preserve limited coverage without weakening evidence validation.
+- Scan Package preserves typed limited coverage while Report V5, the sanitizer, and the renderer preserve fixed public limitation prose without changing the V5 tool contract.
 - Contextual review resumes a validated completed-group prefix, retries a transient provider failure without repeating earlier groups, exhausts the configured schema-repair attempts, and rejects mismatched or malformed progress.
 - Focused tests, the full test suite, type checking, build, and workflow-policy tests pass.
 

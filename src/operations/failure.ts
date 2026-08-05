@@ -58,6 +58,7 @@ export const FailureDescriptorSchema = z.strictObject({
 });
 
 export type FailureDescriptor = z.infer<typeof FailureDescriptorSchema>;
+export type FailureFallback = FailureDescriptor;
 
 const TargetSystemCodes = new Set([
   "CLASSIFICATION_INVALID",
@@ -129,19 +130,48 @@ function inferredComponent(code: string): (typeof FailureComponents)[number] {
   return "orchestrator";
 }
 
-export function classifyFailure(value: unknown): FailureDescriptor {
+export function classifyFailure(
+  value: unknown,
+  fallback?: FailureFallback,
+): FailureDescriptor {
   const parsedDescriptor = FailureDescriptorSchema.safeParse(value);
   if (parsedDescriptor.success) return parsedDescriptor.data;
 
   const candidate = objectRecord(value);
+  const parsedFallback =
+    fallback === undefined
+      ? undefined
+      : FailureDescriptorSchema.parse(fallback);
+  const hasBoundedCode =
+    typeof candidate.code === "string" &&
+    /^[A-Z][A-Z0-9_]{0,79}$/u.test(candidate.code);
   const code = safeCode(candidate.code);
-  const scope =
+  const explicitScope =
     candidate.scope === "repository" || candidate.scope === "system"
       ? candidate.scope
-      : "system";
+      : undefined;
+  const scope = explicitScope ?? "system";
+  const explicitComponent = FailureComponents.find(
+    (entry) => entry === candidate.component,
+  );
+  const hasKnownAttribution =
+    TargetSystemCodes.has(code) ||
+    SharedSystemCodes.has(code) ||
+    SecuritySystemCodes.has(code) ||
+    inferredComponent(code) !== "orchestrator";
+  const useFallbackAttribution =
+    parsedFallback !== undefined &&
+    hasBoundedCode &&
+    explicitScope === undefined &&
+    explicitComponent === undefined &&
+    !hasKnownAttribution;
   const component =
-    FailureComponents.find((entry) => entry === candidate.component) ??
-    inferredComponent(code);
+    explicitComponent ??
+    (useFallbackAttribution
+      ? parsedFallback.component
+      : hasBoundedCode
+        ? inferredComponent(code)
+        : (parsedFallback?.component ?? inferredComponent(code)));
   const diagnostic = SafeFailureDiagnostics.find(
     (entry) => entry === candidate.diagnostic,
   );
@@ -153,10 +183,14 @@ export function classifyFailure(value: unknown): FailureDescriptor {
         ? "shared"
         : SecuritySystemCodes.has(code)
           ? "security"
-          : "shared";
+          : useFallbackAttribution
+            ? parsedFallback.domain
+            : hasBoundedCode
+              ? "shared"
+              : (parsedFallback?.domain ?? "shared");
 
   return {
-    code,
+    code: hasBoundedCode ? code : (parsedFallback?.code ?? code),
     domain,
     component,
     ...(diagnostic === undefined ? {} : { diagnostic }),

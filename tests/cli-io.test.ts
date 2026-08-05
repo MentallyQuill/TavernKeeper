@@ -31,6 +31,31 @@ describe("safe CLI error diagnostics", () => {
     });
   });
 
+  test("uses a bounded phase fallback only for an otherwise-untyped error", () => {
+    const fallback = {
+      code: "CLI_FAILED",
+      domain: "target" as const,
+      component: "contextual-model" as const,
+    };
+
+    expect(
+      safeCliErrorRecord(new Error("body deliberately ignored"), fallback),
+    ).toEqual(fallback);
+    expect(
+      safeCliErrorRecord(
+        {
+          code: "MODEL_PROVIDER",
+          scope: "system",
+        },
+        fallback,
+      ),
+    ).toEqual({
+      code: "MODEL_PROVIDER",
+      domain: "shared",
+      component: "contextual-model",
+    });
+  });
+
   test("does not preserve provider-shaped diagnostic fields", () => {
     expect(
       safeCliErrorRecord({

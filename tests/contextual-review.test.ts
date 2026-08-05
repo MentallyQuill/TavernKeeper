@@ -4,6 +4,7 @@ import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
 import {
   CompletedContextualReviewSchema,
   reviewEvidenceGroups,
+  type ContextualReviewProgress,
 } from "../src/model/contextual-review.js";
 import {
   ModelRequestError,
@@ -302,7 +303,7 @@ describe("contextual evidence review", () => {
     });
   });
 
-  test("stops when corrective feedback would repeat", async () => {
+  test("uses every configured attempt when corrective feedback repeats", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async () => ({
       completionId: `completion-repeat-${requestCompletion.mock.calls.length}`,
@@ -341,7 +342,141 @@ describe("contextual evidence review", () => {
       code: "MODEL_INVALID_RESPONSE",
       diagnostic: "assessment_developer_action",
     });
-    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+  });
+
+  test("resumes a completed group prefix after a transient provider failure", async () => {
+    const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
+    let progress: ContextualReviewProgress | undefined;
+    const firstRequest = vi.fn(async (request: TextCompletionRequest) => {
+      const current = groups.find((item) =>
+        request.userContent.includes(item.group_id),
+      )!;
+      if (current === groups[1])
+        throw new ModelRequestError(
+          "MODEL_PROVIDER",
+          "system",
+          "Provider temporarily unavailable.",
+        );
+      return {
+        completionId: "completion-first-group",
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: JSON.stringify({
+          status: "complete",
+          assessments: [assessment(ids[0]!, current.path, 2)],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    await expect(
+      reviewEvidenceGroups({
+        groups,
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion: firstRequest,
+        },
+        policy,
+        onProgress: async (value) => {
+          progress = structuredClone(value);
+        },
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_PROVIDER" });
+    expect(progress?.completed_group_ids).toEqual([groups[0]!.group_id]);
+
+    const resumedRequest = vi.fn(async () => ({
+      completionId: "completion-second-group",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: JSON.stringify({
+        status: "complete",
+        assessments: [assessment(ids[1]!, groups[1]!.path, 2)],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 80,
+        outputTokens: 30,
+        cacheReadTokens: 0,
+        reasoningTokens: 5,
+      },
+    }));
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion: resumedRequest,
+      },
+      policy,
+      progress,
+    });
+
+    expect(resumedRequest).toHaveBeenCalledTimes(1);
+    expect(result.assessments.map(({ candidate_id }) => candidate_id)).toEqual([
+      ids[0],
+      ids[1],
+    ]);
+    expect(result.usage).toEqual({
+      inputTokens: 180,
+      outputTokens: 70,
+      cacheReadTokens: 0,
+      reasoningTokens: 15,
+    });
+  });
+
+  test("rejects progress that is not the exact completed group prefix", async () => {
+    const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
+    const invalidProgress: ContextualReviewProgress = {
+      policy_version: "2",
+      prompt_version: "contextual-review-v2",
+      schema_version: "contextual-assessment-v1",
+      model: "configured/model:thinking",
+      provider: "provider.example",
+      endpoint_origin: "https://provider.example",
+      completed_group_ids: [groups[1]!.group_id],
+      assessments: [
+        {
+          ...assessment(ids[1]!, groups[1]!.path, 2),
+          evidence_ids: [ids[1]!],
+          locations: [{ path: groups[1]!.path, line_start: 2, line_end: 2 }],
+        },
+      ],
+      observations: [],
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+      completion_ids: ["completion-second-group"],
+    };
+
+    await expect(
+      reviewEvidenceGroups({
+        groups,
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion: vi.fn(),
+        },
+        policy,
+        progress: invalidProgress,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      scope: "repository",
+    });
   });
 
   test("clears corrective feedback after a valid context request", async () => {
@@ -498,7 +633,7 @@ describe("contextual evidence review", () => {
       code: "MODEL_EVIDENCE_INVALID",
       scope: "repository",
     });
-    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
   });
 
   test("refuses invented evidence", async () => {

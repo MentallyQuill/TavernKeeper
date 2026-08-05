@@ -67,13 +67,17 @@ function completed(report: ScanReportV5): ScanTransition {
   };
 }
 
-function failed(target: Target, failure: FailureDescriptor): ScanTransition {
+function failed(
+  target: Target,
+  failure: FailureDescriptor,
+  at = generatedAt,
+): ScanTransition {
   return {
     schema_version: 2,
     status: "failure",
     target,
     failure,
-    at: generatedAt,
+    at,
   };
 }
 
@@ -122,6 +126,43 @@ function publicationInput(
 }
 
 describe("artifact batch publication", () => {
+  test("records repeated shared failures independently of request timestamp order", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const reports = await Promise.all([reportFor(40, "8"), reportFor(41, "9")]);
+    const targets = reports.map(targetOf);
+    const failure: FailureDescriptor = {
+      code: "CLI_FAILED",
+      domain: "shared",
+      component: "publication",
+    };
+    await Promise.all([
+      writeOutcome(
+        artifactsRoot,
+        0,
+        failed(targets[0]!, failure, "2026-08-04T04:00:30.000Z"),
+      ),
+      writeOutcome(
+        artifactsRoot,
+        1,
+        failed(targets[1]!, failure, "2026-08-04T04:00:10.000Z"),
+      ),
+    ]);
+
+    await expect(
+      publishArtifactBatch(publicationInput(root, artifactsRoot, targets)),
+    ).resolves.toMatchObject({ status: "deferred", failures: 2 });
+    await expect(readState(root)).resolves.toMatchObject({
+      automatic_holds: [
+        expect.objectContaining({
+          first_failed_at: "2026-08-04T04:00:10.000Z",
+          last_failed_at: "2026-08-04T04:00:30.000Z",
+          consecutive_failures: 2,
+          next_probe_at: "2026-08-04T04:30:30.000Z",
+        }),
+      ],
+    });
+  });
+
   test("publishes successes and rotates all failure domains in request order", async () => {
     const { root, artifactsRoot } = await batchRoot();
     const reports = await Promise.all([

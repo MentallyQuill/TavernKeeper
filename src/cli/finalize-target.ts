@@ -22,4 +22,9 @@ async function main() {
   return { status: result.status };
 }
 
-if (isDirectExecution(import.meta.url)) runJsonCli(main);
+if (isDirectExecution(import.meta.url))
+  runJsonCli(main, {
+    code: "CLI_FAILED",
+    domain: "target",
+    component: "finalization",
+  });

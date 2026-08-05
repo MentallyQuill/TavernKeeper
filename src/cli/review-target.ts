@@ -41,4 +41,8 @@ export async function reviewConfiguredTarget(environment: NodeJS.ProcessEnv) {
 }
 
 if (isDirectExecution(import.meta.url))
-  runJsonCli(() => reviewConfiguredTarget(process.env));
+  runJsonCli(() => reviewConfiguredTarget(process.env), {
+    code: "CLI_FAILED",
+    domain: "target",
+    component: "contextual-model",
+  });

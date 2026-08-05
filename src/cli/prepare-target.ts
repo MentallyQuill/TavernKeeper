@@ -58,4 +58,9 @@ async function main() {
   };
 }
 
-if (isDirectExecution(import.meta.url)) runJsonCli(main);
+if (isDirectExecution(import.meta.url))
+  runJsonCli(main, {
+    code: "CLI_FAILED",
+    domain: "target",
+    component: "orchestrator",
+  });

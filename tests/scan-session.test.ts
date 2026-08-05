@@ -276,6 +276,116 @@ describe("three-phase contextual scan session", () => {
     );
   });
 
+  test("resumes session-bound review progress without repeating completed groups", async () => {
+    const { root, prepared } = await preparedSession();
+    const evidence = JSON.parse(
+      await readFile(join(root, "evidence-context.json"), "utf8"),
+    ) as {
+      evidence_digest: string;
+      groups: Array<{
+        group_id: string;
+        path: string;
+        candidates: Array<{ candidate_id: string; evidence_id: string }>;
+      }>;
+    };
+    const current = evidence.groups[0]!;
+    const candidate = current.candidates[0]!;
+    await writeFile(
+      join(root, "review-progress.json"),
+      `${JSON.stringify(
+        {
+          schema_version: 1,
+          session_id: prepared.session_id,
+          evidence_digest: evidence.evidence_digest,
+          progress: {
+            policy_version: "2",
+            prompt_version: "contextual-review-v2",
+            schema_version: "contextual-assessment-v1",
+            model: "configured/model:thinking",
+            provider: "provider.example",
+            endpoint_origin: "https://provider.example",
+            completed_group_ids: [current.group_id],
+            assessments: [
+              {
+                candidate_id: candidate.candidate_id,
+                evidence_ids: [candidate.evidence_id],
+                disposition: "minor_weakness",
+                impact: "low",
+                exploitability: "unlikely",
+                confidence: "medium",
+                recommended_risk: "low",
+                technical_explanation: "The flow should be hardened.",
+                layman_explanation: "This behavior deserves a small caution.",
+                developer_action: "Document the destination.",
+                locations: [{ path: current.path, line_start: 1, line_end: 1 }],
+              },
+            ],
+            observations: [],
+            usage: {
+              inputTokens: 100,
+              outputTokens: 50,
+              cacheReadTokens: 0,
+              reasoningTokens: 10,
+            },
+            completion_ids: ["completion-session"],
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    const progressBundle = JSON.parse(
+      await readFile(join(root, "review-progress.json"), "utf8"),
+    ) as Record<string, any>;
+    const { completed_group_ids: _completedGroups, ...persistedReview } =
+      progressBundle.progress;
+    await writeFile(
+      join(root, "review.json"),
+      `${JSON.stringify(
+        {
+          schema_version: 1,
+          session_id: prepared.session_id,
+          evidence_digest: evidence.evidence_digest,
+          review: {
+            ...persistedReview,
+            coverage: { required: 1, completed: 1 },
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    let requests = 0;
+
+    await expect(
+      reviewPreparedSession({
+        sessionRoot: root,
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion: async () => {
+            requests += 1;
+            throw new Error("Completed progress must not be repeated.");
+          },
+        },
+        policy: {
+          version: "2",
+          promptVersion: "contextual-review-v2",
+          schemaVersion: "contextual-assessment-v1",
+          maxImmediateAttempts: 3,
+          maxOutputTokens: 32_768,
+          maxResponseBytes: 5_000_000,
+          timeoutMs: 900_000,
+        },
+      }),
+    ).resolves.toMatchObject({ status: "reviewed" });
+    expect(requests).toBe(0);
+    await expect(
+      readFile(join(root, "review-progress.json"), "utf8"),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   test("publishes the acquired SHA without consulting a newer manifest", async () => {
     const { root } = await preparedSession();
     await completeReview(root);
