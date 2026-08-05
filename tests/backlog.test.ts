@@ -120,7 +120,7 @@ describe("durable backlog planning", () => {
     ).toEqual([1, 2, 3, 4, 5]);
   });
 
-  test("a cooling early ticket is skipped then regains priority when due", () => {
+  test("a cooling retry remains behind clean work when it becomes due", () => {
     const targets = [target(41, 1), target(42, 2), target(43, 3)];
     let state = queued(...targets);
     state = {
@@ -163,10 +163,35 @@ describe("durable backlog planning", () => {
         "2026-08-04T13:00:00.000Z",
         "3",
       ).targets.map(({ target: value }) => value.repository_id),
-    ).toEqual([41, 42, 43]);
+    ).toEqual([42, 43, 41]);
   });
 
-  test("a rotated failure cannot be overtaken by later arrivals", () => {
+  test("selects clean catalog work before a lower-ticket due retry", () => {
+    const retry = target(41, 1);
+    const clean = target(42, 2);
+    let state = recordFailure(queued(retry), {
+      target: retry,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-04T11:00:00.000Z",
+    }).state;
+    state = appendQueuedTarget(state, clean);
+
+    expect(
+      planBatch(
+        manifest(retry, clean),
+        emptyIndex,
+        state,
+        now,
+        "3",
+      ).targets.map(({ target: value }) => value.repository_id),
+    ).toEqual([42, 41]);
+  });
+
+  test("clean arrivals remain ahead of a rotated failure", () => {
     const first = target(41, 1);
     const second = target(42, 2);
     const later = target(43, 3);
@@ -189,7 +214,7 @@ describe("durable backlog planning", () => {
         now,
         "3",
       ).targets.map(({ target: value }) => value.repository_id),
-    ).toEqual([42, 41, 43]);
+    ).toEqual([42, 43, 41]);
   });
 
   test("a systemic failure admits one automatic probe then resumes ticket order", () => {
