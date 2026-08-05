@@ -1,0 +1,1216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for MentallyQuill/Saga at commit 2294dd1.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; MentallyQuill/Saga</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/MentallyQuill/Saga" rel="noopener noreferrer">MentallyQuill/Saga</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/MentallyQuill/Saga/commit/2294dd1ec61fee33e49eede297871ec0fcaa99e1" rel="noopener noreferrer">2294dd1</a></span>
+        <span>Reviewed <time datetime="2026-08-05T15:05:14.654Z">Aug 5, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>60 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported template-injection</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow inserts the release tag name directly into a command line. Only someone with permission to publish releases can control that tag name, and they already have high access to the repository. It is a best-practice gap rather than a realistic attack path.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule template-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The release tag name is interpolated directly into a shell command via template expansion. This step is gated on the release event, so only users with repository write access who can publish releases can control this value. Such users already have broad code-execution capability through the repository, limiting the practical attack surface. Using an environment variable instead of inline interpolation would eliminate the theoretical injection vector.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pass the tag name through an environment variable and reference it in the shell command instead of using inline template expansion.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>template-injection</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-release.yml#L40" rel="noopener noreferrer">.github/workflows/loredeck-builder-release.yml:40</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub tool instead of locking it to a specific download. This is a common minor practice that could theoretically be abused if the label were redirected, but it is not a sign of anything malicious here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/checkout using a floating major-version tag (@v4) rather than a SHA-pinned commit. If the tag were ever moved to a compromised commit, a future run could execute malicious code. This is a standard CI hardening gap, not evidence of malicious intent. The action is GitHub&#39;s official checkout and the workflow only uses it to clone the repo for a build/test job.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a full commit SHA for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-build-check.yml#L31" rel="noopener noreferrer">.github/workflows/loredeck-builder-build-check.yml:31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>Same as the checkout step: a version label is used instead of a locked download. Minor hardening gap, not malicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-node using a floating major-version tag (@v4) instead of a SHA-pinned commit. Same supply-chain hardening gap as the checkout step. The action is GitHub&#39;s official Node setup tool and is used only to install Node LTS for running test and build scripts.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a full commit SHA for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-build-check.yml#L33" rel="noopener noreferrer">.github/workflows/loredeck-builder-build-check.yml:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub tool instead of locking it to an exact copy. This is common practice but slightly less safe than pinning to a specific immutable version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is pinned to a major version tag rather than a full commit SHA. This is the dominant convention for official GitHub actions but does not provide tamper-resistant supply-chain pinning. A compromise of the action repository could affect future runs.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning third-party actions to full commit SHAs; for official GitHub actions this is optional but recommended for high-assurance workflows.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-release.yml#L15" rel="noopener noreferrer">.github/workflows/loredeck-builder-release.yml:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub tool instead of locking it to an exact copy. This is common practice but slightly less safe than pinning to a specific immutable version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action is pinned to a major version tag rather than a full commit SHA. Same supply-chain consideration as other unpinned official actions.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning to a full commit SHA for higher supply-chain assurance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-release.yml#L17" rel="noopener noreferrer">.github/workflows/loredeck-builder-release.yml:17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub tool instead of locking it to an exact copy. This is common practice but slightly less safe than pinning to a specific immutable version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The upload-artifact action is pinned to a major version tag rather than a full commit SHA. Same supply-chain consideration as other unpinned official actions.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning to a full commit SHA for higher supply-chain assurance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-release.yml#L31" rel="noopener noreferrer">.github/workflows/loredeck-builder-release.yml:31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow does not limit what its built-in access token can do. It does not actually use the token for anything beyond reading the repository, so the risk is low, but tightening permissions is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow defines no explicit permissions block, so the auto-generated GITHUB_TOKEN inherits the repository default. The job only checks out code, installs Node, and runs local test/build scripts; it does not call any GitHub API that requires write scope or upload artifacts. The broad token is unused for writes but present unnecessarily. Adding a minimal permissions block (e.g., contents: read) would reduce exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit permissions block with contents: read to scope the GITHUB_TOKEN to the minimum needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-build-check.yml#L28-L54" rel="noopener noreferrer">.github/workflows/loredeck-builder-build-check.yml:28-54</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The checkout tool saves an access token in the local copy of the repository by default. Since this workflow never packages or uploads any files, the token cannot leak. It is still good practice to disable the token save.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked concern is that actions/checkout with persist-credentials (default true) stores the GITHUB_TOKEN in local git config, which could leak if the .git directory is captured in an uploaded artifact. This workflow never uploads artifacts, so there is no path for the token to leave the runner. The residual risk is negligible but setting persist-credentials: false would eliminate it entirely.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on the checkout step to avoid storing the GITHUB_TOKEN in git config.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-build-check.yml#L31" rel="noopener noreferrer">.github/workflows/loredeck-builder-build-check.yml:31</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (34)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a false positive. The scanner mistook a Star Trek timeline label for an API key. There is no password or secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek DS9 loredeck timeline file. The matched value is a descriptive string naming a timeline scale, not a credential. No secret material, network destination, or executable behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-3/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-3/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label saying the timeline uses Star Trek&#39;s 24th-century dating system. It is not a password or secret key of any kind.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line contains a JSON field assigning the string value describing a Star Trek century scale for timeline sorting. This is descriptive loredeck data in a data-only JSON file with no executable code, no network calls, and no credential semantics. The gitleaks generic-api-key heuristic produced a false positive on a plain text label.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-4/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-4/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that simply names a timeline scale for a Star Trek loredeck. It is not a password, API key, or any kind of secret. This is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched on line 5 of a data-only JSON loredeck file. The matched content is a configuration string naming a sort-key scale for a Star Trek timeline. It contains no secret material, no network destination, no execution path, and no credential structure. The file is a static loredeck data asset with schema, axes, and anchors. This is a false positive from a broad pattern matcher.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-7/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-7/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line in a Star Trek lore data file because a text label looked vaguely like an API key pattern. It is just a descriptive string about the Star Trek 24th century timeline scale, not a password or key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched on a JSON string value in a Star Trek Voyager loredeck timeline data file. The matched line contains a descriptive label for a timeline scale, not a credential. This is a static data-only lore file with no code execution, no network calls, and no secret material. The match is a false positive from a broad heuristic pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-6/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-6/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a Star Trek loredeck setting that names the fictional calendar system used for sorting story events. It is not a password or API key; it is just a label inside a data file.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek loredeck timeline file. The matched value is a descriptive string identifying a sort-key scale for the fictional in-universe calendar. It is not a credential, token, or secret. No network, filesystem, or execution flow originates from this value.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-7/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-7/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label inside a Star Trek lore data file. It is not a password or API key; the scanner mistook an ordinary text value for a secret.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek loredeck timeline file. The value is a descriptive string naming a sort-key scale for the 24th-century Star Trek setting. It contains no secret material, no network destination, no execution, and no credential. The gitleaks generic-api-key rule produced a false positive on a benign string.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-5/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-5/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label describing how to sort Star Trek story events. It is not a password or secret key of any kind.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek Voyager loredeck timeline file. The value is a descriptive string naming a sort-key scale for the 24th-century Star Trek setting. It contains no secret material, no credential, and no executable code. The gitleaks generic-api-key rule produced a false positive on this domain-specific string.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-1/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-1/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a Star Trek lore data file. The scanner mistook a label that names a sorting scale for a secret API key. There is no password or key here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a data-only loredeck timeline file. The matched value is a descriptive scale identifier for sorting timeline anchors, not a credential. No secret material, network destination, or executable behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-4/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-4/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label describing a Star Trek timeline scale. It looks like an API key to an automated scanner but is not a secret or password.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek DS9 loredeck timeline file. The matched value is a descriptive string naming a timeline scale, not a credential. It is static lore data with no execution, network, or secret-handling role.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-2/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-2/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line in a Star Trek lore file because a descriptive label looked vaguely like an API key pattern. It is just a label for a fictional timeline scale, not a password or secret.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched on line 5 of a Star Trek DS9 loredeck timeline JSON file. The matched content is a lore-data string naming a fictional stardate scale, not a credential. The file is a data-only loredeck artifact with no code execution, no network calls, and no secret handling. The match is a false positive from a broad heuristic pattern against fandom content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-5/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-5/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but the text it flagged is just a label used inside a test to name a story scenario. It is not a real credential and cannot be used to access anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a string literal contextKey inside a test file. The value is a descriptive identifier labeling a test scenario about Harry Potter Year 6 lore progression. It is not a credential, API key, or secret. The gitleaks generic-api-key rule produced a false positive on a string that superficially matched a pattern. No credential is present, and no data flow to any external destination exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-core-integration-hp-year6-progression.mjs#L366" rel="noopener noreferrer">tools/scripts/test-core-integration-hp-year6-progression.mjs:366</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow does not appear to use caching in a way that creates a meaningful poisoning risk. The alert is low-confidence and does not reflect a real issue in this workflow.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged cache poisoning with low confidence on the setup-node step. The workflow does not explicitly enable node caching in the setup-node configuration, and the build produces a self-contained skill bundle. No cache configuration is present that would create a poisoning surface beyond standard runner behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-release.yml#L17" rel="noopener noreferrer">.github/workflows/loredeck-builder-release.yml:17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that just names a Star Trek timeline scale. It is ordinary lore data, not a password or secret key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a JSON configuration value on line 5 of a data-only loredeck timeline file. The matched content is a descriptive string identifying a Star Trek 24th-century sort-key scale, not a credential. The file contains fandom lore metadata (schema version, timeline axes, episode anchors, stardates) with no executable code, network calls, or secret material. The match is a false positive from the underscore-delimited identifier resembling an API-key pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-3/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-3/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a Star Trek timeline label as if it were an API key, but it is just a descriptive text string in a data file. There is no password or key here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a descriptive string value in a JSON loredeck data file. The matched content is a sort-key scale identifier for a Star Trek timeline, not a credential. The file is a data-only loredeck containing timeline anchors and metadata for fandom roleplay. No secret material, exfiltration path, or credential usage exists in this file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-5/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-5/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that contains a descriptive label for a test scenario about a Harry Potter storyline. It is not a password or API key; it is just a name used inside a test script.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a string literal on line 269. The matched value is a descriptive context identifier used as a test fixture property within a metadata object passed to appendPendingLoreEntries. It is a hardcoded label naming a Harry Potter Year 6 scenario, not a credential, token, or secret. No network calls, authentication, or credential usage is associated with this value. The file role is tooling/test code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-core-integration-hp-year6-accepted-context.mjs#L269" rel="noopener noreferrer">tools/scripts/test-core-integration-hp-year6-accepted-context.mjs:269</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged this line because it saw the word &#39;key&#39; and thought it might be a secret password or API token. It is actually just a label describing a Star Trek timeline scale used in a data-generation script. There is no secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched the string literal assigned to sortKeyScale on line 1064. The matched value is a descriptive configuration identifier for a Star Trek timeline scale, not a credential. It is a static string constant embedded in a tooling script that generates loredeck JSON data. There is no network call, authentication use, environment variable reference, or external data flow associated with this value. The match is a false positive triggered by the substring &#39;key&#39; in the property name and value.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/generate-star-trek-season-loredeck.mjs#L1064" rel="noopener noreferrer">tools/scripts/generate-star-trek-season-loredeck.mjs:1064</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line in a Star Trek lore data file because a descriptive label looked enough like a key pattern to trigger an automated rule. The value is just a name for a fictional timeline scale, not a password or API key. There is no security issue here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a value on line 5 of a JSON loredeck timeline data file. The matched line is a configuration field assigning a descriptive string identifying a fictional Star Trek 24th-century timeline scale. This is static lore metadata for a fandom loredeck, not a credential, token, or secret. There is no code execution, network call, or credential use associated with this value. The match is a false positive from a broad pattern heuristic applied to data-only content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-2/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-2/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but the flagged text is just a label describing a Star Trek timeline scale used by a data-generation script. There is no real secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a timeline configuration property assigning a string literal that identifies a Star Trek stardate sort-key scale. It is a static data value embedded in a lore-deck generation tooling script, not a credential, token, or secret. The gitleaks generic-api-key rule produced a false positive on the string format. No credential is present, and no runtime or network use of a secret occurs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/generate-star-trek-tng-season-2-loredeck.mjs#L480" rel="noopener noreferrer">tools/scripts/generate-star-trek-tng-season-2-loredeck.mjs:480</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that simply names a timeline scale for a Star Trek loredeck. It is ordinary descriptive text, not a password or API key, and poses no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched on line 5, which contains a JSON configuration field assigning a descriptive string value for a sort-key scale. This is static loredeck data describing a Star Trek timeline scale, not a credential, token, or secret. There is no data flow, exfiltration path, or runtime use of a secret.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-2/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-2/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a false alarm. The scanner saw a string that looked like it might be an API key, but it is actually just a label describing a Star Trek timeline scale in a lore data file. There is no password or secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration property in a Star Trek loredeck data file. The value is a descriptive label for a fictional timeline scale, not a credential. The gitleaks generic-api-key heuristic produced a false positive on this string. No secret material, network destination, or executable behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-1/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-1/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uploads a built file as a downloadable artifact. It does not upload credentials or secrets, so there is no real risk of leaking sensitive data through the artifact.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged credential persistence through artifacts with low confidence. The uploaded artifact is a built skill bundle from a known build path, not credentials or secrets. The GITHUB_TOKEN is used in a separate release-upload step and is not included in the artifact. No credential persistence risk is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-release.yml#L15" rel="noopener noreferrer">.github/workflows/loredeck-builder-release.yml:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test script that controls a local Chrome browser for automated smoke testing. The flagged code sends commands to the browser&#39;s debugging interface with a timeout setting read from an environment variable. No passwords, API keys, or secrets are involved; the environment variable only controls how long the test waits before giving up.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line calls client.send(method, params, { timeoutMs }) on a CdpClient instance inside sendStartupCdpCommand. This is a Chrome DevTools Protocol (CDP) client used by a smoke-test tooling script to drive a local browser instance. The timeoutMs value is derived from the SAGA_SMOKE_CDP_STARTUP_TIMEOUT_MS environment variable (defaulting to 30000) and is passed as a timeout option to the CDP send call, not as message content or credential material. The network destination is the local Chrome DevTools WebSocket endpoint used for browser automation, not an external exfiltration target. No credentials, API keys, or secrets are present in the data flow; the scanner likely matched because an environment variable source reached a network-oriented sink, but the actual value is a numeric timeout configuration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/smoke-live-st-cdp.mjs#L598" rel="noopener noreferrer">tools/scripts/smoke-live-st-cdp.mjs:598</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that looks like it might contain a secret, but it is actually just a descriptive label for a Star Trek timeline setting. There is no password, API key, or credential involved.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a key-value style assignment on line 495, but the matched value is a descriptive string literal used as a timeline schema configuration field. It is not a credential, token, or secret. No network call, environment variable, or external destination is associated with this value. The file is a build/generation script that constructs a Loredeck data structure for Star Trek TNG season 1.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/generate-star-trek-tng-season-1-loredeck.mjs#L495" rel="noopener noreferrer">tools/scripts/generate-star-trek-tng-season-1-loredeck.mjs:495</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label describing how Star Trek story events are ordered in a lore file. It is not a password or API key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek Voyager loredeck timeline file. The value is a descriptive string naming a fictional chronological scale for sorting story anchors. It contains no secret material, no network destination, and no executable behavior. The gitleaks generic-api-key heuristic produced a false positive on a benign string.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-3/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-3/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret, but the flagged text is just a list of Harry Potter story-deck names used in a test script. There is no password or key here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines contain kebab-case loredeck identifier strings for Harry Potter book titles within a constant array of deck IDs. No credential-like value, secret, or API key is present. The gitleaks generic-api-key pattern produced a false positive on these descriptive string literals.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-hp-loredeck-family-split.mjs#L12-L13" rel="noopener noreferrer">tools/scripts/test-hp-loredeck-family-split.mjs:12-13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that simply names a sorting scale for a Star Trek story timeline. It is ordinary story data, not a password or API key, and poses no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched on line 5, which contains a JSON configuration value describing a sort key scale for a Star Trek timeline loredeck. The matched string is lore content metadata, not a credential, token, or secret. There is no data flow to any external destination, no execution, and no authentication material present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-6/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-6/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner mistook a story-scenario label used in a test for a secret key. It is just a name for a test case, not a password or API key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a test fixture assigning a lore context key string to a property named contextKey within an integration test file. The matched value is a descriptive identifier for a Harry Potter Year 1 sorting scenario, not a credential. No secret is present, and the surrounding code is assertion-based test logic with no network or credential data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-core-integration-hp-year1.mjs#L273" rel="noopener noreferrer">tools/scripts/test-core-integration-hp-year1.mjs:273</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test script that controls a browser through its debugging interface. The flagged call tells the browser to dismiss a popup dialog. No passwords, API keys, or other secrets are involved, and the destination is the local test browser, not an external server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line invokes a Chrome DevTools Protocol (CDP) client&#39;s send method to dismiss a JavaScript dialog during an automated smoke test. The client is a WebSocket connection to a controlled browser&#39;s DevTools endpoint, not an HTTP network sink. The argument payload contains only a boolean accept flag with no credential material. This is standard browser automation tooling behavior with no secret-to-network data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/smoke-live-st-cdp.mjs#L9562" rel="noopener noreferrer">tools/scripts/smoke-live-st-cdp.mjs:9562</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a false alarm. The scanner saw a string that looks vaguely like a key, but it is just a label describing a Star Trek timeline scale in a lore data file. There is no password or secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek DS9 loredeck data file. The matched value is a descriptive string naming a timeline scale, not a credential. There is no secret material, no code execution, and no network destination involved. The gitleaks generic-api-key rule produced a false positive on benign lore data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-4/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-4/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a false alarm. The scanner saw a setting that looks like it could be a key, but it is just a label describing how Star Trek timeline events are sorted. There is no password or API key here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON property in a bundled Star Trek DS9 loredeck data file. The value is a descriptive scale identifier for timeline sorting, not a credential. The generic-api-key rule matched on a key-like property name paired with a string value, producing a false positive. No secret is present, no code executes, and the file is data-only lore content consistent with the project&#39;s stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-6/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-6/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a label inside a data file describing how to sort Star Trek story events. It is not a password, key, or secret of any kind.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek TNG loredeck timeline data file. The value is a descriptive string naming a sort-key scale for the 24th-century Star Trek timeline. It is static lore metadata with no credential structure, no network destination, no execution path, and no relationship to provider credentials or API keys. The gitleaks generic-api-key rule produced a false positive on a benign string.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-1/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-1/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a Star Trek fan-lore data file. The scanner mistook a descriptive label for a secret, but it is just a naming string for organizing story timeline data. There is no password, key, or sensitive information present.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a JSON configuration field in a Star Trek DS9 loredeck timeline data file. The matched value is a descriptive string naming a sort-key scale for the lore system, not a credential, token, or secret. The file is data-only with no executable code, network calls, or credential handling. The gitleaks generic-api-key rule produced a false positive on benign lore content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-7/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-7/timeline.json:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test script telling the controlled browser to open a test page. The address being navigated to is a test URL, not a secret, and the command goes to the browser&#39;s debugging interface rather than to an external server. No sensitive data is sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line issues a CDP Page.navigate command through a DevTools WebSocket client to direct the controlled browser to the smoke test URL. The destination is the browser&#39;s DevTools endpoint, not an external network service. The URL variable is a test harness parameter, not a credential or secret. No credential material reaches any network sink; this is normal browser automation for smoke testing.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/smoke-live-st-cdp.mjs#L9565" rel="noopener noreferrer">tools/scripts/smoke-live-st-cdp.mjs:9565</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but the flagged text is just a label used to organize Star Trek story timelines. It is not a real credential and cannot be used to access anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a string literal on line 496. The matched content is a timeline configuration value identifying a Star Trek 24th-century sort-key scale within a lore-deck generation tool. It is a static domain identifier embedded in a build script, not a credential, token, or secret. No authentication, network call, or environment access is associated with this value.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/generate-star-trek-tng-season-3-loredeck.mjs#L496" rel="noopener noreferrer">tools/scripts/generate-star-trek-tng-season-3-loredeck.mjs:496</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Workflow is a straightforward build-and-test CI job with no secrets, artifacts, or external calls</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>This is a simple automated test script for the project. It does not handle passwords, upload files, or contact outside services. The flagged items are minor best-practice improvements, not security threats.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The workflow triggers on path-filtered pull requests and pushes to main, checks out the repository, installs Node LTS, runs a series of local test scripts, builds a skill bundle, and verifies it. No secrets are declared, no artifacts are uploaded, no external APIs are called, and no deployment or publish step exists. All four scanner candidates are standard CI hygiene findings with no runtime path to user harm in this specific workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/.github/workflows/loredeck-builder-build-check.yml#L27-L54" rel="noopener noreferrer">.github/workflows/loredeck-builder-build-check.yml:27-54</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Descriptive timeline scale string false-matches generic API key rule</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner mistook a harmless descriptive label for a secret. No action needed.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The generic-api-key rule matched a plain text identifier used to label a loredeck timeline scale. The surrounding JSON is lore content with no credential semantics.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-2/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-2/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Loredeck timeline scale string misidentified as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged text is just a label describing how Star Trek dates are organized, not a secret.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The JSON field assigns a human-readable scale identifier for sorting lore entries. It contains no key material and is inert data consumed only by the loredeck loader.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-3/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-3/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Benign lore data matched by generic credential pattern</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged text is just a descriptive label in a lore data file, not a secret key.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched content is a timeline scale identifier inside a data-only loredeck JSON file. It contains no credential, token, or secret material and is not consumed as authentication input anywhere in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-4/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-4/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Loredeck data file misidentified as credential exposure</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged text is just a label for sorting Star Trek story events, not a secret.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched content is a timeline scale identifier inside a data-only JSON loredeck. It contains no credential material and performs no execution. The scanner&#39;s generic-api-key heuristic produced a false positive on a descriptive string value.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-6/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-6/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Benign lore label matched by generic credential rule</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner flagged a harmless story-data label; no real secret exists here.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched content is a loredeck timeline scale identifier string inside a JSON data file. It contains no secret material and has no runtime execution path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-ds9-season-7/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-ds9-season-7/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Loredeck timeline JSON is data-only with no credential material</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>This file only holds Star Trek episode and timeline information for the roleplay extension. There are no secrets in it.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The supplied source context shows a JSON loredeck timeline file with schema, axes, and anchor entries. No keys, tokens, endpoints, or executable content are present. The flagged value is a scale identifier string.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-3/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-3/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks false positive on loredeck timeline label</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner mistook a plain English description inside a data file for a secret key. There is nothing sensitive here.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The entire file is a static JSON loredeck timeline for Star Trek TNG Season 4. It contains episode anchors, stardates, labels, and sorting metadata. No field in the visible source context resembles a credential; the matched value is a human-readable descriptive string for the sort-key scale.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-4/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-4/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Benign loredeck configuration string flagged as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner saw a normal data label and incorrectly thought it looked like a secret key. It is not.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched content is a JSON key-value pair naming a fictional timeline scale. It is static data with no runtime execution path, no external call, and no authentication relevance.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-tng-season-5/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-tng-season-5/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Loredeck timeline sortKeyScale string is not a credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged text is a plain label for sorting Star Trek story data, not a secret.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The sortKeyScale field holds a human-readable identifier for a fictional timeline scale. It is static data consumed by the extension&#39;s lore retrieval logic and never transmitted as authentication material.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-1/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-1/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Benign loredeck label matched by generic credential heuristic</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A scanner mistook a story timeline label for a secret. No secret is present.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The sortKeyScale value is a human-readable identifier for a fictional timeline scale used by the Saga lore system. It is static data consumed locally for ordering lore anchors and has no credential semantics.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-3/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-3/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Loredeck timeline JSON field misidentified as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner saw a label that looks key-like but is just a name for how the timeline is sorted in a Star Trek lore pack.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The generic-api-key rule matched a string that is a human-readable scale name inside a loredeck timeline configuration object. The surrounding JSON structure confirms this is fandom timeline metadata with anchors, stardates, and episode identifiers, not credential storage.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/content/loredecks/star-trek-voy-season-4/timeline.json#L5" rel="noopener noreferrer">content/loredecks/star-trek-voy-season-4/timeline.json:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks generic-api-key false positive on timeline scale string</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged text is a Star Trek timeline label, not a secret key.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched value is a configuration string literal naming a fictional stardate scale within a timeline object built by a Node.js tooling script. It is not used for authentication, API access, or any external call. The match is a pattern heuristic false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/generate-star-trek-tng-season-2-loredeck.mjs#L480" rel="noopener noreferrer">tools/scripts/generate-star-trek-tng-season-2-loredeck.mjs:480</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks generic-api-key false positive on timeline scale identifier</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner&#39;s broad pattern matched an ordinary story-timeline label by mistake. There is no secret here.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The flagged line assigns a static string to a timeline schema field. The value is a human-readable domain label with no secret structure, no variable interpolation, and no runtime use as a credential. This is a known false-positive pattern for broad generic-api-key rules.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/generate-star-trek-tng-season-3-loredeck.mjs#L496" rel="noopener noreferrer">tools/scripts/generate-star-trek-tng-season-3-loredeck.mjs:496</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test fixture string misidentified as API key</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A label used to organize test data looked enough like a secret format to trigger an automated warning, but it is harmless test text.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The property name contextKey combined with a hyphenated alphanumeric value triggered a generic API key heuristic. In this test file the value is a scenario identifier passed into a lore entry helper, with no authentication or external service usage.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-core-integration-hp-year1.mjs#L273" rel="noopener noreferrer">tools/scripts/test-core-integration-hp-year1.mjs:273</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test fixture context key misidentified as credential</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A test label was mistaken for a secret. It is just a name for a story scenario used in testing.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The flagged line assigns a descriptive string to a contextKey property in a test metadata object. The value identifies a lore scenario and has no credential semantics, no runtime secret usage, and no external transmission.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-core-integration-hp-year6-accepted-context.mjs#L269" rel="noopener noreferrer">tools/scripts/test-core-integration-hp-year6-accepted-context.mjs:269</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test context key false-positive on generic-api-key rule</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>This is a harmless label inside a test file, not a secret.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched value is a contextKey string literal in a test file used to label a lore progression scenario. It contains no secret material and is not transmitted anywhere.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-core-integration-hp-year6-progression.mjs#L366" rel="noopener noreferrer">tools/scripts/test-core-integration-hp-year6-progression.mjs:366</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks false positive on loredeck identifier strings</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged lines are just story-deck names in a test file, not credentials.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Lines 12 and 13 hold string literals naming Harry Potter loredecks. The surrounding constant SPLIT_DECK_IDS is an array of deck identifiers used by the test to validate a loredeck family split. No secret material is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/Saga/blob/2294dd1ec61fee33e49eede297871ec0fcaa99e1/tools/scripts/test-hp-loredeck-family-split.mjs#L12-L13" rel="noopener noreferrer">tools/scripts/test-hp-loredeck-family-split.mjs:12-13</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>1904 files &middot; 94059853 bytes</dd>
+      <dt>Contextual coverage</dt><dd>42 of 42 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/MentallyQuill/Saga/commit/2294dd1ec61fee33e49eede297871ec0fcaa99e1" rel="noopener noreferrer">2294dd1ec61fee33e49eede297871ec0fcaa99e1</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-05T15:05:14.654Z">Aug 5, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v2</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>153166 input &middot; 25986 output &middot; 20933 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>2335f3d2b3bd2e19593c6747a8c141ec9ee69040c84fed880949166be827ccb2</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1258773435/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
