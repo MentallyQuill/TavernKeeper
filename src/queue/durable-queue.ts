@@ -114,6 +114,32 @@ export function dueQueueEntries(
     .slice(0, limit);
 }
 
+export function prioritizeQueuedTargetRetry(
+  stateInput: OperationsState,
+  repositoryId: number,
+) {
+  const state = OperationsStateSchema.parse(stateInput);
+  if (!Number.isSafeInteger(repositoryId) || repositoryId < 1)
+    throw new Error("Staff retry repository ID is invalid.");
+  if (
+    !state.scan_queue.entries.some(
+      ({ repository_id }) => repository_id === repositoryId,
+    )
+  )
+    throw new Error("Staff retry repository is not queued.");
+  return OperationsStateSchema.parse({
+    ...state,
+    scan_queue: {
+      ...state.scan_queue,
+      entries: state.scan_queue.entries.map((entry) =>
+        entry.repository_id === repositoryId
+          ? { ...entry, not_before: null, staff_requested: true }
+          : entry,
+      ),
+    },
+  });
+}
+
 export function rotateFailedTarget(
   stateInput: OperationsState,
   input: { target: Target; failure: FailureDescriptor; at: string },
