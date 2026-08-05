@@ -19,6 +19,7 @@ describe("deterministic scanner policy", () => {
       promptVersion: "contextual-review-v2",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 3,
+      timeoutMs: 300_000,
     });
     expect(policy).not.toHaveProperty("tokenBudget");
     expect(

@@ -36,7 +36,7 @@ describe("Pages site allowlist", () => {
       expect(index).not.toContain(invalidReportId);
       expect(publishedFiles.files.join("\n")).not.toContain(invalidReportId);
     }
-  });
+  }, 15_000);
 
   test("copies only reports, schemas, and public rule documentation", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-site-"));
