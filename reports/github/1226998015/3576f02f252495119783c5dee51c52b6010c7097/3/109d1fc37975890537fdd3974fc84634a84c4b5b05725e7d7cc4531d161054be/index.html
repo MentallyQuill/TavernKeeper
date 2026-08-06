@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for AMousePad/LumiRealm at commit 3576f02.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; AMousePad/LumiRealm</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/AMousePad/LumiRealm" rel="noopener noreferrer">AMousePad/LumiRealm</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/AMousePad/LumiRealm/commit/3576f02f252495119783c5dee51c52b6010c7097" rel="noopener noreferrer">3576f02</a></span>
+        <span>Reviewed <time datetime="2026-08-06T07:52:01.735Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>20 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w4gp-fjgq-3q4g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the project&#39;s dependencies, but the scanner did not include which specific package is affected. Because this extension bundles only its final JavaScript output and most build-tool dependencies never reach end users, the practical risk is likely low. Updating dependencies is still good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w4gp-fjgq-3q4g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner flagged a high-severity advisory against a dependency declared in the lockfile, but package details were removed from the scanner output, preventing precise identification of the affected package and version. The project bundles its output via Bun into dist/frontend.js, file, and dist/regex-runner.js; devDependencies such as esbuild, playwright, happy-dom, juice, and wasmoon do not ship to end users. Without knowing which package is affected, whether it is a production or development dependency, and whether attacker-controlled input reaches the vulnerable code path, no concrete user harm can be established. The advisory severity alone does not establish immediate danger.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to their latest patched versions where feasible. If the affected package is a devDependency, the risk is limited to the development environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w4gp-fjgq-3q4g</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-level issue in a dependency, but did not specify which package. Since the extension only ships its bundled output and most tooling dependencies stay in the development environment, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a lockfile dependency, but the affected package name and version were removed from scanner output. The project bundles its production output through Bun, meaning devDependencies do not ship to end users. The four production dependencies (fengari-web, fflate, tus-js-client, zod) would ship in the bundle, but without knowing which package this advisory targets, runtime reachability and attacker input control cannot be assessed. No concrete user harm is evident from the available evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to patched versions when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-g7r4-m6w7-qqqr applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a low-level issue in a dependency but did not specify which package. The risk is minimal given the extension&#39;s bundling approach.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-g7r4-m6w7-qqqr to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched against a lockfile dependency with package details removed. The project bundles its output via Bun, so devDependencies do not reach end users. Without identifying the affected package, version, and whether it ships in the bundle, no concrete user harm or runtime reachability can be established. Low advisory severity further limits practical impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to patched versions when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-g7r4-m6w7-qqqr</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-35p6-xmwp-9g52 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a low-level issue in a dependency but did not specify which package. The risk is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-35p6-xmwp-9g52 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched against a lockfile dependency with package details removed. The project bundles its production output, excluding devDependencies from the shipped artifact. Without the affected package identity, runtime reachability and attacker input control cannot be determined. No concrete user harm is evident.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to patched versions when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-35p6-xmwp-9g52</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-g8m3-5g58-fq7m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a low-level issue in a dependency but did not specify which package. The risk is minimal given the extension&#39;s bundling approach.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-g8m3-5g58-fq7m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A low-severity advisory was matched against a lockfile dependency with package details removed. The extension bundles its output through Bun, so development-only dependencies do not ship to end users. Without identifying the affected package, version, and shipping status, no concrete user harm or runtime reachability can be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to patched versions when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-g8m3-5g58-fq7m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-level issue in a dependency but did not specify which package. Since the extension only ships its bundled output, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a lockfile dependency with package details removed. The project bundles its production output via Bun, meaning devDependencies do not ship to end users. Without knowing which package is affected, whether it is a production or development dependency, and whether attacker-controlled input reaches the vulnerable code path, no concrete user harm can be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to patched versions when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-level issue in a dependency but did not specify which package. The risk is likely low given the extension&#39;s bundling approach.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched against a lockfile dependency with package details removed. The project bundles its output through Bun, excluding devDependencies from the shipped artifact. Without the affected package identity, version, and shipping status, runtime reachability and attacker input control cannot be determined. No concrete user harm is evident from the available evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to patched versions when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-ph9p-34f9-6g65 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-level issue in a dependency but did not specify which package. Because this extension bundles only its final JavaScript output and most build-tool dependencies never reach end users, the practical risk is likely low. Updating dependencies is still recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-ph9p-34f9-6g65 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched against a lockfile dependency, but package details were removed from the scanner output, preventing identification of the affected package and version. The project bundles its production output via Bun into dist/*.js files; devDependencies such as esbuild, playwright, tsx, happy-dom, juice, and wasmoon do not ship to end users. The four production dependencies (fengari-web, fflate, tus-js-client, zod) would ship in the bundle, but without knowing which package this advisory targets, runtime reachability and attacker input control cannot be assessed. Advisory severity alone does not establish immediate danger without confirmed shipping status and reachable vulnerable code.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dependencies to their latest patched versions. If the affected package is a devDependency, the risk is limited to the development environment. If it is a production dependency, verify whether the vulnerable code path is reachable in the extension&#39;s usage.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-ph9p-34f9-6g65</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-vxpw-j846-p89q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in a dependency listed in the project&#39;s lock file. However, the project&#39;s actual shipped extension only includes a small set of core libraries, and this issue most likely lives in a development-only tool that never reaches end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-vxpw-j846-p89q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The lockfile declares four production dependencies (fengari-web, fflate, tus-js-client, zod) that are small, focused libraries with minimal transitive dependency trees. The dev dependencies (playwright, happy-dom, juice, tsx, wasmoon, esbuild platform packages) carry substantially larger transitive trees and are the more likely source of this advisory match. The project bundles its output via Bun for browser and Bun targets, so dev-only transitive dependencies are not included in the shipped extension artifacts. Without the specific package identity, runtime reachability in the shipped bundle cannot be confirmed, but the production dependency set makes it unlikely this advisory affects end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version if feasible. Confirm whether the advisory is in a production or dev-only dependency tree; if dev-only, no user-facing risk exists.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-vxpw-j846-p89q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-37j7-fg3j-429f applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A critical security alert was flagged in the project&#39;s dependency list. However, the project&#39;s shipped extension uses only a few small, well-known libraries, and this alert almost certainly comes from a development tool that is not included in the final product users install.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-37j7-fg3j-429f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This critical-severity advisory was matched in the lockfile, but the four production dependencies (fengari-web, fflate, tus-js-client, zod) are compact libraries with negligible transitive trees and no known critical advisories at the declared versions. The critical match is far more likely to reside in a dev-only transitive tree such as playwright, happy-dom, juice, or esbuild. The build process bundles only production code into the shipped frontend and backend artifacts, excluding dev dependencies. Even if the advisory were in a production transitive dep, the extension runs inside the Lumiverse browser sandbox, limiting concrete user harm. The scanner removed package details, preventing definitive confirmation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dev dependency to a patched version. Verify the advisory is not in a production dependency tree; if it is, assess runtime reachability in the bundled output.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-37j7-fg3j-429f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6q6h-j7hj-3r64 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity security issue was found in the dependency list, but it most likely comes from a development tool that is not part of the extension users actually install.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6q6h-j7hj-3r64 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same lockfile context as the other candidates. The high-severity advisory most likely matches a transitive dependency of a dev-only package (playwright, happy-dom, juice, tsx, or esbuild platform binaries visible in the lockfile). The production dependency set is minimal and unlikely to carry this advisory. The shipped extension bundles only production code, so dev-only transitive vulnerabilities do not reach end users. Package identity was removed by the scanner, so exact confirmation is not possible from the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version. Confirm whether it is in a production or dev-only tree.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6q6h-j7hj-3r64</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-p88m-4jfj-68fv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A medium-level security issue was found in the dependency list. It most likely comes from a development tool that does not ship with the extension, so users are probably not affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p88m-4jfj-68fv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This medium-severity advisory was matched in the lockfile. Given the minimal production dependency set (fengari-web, fflate, tus-js-client, zod) and the larger dev-only trees (playwright, happy-dom, juice, tsx, esbuild), the match is more likely in a dev-only transitive dependency. The Bun bundling process excludes dev dependencies from shipped artifacts. Without the specific package identity, definitive reachability analysis is not possible, but the project structure strongly suggests no end-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient. Verify whether it is in a production or dev-only dependency tree.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p88m-4jfj-68fv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock" rel="noopener noreferrer">bun.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (4)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but the flagged text is just a list of command names used by the character-card compatibility feature. There is no real secret here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines are string literals inside an array of known v2 opcode names for a RisuAI compatibility layer. They are identifier-like strings such as v2DeleteDictKey and v2HasDictKey, not credentials, tokens, or secrets. The gitleaks generic-api-key heuristic matched an identifier-like string, but the surrounding context shows no key material, no network destination, and no credential data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/96228586e589ae57b08f9b1a382cdc74a9ac9e29/dist/backend.js#L20406-L20407" rel="noopener noreferrer">dist/backend.js:20406-20407</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw the word &#39;Key&#39; in a list of function names and flagged it as a possible password or API key. It is not a secret; it is just the name of a dictionary operation in the code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched on a string literal inside an array of known v2 opcode names for the RisuAI compatibility layer. The matched lines are opcode identifiers such as v2DeleteDictKey and v2HasDictKey, which contain the substring &#39;Key&#39; and triggered the heuristic. No secret value, credential, token, or API key is present; this is a static list of function names used for schema validation and opcode dispatch.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/dist/backend.js#L19730-L19731" rel="noopener noreferrer">dist/backend.js:19730-19731</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged what looks like a secret, but the text is just a list of command names used by the roleplay card system. There is no password or API key here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines are string literals inside a constant array of opcode names for a RisuAI-compatible trigger script system. The gitleaks generic-api-key rule matched one of these opcode strings, but no secret value is present. This is a schema definition file containing enumerated command names, not credentials.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/src/core/schemas/triggerscript.ts#L77-L78" rel="noopener noreferrer">src/core/schemas/triggerscript.ts:77-78</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret password or API key, but the flagged text is just a list of command names for a scripting feature. There is no real credential here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines 77-78 contain string literals within the KNOWN_V2_OPCODES array, listing opcode names such as dictionary variable operations for the RisuAI trigger script system. These are static constant identifiers used to validate or recognize supported script operations. No credential, secret, or sensitive value is present; the generic-api-key pattern produced a false positive on opcode naming conventions.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiRealm/blob/96228586e589ae57b08f9b1a382cdc74a9ac9e29/src/core/schemas/triggerscript.ts#L77-L78" rel="noopener noreferrer">src/core/schemas/triggerscript.ts:77-78</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Heuristic credential match on opcode name string literals</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A pattern scanner mistook ordinary command names for a secret key. No sensitive data is involved.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The matched region is a string array of compatibility opcode identifiers. Identifier-shaped strings commonly trigger generic-api-key rules, but no secret value, assignment, transmission, or persistence is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AMousePad/LumiRealm/blob/96228586e589ae57b08f9b1a382cdc74a9ac9e29/dist/backend.js#L20406-L20407" rel="noopener noreferrer">dist/backend.js:20406-20407</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Scanner removed package details for all eight dependency advisories, preventing precise reachability analysis</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>The security scanner found eight dependency issues but did not include which specific packages are affected. This makes it impossible to determine which issues actually matter for end users versus which only affect the developer&#39;s build tools. The extension bundles its final output, so most build-tool dependencies never reach users. Updating all dependencies is the safest course of action.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight OSV-scanner candidates have their package details removed from the scanner explanation, and the supplied source context covers only the first 41 lines of a 22KB lockfile. This prevents mapping each advisory to a specific package, version, and shipping status. The project declares four production dependencies (fengari-web, fflate, tus-js-client, zod) that would be bundled into the shipped extension, and several devDependencies (esbuild via tsx, playwright, happy-dom, juice, wasmoon, typescript) that would not ship. Without the package-to-advisory mapping, it is impossible to determine which advisories affect shipping code versus development-only tooling, whether vulnerable code paths are reachable at runtime, or whether attacker-controlled input reaches them. The assessments above reflect this uncertainty by assigning low confidence and low risk, since no concrete user harm can be established from the available evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run the scanner with package details enabled or manually cross-reference each GHSA ID against the lockfile to identify affected packages. Prioritize updating any production dependencies (fengari-web, fflate, tus-js-client, zod) that have advisories. DevDependency advisories can be addressed at lower urgency.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/bun.lock#L1-L41" rel="noopener noreferrer">bun.lock:1-41</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Opcode name list triggers generic key heuristic</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A list of operation names includes words containing &#39;Key&#39;, which a scanner mistook for a leaked secret. No secret exists here.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The KNOWN_V2_OPCODES array contains identifiers like v2HasDictKey and v2DeleteDictKey. The gitleaks generic-api-key rule keys on substrings resembling key material, producing a false positive on these opcode names.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/dist/backend.js#L19730-L19731" rel="noopener noreferrer">dist/backend.js:19730-19731</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Opcode name list triggers generic-api-key pattern</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A list of internal command names accidentally matched a secret-detection pattern. No actual secret exists in this file.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The KNOWN_V2_OPCODES array contains string literals such as dictionary and variable operation names. One of these strings matched the gitleaks generic-api-key heuristic. The surrounding code is a static enumeration with no network calls, no variable assignment of secret material, and no runtime credential usage.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AMousePad/LumiRealm/blob/3576f02f252495119783c5dee51c52b6010c7097/src/core/schemas/triggerscript.ts#L77-L78" rel="noopener noreferrer">src/core/schemas/triggerscript.ts:77-78</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>330 files &middot; 10720667 bytes</dd>
+      <dt>Contextual coverage</dt><dd>16 of 16 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/AMousePad/LumiRealm/commit/3576f02f252495119783c5dee51c52b6010c7097" rel="noopener noreferrer">3576f02f252495119783c5dee51c52b6010c7097</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T07:52:01.735Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>28938 input &middot; 13475 output &middot; 4579 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>109d1fc37975890537fdd3974fc84634a84c4b5b05725e7d7cc4531d161054be</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1226998015/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
