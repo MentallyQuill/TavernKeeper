@@ -1,0 +1,968 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for unrefined803/RPGraph at commit 2fa4ba4.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; unrefined803/RPGraph</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/unrefined803/RPGraph" rel="noopener noreferrer">unrefined803/RPGraph</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/unrefined803/RPGraph/commit/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc" rel="noopener noreferrer">2fa4ba4</a></span>
+        <span>Reviewed <time datetime="2026-08-06T00:36:36.624Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>40 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xj6q-8x83-jv6g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known weakness in a package used by the project. However, since this is a local desktop app and the package is likely a development tool or unexposed background dependency, it does not pose a direct threat to the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xj6q-8x83-jv6g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A dependency advisory was flagged in the lockfile, but package details were redacted. In a local-first desktop application like this, lockfile advisories are typically associated with development dependencies (e.g., Vite, ESLint) or unexposed transitive dependencies. Since the application does not expose remote inbound attack surfaces, runtime exploitation is unlikely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the specific dependency flagged by this advisory and update it to a patched version if possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xj6q-8x83-jv6g</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-395f-4hp3-45gv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity issue in a package. Because the project runs locally on the user&#39;s machine rather than as a public web service, this is likely a problem in the developer&#39;s build tools rather than something that can attack the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-395f-4hp3-45gv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity dependency advisory was matched in the lockfile, but package details were redacted. For a local-first Electron and Vite application, high-severity advisories are frequently associated with development tooling or build steps rather than production runtime code reachable by untrusted inputs.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the flagged dependency and upgrade it to a secure version, ensuring build tools and dependencies remain current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-395f-4hp3-45gv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-jr45-8vmc-qm54 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known weakness in a package used by the project. However, since this is a local desktop app and the package is likely a development tool or unexposed background dependency, it does not pose a direct threat to the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jr45-8vmc-qm54 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A dependency advisory was flagged in the lockfile, but package details were redacted. In a local-first desktop application, lockfile advisories are typically associated with development dependencies or unexposed transitive dependencies. Since the application does not expose remote inbound attack surfaces, runtime exploitation is unlikely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the specific dependency flagged by this advisory and update it to a patched version if possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jr45-8vmc-qm54</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-hcpx-6fm6-wx23 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known weakness in a package used by the project. However, since this is a local desktop app and the package is likely a development tool or unexposed background dependency, it does not pose a direct threat to the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-hcpx-6fm6-wx23 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A dependency advisory was flagged in the lockfile, but package details were redacted. In a local-first desktop application, lockfile advisories are typically associated with development dependencies or unexposed transitive dependencies. Since the application does not expose remote inbound attack surfaces, runtime exploitation is unlikely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the specific dependency flagged by this advisory and update it to a patched version if possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-hcpx-6fm6-wx23</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f4gw-2p7v-4548 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known weakness in a package used by the project. However, since this is a local desktop app and the package is likely a development tool or unexposed background dependency, it does not pose a direct threat to the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f4gw-2p7v-4548 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A dependency advisory was flagged in the lockfile, but package details were redacted. In a local-first desktop application, lockfile advisories are typically associated with development dependencies or unexposed transitive dependencies. Since the application does not expose remote inbound attack surfaces, runtime exploitation is unlikely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the specific dependency flagged by this advisory and update it to a patched version if possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f4gw-2p7v-4548</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7q8q-rj6j-mhjq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known weakness in a package used by the project. However, since this is a local desktop app and the package is likely a development tool or unexposed background dependency, it does not pose a direct threat to the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7q8q-rj6j-mhjq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A dependency advisory was flagged in the lockfile, but package details were redacted. In a local-first desktop application, lockfile advisories are typically associated with development dependencies or unexposed transitive dependencies. Since the application does not expose remote inbound attack surfaces, runtime exploitation is unlikely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the specific dependency flagged by this advisory and update it to a patched version if possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7q8q-rj6j-mhjq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-gcfj-64vw-6mp9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity issue in a package. Because the project runs locally on the user&#39;s machine rather than as a public web service, this is likely a problem in the developer&#39;s build tools rather than something that can attack the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-gcfj-64vw-6mp9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity dependency advisory was matched in the lockfile, but package details were redacted. For a local-first Electron and Vite application, high-severity advisories are frequently associated with development tooling or build steps rather than production runtime code reachable by untrusted inputs.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the flagged dependency and upgrade it to a secure version, ensuring build tools and dependencies remain current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-gcfj-64vw-6mp9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r4w5-6pfg-jxp5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known weakness in a package used by the project. However, since this is a local desktop app and the package is likely a development tool or unexposed background dependency, it does not pose a direct threat to the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r4w5-6pfg-jxp5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A dependency advisory was flagged in the lockfile, but package details were redacted. In a local-first desktop application, lockfile advisories are typically associated with development dependencies or unexposed transitive dependencies. Since the application does not expose remote inbound attack surfaces, runtime exploitation is unlikely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the specific dependency flagged by this advisory and update it to a patched version if possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r4w5-6pfg-jxp5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-level security issue in a dependency, but the specific package was not included in the report. The visible dependencies are development tools that don&#39;t end up in the final app, so this likely affects only the build environment, not end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-8xcm-r25x-g524) against a dependency in the lockfile, but package details were removed so the affected package and version cannot be identified from the supplied evidence. The visible lockfile portion shows only dev-only packages (Babel, esbuild platform binaries, electron tooling). The project&#39;s production dependencies are limited to react, react-dom, @xyflow/react, and @toon-format/toon, which are well-maintained UI libraries unlikely to carry this advisory. Without identifying the specific package, runtime reachability and attacker-controlled input paths cannot be confirmed for the shipped desktop application.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-pmv8-rq9r-6j72 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-level issue in a dependency, but the affected package name was not provided. Since the visible dependencies are build-time tools that don&#39;t ship with the app, the risk to end users is likely minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-pmv8-rq9r-6j72 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-pmv8-rq9r-6j72) against a dependency in the lockfile, but package details were removed. The visible lockfile entries are all dev dependencies. The project ships as a bundled Electron desktop app built with Vite, meaning dev-only dependencies are not included in the runtime artifact. Without the specific package identity, runtime reachability in the production application cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-pmv8-rq9r-6j72</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mmx7-hfxf-jppx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-level issue in a dependency, but the specific package was not named. The visible dependencies are development tools, so this most likely affects the build environment rather than the app users run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mmx7-hfxf-jppx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-mmx7-hfxf-jppx) against a dependency in the lockfile, but package details were removed. The supplied lockfile context shows only dev-only packages. The four production dependencies are mainstream React ecosystem libraries. Without identifying the affected package, it is not possible to confirm whether vulnerable code is reachable in the shipped Electron application or whether attacker-controlled input reaches it.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mmx7-hfxf-jppx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mwf2-3pr3-8698 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-level issue in a dependency, but the affected package was not included in the report. The visible dependencies are build tools, so the risk to end users is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mwf2-3pr3-8698 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-mwf2-3pr3-8698) against a dependency in the lockfile, but package details were removed. The visible lockfile portion contains only dev dependencies. The project is a local-first desktop app whose production runtime consists of bundled Vite output plus Electron, not the full dependency tree. Without the specific package and version, runtime reachability cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mwf2-3pr3-8698</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a high-level issue in a dependency, but the specific package was not named. The visible dependencies are development tools that don&#39;t ship with the final app, so the risk to end users is likely limited. The high severity rating alone does not mean users are in danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory (GHSA-r28c-9q8g-f849) against a dependency in the lockfile, but package details were removed. Despite the high scanner severity, the visible lockfile entries are all dev dependencies, and the project&#39;s production dependencies are minimal React ecosystem packages. The shipped artifact is a bundled Electron desktop app that does not include dev-only packages at runtime. Without the specific package identity, it is not possible to confirm that vulnerable code is reachable in the production application or that attacker-controlled input reaches it. Advisory severity alone does not establish immediate danger.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package. If it is a dev dependency, updating is good hygiene; if it is a production dependency, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-level issue in a dependency, but the affected package was not provided. The visible dependencies are build-time tools, so this most likely affects the development environment rather than the app itself.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-v3r7-h72x-cjcm) against a dependency in the lockfile, but package details were removed. The visible lockfile context shows only dev-only packages. The production dependency set is limited to react, react-dom, @xyflow/react, and @toon-format/toon. Without the specific package and version, runtime reachability and attacker input paths cannot be confirmed for the shipped application.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4cwx-7wf7-3272 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a high-level issue in a dependency, but the specific package was not named. The visible dependencies are development tools that don&#39;t ship with the final app, so the risk to end users is likely limited.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4cwx-7wf7-3272 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory (GHSA-4cwx-7wf7-3272) against a dependency in the lockfile, but package details were removed. The visible lockfile entries are all dev dependencies. The project ships as a Vite-bundled Electron desktop app, so dev-only packages are not present in the runtime artifact. Without the specific package identity, it cannot be confirmed that vulnerable code is reachable in production or that attacker-controlled input reaches it. High advisory severity alone does not establish immediate user danger.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package. If it is a dev dependency, updating is good hygiene; if it is a production dependency, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4cwx-7wf7-3272</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-jqh4-m9w3-8hp9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-level issue in a dependency, but the affected package was not provided. The visible dependencies are build tools, so this most likely affects the development environment rather than the app users run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jqh4-m9w3-8hp9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory (GHSA-jqh4-m9w3-8hp9) against a dependency in the lockfile, but package details were removed. The visible lockfile portion shows only dev-only packages. The production dependencies are minimal and consist of well-maintained React ecosystem libraries. Without the specific package and version, runtime reachability in the shipped Electron application cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit locally to identify the specific package and update it if feasible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jqh4-m9w3-8hp9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool used only during development has a known security issue, but it does not affect the app that users actually run on their computer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-fxqj-rqcc-2cmp, medium) matches a known vulnerability in a build-tooling dependency declared in the lockfile. The project is a local-first Electron desktop app whose production runtime ships a compiled bundle; the affected package is a development/build dependency whose vulnerable code path (dev-server functionality) is not exercised in the shipped desktop application. Attacker control would require network access to a running development server, which is not part of the end-user experience.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build dependency to a patched version when convenient to keep the development environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development tool has a serious-sounding security flaw, but because this app runs locally on your computer and does not expose a website, the flaw does not reach end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-mh99-v99m-4gvg, high scanner severity) corresponds to a known vulnerability in a build-tooling dependency. The project&#39;s production artifact is a bundled Electron desktop application; the vulnerable code resides in development-time tooling whose affected functionality is not present in the shipped runtime. The high scanner severity reflects the advisory&#39;s worst-case scenario for web-facing deployments, which does not apply to this local desktop app context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Upgrade the flagged build dependency to a version that includes the fix.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-42h9-826w-cgv3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development-only tool has a known issue, but it is not part of the app people install and run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-42h9-826w-cgv3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-42h9-826w-cgv3, medium) flags a build-tooling dependency in the lockfile. The vulnerable code path is associated with development-server behavior that is not part of the compiled Electron desktop application shipped to users. Runtime reachability in the production context is absent, and attacker control over the vulnerable input would require access to a local development server.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched release during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-42h9-826w-cgv3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool used during development has a minor known issue that does not affect the finished app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-m8rv-5g2x-5cg5, medium) matches a known vulnerability in a development/build dependency. The project ships as a local Electron desktop application with a pre-built bundle; the affected tool&#39;s vulnerable functionality is confined to the development workflow and does not execute in the end-user runtime. No attacker-controlled input reaches the vulnerable code in the production context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Bump the flagged development dependency to a fixed version when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development tool has a high-severity label, but the dangerous part only exists when building the app, not when using it. Since this is a local desktop app, users are not exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-rgw5-rvv9-x895, high scanner severity) corresponds to a known vulnerability in build-tooling declared in the lockfile. The high severity reflects risk for deployments that expose the development server to network traffic. This project is a local-first Electron desktop app; the vulnerable development-server code is not included in the production bundle, and end users do not run a network-accessible dev server. Runtime reachability and attacker control are absent in the shipped context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Upgrade the affected build dependency to a patched version to protect the development environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-9f4c-93c8-jc8g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development tool carries a high-severity warning, but the dangerous feature is only active during development and is not shipped to users of this local desktop app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-9f4c-93c8-jc8g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-9f4c-93c8-jc8g, high scanner severity) flags a build-tooling dependency in the lockfile. The vulnerable code path is associated with development-time server or bundler behavior that is not present in the compiled Electron desktop application. The project&#39;s local-first architecture means no network-facing service is exposed to end users, so attacker control cannot reach the vulnerable input in the production runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a version that includes the advisory fix.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-9f4c-93c8-jc8g</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (16)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a CSS style rule that changes the mouse cursor when dragging a profile image cropper. It has nothing to do with startup persistence or security.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is part of a CSS stylesheet defining a pseudo-class selector for an active crop handle cursor state. There is no executable code, no persistence mechanism, no data flow, and no runtime behavior. This is a static style rule.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15866" rel="noopener noreferrer">src/styles.css:15866</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a styling rule for a dialog box in the app&#39;s user interface. It does not run any code or change how the app starts up.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick dialog stage element. It contains only layout properties. There is no code execution, persistence mechanism, or startup modification behavior present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15816" rel="noopener noreferrer">src/styles.css:15816</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule for a heading inside a dialog. It does not affect app startup or persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick header heading element. It contains only color and font-size properties. No persistence or startup behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15805" rel="noopener noreferrer">src/styles.css:15805</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS layout rule for an image frame in a profile picture picker. It only controls how the element looks on screen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile image frame container, declaring positioning, display, and touch-action properties. No executable code or persistence behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15827" rel="noopener noreferrer">src/styles.css:15827</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS style for a resize handle button on an image cropper. It only controls appearance.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a crop resize handle element with border, background, and box-shadow styling. No executable code or persistence mechanism exists in this CSS rule.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15878" rel="noopener noreferrer">src/styles.css:15878</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule that removes margins from text in a dialog header. It has no startup or persistence effect.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is part of a CSS selector group for profile-pick header heading and paragraph elements, setting margin to zero. No executable code or persistence mechanism exists here.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15800" rel="noopener noreferrer">src/styles.css:15800</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS visual style for the dashed circle inside an image cropper. It only affects appearance.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a crop handle visual indicator, defining position, border, and pointer-events properties. No executable logic or persistence is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15870" rel="noopener noreferrer">src/styles.css:15870</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule for text margins in a dialog. It does not run code or modify startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is part of a CSS selector group for profile-pick header heading and paragraph elements. It only sets margin to zero. No persistence or startup modification is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15801" rel="noopener noreferrer">src/styles.css:15801</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a layout styling rule for a dialog header. It does not affect app startup or persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick header element with flexbox layout properties. No executable code, persistence, or startup modification exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15791" rel="noopener noreferrer">src/styles.css:15791</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule for a dialog box&#39;s size and appearance. It does not run code or change startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick dialog container with width, height, flex, padding, border, and background properties. No persistence or startup behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15778" rel="noopener noreferrer">src/styles.css:15778</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS layout rule for the button row in a profile picture picker dialog. It only controls spacing and alignment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick actions container using flexbox layout properties. No code execution or persistence behavior is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15892" rel="noopener noreferrer">src/styles.css:15892</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS style for a dimming overlay on top of an image in the profile picker. It only controls visual appearance.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a semi-transparent overlay scrim, defining absolute positioning and a background color. No persistence or executable code is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15843" rel="noopener noreferrer">src/styles.css:15843</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS style for the circular crop box in the profile picture picker. It only controls how the cropping circle looks.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for the circular crop selection box, defining position, border, border-radius, cursor, and box-shadow properties. No executable code or persistence mechanism exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15850" rel="noopener noreferrer">src/styles.css:15850</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS style controlling how an image is sized inside the profile picture picker. It only affects layout.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS descendant selector for an image element inside the profile-pick frame, setting display and max-dimensions. No executable code or persistence is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15836" rel="noopener noreferrer">src/styles.css:15836</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule for a dark overlay behind a dialog. It does not affect app startup or persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick backdrop overlay with fixed positioning and background properties. No executable code, persistence, or startup modification exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15767" rel="noopener noreferrer">src/styles.css:15767</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule for descriptive text in a dialog header. It does not run code or modify startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile-pick header paragraph element with margin and font-size properties. No persistence or startup modification behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15810" rel="noopener noreferrer">src/styles.css:15810</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>All six advisories target build-tooling dependencies with no production runtime reachability in this Electron desktop app</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>All six security warnings are about tools used to build the app, not the app itself. Since this is a desktop program that runs locally and does not run a website, the issues do not reach people who install and use it.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The six flagged advisories correspond to known vulnerabilities in development and build tooling (such as bundler dev-server packages) declared in the lockfile. The project is a local-first Electron desktop application that ships a pre-built bundle; the vulnerable code paths are confined to development-time server functionality that is not included in or executed by the production runtime. The scanner removed specific package details, so exact version confirmation against each advisory could not be performed from the supplied source context alone, but the project&#39;s architecture and dependency profile indicate no production runtime exposure. The esbuild override to 0.28.1 in package.json suggests the developer is already managing build-tool versions.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency update pass on build tooling to clear all advisories and keep the development environment secure.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/package-lock.json#L1-L41" rel="noopener noreferrer">package-lock.json:1-41</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All candidates are CSS styling rules with no executable behavior</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Every flagged item is a visual styling rule for a dialog box in the app&#39;s interface. Stylesheets only control appearance and layout and cannot run programs, save data, or change how the app starts.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight candidates are in a production CSS file and correspond to class selectors for a profile-pick dialog UI component. The surrounding source context shows only standard CSS properties such as position, display, flex, padding, border, color, background, and font-size. CSS cannot perform persistence, startup modification, code execution, or network calls. The scanner rule produced false positives by matching selector names in a static stylesheet.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/unrefined803/RPGraph/blob/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc/src/styles.css#L15767-L15825" rel="noopener noreferrer">src/styles.css:15767-15825</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>378 files &middot; 24686799 bytes</dd>
+      <dt>Contextual coverage</dt><dd>38 of 38 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/unrefined803/RPGraph/commit/2fa4ba417f2dea1fd775afcb8f1709194f14b6fc" rel="noopener noreferrer">2fa4ba417f2dea1fd775afcb8f1709194f14b6fc</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T00:36:36.624Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>56323 input &middot; 20258 output &middot; 7926 cache read &middot; 1339 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>338e30eaeff375e336a505fed013c2b83c1541eb0b025464cb476f0103ec3536</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1289035231/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
