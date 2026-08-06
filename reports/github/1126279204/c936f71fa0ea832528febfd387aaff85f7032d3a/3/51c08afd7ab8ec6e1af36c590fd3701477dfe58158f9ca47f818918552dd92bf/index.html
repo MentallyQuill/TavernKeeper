@@ -1,0 +1,1986 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for AventurasTeam/Aventuras at commit c936f71.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; AventurasTeam/Aventuras</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/AventurasTeam/Aventuras" rel="noopener noreferrer">AventurasTeam/Aventuras</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/AventurasTeam/Aventuras/commit/c936f71fa0ea832528febfd387aaff85f7032d3a" rel="noopener noreferrer">c936f71</a></span>
+        <span>Reviewed <time datetime="2026-08-06T00:14:53.754Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">4 material concerns identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>4 material</span>
+        <span>93 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <article class="finding risk-material">
+    <h3>Dependency advisory GHSA-vxpw-j846-p89q applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known vulnerability in one of the app&#39;s dependencies. Since this app connects to external AI services over the internet, a vulnerable networking component could potentially be exploited if a malicious or compromised AI provider sends crafted data back to the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-vxpw-j846-p89q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-vxpw-j846-p89q) against a dependency declared in the lockfile. The project includes production network dependencies such as undici (via @ai-sdk/provider-utils) that handle HTTP responses from external AI provider APIs. If this advisory targets a network-parsing library, attacker-controlled response headers from a malicious or compromised AI endpoint could reach the vulnerable code path at runtime. The scanner removed specific package details, preventing definitive confirmation of the exact package and version, but the match confidence is high and the project&#39;s architecture includes outbound HTTP to user-configured endpoints, making runtime reachability plausible.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that patches the referenced advisory. Run npm audit or osv-scanner locally to identify the specific package and upgrade it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-vxpw-j846-p89q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-fjxv-7rqg-78g4 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner flagged a critical vulnerability in one of the app&#39;s dependencies, but the specific package was not identified in the scanner output. Because this is a desktop app rather than a web server, the real-world danger may be lower than the critical rating suggests, but it should still be investigated and fixed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fjxv-7rqg-78g4 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a critical-severity advisory (GHSA-fjxv-7rqg-78g4) against a dependency in the lockfile. The scanner removed package details, so the specific affected package and its runtime reachability cannot be confirmed from the supplied evidence alone. A critical advisory could indicate a severe issue such as path traversal, code execution, or authentication bypass. However, this is a Tauri desktop application, not a server, which limits the attack surface compared to a network-facing service. Without knowing whether the affected package is a production or development dependency, and whether the vulnerable code path is reachable, the actual impact may range from negligible to significant. Confidence is low due to the missing package identity.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the specific package matching GHSA-fjxv-7rqg-78g4 using npm audit or osv-scanner with verbose output, then upgrade to a patched version. If the package is a dev-only dependency, document that it does not ship with the application.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fjxv-7rqg-78g4</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-vrm6-8vpv-qv8q applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-severity vulnerability in one of the app&#39;s dependencies. Since the app receives and processes content from external AI services, a vulnerable component could potentially be triggered by crafted data from a malicious provider.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-vrm6-8vpv-qv8q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-vrm6-8vpv-qv8q) against a dependency in the lockfile. The project processes external AI-generated content and makes outbound HTTP requests to user-configured AI provider endpoints. If the affected package handles network I/O, response parsing, or content rendering, attacker-controlled data from a malicious AI endpoint could reach the vulnerable code. The scanner removed package details, preventing exact identification, but the high-severity match combined with the project&#39;s external-data processing architecture makes runtime reachability plausible.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the specific package matching this advisory and upgrade to a patched version. Verify whether the vulnerable code path is reachable in the application&#39;s runtime context.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-vrm6-8vpv-qv8q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-hmw2-7cc7-3qxx applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-severity vulnerability in one of the app&#39;s dependencies. Because the app processes and displays content generated by external AI services, a vulnerable parsing or rendering component could potentially be exploited by crafted AI output.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-hmw2-7cc7-3qxx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-hmw2-7cc7-3qxx) against a dependency in the lockfile. The project processes external AI-generated text and renders markdown (via marked) and Liquid templates (via liquidjs) in its WebView. If the affected package is involved in content parsing, rendering, or network handling, attacker-controlled AI responses could reach the vulnerable code path. The scanner removed package details, but the high-severity rating combined with the project&#39;s external-content processing makes runtime reachability plausible.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the specific package matching this advisory and upgrade to a patched version. If the package processes user or AI-generated content, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-hmw2-7cc7-3qxx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-wrw7-89jp-8q8g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency used by the app&#39;s Rust backend was flagged with a known issue of medium severity. The evidence does not show enough detail to confirm whether the problem is actually reachable in this app, and medium-severity Rust advisories are often just warnings about outdated libraries rather than directly exploitable flaws.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-wrw7-89jp-8q8g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A GitHub-sourced advisory of medium severity was matched against a dependency in the Cargo lockfile. The supplied source context is truncated to the first 41 lines of a large lockfile and the scanner removed package details, so the specific crate and version cannot be verified. For a Tauri desktop application, medium-severity Rust ecosystem advisories are typically unmaintained-crate warnings or issues requiring specific attacker-controlled input that is unlikely to reach the vulnerable code path in a local interactive-fiction app.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version when convenient and verify whether the vulnerable code path is reachable in the application.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-wrw7-89jp-8q8g</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Android SDK setup step uses a version tag rather than a fixed commit hash. If the tag were moved to malicious code, the workflow could be affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references android-actions/setup-android@v3, a floating tag from a third-party maintainer. A tag redirection could execute different code in a job with access to Android keystore secrets. Third-party actions carry slightly higher supply-chain risk than GitHub-official ones.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L108" rel="noopener noreferrer">.github/workflows/release.yml:108</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The build system saves downloaded packages to speed up future builds. In theory someone could try to tamper with that saved cache, but the way this workflow is set up makes that difficult to exploit.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action enables npm dependency caching. Cache poisoning would require an untrusted contributor to submit a PR that modifies the lockfile and have the poisoned cache consumed by a subsequent trusted build. The workflow does not show evidence of pull_request_target triggers or broad cache sharing across fork PRs, so the practical attack surface is limited. Standard cache-scoping mitigations are absent but the risk is low for this build configuration.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider setting explicit cache scope or restricting which workflows can write to shared caches if untrusted PRs are accepted.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L95" rel="noopener noreferrer">.github/workflows/ci.yml:95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow caches downloaded npm packages to speed up builds. Someone would need repository access to tamper with this cache, making real-world risk very low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action with npm cache is standard CI practice. Cache poisoning would require an attacker to already have write access to the repository or cache namespace. The workflow is triggered by version tags, limiting the attack surface. The risk is theoretical for this build-only workflow.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using a cache key that includes a hash of file to reduce cache collision risk, but no urgent change is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L42" rel="noopener noreferrer">.github/workflows/ci.yml:42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a third-party build tool instead of locking it to a specific download. If that label were ever redirected to bad code, it could run in the build environment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The android-actions/setup-android action is referenced by a mutable version tag rather than a commit SHA. If the tag were moved to a malicious commit, the action would execute in a context with access to repository secrets. This is a third-party action, which carries more supply-chain risk than first-party GitHub actions. The impact is constrained because the build-android job does not expose signing secrets to this specific step&#39;s environment, though the job-level GITHUB_TOKEN is present.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin third-party actions to a commit SHA for stronger supply-chain integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L113" rel="noopener noreferrer">.github/workflows/ci.yml:113</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0098 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust library used by the app was flagged with a medium-severity issue. Without seeing which library or how it is used, this is most likely a maintenance concern rather than an immediate security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0098 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RustSec advisory from 2025 was matched against a lockfile dependency at medium severity. The truncated source context and removed package details prevent verifying the specific crate, version, or runtime reachability. In a Tauri desktop app context, medium-severity advisories commonly relate to unmaintained crates or edge-case issues that require specific preconditions unlikely to be met by normal application usage.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the flagged crate, update to a patched version, and confirm whether the vulnerable code path is exercised by the application.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0098</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build step that packages the desktop app has access to the code-signing key and uses a version label instead of a locked identifier. If that label were hijacked, the signing key could be stolen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The tauri-apps/tauri-action is referenced by a mutable v0 tag and runs with direct access to GITHUB_TOKEN, TAURI_SIGNING_PRIVATE_KEY, and TAURI_SIGNING_PRIVATE_KEY_PASSWORD in its environment. If the tag were moved to a malicious commit, those secrets could be exfiltrated. This is a third-party action with high-value secret access, making pinning more important. The impact is elevated due to the signing key exposure.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin this action to a commit SHA, especially given its access to signing secrets.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L67" rel="noopener noreferrer">.github/workflows/ci.yml:67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2023-0071 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust library was flagged because it is no longer maintained. This is a good practice issue to address but does not indicate an active security hole in the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2023-0071 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> RUSTSEC-2023-0071 is a known advisory matched at medium severity. The source context does not include the affected package entry, so the specific crate and version cannot be confirmed. This advisory ID corresponds to an unmaintained-crate classification in the RustSec database, which does not describe a directly exploitable vulnerability but rather a supply-chain maintenance risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace or update the unmaintained dependency with a maintained alternative when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2023-0071</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The code checkout step uses a version label for a standard GitHub tool. This is common practice but not as safe as locking to a specific version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The actions/checkout step in the build-android job is referenced by a mutable v4 tag. This is a first-party GitHub action, which reduces supply-chain risk compared to third-party actions. The default persist-credentials behavior means a GITHUB_TOKEN is written to the local git config, but the impact of tag compromise is limited to the CI environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin to a commit SHA for consistency with supply-chain best practices.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L92" rel="noopener noreferrer">.github/workflows/ci.yml:92</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Java setup step uses a version tag rather than a fixed commit hash. If the tag were moved to malicious code, the workflow could be affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-java@v4, a floating tag. A tag redirection could execute different code in a job that has access to Android keystore secrets. This is a standard supply-chain hardening gap.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L102" rel="noopener noreferrer">.github/workflows/release.yml:102</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a shorthand reference for a standard build tool instead of locking it to an exact version. This is common but could theoretically allow a compromised update to affect builds.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by major version tag rather than a commit SHA. This is a widespread convention but means the action version can shift if the maintainer retags or if the tag is compromised. The workflow only triggers on version-tag pushes or manual dispatch, limiting exposure to maintainers. No untrusted PR triggers are present.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin third-party and first-party actions to a full commit SHA for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L43" rel="noopener noreferrer">.github/workflows/release.yml:43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a GitHub Action instead of locking it to a specific commit. This is common but means a compromised update could theoretically affect builds.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action is referenced by major version tag v4 rather than a pinned SHA. If the action&#39;s tag were moved to a malicious commit, it could affect the workflow. This is a supply-chain hardening best practice issue, not an active vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L42" rel="noopener noreferrer">.github/workflows/ci.yml:42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The build system caches downloaded packages to speed things up. A sophisticated attacker might try to corrupt this cache, but since only project maintainers can trigger this workflow, the risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Node setup step enables npm dependency caching. Cache poisoning could in theory inject malicious node modules into subsequent builds. However, the workflow only runs on tag pushes or manual dispatch by maintainers, not on pull requests, so external contributors cannot directly influence cache contents. The impact is limited to build integrity for maintainer-initiated releases.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using cache scopes or lockfile-based cache keys to reduce cache poisoning surface, though this is a low-priority hardening step.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L46" rel="noopener noreferrer">.github/workflows/release.yml:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Rust toolchain setup step uses a floating tag rather than a fixed commit hash. If the tag were moved to malicious code, the workflow could be affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references dtolnay/rust-toolchain@stable, a floating tag that tracks the latest stable Rust toolchain installer. A tag redirection could execute different code in a job with access to build and signing secrets. This is a standard supply-chain hardening gap.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L97" rel="noopener noreferrer">.github/workflows/release.yml:97</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5v7r-6r5c-r473 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level vulnerability in one of the app&#39;s dependencies. In a desktop application like this, medium-severity issues typically have limited real-world impact, but it is still good practice to update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5v7r-6r5c-r473 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-5v7r-6r5c-r473) against a dependency in the lockfile. Medium-severity advisories in npm dependencies often affect edge-case code paths, development tooling, or scenarios requiring specific preconditions that are unlikely in a Tauri desktop application context. The scanner removed package details, but given the medium severity and the desktop app&#39;s limited attack surface, the likelihood of concrete user harm is low. The advisory may also correspond to a dev-only dependency that does not ship with the application.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and update it when convenient. If it is a development-only dependency, no urgent action is required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5v7r-6r5c-r473</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0429 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust dependency was flagged with a medium-severity advisory. This is most likely an outdated-library warning rather than a directly exploitable vulnerability.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0429 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> RUSTSEC-2024-0429 was matched at medium severity against a lockfile dependency. Package details were removed by the scanner and the source excerpt is truncated, preventing verification of the affected crate and version. Medium-severity 2024 RustSec advisories in this range are predominantly unmaintained-crate warnings without direct exploitability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency and verify runtime reachability of any vulnerable code path.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0429</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0415 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust library was flagged with a medium-severity issue, likely related to the library no longer being maintained. This is a maintenance concern, not an immediate security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0415 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> RUSTSEC-2024-0415 was matched at medium severity. The source context is insufficient to identify the specific crate or confirm the version present. This advisory range typically covers unmaintained-crate notifications in the RustSec database, which represent supply-chain hygiene issues rather than directly exploitable vulnerabilities.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update or replace the flagged dependency with a maintained version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0415</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>When checking out code, a temporary access token is saved in the local git settings. If this token accidentally ended up in a published file, someone could misuse it. The risk is low because build outputs are compiled binaries, not source folders.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action persists the GITHUB_TOKEN in local git config by default. If build artifacts inadvertently include the .git directory, the token could be exposed. This workflow builds Tauri binaries and uploads release assets, so the .git directory is unlikely to be included in published artifacts, keeping risk low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on the checkout step if git credentials are not needed for subsequent steps.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L38-L39" rel="noopener noreferrer">.github/workflows/ci.yml:38-39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The release build tool that handles code signing is referenced by a loose version label. Locking it to an exact version would be safer, especially since it can access signing keys.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Tauri build action is referenced at a floating major version v0 and has access to signing key secrets via environment variables. SHA-pinning would reduce supply-chain risk. The workflow trigger is restricted to tag pushes and manual dispatch, so only maintainers initiate runs. The action is a well-known community standard for Tauri releases.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the Tauri action to a full commit SHA, particularly important because this step has access to signing key secrets.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L66" rel="noopener noreferrer">.github/workflows/release.yml:66</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0413 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust dependency was flagged with a medium-severity advisory, most likely an unmaintained-library warning. This is a maintenance issue rather than an active vulnerability.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0413 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> RUSTSEC-2024-0413 was matched at medium severity against a Cargo lockfile dependency. The truncated source and removed package details prevent confirming the affected crate and version. Advisories in this range are typically unmaintained-crate warnings without direct exploitability in a desktop application context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency and confirm whether the vulnerable code path is reachable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0413</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level vulnerability in one of the app&#39;s dependencies. For a desktop app, this is a low-priority issue that should be addressed during routine maintenance.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-8xcm-r25x-g524) against a dependency in the lockfile. The scanner removed package details. Medium-severity advisories in this project context—a Tauri desktop application with no server-side attack surface—are unlikely to result in concrete user harm. The vulnerable code path may require specific preconditions or attacker-controlled input that is not readily available in the application&#39;s runtime environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and update it during routine dependency maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The checkout step uses a version tag rather than a fixed commit hash. If the tag were ever moved to malicious code, the workflow could be affected, though this is unlikely for GitHub&#39;s official action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/checkout@v4, a floating tag. If the tag is moved to a different commit, the workflow would execute different code with access to repository contents. This is a standard supply-chain hardening gap, not an active vulnerability.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag for reproducible and tamper-resistant builds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L87" rel="noopener noreferrer">.github/workflows/release.yml:87</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for the checkout action instead of locking it to a specific commit. This is common practice but not maximally secure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by major version tag v4 rather than a pinned SHA. This is a supply-chain hardening best practice issue. The action is a first-party GitHub action widely used in CI workflows.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L39" rel="noopener noreferrer">.github/workflows/ci.yml:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The npm cache used during builds could theoretically be tampered with, but the risk is low in this release workflow context.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action enables npm dependency caching. Cache poisoning would require an attacker to write to the GitHub Actions cache for this repository&#39;s scope, which requires write access to the repository itself. The cache is used for build dependencies in a release workflow, limiting the blast radius.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider whether cache-scope restrictions are needed; otherwise no change is warranted for this standard caching pattern.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L90" rel="noopener noreferrer">.github/workflows/release.yml:90</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The artifact upload step uses a version tag rather than a fixed commit hash. If the tag were moved to malicious code, the workflow could be affected, though this step has limited access to secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/upload-artifact@v4, a floating tag. This step does not directly handle secrets, reducing the impact of a potential tag redirection compared to other steps in the same job.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L146" rel="noopener noreferrer">.github/workflows/release.yml:146</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0419 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust library was flagged with a medium-severity issue, likely because it is no longer actively maintained. This is a dependency hygiene concern, not an immediate danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0419 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> RUSTSEC-2024-0419 was matched at medium severity. The source excerpt does not include the affected package entry and the scanner removed package details, so the specific crate and version cannot be verified. This advisory range typically covers unmaintained-crate notifications rather than directly exploitable vulnerabilities.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace or update the flagged dependency with a maintained alternative.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0419</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The app includes a backup access key for a character-search website directly in its code. Since this code runs on the user&#39;s device, anyone can read the key. Someone could take it and overuse the search service, but it does not expose the user&#39;s private data or the user&#39;s own API keys.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> A static token is hardcoded as a fallback constant in a frontend provider module. Because this file ships to client bundles, the token is inherently public and cannot be considered secret. The token is used to authenticate requests to a third-party character-card search API. The main concern is that any user or third party can extract and reuse the token, potentially causing quota abuse or rate-limit exhaustion against the upstream service. There is no indication of exfiltration to an attacker-controlled endpoint; the destination is the legitimate JannyAI search API.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Move the token to a server-side proxy or environment-injected runtime configuration so it is not embedded in the client bundle. If the token is intentionally public and rate-limited upstream, document that rationale near the constant.</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/e3b2a5be47898ed11517ee24a7a3b00cf2639439/src/lib/services/discovery/providers/janny.ts#L9" rel="noopener noreferrer">src/lib/services/discovery/providers/janny.ts:9</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build script downloads a helper tool by a version label instead of a fixed fingerprint. If someone hijacked that helper&#39;s source, a bad version could run during builds. This is a common practice and the risk is low, but pinning to an exact version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references a third-party GitHub Action by major-version tag rather than a pinned commit SHA. If that action&#39;s repository were compromised and the tag re-pointed, a malicious revision could execute in CI with access to repository secrets. The referenced action is a well-known, reputable NDK setup action, and tag re-pointing attacks on popular actions are rare and typically detected quickly. This is a supply-chain hardening gap, not an active vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin third-party actions to a specific commit SHA with an integrity comment for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L116" rel="noopener noreferrer">.github/workflows/ci.yml:116</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0370 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A Rust dependency was flagged with a medium-severity advisory, most likely related to the library being unmaintained. This is a good-practice issue to resolve but not an active security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0370 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> RUSTSEC-2024-0370 was matched at medium severity against a lockfile dependency. The source context is truncated and package details were removed, preventing verification of the affected crate and version. This advisory is in the range of unmaintained-crate warnings, which do not describe directly exploitable vulnerabilities but rather supply-chain maintenance risks.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update or replace the flagged dependency with a maintained version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0370</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The build process saves a login token on the build machine during checkout and later uploads a build output. There is a small chance the token could be included in what gets uploaded, though the current upload targets only the app package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule fires because checkout persists credentials by default and a later upload-artifact step exists. However, the uploaded artifact is specifically the built Android APK file path, not the entire workspace or git directory. The persisted GITHUB_TOKEN in git config is unlikely to be included in the narrowly scoped APK artifact. The risk is low but nonzero if artifact upload patterns change.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on checkout steps where git push is not needed, or verify artifact upload paths remain narrowly scoped.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L91-L92" rel="noopener noreferrer">.github/workflows/ci.yml:91-92</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-72xf-g2v4-qvf3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level vulnerability in one of the app&#39;s dependencies. This is a low-priority issue for a desktop application and can be addressed during routine updates.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-72xf-g2v4-qvf3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-72xf-g2v4-qvf3) against a dependency in the lockfile. The scanner removed package details. In a Tauri desktop application with no public-facing server component, medium-severity dependency advisories typically have limited runtime impact. The vulnerable code path may be in a development dependency or require preconditions not present in the application&#39;s execution environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and update it during routine dependency maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-72xf-g2v4-qvf3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a label for the Rust installer action instead of locking it to a specific commit. Common practice but not maximally secure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The rust-toolchain action is referenced by the stable tag rather than a pinned SHA. This is a supply-chain hardening best practice issue. The action is a well-known community action for installing Rust toolchains.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L48" rel="noopener noreferrer">.github/workflows/ci.yml:48</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0412 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A third-party software library used by the app has a known minor security issue flagged in a public database. Based on available evidence, the problem is not something that an attacker can easily use against users of this desktop application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0412 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is flagged against a dependency declared in this Cargo.lock. The advisory&#39;s package details were stripped from the scanner output, so the specific vulnerable crate and its version cannot be confirmed against the partial lockfile view. The project is a Tauri desktop application that processes local user content and makes outbound calls to AI provider APIs; without confirmed runtime reachability of the vulnerable code path or evidence of attacker-controlled input reaching it, this represents a routine dependency hygiene issue rather than a directly exploitable flaw.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the full Cargo.lock against the advisory details and update the affected crate to a non-vulnerable version when a patched release is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0412</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0417 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>Another third-party library has a known minor issue. There is no indication that this can be exploited through normal use of the desktop app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0417 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is matched against a dependency in the lockfile, but the affected package name and version were removed from the scanner evidence. The visible lockfile portion confirms this is a standard Tauri 2 desktop project with SQLite, HTTP client, and local networking dependencies. No evidence indicates that attacker-controlled data reaches the vulnerable code path at runtime. Medium-severity advisories in desktop applications without confirmed reachability are treated as low-risk dependency maintenance items.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific crate from the advisory and update it when a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0417</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>There is a theoretical risk that the temporary access token used during the build could end up inside a published file. In practice the token expires quickly and only maintainers can trigger this build.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags that the GITHUB_TOKEN used during checkout could theoretically be captured in build artifacts uploaded by the workflow. The Android job does not use tauri-action for uploads in the visible source, and the token is the standard ephemeral runner token. The risk is low because the token is short-lived and scoped, and the workflow is maintainer-triggered only.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Ensure build artifacts are cleaned of credential-related files before any upload step, and avoid archiving the full workspace.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L86-L87" rel="noopener noreferrer">.github/workflows/release.yml:86-87</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6rw7-vpxm-498p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level vulnerability in one of the app&#39;s dependencies. For a desktop app, this is a low-priority issue that can be fixed during normal maintenance.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6rw7-vpxm-498p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-6rw7-vpxm-498p) against a dependency in the lockfile. The scanner removed package details. Medium-severity advisories in a desktop application context generally present low concrete risk, as the attack surface is limited to local execution without network-facing services. The affected package may be a development dependency or have vulnerable code paths that are not reachable at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and update it during routine dependency maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6rw7-vpxm-498p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-g9mf-h72j-4rw9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level vulnerability in one of the app&#39;s dependencies. Without knowing exactly which package is affected or how the app uses it, it is unclear whether this could actually be exploited. Desktop apps generally have a smaller attack surface than web servers.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-g9mf-h72j-4rw9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-g9mf-h72j-4rw9) against a dependency declared in the package-lock.json. The specific affected package and version were not included in the scanner evidence, preventing confirmation of whether the vulnerable code path is a production or development dependency, whether the vulnerable function is reachable at runtime, or whether attacker-controlled input can reach it. This is a Tauri desktop application where the attack surface is limited to local execution, AI provider API responses, and imported content. Without identifying the package and its usage context, the advisory cannot be elevated beyond a minor weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit to identify the specific package, determine whether it is a production or dev-only dependency, and update it if a fixed version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-g9mf-h72j-4rw9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0075 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A library used by the app has a known minor security note. There is no evidence that this issue can be triggered by anyone using the app normally.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0075 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is reported for a dependency in this Cargo.lock. The affected package details were redacted from the scanner candidate, preventing confirmation of the exact crate and version. This Tauri desktop application primarily handles local interactive-fiction data and outbound AI API calls. Without verified runtime reachability or attacker-controlled input to the vulnerable code, the concrete risk to users is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Cross-reference the advisory identifier against the full dependency tree and apply available patches.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0075</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The release workflow uses a third-party tool identified by a version label that can be changed by the tool&#39;s owner. If someone hijacked that tool&#39;s repository, they could swap in malicious code that runs during your release process. This is a minor best-practice gap, not an active threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references a third-party GitHub Action by mutable tag (v1) rather than pinning to a full commit SHA. If the upstream action repository were compromised and the tag moved, the workflow would execute attacker-controlled code with access to the repository GITHUB_TOKEN used for creating draft releases. This is a supply-chain hygiene weakness common in hobbyist CI configurations. Exploitation requires a successful compromise of the well-known upstream action, which is unlikely but not impossible.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the third-party action to a full commit SHA instead of a mutable tag to prevent supply-chain tag-swap attacks.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L152" rel="noopener noreferrer">.github/workflows/release.yml:152</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow caches compiled Rust files to speed up builds. Tampering with this cache requires existing repository access, making real-world risk very low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The rust-cache action caches compiled Rust artifacts. Cache poisoning would require an attacker to already have write access to the repository or cache namespace. The workflow is triggered by version tags, limiting the attack surface. This is standard CI caching practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using a more specific cache key that includes the Rust toolchain version and lockfile hash, but no urgent change is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L53" rel="noopener noreferrer">.github/workflows/ci.yml:53</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0081 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A minor known issue exists in one of the app&#39;s underlying libraries. It does not appear exploitable through normal desktop use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0081 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is flagged for a dependency in the lockfile, but the affected crate identity was stripped from the scanner output. The application context is a Tauri desktop interactive-fiction tool with local SQLite storage and AI provider integration. No evidence in the supplied data demonstrates runtime reachability of the vulnerable function or attacker control over its inputs. Medium advisories without confirmed exploitable paths in a desktop context are low risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version once identified from the advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0081</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0100 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A third-party library has a flagged minor issue. The desktop app does not appear to expose a way for this to be exploited.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0100 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is matched for a lockfile dependency with package details removed from the scanner evidence. The project is a locally-running Tauri application that does not expose internet-facing server surfaces beyond outbound AI API calls and optional local-network sync. Without confirming the specific crate or that attacker-controlled data reaches the vulnerable code at runtime, the advisory represents routine dependency maintenance rather than a concrete threat.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify and update the affected crate from the full advisory details.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0100</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI uses a version tag for a standard GitHub helper tool instead of locking it to a specific download. If someone managed to reassign that tag to bad code, it could run during testing. This is a routine hardening improvement, not an active danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action is referenced by its floating major-version tag rather than a commit SHA pin. If the tag were ever repointed to a malicious commit, the workflow could execute untrusted code during CI. This is a first-party GitHub action whose tags are strongly protected, so practical exploitation is very unlikely, but SHA pinning is the recommended hardening practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a full commit SHA for defense-in-depth.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/lint-and-typecheck.yml#L19" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Node.js setup step uses a version tag rather than a fixed commit hash. If the tag were moved to malicious code, the workflow could be affected, though this is unlikely for GitHub&#39;s official action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-node@v4, a floating tag. The step also enables npm caching. A tag redirection could execute different code in a job that has access to build secrets. This is a standard supply-chain hardening gap.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L90" rel="noopener noreferrer">.github/workflows/release.yml:90</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level vulnerability in a dependency. It is unclear which package is affected or whether the vulnerable code is actually used by the app, so the real-world risk is uncertain.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-v3r7-h72x-cjcm) against a dependency in the lockfile. The affected package identity was stripped from the scanner output, so runtime reachability and attacker-input pathways cannot be assessed. The project bundles dependencies into a Tauri WebView frontend; dev-only dependencies do not ship to end users. Advisory severity alone does not establish a material vulnerability without confirming the package is production-reachable and the vulnerable code is exercised.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package via a fresh audit, check whether it ships in production builds, and upgrade if a patched version exists.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4992-7rv2-5pvq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level vulnerability in a dependency. Without knowing which package is involved or how the app uses it, the practical risk cannot be confirmed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4992-7rv2-5pvq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-4992-7rv2-5pvq) against a dependency in the lockfile. Package details were removed from the evidence, preventing determination of whether the dependency is production or development, whether the vulnerable code path is invoked, or whether attacker-controlled data reaches it. The application is a local desktop tool; without confirmed runtime reachability the advisory remains a minor weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Re-run the audit to identify the package, verify production versus dev-only usage, and update to a fixed version if available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4992-7rv2-5pvq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The checkout helper saves a temporary access token in its working folder by default. That token could leak if files were later uploaded as CI artifacts, but this workflow never uploads artifacts, so there is no actual leak path. Turning off token persistence is a simple precaution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action persists the GITHUB_TOKEN credential into the local .git/config by default. The artipacked attack vector requires a subsequent artifact-upload step that bundles the .git directory; this workflow contains no upload-artifact step, so there is no exfiltration path. The persistence is a default of the official action and poses no reachable risk in this specific job, but explicitly disabling credential persistence is best practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on the checkout step to eliminate the theoretical credential-persistence surface.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/lint-and-typecheck.yml#L15-L16" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:15-16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w5hq-g745-h8pq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level vulnerability in a dependency. It is unclear which package is affected or whether the vulnerability is actually reachable in the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w5hq-g745-h8pq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-w5hq-g745-h8pq) against a dependency in the lockfile. The affected package name and version were not provided in the scanner evidence, so it is not possible to confirm whether the vulnerable code is a production dependency, whether it is reachable at runtime, or whether attacker input can trigger it. Severity alone is insufficient to establish a material vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package through a dependency audit, determine if it is used in production, and upgrade if a fix is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w5hq-g745-h8pq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-g8m3-5g58-fq7m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a low-level vulnerability in a dependency. The impact is likely small, and it is unclear whether the affected code is actually used by the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-g8m3-5g58-fq7m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory (GHSA-g8m3-5g58-fq7m) against a dependency in the lockfile. The affected package identity was not included in the evidence. Low-severity advisories typically describe limited-impact issues such as minor information disclosure or edge-case denial of service. Without confirming the package is production-reachable and the vulnerable code is exercised, this remains a minor weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the package via audit and update if a patched version is available; low priority.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-g8m3-5g58-fq7m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>There is a small chance the temporary build token could be included in release files. The release tool uploads specific compiled binaries rather than everything, which limits this risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags the desktop build job where checkout uses the default GITHUB_TOKEN and tauri-action uploads release assets. The concern is token leakage into uploaded artifacts. The tauri-action is a standard tool that uploads specific built binaries rather than the full workspace, reducing this risk. The token is ephemeral and scoped to contents write only.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Verify that the Tauri action only uploads intended build outputs and does not archive the full working directory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L42-L43" rel="noopener noreferrer">.github/workflows/release.yml:42-43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-pxg6-pf52-xh8x applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a low-level vulnerability in a dependency. If it is in a development-only tool, it would not affect end users at all.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-pxg6-pf52-xh8x to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory (GHSA-pxg6-pf52-xh8x) against a dependency in the lockfile. The package name was removed from the scanner output. The visible lockfile includes picomatch as a dev dependency, which has had low-severity ReDoS advisories; if this is the match, it is dev-only and does not ship to end users. Without confirmed package identity, the assessment remains a minor weakness with low impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Confirm the affected package through audit; if it is a dev-only dependency, the risk is limited to the development environment. Update when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-pxg6-pf52-xh8x</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0235 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A library used by the app matches a known advisory entry. There is no evidence that the flagged code path can be reached or exploited during normal use of the desktop application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0235 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory with a future-dated identifier is matched against a dependency in this Cargo.lock. The affected package details were redacted. The unusual advisory date raises a minor question about advisory database currency, but the scanner matched it against a real crate in the lockfile. As with the other advisories, without confirmed runtime reachability or attacker-controlled input in this Tauri desktop context, the risk is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Verify the advisory is legitimate and applicable, then update the affected crate if a patch exists.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0235</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build script uses a version label for a GitHub-provided helper instead of a fixed fingerprint. The risk is very low since GitHub maintains it, but pinning to an exact version is a recommended best practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references a first-party GitHub Action (artifact upload) by major-version tag instead of a pinned commit SHA. First-party actions under the actions/ namespace are maintained by GitHub and carry lower compromise risk, but the same tag-repointing supply-chain concern applies in principle. No untrusted user input controls which action is fetched.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions to a specific commit SHA for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L151" rel="noopener noreferrer">.github/workflows/ci.yml:151</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0416 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A minor known issue exists in a library the app depends on. It does not appear to create a practical risk for desktop users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0416 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is reported for a lockfile dependency whose package name was removed from the scanner evidence. This is a Tauri desktop application handling local interactive-fiction content and AI API interactions. The visible lockfile excerpt shows standard Rust ecosystem crates. No evidence indicates attacker-controlled input reaching the vulnerable code at runtime, so this is a dependency maintenance issue with low concrete risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Look up the advisory details and upgrade the affected dependency when possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0416</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v9p9-hfj2-hcw8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a high-level vulnerability in a dependency. This is the most concerning of the findings, but without knowing which package is affected or whether the app actually uses the vulnerable code, it is impossible to confirm the real-world danger. The app does handle sensitive data like API keys, so this should be investigated promptly.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v9p9-hfj2-hcw8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-v9p9-hfj2-hcw8) against a dependency in the lockfile with high scanner confidence. The affected package name and version were stripped from the evidence, so it is not possible to confirm whether the dependency is production or development, whether the vulnerable code path is reachable, or whether attacker-controlled input can reach it. The project is a Tauri desktop application that handles AI provider API keys and makes outbound HTTP requests; if the affected package is a production network or parsing dependency, the vulnerability could be reachable through malicious API responses or imported content. However, without identifying the package, this cannot be confirmed, and advisory severity alone does not establish a material vulnerability. The uncertainty is expressed through low confidence and a low recommended risk.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Prioritize identifying the affected package and version. If it is a production dependency that handles network requests, file parsing, or user input, update immediately. If it is a dev-only dependency, the risk is limited to the development environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v9p9-hfj2-hcw8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>Same routine hardening as the other action reference: the CI downloads a standard GitHub helper by version tag instead of a locked fingerprint. Practical risk is negligible, but pinning is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by its floating major-version tag rather than a commit SHA pin. Tag-repointing attacks on this first-party GitHub action are extremely unlikely, but SHA pinning is the established supply-chain hardening practice for CI workflows.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a full commit SHA for defense-in-depth.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/lint-and-typecheck.yml#L16" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2mjp-6q6p-2qxm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level vulnerability in a dependency. Without knowing which package is affected or how the app uses it, the practical risk is uncertain.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2mjp-6q6p-2qxm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-2mjp-6q6p-2qxm) against a dependency in the lockfile. The affected package identity was not provided in the scanner evidence, preventing assessment of runtime reachability, attacker input pathways, and concrete user harm. Without confirming the package is production-reachable and the vulnerable code is exercised, the advisory remains a minor weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package through a dependency audit, verify production versus dev-only usage, and update to a fixed version if available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2mjp-6q6p-2qxm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A standard build tool is referenced by a loose version label instead of an exact lock. This is common practice but could be hardened.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Node setup action is referenced by major version tag v4 rather than a commit SHA. This is a common convention but introduces a minor supply-chain risk if the tag is retagged or compromised. The workflow is maintainer-triggered only, limiting exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a full commit SHA for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L46" rel="noopener noreferrer">.github/workflows/release.yml:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Node.js setup step uses a version label for a standard GitHub tool. Common practice, but locking to a specific version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The actions/setup-node step is referenced by a mutable v4 tag. This is a first-party GitHub action with no direct secret exposure in its configuration. Supply-chain risk from tag movement is present but lower than for third-party actions with secret access.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin to a commit SHA for supply-chain best practices.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L95" rel="noopener noreferrer">.github/workflows/ci.yml:95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The app includes a built-in access key for a public character-search website so the search feature works out of the box. This key is not your personal API key and does not touch your private data. The only downside is that the key is visible in the source code, so the search service could disable it and the feature would stop working until the app is updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a hardcoded fallback token for the JannyAI public bot-discovery search service. It is used alongside a runtime-cached token to query a public search endpoint for character listings. This is a shared service-access token distributed with the application, not a user-owned secret or provider API key. No user credentials, private data, or model-provider keys are involved. The weakness is that hardcoding a service token in source makes rotation difficult and exposes the token publicly, but the concrete harm is limited to the discovery feature breaking if the token is revoked.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider fetching the service token from a configurable endpoint or rotating it periodically, and document that it is an intentional shared public-service token rather than a private secret.</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src/lib/services/discovery/providers/janny.ts#L9" rel="noopener noreferrer">src/lib/services/discovery/providers/janny.ts:9</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-p88m-4jfj-68fv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found that one of the app&#39;s bundled libraries has a known security advisory. Because this is a desktop app where you choose which AI services to connect to, the practical risk of someone exploiting this is low. It is still good practice to update the library when a fixed version is available.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p88m-4jfj-68fv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-p88m-4jfj-68fv) to a dependency declared in the lockfile. This is a Tauri desktop application where the affected dependency is most likely a transitive HTTP or parsing library used for outbound AI provider calls. In a desktop context, the attack surface is limited: the user selects their own AI providers and endpoints, and attacker-controlled input would need to come from a malicious provider response or imported file. The advisory severity alone does not establish runtime reachability or concrete user harm in this deployment model. Without confirmed exploitation of the specific vulnerable code path, the incremental risk is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves the advisory when a fixed release is available. Run npm audit to identify the specific package and upgrade path.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p88m-4jfj-68fv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI job does not explicitly state what it is allowed to do, so it inherits a broad default access level. The job only needs to read code and run checks, so it should declare that minimal access explicitly.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow declares no explicit permissions block, so the job inherits the repository&#39;s default GITHUB_TOKEN permissions. This lint-and-typecheck job only needs read access for checkout; if the repository default is write-enabled, the token carries unnecessary write scopes that are never used. Adding a least-privilege permissions declaration limits blast radius.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit permissions block with contents: read to enforce least privilege.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/lint-and-typecheck.yml#L12-L35" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:12-35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Rust toolchain installer is referenced by a loose label instead of an exact version lock. This is common but could be hardened.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Rust toolchain action is referenced by a floating stable tag rather than a commit SHA. This is a widely used convention for this particular action. The workflow triggers only on tag pushes or manual dispatch, so exposure is limited to maintainer-initiated runs.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a full commit SHA for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L52" rel="noopener noreferrer">.github/workflows/release.yml:52</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-35p6-xmwp-9g52 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a low-severity issue in one of the app&#39;s libraries. The practical impact is minimal, especially in a desktop app context. Updating the library when convenient is recommended but not urgent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-35p6-xmwp-9g52 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory (GHSA-35p6-xmwp-9g52) to a dependency in the lockfile. Low-severity advisories typically describe edge-case behavior or limited-impact issues. In this Tauri desktop application, the affected dependency is likely either a development-only tool or a production library with constrained input sources. The desktop deployment model further limits exposure compared to a server application. Concrete user harm from this advisory is unlikely to be achievable in practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency at the next convenient maintenance window. Run npm audit to identify the specific package.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-35p6-xmwp-9g52</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0411 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A third-party library has a known minor issue flagged in a security database. No evidence suggests it can be exploited through normal use of this desktop app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0411 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity RustSec advisory is matched for a dependency declared in this Cargo.lock, but the affected package name and version were stripped from the scanner candidate output. The project is a locally executing Tauri desktop application with SQLite storage and outbound AI provider calls. Without identifying the specific crate or confirming that attacker-controlled data reaches the vulnerable code path, the advisory is best treated as a routine dependency update item with low practical risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected crate from the advisory and update to a patched version when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0411</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-p8p7-x288-28g6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-severity issue in one of the app&#39;s libraries. Because this is a desktop app rather than a public web server, the chance of this being exploited is low. Updating the library when a fix is available is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p8p7-x288-28g6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-p8p7-x288-28g6) to a dependency in the lockfile. The affected dependency may be a build-time or development tool that does not ship in the production bundle, or a production library with limited input exposure. In either case, the Tauri desktop deployment model constrains the attack surface: there is no publicly accessible server, and inputs are user-controlled or come from user-selected AI providers. Without confirmed runtime reachability of the vulnerable code path, the risk remains low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version when available. Use npm audit to identify the specific package and determine whether it is a development or production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p8p7-x288-28g6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0080 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used for secure network connections has a known issue flagged at medium severity. Since you choose which AI services to connect to, an attacker would need to trick you into connecting to a malicious server to trigger it, and the likely result would be the app crashing rather than data being stolen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0080 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2025-0080 against a dependency in this Cargo.lock. The project directly depends on rustls and reqwest, so TLS-related code paths are exercised when the application connects to AI provider endpoints. However, the advisory is rated medium severity, the visible lock-file excerpt does not include the specific affected package version, and the concrete harm for medium-severity Rust TLS/crypto advisories is typically a panic or denial of service rather than credential theft or code execution. Because this is a desktop application where the user configures their own provider endpoints, an attacker would need to operate a malicious TLS server that the user explicitly connects to, limiting practical exploitability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient and run cargo update for the relevant crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0080</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-severity issue in one of the app&#39;s libraries. In a desktop app context, the practical risk is low. Updating the library when a fix is available is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-m8rv-5g2x-5cg5) to a dependency in the lockfile. As with the other matched advisories, the Tauri desktop deployment model limits the attack surface. The affected dependency is either a development tool not present in the shipped binary or a production library whose vulnerable code path requires specific attacker-controlled input that is constrained in this application context. Advisory severity alone does not establish concrete exploitable user harm here.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version when available. Use npm audit to identify the specific package and upgrade path.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for the Rust cache action instead of locking it to a specific commit. Common practice but not maximally secure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The rust-cache action is referenced by major version tag v2 rather than a pinned SHA. This is a supply-chain hardening best practice issue. The action is a widely used community action for caching Rust build artifacts.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L53" rel="noopener noreferrer">.github/workflows/ci.yml:53</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Java setup step uses a version label for a standard GitHub tool. Common practice, but locking to a specific version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The actions/setup-java step is referenced by a mutable v4 tag. This is a first-party GitHub action used in the Android build job. No direct secret exposure in this step&#39;s configuration, though the job contains Android keystore secrets in later steps. Supply-chain risk is present but limited.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin to a commit SHA for supply-chain best practices.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L107" rel="noopener noreferrer">.github/workflows/ci.yml:107</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0418 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A network or cryptography library used by the app has a known medium-severity issue. The app only connects to services you configure, so triggering it would require a malicious server on your end, and the likely outcome is a crash rather than a security breach.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0418 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0418 against a dependency in this Cargo.lock. The project makes outbound HTTPS requests to user-configured AI provider endpoints via reqwest and rustls, so TLS processing code is reachable at runtime. The advisory is medium severity, and the specific affected package and version are not visible in the truncated lock-file excerpt. For medium-severity advisories in this ecosystem, the typical impact is a panic or denial of service triggered by a malicious peer, not arbitrary code execution or credential exfiltration. Exploitability is constrained because the user selects which endpoints to connect to.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient and run cargo update for the relevant crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0418</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build script uses a version label for a release-publishing helper instead of a fixed fingerprint. If that helper were hijacked, it could affect published releases. The risk is low, but pinning to an exact version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references a third-party release action by major-version tag rather than a pinned commit SHA. This action handles the GitHub release token, so a compromised tag could theoretically interact with release assets. The action is widely used and reputable, making tag re-pointing unlikely, but the supply-chain hardening gap is real. No user-controlled input determines the action reference.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin third-party actions to a specific commit SHA with an integrity comment for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L157" rel="noopener noreferrer">.github/workflows/ci.yml:157</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Android NDK setup step uses a version tag rather than a fixed commit hash. If the tag were moved to malicious code, the workflow could be affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references nttld/setup-ndk@v1, a floating tag from a third-party maintainer. A tag redirection could execute different code in a job with access to Android keystore secrets. Third-party actions carry slightly higher supply-chain risk than GitHub-official ones.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin this action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L111" rel="noopener noreferrer">.github/workflows/release.yml:111</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0414 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A secure-connection library has a known medium-severity flaw. Because the app connects only to AI services you set up yourself, an attacker would need to control one of those endpoints to trigger the issue, and the probable effect is the app stopping rather than your data being exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0414 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0414 against a dependency in this Cargo.lock. The project directly lists rustls as a dependency and uses reqwest for outbound HTTP, meaning TLS handshake and connection code is exercised during normal operation when contacting AI providers. The advisory carries medium severity. The exact affected package version is not visible in the provided lock-file excerpt, so the precise fix version cannot be confirmed from the supplied evidence alone. The expected impact for this class of advisory is denial of service via panic, requiring a malicious TLS server that the user connects to, which limits practical exploitability in a desktop app with user-chosen endpoints.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient and run cargo update for the relevant crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0414</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The Rust toolchain setup uses a version label for a third-party tool. If that label were redirected, untrusted code could run during the build.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dtolnay/rust-toolchain action is referenced by a mutable stable tag. This is a widely used third-party action. No direct secret exposure in this step, but a compromised tag could execute arbitrary code in the CI environment. Supply-chain risk is present for a third-party action.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin to a commit SHA for stronger supply-chain integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L102" rel="noopener noreferrer">.github/workflows/ci.yml:102</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0420 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A cryptography or networking library has a known medium-severity issue. The app only reaches out to services you configure, so exploiting it would require a malicious server you connect to, and the likely result is a crash rather than stolen information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0420 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0420 against a dependency in this Cargo.lock. The project&#39;s dependency graph includes rustls and reqwest, so TLS-related code is reachable during outbound connections to AI provider APIs. The advisory is medium severity, and the affected package and version are not identifiable from the truncated lock-file excerpt. Medium-severity advisories in Rust TLS or crypto crates generally result in panics or denial of service rather than memory corruption or data exfiltration. Exploitability is limited because the user controls which endpoints the application contacts.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient and run cargo update for the relevant crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0420</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (14)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script runs a fixed cargo command to update a lock file during release. No user-controlled data is injected into the command, so there is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;cargo update -p aventura&#39; with a static command string and a fixed cwd. No external or untrusted input reaches the command. This is a standard release-tooling operation for updating a Cargo.lock file after a version bump.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L96" rel="noopener noreferrer">scripts/release.js:96</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script creates a git commit with a version number the developer typed on the command line. Since the developer controls the input and runs the script locally, this is normal release tooling with no security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;git commit -m &quot;chore: bump version to ${newVersion}&quot;&#39; where newVersion is derived from a developer-supplied CLI argument. The script is a local release tool run by the developer themselves; the input source is the developer&#39;s own command line, not untrusted external data. This is a standard release-script pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L109" rel="noopener noreferrer">scripts/release.js:109</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a release helper script that a developer runs to create a version tag in git. Using shell commands for this is normal and expected in release tooling.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched execSync call is part of a developer-run release tooling script that creates a git tag using a version string derived from the project&#39;s own release workflow. The command is invoked locally by a maintainer performing a release, not by application runtime code or untrusted user input. This is a standard use of shell execution in release automation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L114" rel="noopener noreferrer">scripts/release.js:114</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A tool noted that a build step might duplicate something the build system already does. This is a style or efficiency note, not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags a release action as superfluous because the runner may already include equivalent functionality. This is an informational best-practice observation about redundancy, not a security defect. No untrusted input flows into a dangerous sink, and no credential or secret is exposed by using this action.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L157" rel="noopener noreferrer">.github/workflows/ci.yml:157</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow needs permission to create GitHub releases and upload files. This is the correct and necessary permission for a release workflow, and it is limited to just that scope.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow declares contents write permission at the top level. This permission is required because the Tauri release action creates GitHub releases and uploads assets using the GITHUB_TOKEN. The permission is scoped to contents only, not an all-permissions blanket, and matches the stated release workflow purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L18" rel="noopener noreferrer">.github/workflows/release.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script checks for uncommitted changes using a fixed git command. No user input is involved, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;git status --porcelain&#39; as a fully static command string. No variable or external input is interpolated. It is a pre-check to ensure the working tree is clean before releasing.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L60" rel="noopener noreferrer">scripts/release.js:60</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script runs a fixed linting command during release. No user input is involved, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;npm run lint:fix&#39; as a fully static command string. No variable or external input is interpolated. It is a standard linting step in a release workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L105" rel="noopener noreferrer">scripts/release.js:105</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script runs a fixed formatting command during release. No user input is involved, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;npm run format&#39; as a fully static command string. No variable or external input is interpolated. It is a standard formatting step in a release workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L104" rel="noopener noreferrer">scripts/release.js:104</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script stages all files for a release commit using a fixed git command. No user input is involved, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;git add .&#39; as a fully static command string. No variable or external input is interpolated. It stages all changes for the release commit.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L110" rel="noopener noreferrer">scripts/release.js:110</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script updates the package version using a version number the developer typed on the command line. Since the developer controls the input and runs the script locally, this is normal release tooling with no security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;npm version ${newVersion} --no-git-tag-version&#39; where newVersion is derived from a developer-supplied CLI argument. The script is a local release tool run by the developer; the input source is the developer&#39;s own command line, not untrusted external data. This is a standard release-script pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L75" rel="noopener noreferrer">scripts/release.js:75</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script creates a release branch using a version number the developer typed on the command line. Since the developer controls the input and runs the script locally, this is normal release tooling with no security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This execSync call runs &#39;git checkout -b release/v${newVersion}&#39; where newVersion is derived from a developer-supplied CLI argument. The script is a local release tool run by the developer; the input source is the developer&#39;s own command line, not untrusted external data. This is a standard release-script pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L71" rel="noopener noreferrer">scripts/release.js:71</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow needs permission to create releases on GitHub, which is exactly what it does. The permission is limited to release creation and is not overly broad.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow declares permissions: contents: write at the top level. This permission is required because the tauri-action step creates GitHub releases using GITHUB_TOKEN. The permission is scoped to contents only, not a broad write-all grant. This is the minimum permission needed for the stated purpose of publishing pre-release builds.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a release helper script that a developer runs to push a version branch and tag to a remote repository. Using shell commands for this is normal and expected in release tooling.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched execSync call is part of a developer-run release tooling script that pushes the release branch and tag to a configured remote. The remote name and version string originate from the project&#39;s own release workflow and are not supplied by application users or untrusted external input. Shell execution in release automation is expected behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/scripts/release.js#L118" rel="noopener noreferrer">scripts/release.js:118</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner notes the release tool might do something the build system can already do. This is a minor efficiency note, not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags that the referenced action may duplicate functionality already provided by the GitHub runner. This is an informational code-quality observation with no security impact. The action is used for its stated purpose of uploading artifacts to a GitHub release, which is a normal CI operation for a release workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L152" rel="noopener noreferrer">.github/workflows/release.yml:152</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>No artifact upload steps exist in this workflow</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The credential-persistence concern flagged by the scanner has no way to cause harm here because the workflow never uploads files as artifacts.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The artipacked exfiltration vector requires an upload-artifact step that packages the .git directory containing the persisted token. This workflow only performs checkout, dependency installation, build, lint, and type-check with no upload steps, closing the exfiltration path entirely.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/lint-and-typecheck.yml#L14-L35" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:14-35</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Additional unpinned action reference not flagged by scanner</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Another action in the same workflow also uses a floating tag and was not separately flagged. It carries the same supply-chain hardening gap.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Line 66 references tauri-apps/tauri-action@v0, another floating tag. This step has access to GITHUB_TOKEN and Tauri signing secrets, so a tag redirection would be higher-impact than the upload-artifact step. It was not separately flagged by the scanner but shares the same unpinned-uses pattern.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin to a specific commit SHA for consistency with the other actions in this workflow.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/.github/workflows/release.yml#L66" rel="noopener noreferrer">.github/workflows/release.yml:66</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Insufficient source context for precise dependency verification</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>The evidence provided does not include enough of the dependency file to identify exactly which libraries are flagged. The assessments are based on the types of advisories and the nature of the app, but a more thorough review would be possible with the complete dependency list.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The supplied source excerpt covers only the first 41 lines of a 192KB Cargo lockfile, and the scanner removed package details from all eight advisory candidates. This prevents confirming which specific crates and versions match each advisory, whether the vulnerable code paths are compiled into the application, and whether attacker-controlled input can reach them. The assessments above are based on the advisory IDs, severity levels, and the project context as a Tauri desktop application. A full lockfile or the specific package entries would allow more precise runtime-reachability analysis.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit with package details visible and update all flagged crates to their latest patched or maintained versions.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AventurasTeam/Aventuras/blob/c936f71fa0ea832528febfd387aaff85f7032d3a/src-tauri/Cargo.lock#L1-L41" rel="noopener noreferrer">src-tauri/Cargo.lock:1-41</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>771 files &middot; 9337744 bytes</dd>
+      <dt>Contextual coverage</dt><dd>94 of 94 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/commit/c936f71fa0ea832528febfd387aaff85f7032d3a" rel="noopener noreferrer">c936f71fa0ea832528febfd387aaff85f7032d3a</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T00:14:53.754Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>239346 input &middot; 94384 output &middot; 31994 cache read &middot; 4644 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>51c08afd7ab8ec6e1af36c590fd3701477dfe58158f9ca47f818918552dd92bf</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1126279204/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
