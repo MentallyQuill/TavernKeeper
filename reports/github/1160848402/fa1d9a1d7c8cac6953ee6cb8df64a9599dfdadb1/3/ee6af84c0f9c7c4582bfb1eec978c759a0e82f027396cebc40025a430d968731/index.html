@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ghostd93/BetterSimTracker at commit fa1d9a1.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ghostd93/BetterSimTracker</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ghostd93/BetterSimTracker" rel="noopener noreferrer">ghostd93/BetterSimTracker</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ghostd93/BetterSimTracker/commit/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1" rel="noopener noreferrer">fa1d9a1</a></span>
+        <span>Reviewed <time datetime="2026-08-06T00:59:13.719Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>19 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qj8w-gfj5-8c6v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a known security issue. This extension ships pre-built files, so the flagged dependency is most likely a build tool that never runs on users&#39; machines. No concrete harm to extension users is evident.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qj8w-gfj5-8c6v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a dependency declared in this lockfile. The project ships a committed dist artifact and declares only one runtime dependency (sillytavern-utils-lib). All other visible lockfile entries are dev or peer dependencies used for building. Package details were removed from the advisory, so the exact affected package and version cannot be confirmed from the supplied evidence, but the project structure indicates the vulnerable code is most likely in build-time tooling with no runtime reachability for end users who install the pre-built extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qj8w-gfj5-8c6v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5c6j-r48x-rmvq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. Because this extension ships ready-to-use files and the flagged dependency appears to be a build tool, it likely never runs on users&#39; machines. The severity label alone does not establish user-facing danger here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5c6j-r48x-rmvq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project commits its dist output and has a single runtime dependency (sillytavern-utils-lib). The visible lockfile entries are all dev or peer dependencies for the webpack/typescript build chain. With package details removed, the exact affected package cannot be confirmed, but the project structure strongly suggests the advisory targets build-only tooling that does not ship to or execute for end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5c6j-r48x-rmvq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v2hh-gcrm-f6hx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. This extension ships pre-built files, so the flagged dependency is most likely a build tool that never runs on users&#39; machines. No concrete user harm is evident.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2hh-gcrm-f6hx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project ships a committed dist build and declares only sillytavern-utils-lib as a runtime dependency. All visible lockfile packages are dev or peer dependencies for the build toolchain. Package details were removed from the advisory, preventing exact identification, but the evidence available indicates no runtime reachability for extension end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2hh-gcrm-f6hx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v39h-62p7-jpjc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. Because this extension ships ready-to-use files and the flagged dependency appears to be a build tool, it likely never runs on users&#39; machines.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v39h-62p7-jpjc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project commits its dist output and has a single runtime dependency (sillytavern-utils-lib). Visible lockfile entries are dev or peer dependencies for the webpack and typescript build chain. With package details removed, the exact affected package cannot be confirmed, but the project structure indicates the advisory most likely targets build-only tooling with no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v39h-62p7-jpjc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-q3j6-qgpj-74h6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. This extension ships pre-built files, so the flagged dependency is most likely a build tool that never runs on users&#39; machines.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-q3j6-qgpj-74h6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project ships a committed dist build and declares only sillytavern-utils-lib as a runtime dependency. All visible lockfile packages are dev or peer dependencies for the build toolchain. Package details were removed from the advisory, preventing exact identification, but the available evidence indicates no runtime reachability for extension end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-q3j6-qgpj-74h6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. Because this extension ships ready-to-use files and the flagged dependency appears to be a build tool, it likely never runs on users&#39; machines.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project commits its dist output and has a single runtime dependency (sillytavern-utils-lib). Visible lockfile entries are dev or peer dependencies for the webpack and typescript build chain. With package details removed, the exact affected package cannot be confirmed, but the project structure indicates the advisory most likely targets build-only tooling with no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6g55-p6wh-862q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. This extension ships pre-built files, so the flagged dependency is most likely a build tool that never runs on users&#39; machines.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6g55-p6wh-862q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project ships a committed dist build and declares only sillytavern-utils-lib as a runtime dependency. All visible lockfile packages are dev or peer dependencies for the build toolchain. Package details were removed from the advisory, preventing exact identification, but the available evidence indicates no runtime reachability for extension end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6g55-p6wh-862q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency with a high-severity label. Because this extension ships ready-to-use files and the flagged dependency appears to be a build tool, it likely never runs on users&#39; machines.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in this lockfile. The project commits its dist output and has a single runtime dependency (sillytavern-utils-lib). Visible lockfile entries are dev or peer dependencies for the webpack and typescript build chain. With package details removed, the exact affected package cannot be confirmed, but the project structure indicates the advisory most likely targets build-only tooling with no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dev dependencies to their latest patched versions when convenient to keep the build environment current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3v7f-55p6-f55p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-severity vulnerability in one of the project&#39;s dependencies. Since the project ships pre-built files and users don&#39;t run the build tools, most of these dependencies never run on user machines. Without knowing exactly which package is affected, the real-world risk to users appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3v7f-55p6-f55p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a dependency in the lockfile. The project has one production dependency (sillytavern-utils-lib) and several dev dependencies (webpack, ts-loader, typescript, webpack-cli). The README states dist is committed, so end users install the pre-built output and never run the build toolchain. The visible lockfile entries are predominantly dev or peer dependencies with no runtime path in the shipped extension. Package details were removed from the scanner output, preventing definitive mapping of this advisory to a specific package and confirmation of runtime reachability. If the advisory targets a dev-only dependency, there is no impact on end users. If it targets a transitive dependency of sillytavern-utils-lib, runtime reachability and attacker-controlled input paths remain unclear from the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected dependencies to patched versions during the next build cycle. No urgent action is required for end-user safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3v7f-55p6-f55p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4c8g-83qw-93j6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a high-severity vulnerability in a dependency, but the project ships pre-built files to users. Most flagged dependencies are build tools that never run on user machines. Without knowing the exact package, the practical risk to users is likely low, though the developer should still update dependencies.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in the lockfile. Despite the high scanner severity, the project commits its dist output and end users do not execute build tooling. The visible lockfile entries are almost entirely dev or peer dependencies (webpack ecosystem, babel, vue compiler, typescript types). The only production dependency is sillytavern-utils-lib. Scanner package details were removed, so the specific affected package and whether it is a dev or production dependency cannot be confirmed. If this advisory targets a build-time dependency, the vulnerable code has no runtime reachability in the shipped extension. If it targets a production transitive dependency, the supplied evidence does not show attacker-controlled input reaching the vulnerable code path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package flagged by this advisory and update it to a patched version. Prioritize this if the package is a runtime dependency of sillytavern-utils-lib rather than a build tool.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4c8g-83qw-93j6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qx2v-qp2m-jg93 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-severity vulnerability in a project dependency. Since users get pre-built files and don&#39;t run build tools, the risk is likely low. The developer should still update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qx2v-qp2m-jg93 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a dependency in the lockfile. The project commits dist and users do not run build tooling. The visible lockfile content shows dev and peer dependencies only. The sole production dependency is sillytavern-utils-lib. Package details were removed from the scanner output, preventing confirmation of whether the affected package is a dev or production dependency. For dev dependencies, the vulnerable code is not present in the shipped extension. For production dependencies, the evidence does not demonstrate runtime reachability or attacker-controlled input.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version during the next maintenance cycle.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qx2v-qp2m-jg93</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-severity vulnerability in a dependency. The project ships pre-built files, so most dependencies don&#39;t run on user machines. The practical risk appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a dependency in the lockfile. The project ships pre-built dist output, so build-time dependencies do not execute on end-user machines. The visible lockfile entries are dev or peer dependencies. The only production dependency is sillytavern-utils-lib. Scanner package details were removed, so the specific affected package cannot be confirmed. Without that mapping, runtime reachability and attacker input paths cannot be fully assessed, but the evidence does not indicate a reachable vulnerability in the shipped extension.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2c7-rcm5-vvqj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a high-severity vulnerability in a dependency, but the project ships pre-built files. Most dependencies are build tools that never run on user machines. Without knowing the exact package, the practical risk to users is likely low, though the developer should investigate and update.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2c7-rcm5-vvqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency in the lockfile. The project commits dist and users do not run build tooling. The visible lockfile content consists of dev and peer dependencies. The only production dependency is sillytavern-utils-lib. Package details were removed from the scanner output, preventing definitive identification of the affected package. If the advisory targets a build-time dependency, the vulnerable code has no runtime path in the shipped extension. If it targets a production transitive dependency, the supplied evidence does not show attacker-controlled input reaching the vulnerable code. Advisory severity alone does not establish immediate danger without runtime reachability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package flagged by this advisory and update it to a patched version. If the package is a runtime dependency of sillytavern-utils-lib, prioritize the update.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2c7-rcm5-vvqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (5)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension uses a standard technique to access SillyTavern&#39;s own internal script so it can refresh the chat display after updating summary notes. The target is a fixed internal application file, not anything user-controlled or external, and the only action taken is a screen refresh.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/src/index.ts#L2908" rel="noopener noreferrer">src/index.ts:2908</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a dynamic execution technique to load a built-in SillyTavern module. The code being executed is a fixed, hardcoded instruction with no user input involved. This is a standard workaround used by SillyTavern extensions to access the host application&#39;s internal features.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/src/index.ts#L435" rel="noopener noreferrer">src/index.ts:435</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a dynamic execution technique to load SillyTavern&#39;s main internal script. The instruction is hardcoded with no user input involved. This is a standard workaround for extensions to read configuration values from the host application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/src/index.ts#L444" rel="noopener noreferrer">src/index.ts:444</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a dynamic function to load a built-in SillyTavern script module so the extension can inject tracker information into prompts. The loaded path is hardcoded and local to SillyTavern, not something a user or attacker controls. This matches the extension&#39;s advertised prompt injection feature.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/src/promptInjection.ts#L687" rel="noopener noreferrer">src/promptInjection.ts:687</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a dynamic execution feature only to load a built-in SillyTavern module so the extension can save its settings through the normal SillyTavern settings system. The code that runs is fixed and not influenced by any user input, so there is no security risk here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/src/settings.ts#L528" rel="noopener noreferrer">src/settings.ts:528</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>All advisories appear to target dev-only build tooling in a project that ships pre-built dist</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>All eight scanner flags point to dependencies that are most likely build tools. Since this extension ships ready-to-use files and users do not run a build, these tools never execute on users&#39; machines. The flags are worth addressing for developer hygiene but do not indicate danger to extension users.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The lockfile shows a single runtime dependency (sillytavern-utils-lib) and all visible packages are dev or peer dependencies for the webpack, typescript, and babel build chain. The README confirms that dist is committed to the repository so users do not run a local build. The eight OSV-scanner advisories had package details removed, preventing exact mapping, but the project structure strongly suggests all flagged packages are build-time tools with no runtime reachability for end users who install the pre-built extension. Confidence is low because the truncated lockfile context and removed package details prevent confirming which specific packages each advisory targets.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency update pass on devDependencies to clear known advisories from the build environment. No urgent action is needed for the shipped extension.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ghostd93/BetterSimTracker/blob/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1/package-lock.json#L10-L18" rel="noopener noreferrer">package-lock.json:10-18</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>221 files &middot; 4877003 bytes</dd>
+      <dt>Contextual coverage</dt><dd>18 of 18 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ghostd93/BetterSimTracker/commit/fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1" rel="noopener noreferrer">fa1d9a1d7c8cac6953ee6cb8df64a9599dfdadb1</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T00:59:13.719Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>104926 input &middot; 21657 output &middot; 19939 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>ee6af84c0f9c7c4582bfb1eec978c759a0e82f027396cebc40025a430d968731</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1160848402/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
