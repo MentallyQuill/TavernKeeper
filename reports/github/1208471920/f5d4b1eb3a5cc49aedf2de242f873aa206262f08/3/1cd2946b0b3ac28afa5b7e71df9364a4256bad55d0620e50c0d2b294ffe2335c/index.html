@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for jschm42/taleweaver at commit f5d4b1e.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; jschm42/taleweaver</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/jschm42/taleweaver" rel="noopener noreferrer">jschm42/taleweaver</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/jschm42/taleweaver/commit/f5d4b1eb3a5cc49aedf2de242f873aa206262f08" rel="noopener noreferrer">f5d4b1e</a></span>
+        <span>Reviewed <time datetime="2026-08-06T02:29:21.115Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>19 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI pipeline uses a version label for a GitHub Action instead of locking it to a specific code snapshot. If someone hijacked that action&#39;s repository and changed what the label points to, they could run bad code during automated testing. The risk is low because the pipeline has limited permissions and no sensitive secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-python using a major-version floating tag rather than a pinned commit SHA. If the tag were ever moved to a malicious commit by a compromised maintainer or account takeover, the action could execute arbitrary code in CI. The workflow has contents:read permissions and does not handle secrets beyond the default GITHUB_TOKEN, limiting blast radius. This is a widely adopted convention but falls short of strict supply-chain hardening.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a full commit SHA with a version comment for reproducibility and supply-chain integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/.github/workflows/ci.yml#L24" rel="noopener noreferrer">.github/workflows/ci.yml:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool used during development likely has a known security issue, but because this is a frontend app, the affected tool is probably not included in the final product that users actually run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This medium-severity advisory was matched in a frontend project whose production dependencies are limited to vue, vue-router, dompurify, dagre, roughjs, font packages, and icon libraries, all at recent versions. The dev toolchain includes vite, postcss, tailwindcss, eslint, and typescript. Medium-severity advisories in this ecosystem most commonly affect build-time or dev-server tooling that is not present in the shipped static bundle. Without the specific package name (removed by the scanner), the most probable target is a dev dependency, meaning the vulnerable code has no runtime reachability for end users of the built frontend.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version when convenient. Run npm audit to identify the specific package and confirm whether it is a dev or production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The checkout step in the CI pipeline uses a version label instead of a locked code snapshot. A compromised action repository could swap malicious code under that label. The impact is limited because the pipeline only has read access and does not publish or upload anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/checkout using a major-version floating tag rather than a pinned commit SHA. The same supply-chain tag-substitution risk applies. The workflow permissions are restricted to contents:read and no artifacts are uploaded, so credential leakage or token abuse through this action is minimal. Standard practice, but not maximally hardened.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a full commit SHA with a version comment for reproducibility and supply-chain integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/.github/workflows/ci.yml#L21" rel="noopener noreferrer">.github/workflows/ci.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development tool used to build this app has a serious-sounding security flaw, but it most likely only affects programmers running the app in development mode, not the people using the finished product.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory was matched in a frontend project that builds to static files via Vite. The production dependency set is minimal and uses recent versions (dompurify 3.4.11, vue 3.4+, vue-router 4.3+). High-severity advisories in Vite-based frontend projects frequently target the development server or esbuild, which are dev-only dependencies absent from the production bundle. The vulnerable code would only be reachable when a developer runs the local dev server, not when end users interact with the built application. Advisory severity alone does not establish end-user harm when the affected code is not shipped.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version. Run npm audit to confirm the specific package and verify it is not a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2j3-45gr-mqc4 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor security note was flagged for a tool or library in this project. The impact is small and it probably affects only development tools, not the app users interact with.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2j3-45gr-mqc4 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This low-severity advisory was matched in a frontend project with a small, recently-versioned production dependency set. Low-severity advisories in this ecosystem typically involve edge-case behavior in build tooling or transitive dev dependencies with minimal real-world impact. The production dependencies (vue, vue-router, dompurify, dagre, roughjs) are all at recent versions unlikely to carry known low-severity issues. The advisory most likely targets a dev-only transitive dependency with no runtime reachability in the shipped bundle.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency when convenient. Run npm audit to identify the specific package.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2j3-45gr-mqc4</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A serious security issue was found in a development tool, but it most likely only affects developers working on the code locally, not users of the finished app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory was matched in a frontend project that compiles to static assets. The production dependencies are minimal and current. High-severity advisories commonly seen in Vite-based projects target the dev server (file disclosure, DNS rebinding) or esbuild, both of which are dev dependencies excluded from the production build. The vulnerable code would only be reachable during local development, not in the deployed static frontend. Without the specific package name, the project structure strongly suggests a dev-only impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version. Run npm audit to confirm the specific package and whether it ships in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-52cp-r559-cp3m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity security issue was flagged, but in this frontend project it most likely affects a build tool that is not part of the app users actually use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-52cp-r559-cp3m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory was matched in a frontend project with a small set of recent production dependencies. The build toolchain (vite, postcss, tailwindcss, eslint, typescript) constitutes the majority of the dependency tree and is the most common source of high-severity advisories in this project type. These tools operate at build time or during local development and are not included in the static production bundle served to users. The advisory severity does not translate to end-user harm when the vulnerable code is not shipped.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version. Run npm audit to identify the specific package and confirm it is dev-only.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-52cp-r559-cp3m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A serious security flaw was found in what is most likely a development or build tool for this frontend app, meaning it probably does not affect the people using the finished product.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory was matched in a frontend project whose production dependencies are limited to well-maintained packages at recent versions. The dev dependency tree includes vite, esbuild (transitive), postcss, tailwindcss, and eslint, which are the most frequent sources of high-severity advisories in Vite-based frontends. These dependencies are used during development and build time only and do not appear in the shipped static bundle. Without the specific package identification, the project context indicates the vulnerable code likely has no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version. Run npm audit to confirm the specific package and whether it is a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A high-severity security issue was flagged for a dependency, but in this frontend project it most likely affects a development tool that is not shipped to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory was matched in a frontend project that produces static assets for the browser. The production dependency set is small and uses current versions. The majority of the dependency tree consists of dev tooling (vite, postcss, tailwindcss, eslint, typescript and their transitive dependencies), which is the typical source of high-severity advisories in this project type. Dev tooling is excluded from the production build, so the vulnerable code would not be reachable by end users. The advisory severity reflects the worst-case scenario for the vulnerable package, not necessarily the impact in this specific deployment context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version. Run npm audit to identify the specific package and verify it is not a production dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (9)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a styling rule for how a sidebar looks on the user profile page. It has nothing to do with persistence or modifying how the app starts up.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line is a CSS class selector inside a scoped style block of a Vue single-file component. It defines visual layout properties for a sidebar element and has no relationship to startup persistence, execution, or system modification.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/src/components/portal/UserProfileContent.vue#L492" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:492</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code sends the user&#39;s login token to the app&#39;s own server to load saved game data. This is exactly what a logged-in web app is supposed to do, and the token is not sent anywhere unexpected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a fetch call to the project&#39;s own backend adventure chat endpoint, using an Authorization Bearer header built from the application&#39;s auth state. This is standard authenticated API access for a frontend composable whose stated purpose is loading and syncing game session data. The token is sent only to the application backend, not to a third party, and the request is initiated by normal user-driven session refresh logic. No exfiltration, obfuscation, or unexpected destination is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 3</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/src/composables/useGameSocket.ts#L173" rel="noopener noreferrer">frontend/src/composables/useGameSocket.ts:173</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a visual styling rule for a card layout on the profile page. It does not affect app startup or persistence in any way.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line is a CSS class selector within a scoped style block, defining layout dimensions and background styling for a profile card container. No executable code, persistence mechanism, or startup behavior is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/src/components/portal/UserProfileContent.vue#L450" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:450</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>malcontent reported exec-shell-background_launcher</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a standard setup script that prepares the application to run on your computer. Starting background processes is a normal part of setting up and running a local application, and there is no sign of any malicious activity here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule exec-shell-background_launcher in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a capability related to launching background processes from relative paths. The supplied source context shows a standard bash setup script for a local, self-hosted project. It creates a Python virtual environment, copies environment files, and prepares to install dependencies. Launching local development servers or build processes in the background is a normal and expected capability for a project setup script. There is no evidence of obfuscation, external exfiltration, or malicious execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>exec-shell-background_launcher</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/setup.sh" rel="noopener noreferrer">setup.sh</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a possible credential-leakage pattern, but this pipeline never creates or uploads any build artifacts and has read-only access. There is no realistic way for credentials to be exposed through artifacts here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags potential credential persistence through artifacts. This workflow does not upload, download, or share any artifacts. Permissions are explicitly scoped to contents:read. While actions/checkout defaults to persist-credentials true, no subsequent step performs git push or any operation that would exfiltrate the token, and no artifact is produced that could retain it. There is no concrete credential-exposure path in this workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/.github/workflows/ci.yml#L20-L21" rel="noopener noreferrer">.github/workflows/ci.yml:20-21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a help-doc command that asks a local image-generation program for its model list and then neatly formats the response. It does not download or run any software.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a documentation example that pipes the output of a local HTTP API query to python -m json.tool, a standard-library JSON pretty-printer. No downloaded content is executed as code. The request targets localhost only and the pipeline merely formats JSON for readability, which matches the stated purpose of verifying a local Stable Diffusion daemon.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/docs/HOWTO_LOCAL_STABLE_DIFFUSION.md#L155" rel="noopener noreferrer">docs/HOWTO_LOCAL_STABLE_DIFFUSION.md:155</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a layout rule for a dashboard grid on the profile page. It is purely visual and unrelated to startup persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line is a CSS class selector in a scoped style block defining a grid layout for a dashboard section. It contains only presentation properties and no logic, execution, or persistence behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/src/components/portal/UserProfileContent.vue#L470" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:470</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a styling rule for the profile page container. It only controls appearance and layout, with no connection to startup persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line is a CSS class selector in a scoped style block defining padding, overflow, and sizing for a profile container. No executable or persistence-related code is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/src/components/portal/UserProfileContent.vue#L457" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:457</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is just visual styling for a user profile panel. It does not store, save, or persist anything, and cannot affect the system at startup.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector for a profile layout panel in a Vue single-file component. It contains only styling properties and performs no script execution, storage access, network calls, or persistence behavior. The scanner match is a false positive on declarative style markup.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/src/components/portal/UserProfileContent.vue#L662" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:662</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Multiple dependency advisories in a frontend project with dev-only likely impact</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>Several security issues were found in this app&#39;s dependencies, but because it is a frontend project, most of the affected tools are used only during development and are not included in the app that users actually run. The developers should update their dependencies and confirm none of the issues affect the production libraries.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Seven advisories were flagged across this frontend package-lock.json. The project builds to static browser assets via Vite, and its production dependencies are limited to vue, vue-router, dompurify, dagre, roughjs, font packages, and icon libraries, all at recent versions. The dev toolchain (vite, postcss, tailwindcss, eslint, typescript and transitives) constitutes the bulk of the dependency tree and is the most common source of advisories in this project type. Dev dependencies are excluded from the production bundle, so vulnerable code in those packages has no runtime reachability for end users. The scanner removed specific package names, preventing per-advisory confirmation of whether each target is a dev or production dependency. Running npm audit would resolve this ambiguity. If any advisory targets a production dependency such as dompurify, the assessment would need revisiting.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify each flagged package by name. Update all flagged dependencies to patched versions. For any advisory that targets a production dependency rather than a dev dependency, reassess the impact based on runtime reachability and attacker-controlled input paths.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/jschm42/taleweaver/blob/f5d4b1eb3a5cc49aedf2de242f873aa206262f08/frontend/package-lock.json#L10-L41" rel="noopener noreferrer">frontend/package-lock.json:10-41</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>519 files &middot; 70067939 bytes</dd>
+      <dt>Contextual coverage</dt><dd>18 of 18 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/jschm42/taleweaver/commit/f5d4b1eb3a5cc49aedf2de242f873aa206262f08" rel="noopener noreferrer">f5d4b1eb3a5cc49aedf2de242f873aa206262f08</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T02:29:21.115Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>41528 input &middot; 15681 output &middot; 9824 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>1cd2946b0b3ac28afa5b7e71df9364a4256bad55d0620e50c0d2b294ffe2335c</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1208471920/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
