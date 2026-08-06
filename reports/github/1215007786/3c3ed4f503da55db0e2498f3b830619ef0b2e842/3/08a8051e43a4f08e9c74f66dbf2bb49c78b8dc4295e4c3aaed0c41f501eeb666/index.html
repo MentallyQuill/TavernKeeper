@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Sagesheep/NarrativeEngine-P at commit 3c3ed4f.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Sagesheep/NarrativeEngine-P</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Sagesheep/NarrativeEngine-P" rel="noopener noreferrer">Sagesheep/NarrativeEngine-P</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Sagesheep/NarrativeEngine-P/commit/3c3ed4f503da55db0e2498f3b830619ef0b2e842" rel="noopener noreferrer">3c3ed4f</a></span>
+        <span>Reviewed <time datetime="2026-08-06T02:44:36.767Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">5 material concerns identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>5 material</span>
+        <span>14 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <article class="finding risk-material">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in one of the app&#39;s third-party code libraries. Because the app runs locally on your own computer rather than on a public server, the risk is lower, but the library should still be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-rgw5-rvv9-x895) against a dependency declared in this production lockfile. The scanner removed specific package details, so the exact affected package and its position in the dependency tree cannot be confirmed from the supplied evidence alone. The visible lockfile entries show a mix of dev-only packages (Babel, CSS tooling, test frameworks) and production packages (Capacitor, React, transformers). This is a self-hosted local frontend application, which limits the attack surface since the user runs it on their own machine and typically controls all inputs. Without confirming whether the affected package is a dev or production dependency and whether attacker-controlled input reaches the vulnerable code path, runtime reachability and concrete user harm remain uncertain.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with full output to identify the specific affected package, then update it to a patched version. If it is a dev-only dependency, prioritize accordingly.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-xcpc-8h2w-3j85 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in one of the app&#39;s third-party code libraries. The app runs locally, which reduces risk, but the library should be updated to a fixed version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xcpc-8h2w-3j85 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-xcpc-8h2w-3j85) against a dependency in this lockfile. Package details were removed by the scanner, preventing confirmation of the specific package, its version, and whether it is a dev or production dependency. The project is a self-hosted local frontend TTRPG engine, meaning the runtime attack surface is limited to user-controlled inputs on the user&#39;s own machine. Without identifying the package and its runtime reachability, concrete user harm cannot be confirmed but cannot be ruled out.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with full output to identify the specific affected package, then update it to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xcpc-8h2w-3j85</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in one of the app&#39;s third-party code libraries. The app runs locally which reduces risk, but the high severity rating means the library should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-mh99-v99m-4gvg) against a dependency in this lockfile. Package details were removed, so the specific affected package and its dependency chain position cannot be confirmed. The project is a self-hosted local frontend application, which limits the attack surface. However, high-severity advisories warrant attention even in local apps, particularly if the affected package processes external data such as LLM responses or user-imported content.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with full output to identify the specific affected package, then update it to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4cwx-7wf7-3272 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in one of the app&#39;s third-party code libraries. The local nature of the app reduces risk, but the high severity means the library should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4cwx-7wf7-3272 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-4cwx-7wf7-3272) against a dependency in this lockfile. The scanner removed package details, preventing confirmation of the specific package and whether it is a dev or production dependency. The self-hosted local nature of this frontend project limits the attack surface, but high-severity advisories in production dependencies could present real risk if attacker-controlled input reaches the vulnerable code path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with full output to identify the specific affected package, then update it to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4cwx-7wf7-3272</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-f88m-g3jw-g9cj applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security issue was found in one of the app&#39;s third-party code libraries. The app runs locally which reduces risk, but the high severity rating means the library should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f88m-g3jw-g9cj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-f88m-g3jw-g9cj) against a dependency in this lockfile. Package details were removed, so the specific affected package cannot be confirmed. The project is a self-hosted local frontend TTRPG engine with limited attack surface, but high-severity advisories warrant investigation to determine whether the affected package is a production dependency with runtime reachability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with full output to identify the specific affected package, then update it to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f88m-g3jw-g9cj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability in one of the packages listed in this project&#39;s dependency lock file. However, this particular sub-package appears to only use development tools (not anything that runs when the app is used by players), so the vulnerability likely does not affect the running application. The exact vulnerable package could not be confirmed from the available file excerpt.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory GHSA-r28c-9q8g-f849 was matched by OSV-scanner against a dependency in this lockfile. The root package section of file declares only devDependencies (typescript and vitest) with no production dependencies key. Visible transitive dependencies such as the @emnapi family are marked dev:true and optional:true, indicating they are development-time only. Because the specific vulnerable package cannot be identified from the truncated source and the scanner redacted package details, runtime reachability and attacker-controlled input paths cannot be confirmed. However, the absence of production dependencies in the root package strongly suggests this advisory affects a development-only dependency, limiting production user harm. Advisory severity alone does not establish immediate danger.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version when convenient. Run npm audit in the packages/engine directory to identify the specific package and upgrade it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/packages/engine/package-lock.json" rel="noopener noreferrer">packages/engine/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a medium-severity vulnerability in a dependency used by this sub-package. Since this sub-package only lists development tools and no production dependencies, the issue probably does not affect the app when players use it. The exact package could not be confirmed from the available file excerpt.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory GHSA-fxqj-rqcc-2cmp was matched by OSV-scanner against a dependency in this lockfile. The root package in file declares only devDependencies (typescript and vitest) with no production dependencies. Visible transitive dependencies are marked dev:true and optional:true. The specific vulnerable package was redacted by the scanner and the source is truncated, so the exact dependency, its version, and runtime reachability cannot be independently confirmed. Given the dev-only dependency structure of this sub-package, production runtime impact is likely limited. The medium advisory severity does not by itself establish material production risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected devDependency to a patched version when convenient. Run npm audit in the packages/engine directory to identify the specific package and upgrade it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/packages/engine/package-lock.json" rel="noopener noreferrer">packages/engine/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r292-9mhp-454m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known security issue was found in one of the app&#39;s third-party code libraries. Since the app runs locally and the issue is rated medium severity, the risk is low, but updating the library is still good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r292-9mhp-454m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-r292-9mhp-454m) against a dependency in this lockfile. Package details were removed, so the specific affected package cannot be confirmed. Given the project is a self-hosted local frontend application with limited external attack surface, and the advisory is medium severity, the concrete user harm is likely low. Many dependencies visible in the lockfile are dev-only build tools that do not ship to end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r292-9mhp-454m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known security issue was found in one of the app&#39;s third-party code libraries. The risk is low given the local nature of the app, but updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-fxqj-rqcc-2cmp) against a dependency in this lockfile. The scanner removed package details, preventing identification of the specific affected package. The project is a self-hosted local frontend app where the user controls inputs, limiting the attack surface. Medium-severity advisories in this context typically present low concrete harm, especially if the affected package is a dev-only build tool.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity security issue in one of the project&#39;s third-party code libraries, but didn&#39;t specify which library. Since this app runs entirely on your own computer (not on the internet), the risk is limited. The issue may be in a development-only tool that doesn&#39;t affect the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp (medium severity) against a dependency in file, but the specific package name was removed from the scanner output. The lockfile contains both production and dev dependencies; the visible portion of the file shows mostly dev-only packages (Babel, CSSTools, esbuild platform binaries). The project is a self-hosted local application that runs on localhost, which limits the attack surface to the local machine. Without identifying the specific affected package, its dependency chain (dev vs production), and whether attacker-controlled input reaches the vulnerable code at runtime, the concrete user harm cannot be confirmed. The local-only deployment model further reduces practical risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and version. If it is a production dependency, update to a patched version. If it is a dev-only dependency, consider updating when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known security issue was found in one of the app&#39;s third-party code libraries. The risk is low given the local nature of the app, but updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-m8rv-5g2x-5cg5) against a dependency in this lockfile. Package details were removed by the scanner. The project is a self-hosted local frontend application with limited external attack surface. Medium-severity advisories in this context, particularly if in dev-only build dependencies, present low concrete user harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and update it when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-jr45-8vmc-qm54 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A tool used behind the scenes during development or installation has a known security issue, but it does not affect the app that users actually run on their phones.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jr45-8vmc-qm54 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-jr45-8vmc-qm54) corresponds to a known vulnerability in a build-toolchain or install-time dependency. The project is a Capacitor-based mobile frontend; such dependencies are used during npm install or development builds and are not bundled into the production mobile application. The vulnerable code path is not reachable at runtime for end users of the shipped app. The lock file confirms the project&#39;s production dependencies are Capacitor runtime packages, React, and local embedding libraries, none of which would exercise this vulnerable dependency at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dev or build dependency to a patched version when convenient; no urgent action is required for end-user safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jr45-8vmc-qm54</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A code-checking tool used only by developers has a security flaw. It has no effect on the finished app that users install and run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-8xcm-r25x-g524) corresponds to a sandbox-escape issue in an ESLint-related package. The lock file lists @eslint/js as a devDependency, confirming this is a linting-time tool used only during development. ESLint and its plugin tooling are never included in a production Capacitor mobile build, so the vulnerable code has no runtime reachability for end users. The issue would only be exploitable if a developer linted untrusted code with a vulnerable configuration.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the ESLint-related dev dependency to a patched version during routine maintenance; no end-user risk is present.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity security issue in one of the project&#39;s third-party code libraries, but didn&#39;t specify which library. Because this app runs locally on your own computer rather than on a public server, the practical danger is much lower than the severity rating suggests. The vulnerable library may also be a development-only tool that isn&#39;t part of the running app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 (high severity) against a dependency in file, but the specific package name was removed from the scanner output. The lockfile declares both production dependencies (express, better-sqlite3, cors, etc.) and dev dependencies (vite, esbuild, vitest, etc.). The visible source context shows only the first 640 lines of a 345,933-byte lockfile, predominantly dev-only packages. The project is explicitly self-hosted and runs on localhost, meaning any server-side vulnerability in production dependencies would only be reachable from the local machine or local network. Without knowing the specific affected package, whether it is a dev or production dependency, and whether attacker-controlled input reaches the vulnerable code path, the advisory severity alone cannot establish concrete user harm. The local deployment model significantly constrains exploitability compared to a public-facing service.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run npm audit to identify the specific package and version. If it is a production dependency with runtime reachability, update to a patched version promptly. If it is a dev-only dependency, update when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The development preview server has a flaw that could let a malicious website send requests to it while a developer is working. This does not affect the finished mobile app at all.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-r28c-9q8g-f849) corresponds to the esbuild development server cross-origin request vulnerability. The project uses Vite (via @tailwindcss/vite devDependency) which bundles esbuild as a transitive dependency. The vulnerable code is the esbuild dev server, which only runs when a developer executes a local dev build. In a production Capacitor mobile build, the dev server is not instantiated, so the vulnerability has no runtime reachability for end users. The risk is limited to a developer visiting a malicious website while their dev server is running locally.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update Vite and esbuild to patched versions during routine development maintenance; no action is needed for released builds.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The development build tool has a flaw in its local preview server. This only matters while developers are testing locally and has no impact on the app users install.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory (GHSA-v3r7-h72x-cjcm) corresponds to a Vite development server exposure issue. The lock file lists @tailwindcss/vite as a devDependency, confirming Vite is used only as a build tool. The vulnerable code path involves the Vite dev server, which is not present in a production Capacitor mobile build. End users of the shipped app are not affected. The exposure is limited to developers running the local dev server.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update Vite to a patched version during routine development maintenance; no end-user-facing risk exists.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (3)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake test value used inside a unit test to check that the app&#39;s encryption actually hides secret text. It is not a real password or API key, and it never leaves the test file.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule matched a string on line 291 of a Vitest test file. The matched value is a local test fixture assigned to a variable named &#39;secret&#39; and used solely to assert that the encryption output does not contain the plaintext and is longer than it. This is a synthetic placeholder value, not a real credential, and it is confined to a test scope. No runtime credential exposure or exfiltration occurs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/src/services/infrastructure/__tests__/settingsCrypto.test.ts#L291" rel="noopener noreferrer">src/services/infrastructure/__tests__/settingsCrypto.test.ts:291</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is an automatically generated helper for running ONNX AI models in the browser. The flagged code is a standard part of how these generated helpers wire up internal functions. It does not take input from users or the internet, and it is a normal part of a legitimate library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched `new Function(...)` at line 49 is part of Emscripten&#39;s embind method-caller generation inside an ONNX Runtime WebAssembly glue file. The function body is assembled from internal type-registration metadata (argument converters and return-value handlers) produced by the compiled WASM module, not from user input or external network data. This is a standard, well-known pattern in Emscripten-generated bindings and is consistent with the project&#39;s stated use of local ONNX models via @huggingface/transformers.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs#L49" rel="noopener noreferrer">mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs:49</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake placeholder used only in a test that checks the app&#39;s encryption actually hides secret values. It is not a real API key and is not exposed to anyone.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value is a test fixture string assigned to a local variable named secret inside a unit test that verifies encryption ciphertext does not contain the plaintext. The value was already redacted by the scanner, and the surrounding test asserts the encrypted output excludes the input and is longer due to IV and GCM tag. No real credential is present, and the value is never sent anywhere.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/bb7745abefd5206c00f949e21a7d26a6e3575113/src/services/infrastructure/__tests__/settingsCrypto.test.ts#L291" rel="noopener noreferrer">src/services/infrastructure/__tests__/settingsCrypto.test.ts:291</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>1747 files &middot; 101468525 bytes</dd>
+      <dt>Contextual coverage</dt><dd>19 of 19 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>OpenGrep could not parse some source files; findings from successfully analyzed files are included.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/commit/3c3ed4f503da55db0e2498f3b830619ef0b2e842" rel="noopener noreferrer">3c3ed4f503da55db0e2498f3b830619ef0b2e842</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T02:44:36.767Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>96545 input &middot; 21325 output &middot; 14303 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>08a8051e43a4f08e9c74f66dbf2bb49c78b8dc4295e4c3aaed0c41f501eeb666</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1215007786/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
