@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for RebootFlume/TipsyTavern at commit 72a1654.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; RebootFlume/TipsyTavern</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/RebootFlume/TipsyTavern" rel="noopener noreferrer">RebootFlume/TipsyTavern</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/RebootFlume/TipsyTavern/commit/72a16543e849267d93cdeb8aba2ac31647565f59" rel="noopener noreferrer">72a1654</a></span>
+        <span>Reviewed <time datetime="2026-08-06T06:14:56.375Z">Aug 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>24 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-wrw7-89jp-8q8g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known security advisory of medium severity. The app is a desktop program, so the practical risk is likely limited, but the library should be updated when possible.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-wrw7-89jp-8q8g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-wrw7-89jp-8q8g against a dependency version present in the Cargo.lock with medium severity. The lockfile is for a Tauri desktop application that makes outbound HTTPS requests to LLM provider APIs. Without the specific package identity and advisory detail, runtime reachability and attacker-controlled input paths cannot be confirmed. Medium-severity advisories in this ecosystem typically involve edge-case panics, build-time concerns, or limited-impact issues rather than directly exploitable runtime flaws in a desktop client context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that is no longer flagged by this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-wrw7-89jp-8q8g</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0098 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. Since this is a desktop app, the practical danger is likely low, but the library should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0098 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0098</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0429 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. The practical risk for a desktop app is likely low, but updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0429 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0429 against a dependency version in the Cargo.lock with medium severity. The lockfile belongs to a Tauri desktop application. The specific package identity was not included in the scanner output, preventing confirmation of whether the vulnerable code path is reachable at runtime or whether attacker-controlled input can reach it. Medium severity in the Rust ecosystem typically indicates a limited-impact issue such as a panic under specific conditions or an unmaintained crate warning.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0429</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0415 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. The practical risk for a desktop app is likely low, but updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0415 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0415 against a dependency in the Cargo.lock with medium severity. The project is a Tauri desktop AI chat client that makes outbound HTTPS requests to LLM APIs. Without the specific package name and advisory details, it is not possible to confirm runtime reachability of the vulnerable code or whether attacker-controlled input reaches it. Medium-severity Rust advisories commonly involve conditions that are difficult to exploit in a desktop client context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0415</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0413 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. The practical risk for a desktop app is likely low, but updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0413 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0413 against a dependency version in the Cargo.lock with medium severity. The lockfile is for a Tauri desktop application. The scanner did not include the specific package identity, so runtime reachability and attacker input control cannot be verified. For a desktop client that makes outbound API calls, medium-severity dependency advisories typically represent limited practical risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0413</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0419 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. The practical risk for a desktop app is likely low, but updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0419 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0419 against a dependency in the Cargo.lock with medium severity. The project is a Tauri desktop AI chat client. Without the specific package name and full advisory text, it is not possible to determine whether the vulnerable code path is reachable at runtime or whether attacker-controlled input can trigger it. Medium-severity advisories in the Rust ecosystem generally indicate limited-impact issues for desktop applications.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0419</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0370 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. The practical risk for a desktop app is likely low, but updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0370 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0370 against a dependency version in the Cargo.lock with medium severity. The lockfile belongs to a Tauri desktop application. The specific package identity was not provided in the scanner output, preventing verification of runtime reachability or attacker input control. Medium-severity Rust advisories from this period commonly involve build-time concerns, unmaintained crates, or edge-case panics with limited practical impact in a desktop client.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0370</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0412 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A third-party code library used by this app has a known medium-severity security issue. The practical risk for a desktop app is likely low, but updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0412 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0412 against a dependency in the Cargo.lock with medium severity. The project is a Tauri desktop AI chat client that makes outbound HTTPS requests to LLM provider APIs. Without the specific package name and advisory details, runtime reachability of the vulnerable code and attacker-controlled input paths cannot be confirmed. Medium-severity advisories in this context typically represent limited practical risk for a desktop application.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves this advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0412</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0417 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dependency used by the app has a known security issue flagged at medium severity. Because this is a desktop app and there is no evidence the vulnerable code path can be triggered by an attacker, the practical risk is low, but the dependency should still be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0417 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a dependency declared in Cargo.lock. The scanner confirms the vulnerable version is present. However, the specific package name and advisory details were stripped from the scanner output, and the supplied source context is a truncated prefix of a large lockfile, so runtime reachability and attacker-controlled input paths cannot be confirmed. This is a Tauri desktop application, not a network-facing server, which limits exposure to many dependency vulnerabilities. Without evidence that vulnerable code is reachable through attacker-controlled input, the advisory represents a maintenance weakness rather than a confirmed exploitable defect.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a version that resolves the advisory when a patched release is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0417</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0195 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the app has a known medium-severity security advisory. Since this is a desktop app and there is no sign an attacker can reach the vulnerable code, the practical danger is low, but the library should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0195 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a dependency declared in Cargo.lock with high scanner confidence on the version match. The specific package and advisory details were removed from the scanner output, and the truncated lockfile source prevents identifying the exact dependency or tracing runtime reachability. The project is a desktop application with limited network attack surface. Without confirmation that attacker-controlled input reaches the vulnerable code, this is a dependency hygiene issue rather than a confirmed exploitable vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a patched version when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0195</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0075 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dependency has a known medium-level security issue. Because the app runs locally on a user&#39;s desktop and there is no evidence an attacker can trigger the vulnerable code, the risk is low, though updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0075 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a Cargo.lock dependency. Scanner confidence is high for the version match, but package details were stripped and the supplied source is a truncated prefix of the full lockfile, preventing identification of the specific crate or assessment of runtime reachability. The application is a Tauri desktop client, reducing exposure to network-driven exploitation of many dependency-level issues. No evidence shows attacker-controlled input reaching the vulnerable code path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a version that resolves the advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0075</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0081 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library in the app has a known medium-severity security flag. The app is a desktop program with limited exposure, and there is no evidence the issue can be exploited, so the risk is low. Updating the library is still advisable.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0081 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a declared Cargo.lock dependency with high version-match confidence. The specific package identity and advisory details were removed from the scanner output, and the truncated source context does not include the full lockfile, so the affected crate and its runtime reachability cannot be determined. As a Tauri desktop application, the project has a constrained attack surface. Without evidence of attacker-controlled input reaching the vulnerable code, this is a maintenance weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a patched version when one is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0081</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0221 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dependency has a known medium-level security advisory. Since this is a desktop app and there is no evidence the vulnerable code can be reached by an attacker, the practical risk is low, but the dependency should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0221 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a Cargo.lock dependency. The scanner confirms the version is present with high confidence, but package details were stripped and the supplied source is a truncated prefix of the lockfile, preventing identification of the specific crate or assessment of whether vulnerable code is reachable at runtime. The project is a desktop application, limiting network-driven exploitation. No attacker-controlled input path to the vulnerable code has been identified.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a version that resolves the advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0221</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0100 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the app has a known medium-severity security issue. The app runs on the desktop with limited exposure, and there is no sign the issue is exploitable, so the risk is low. Updating is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0100 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a declared Cargo.lock dependency with high version-match confidence. Package details were removed from the scanner output, and the truncated source context does not cover the full lockfile, so the specific affected crate and its runtime reachability cannot be determined. The application is a Tauri desktop client with a limited attack surface. Without evidence of attacker-controlled input reaching the vulnerable code, this is a dependency hygiene issue.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a patched version when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0100</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability in one of the project&#39;s dependencies, but the specific package was not included in the scanner output. Because this is a desktop app where build tools are not shipped to users, the risk may be limited, but it is not possible to confirm without knowing which package is affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a high-severity advisory but removed the affected package name and version. The supplied lockfile context is truncated to the top-level dependency declarations, so the specific vulnerable package, its resolved version, and whether the vulnerable code path is reachable at runtime cannot be confirmed. The project is a Tauri desktop frontend; several declared dependencies are dev-only (build tooling) and are not shipped to end users. If the advisory targets a dev-only package such as a bundler or linter, production users are unaffected. If it targets a runtime dependency, the Tauri webview context limits some web-oriented attack surfaces. Without the package identity, a material conclusion cannot be reached.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which package the advisory maps to, confirm the resolved version in the lockfile, and update it if a fixed version is available. If the package is a dev-only dependency, document that it does not ship to end users.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0416 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dependency in the app has a known medium-level security advisory. Because the app is a desktop program and there is no evidence the vulnerable code can be triggered by an attacker, the risk is low, but the dependency should be updated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0416 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a Cargo.lock dependency. The scanner confirms the vulnerable version is present with high confidence, but the specific package name and advisory details were stripped from the output. The supplied source is a truncated prefix of the full lockfile, preventing identification of the affected crate or assessment of runtime reachability. As a Tauri desktop application, the project has a constrained network attack surface. No attacker-controlled input path to the vulnerable code has been identified.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a version that resolves the advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0416</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a medium-level vulnerability in a dependency, but did not specify which package. Without that information, it is not possible to determine whether the issue affects users of the app. The desktop app context limits some common web vulnerabilities.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a medium-severity advisory but removed the affected package details. The truncated lockfile context shows only top-level dependency ranges, not the full tree of resolved transitive versions. Without the package identity, runtime reachability and concrete user harm cannot be determined. The project is a Tauri desktop frontend with no exposed web server in production, which reduces the impact of many web-oriented dependency vulnerabilities. The advisory severity alone is insufficient to conclude material risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package from the advisory, verify the resolved version in the lockfile, and upgrade if a patched release exists.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0194 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library used by the app has a known medium-severity security flag. The app is a desktop program with limited exposure, and there is no evidence the issue is exploitable, so the risk is low. Updating the library is still advisable.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0194 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity Rust advisory against a declared Cargo.lock dependency with high version-match confidence. Package details were removed from the scanner output, and the truncated source context does not include the full lockfile, so the specific affected crate and its runtime reachability cannot be determined. The project is a Tauri desktop application with limited exposure to network-driven exploitation of dependency-level issues. Without evidence of attacker-controlled input reaching the vulnerable code, this is a maintenance weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected Rust dependency to a patched version when one is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0194</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0411 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A tool flagged a known security issue in one of the project&#39;s Rust dependencies. The issue is rated medium, and because this is a desktop app rather than a public server, the practical risk is likely low. The specific affected component could not be identified from the provided evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0411 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0411 against a dependency declared in this production Cargo.lock at medium severity. The scanner removed package details, and the supplied source context covers only the first portion of a large lock file, so the specific affected crate and its version cannot be confirmed from the evidence. This is a Tauri desktop application with a client-side attack surface; without identifying the package or its runtime reachability, concrete user harm cannot be established beyond the advisory&#39;s general medium-severity classification.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected Rust dependencies to versions that resolve RUSTSEC-2024-0411 when a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0411</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0080 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A tool flagged a known security issue in one of the project&#39;s Rust dependencies. The issue is rated medium, and because this is a desktop app, the practical risk is likely low. The specific affected component could not be identified from the provided evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0080 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2025-0080 against a dependency in this production Cargo.lock at medium severity. Package details were stripped by the scanner, and the partial source context does not include enough of the lock file to identify the affected crate or confirm its version. The project is a desktop client with outbound HTTPS calls to LLM providers; without knowing which crate is involved or whether attacker-controlled input reaches the vulnerable code path, the advisory cannot be elevated beyond a general dependency hygiene concern.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected Rust dependencies to versions that resolve RUSTSEC-2025-0080 when a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0080</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0418 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A tool flagged a known security issue in one of the project&#39;s Rust dependencies. The issue is rated medium, and because this is a desktop app, the practical risk is likely low. The specific affected component could not be identified from the provided evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0418 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0418 against a dependency in this production Cargo.lock at medium severity. The scanner removed package identifiers, and the supplied lock-file excerpt does not span enough entries to pinpoint the affected crate or its resolved version. As a Tauri desktop application, the primary untrusted inputs are imported character card files and LLM API responses, but without identifying the vulnerable crate there is no basis to conclude that attacker-controlled data reaches the vulnerable code path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected Rust dependencies to versions that resolve RUSTSEC-2024-0418 when a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0418</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0414 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A tool flagged a known security issue in one of the project&#39;s Rust dependencies. The issue is rated medium, and because this is a desktop app, the practical risk is likely low. The specific affected component could not be identified from the provided evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0414 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0414 against a dependency in this production Cargo.lock at medium severity. Package details were removed by the scanner, and the partial source context does not allow identification of the affected crate or verification of its version. The project is a client-side desktop application with limited exposure; without confirming runtime reachability or attacker input paths, the advisory remains a dependency maintenance item rather than a confirmed exploitable vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected Rust dependencies to versions that resolve RUSTSEC-2024-0414 when a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0414</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0420 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A tool flagged a known security issue in one of the project&#39;s Rust dependencies. The issue is rated medium, and because this is a desktop app, the practical risk is likely low. The specific affected component could not be identified from the provided evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0420 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0420 against a dependency in this production Cargo.lock at medium severity. The scanner stripped package details, and the supplied lock-file excerpt covers only the first several hundred lines of a large file, so the affected crate and its resolved version cannot be determined. This is a desktop application whose attack surface consists mainly of imported character cards and LLM provider responses; without identifying the vulnerable crate, there is insufficient evidence to establish runtime reachability or concrete user harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected Rust dependencies to versions that resolve RUSTSEC-2024-0420 when a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0420</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (0)</summary>
+      <p>None.</p>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Multiple medium-severity dependency advisories in a Tauri desktop app Cargo.lock</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The app uses several third-party code libraries that have known medium-severity security advisories. For a desktop application, these are likely low practical risk, but the developer should run a dependency update to bring them to non-vulnerable versions.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight candidates are OSV-Scanner matches for known advisories against dependency versions in the Cargo.lock of a Tauri desktop AI chat client. All are rated medium severity by the scanner. The scanner output did not include specific package names, and only the first approximately 641 lines of the 133KB lockfile were provided as context, preventing per-advisory runtime reachability analysis. The project makes outbound HTTPS requests to LLM provider APIs and parses PNG character cards, so TLS, HTTP, and image-parsing dependencies would be the most security-relevant if any of these advisories target those crates. However, medium-severity Rust advisories commonly involve build-time issues, unmaintained-crate warnings, or edge-case panics with limited practical exploitability in a desktop client. A routine dependency update pass would address all eight advisories.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit and update all flagged crates to versions that resolve the matched advisories, then regenerate the Cargo.lock.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/RebootFlume/TipsyTavern/blob/72a16543e849267d93cdeb8aba2ac31647565f59/src-tauri/Cargo.lock#L1" rel="noopener noreferrer">src-tauri/Cargo.lock:1</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>69 files &middot; 922046 bytes</dd>
+      <dt>Contextual coverage</dt><dd>23 of 23 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/RebootFlume/TipsyTavern/commit/72a16543e849267d93cdeb8aba2ac31647565f59" rel="noopener noreferrer">72a16543e849267d93cdeb8aba2ac31647565f59</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-06T06:14:56.375Z">Aug 6, 2026</time></dd>
+        <dt>History depth</dt><dd>4 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>78283 input &middot; 27326 output &middot; 15395 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>db3789287d19cf8671ddeca31fd271f46f473681b9a6e15dd9cbda84db813f41</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1285238973/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
