@@ -1,0 +1,236 @@
+{
+  "schema_version": 5,
+  "report_id": "f46c3eae61a308962891dc018c605a499099f5da193379ee42c00311f86aca9a",
+  "report_digest": "f46c3eae61a308962891dc018c605a499099f5da193379ee42c00311f86aca9a",
+  "report_version": 1,
+  "supersedes_report_id": null,
+  "scanner_version": "0.1.0",
+  "scanner_policy_version": "3",
+  "rule_catalog_version": "1",
+  "package_schema_version": 1,
+  "contextual_review_policy_version": "2",
+  "ecosystem_context_version": "sillytavern-community-v1",
+  "prompt_version": "contextual-review-v4",
+  "assessment_schema_version": "contextual-assessment-v1",
+  "source_id": "github-1254744625",
+  "provider": "github",
+  "repository_id": 1254744625,
+  "repository": "cspiritsong/STLorebookManipulator",
+  "canonical_url": "https://github.com/cspiritsong/STLorebookManipulator",
+  "target_sha": "4603b7cd354ad992480f0dce99c029528ec44116",
+  "completed_at": "2026-08-06T03:42:42.772Z",
+  "assessment_method": "deterministic-evidence-contextual-review",
+  "contextual_reviewer": {
+    "provider": "nano-gpt.com",
+    "model": "zai-org/glm-5.2:thinking"
+  },
+  "review_usage": {
+    "input_tokens": 4094,
+    "output_tokens": 631,
+    "cache_read_tokens": 0,
+    "reasoning_tokens": 0
+  },
+  "history": {
+    "base_sha": null,
+    "commits": 20
+  },
+  "coverage": {
+    "inventory": {
+      "files": 37,
+      "bytes": 337500,
+      "first_party_text_files": 37,
+      "first_party_text_bytes": 337500,
+      "excluded": {
+        "dependency_lockfiles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "vendored_dependencies": {
+          "files": 0,
+          "bytes": 0
+        },
+        "generated_bundles": {
+          "files": 0,
+          "bytes": 0
+        },
+        "minified_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "binaries": {
+          "files": 0,
+          "bytes": 0
+        },
+        "archives": {
+          "files": 0,
+          "bytes": 0
+        },
+        "oversized_files": {
+          "files": 0,
+          "bytes": 0
+        },
+        "unsafe_entries": {
+          "files": 0,
+          "bytes": 0
+        }
+      }
+    },
+    "tools": [
+      {
+        "name": "inventory",
+        "version": "0.1.0",
+        "status": "completed"
+      },
+      {
+        "name": "tavernkeeper-static",
+        "version": "3",
+        "status": "completed"
+      },
+      {
+        "name": "gitleaks",
+        "version": "8.30.1",
+        "status": "completed"
+      },
+      {
+        "name": "opengrep",
+        "version": "1.26.0",
+        "status": "completed"
+      },
+      {
+        "name": "osv-scanner",
+        "version": "2.4.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "zizmor",
+        "version": "1.28.0",
+        "status": "not-applicable"
+      },
+      {
+        "name": "malcontent",
+        "version": "1.25.7",
+        "status": "not-applicable"
+      }
+    ],
+    "evidence_validation": {
+      "status": "completed",
+      "validated_candidates": 1
+    }
+  },
+  "review_coverage": {
+    "required": 1,
+    "completed": 1
+  },
+  "candidates": [
+    {
+      "candidate_id": "b9114df64e05c2dedbeee5d78d96166e50c5057281a89f4815f4e8130c56ffae",
+      "evidence_id": "b9114df64e05c2dedbeee5d78d96166e50c5057281a89f4815f4e8130c56ffae",
+      "origin": "opengrep",
+      "scanner_version": "1.26.0",
+      "rule_id": "tavernkeeper.dynamic-execution.node-shell",
+      "category": "dynamic-execution",
+      "scanner_severity": "medium",
+      "scanner_confidence": "medium",
+      "path": "tests/run-tests.js",
+      "line_start": 35,
+      "line_end": 38,
+      "evidence_sha": "4603b7cd354ad992480f0dce99c029528ec44116",
+      "file_role": "test",
+      "title": "OpenGrep reported tavernkeeper.dynamic-execution.node-shell",
+      "explanation": "OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.",
+      "remediation": "Review the matched code path and remove or constrain the flagged behavior when it is not required."
+    }
+  ],
+  "assessments": [
+    {
+      "candidate_id": "b9114df64e05c2dedbeee5d78d96166e50c5057281a89f4815f4e8130c56ffae",
+      "evidence_ids": [
+        "b9114df64e05c2dedbeee5d78d96166e50c5057281a89f4815f4e8130c56ffae"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "technical_explanation": "The matched execSync call is in a test-runner script. The command string is built from a hardcoded list of test file names joined with the script's own directory path. No external or user-controlled input reaches the command argument, so there is no command injection surface. Running child node processes to execute test files is the normal purpose of a test harness.",
+      "layman_explanation": "This is a test script that runs the project's own test files one by one. The list of files to run is fixed in the code, and no outside input is used to build the command, so there is no security risk here.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "tests/run-tests.js",
+          "line_start": 35,
+          "line_end": 38
+        }
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "observation_id": "ab924bbbd17c5c48b8df5616f574a40697625d27141e9239a4080910c4d225bc",
+      "related_candidate_ids": [
+        "b9114df64e05c2dedbeee5d78d96166e50c5057281a89f4815f4e8130c56ffae"
+      ],
+      "evidence_ids": [
+        "b9114df64e05c2dedbeee5d78d96166e50c5057281a89f4815f4e8130c56ffae"
+      ],
+      "disposition": "expected_behavior",
+      "impact": "none",
+      "exploitability": "unlikely",
+      "confidence": "high",
+      "recommended_risk": "low",
+      "title": "Hardcoded test file list used for child process execution",
+      "technical_explanation": "The tests array is a static list of file names. The only variable interpolated into the execSync command is testPath, derived from join(__dirname, test) where test comes from that static array. There is no path traversal or injection vector because no attacker-controlled data participates.",
+      "layman_explanation": "The script only runs a fixed set of test files from its own folder. Nothing a user could influence ends up in the command, so this is safe.",
+      "developer_action": "none",
+      "locations": [
+        {
+          "path": "tests/run-tests.js",
+          "line_start": 8,
+          "line_end": 23
+        },
+        {
+          "path": "tests/run-tests.js",
+          "line_start": 31,
+          "line_end": 38
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "candidates": 1,
+    "assessments": 1,
+    "observations": 1,
+    "items": 2,
+    "disposition": {
+      "expected_behavior": 2,
+      "minor_weakness": 0,
+      "material_vulnerability": 0,
+      "credible_malicious_behavior": 0
+    },
+    "impact": {
+      "none": 2,
+      "low": 0,
+      "medium": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "exploitability": {
+      "unlikely": 2,
+      "plausible": 0,
+      "readily_exploitable": 0
+    },
+    "confidence": {
+      "low": 0,
+      "medium": 0,
+      "high": 2
+    },
+    "recommended_risk": {
+      "low": 2,
+      "material": 0,
+      "high": 0
+    }
+  },
+  "limitations": [
+    "This advisory review cannot prove the absence of unknown behavior."
+  ]
+}
