@@ -274,6 +274,22 @@ describe("GitHub workflow security policy", () => {
       "timeout --signal=TERM --kill-after=5s 20m",
     );
     expect(steps[reviewIndex]?.run).toContain("for pass in 1 2 3; do");
+    expect(steps[reviewIndex]?.run).toContain("progress_count() {");
+    expect(steps[reviewIndex]?.run).toContain(
+      'progress_before="$(progress_count)"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'progress_after="$(progress_count)"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'if [[ "$progress_after" -gt "$progress_before" ]]; then',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'provider_no_progress_retries="0"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]',
+    );
     expect(steps[reviewIndex]?.run).toContain(
       'if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then',
     );
@@ -617,6 +633,17 @@ describe("GitHub workflow security policy", () => {
         text.replace(
           '(.code == "MODEL_PROVIDER" and .domain == "shared"',
           '(.code == "MODEL_PROVIDER" and .domain != "security"',
+        ),
+      /contextual review must remain bounded between preparation and V5 finalization/u,
+    );
+  });
+
+  test("workflow policy rejects removal of the no-progress cutoff", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          'if [[ "$progress_after" -gt "$progress_before" ]]; then',
+          'if [[ "$progress_after" -ge "$progress_before" ]]; then',
         ),
       /contextual review must remain bounded between preparation and V5 finalization/u,
     );

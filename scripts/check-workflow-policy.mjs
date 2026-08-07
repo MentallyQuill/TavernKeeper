@@ -67,7 +67,22 @@ const canonicalStaffPublisherRun =
     'git config user.email "tavernkeeper@users.noreply.github.com"',
     ...canonicalStaffPublisherPushLines,
   ].join("\n") + "\n";
-const canonicalContextualReviewRun = String.raw`run_review() {
+const canonicalContextualReviewRun = String.raw`progress_count() {
+  node -e '
+    const fs = require("node:fs");
+    const path = process.argv[1];
+    if (!fs.existsSync(path)) {
+      process.stdout.write("0");
+      process.exit(0);
+    }
+    const bundle = JSON.parse(fs.readFileSync(path, "utf8"));
+    const ids = bundle?.progress?.completed_group_ids;
+    if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string" || !/^[0-9a-f]{64}$/u.test(id)) || new Set(ids).size !== ids.length)
+      process.exit(1);
+    process.stdout.write(String(ids.length));
+  ' "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
+}
+run_review() {
   node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
   if timeout --signal=TERM --kill-after=5s 20m npm run --silent review-target; then
     rm -f phase-error.json
@@ -78,15 +93,31 @@ const canonicalContextualReviewRun = String.raw`run_review() {
 retryable_review_failure() {
   jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
 }
+provider_review_failure() {
+  jq -e '.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
+}
+provider_no_progress_retries="0"
 for pass in 1 2 3; do
+  progress_before="$(progress_count)"
   if run_review; then
     exit 0
   fi
+  progress_after="$(progress_count)"
   if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then
     exit 1
   fi
-  rm -f phase-error.json
-  sleep "$((pass * 5))"
+  if [[ "$progress_after" -gt "$progress_before" ]]; then
+    rm -f phase-error.json
+    sleep "$((pass * 5))"
+    continue
+  fi
+  if provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]; then
+    provider_no_progress_retries="$((provider_no_progress_retries + 1))"
+    rm -f phase-error.json
+    sleep "$((pass * 5))"
+    continue
+  fi
+  exit 1
 done
 exit 1
 `;
