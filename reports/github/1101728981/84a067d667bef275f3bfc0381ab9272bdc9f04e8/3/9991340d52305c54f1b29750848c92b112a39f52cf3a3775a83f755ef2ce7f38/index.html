@@ -1,0 +1,1868 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Mnehmos/mnehmos.quest-keeper.game at commit 84a067d.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Mnehmos/mnehmos.quest-keeper.game</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game" rel="noopener noreferrer">Mnehmos/mnehmos.quest-keeper.game</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/commit/84a067d667bef275f3bfc0381ab9272bdc9f04e8" rel="noopener noreferrer">84a067d</a></span>
+        <span>Reviewed <time datetime="2026-08-07T04:39:37.870Z">Aug 7, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>90 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow checks out code in a way that leaves a temporary access token saved on the runner. Since nothing in the workflow uses that token afterward or saves any files containing it, there is no real way for it to leak.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action persists the default GITHUB_TOKEN in the local git config by default. This workflow performs no subsequent git push or remote operations and uploads no artifacts, so the persisted credential has no reachable exfiltration path. The token is also short-lived and repo-scoped.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add persist-credentials: false to the checkout step if no git remote operations are needed in this job.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-p9ff-h696-f583 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a known security issue in one of the project&#39;s third-party libraries. However, many of this project&#39;s build-related libraries are only used during development and don&#39;t end up in the app users run. Without knowing exactly which library is affected, it&#39;s unclear whether this matters for end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p9ff-h696-f583 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a dependency declared in the lockfile. The supplied lockfile context shows this is a Tauri desktop frontend project where many visible transitive dependencies (CSS tooling, Babel, esbuild, testing libraries) are marked dev-only and do not ship to end users. The scanner removed specific package details, so the exact vulnerable package and its production versus dev classification cannot be confirmed from the supplied evidence. Without confirming the vulnerable code is in a production dependency reachable by attacker-controlled input, the concrete user-harm path remains unestablished for this local desktop application.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an updated dependency audit to identify the specific package and version, then upgrade if a fix is available. Prioritize production dependencies over dev-only dependencies.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p9ff-h696-f583</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub tool instead of locking it to a specific download. This is common but slightly less safe than locking to an exact version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/checkout using a floating major-version tag rather than a SHA digest. If the tag were ever moved to a malicious commit, the checkout step could execute arbitrary code in the build job. This is an official GitHub action so tag compromise is unlikely, but SHA pinning is the recommended hardening practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a full commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L18" rel="noopener noreferrer">.github/workflows/release.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5xrq-8626-4rwp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a critical security issue in a third-party library. While critical sounds alarming, this project is a desktop app and many of its libraries are only used during development. If the affected library is a build tool, it won&#39;t affect people using the finished app. The exact library couldn&#39;t be identified from the provided information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5xrq-8626-4rwp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a critical-severity advisory against a dependency in the lockfile. The visible lockfile portion shows several dev-only packages (e.g., CSS tooling at version 4.4.4 marked dev true) that are common targets for critical ReDoS-style advisories. If the matched package is a dev-only build tool, the vulnerable code is not present in the shipped Tauri application. The scanner removed package details, preventing confirmation of whether the vulnerable package is a production dependency with runtime reachability. For a local desktop app, even a critical advisory in a dev dependency does not create an end-user attack path.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package flagged by this critical advisory and upgrade it promptly. If it is a dev-only dependency, the urgency is lower but the upgrade should still be performed to protect the development environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5xrq-8626-4rwp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-wrw7-89jp-8q8g applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity security issue in one of the third-party libraries this desktop game depends on. Because this is a local desktop app and there is no evidence that an attacker could reach the vulnerable code, the practical risk appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-wrw7-89jp-8q8g to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-wrw7-89jp-8q8g against a dependency declared in this Cargo.lock. The advisory is rated medium severity. The supplied evidence does not include the affected package name or version, and the Cargo.lock source is truncated, preventing definitive identification of the vulnerable crate. This is a Tauri desktop RPG application, so the attack surface is local rather than internet-exposed. No evidence is supplied showing that attacker-controlled input reaches the vulnerable code path at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-wrw7-89jp-8q8g</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7gmj-67g7-phm9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity issue in a third-party library used by this desktop game. Without evidence that an attacker can trigger the vulnerable code, the real-world risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7gmj-67g7-phm9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-7gmj-67g7-phm9 against a dependency in this Cargo.lock at medium severity. Package details were stripped from the scanner output, and the provided Cargo.lock excerpt is truncated, so the specific affected crate cannot be confirmed. The project is a local Tauri desktop application with no evidence of external input reaching the vulnerable dependency at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7gmj-67g7-phm9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6wh-96g9-6wx3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level security issue in a third-party library. The exact library and whether it affects the finished app could not be determined from the provided information, so the practical risk appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6wh-96g9-6wx3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a lockfile dependency. The project is a Tauri desktop frontend with a mix of production and dev-only transitive dependencies. The scanner removed package details, so the specific vulnerable package, its version, and whether it is a production or dev dependency cannot be confirmed. Without that mapping, runtime reachability and attacker-controlled input paths cannot be established, keeping the risk low for this local application context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and upgrade if a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6wh-96g9-6wx3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4x5r-pxfx-6jf8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a low-level security issue in a third-party library. These issues usually have minimal real-world impact, and the exact library could not be identified from the provided information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4x5r-pxfx-6jf8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a low-severity advisory against a lockfile dependency. Low-severity advisories typically describe issues with minimal practical impact or require highly constrained conditions. The scanner removed package details, preventing confirmation of the specific package and its production versus dev classification. For a local desktop application, the risk from a low-severity dependency advisory is minimal.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Upgrade the affected package when convenient. No urgent action is required for a low-severity advisory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4x5r-pxfx-6jf8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0098 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity vulnerability in a library this desktop game uses. Since there is no evidence an attacker can reach the vulnerable code, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0098 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2025-0098 against a dependency in this Cargo.lock at medium severity. The affected package identity is not included in the scanner evidence, and the Cargo.lock source excerpt is truncated, preventing confirmation of which crate is involved. This is a local desktop Tauri application; no runtime reachability or attacker-input path to the vulnerable code is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0098</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow gives itself more permissions than it needs. It only builds and uploads a file, but could theoretically write to the repository if something went wrong. Locking down permissions is a best practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow does not declare an explicit permissions block, so the auto-generated GITHUB_TOKEN receives default broad permissions including contents:write. The workflow only needs to upload build artifacts and does not push to the repository or create releases. Adding a minimal permissions block would reduce blast radius if any step is compromised.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a top-level permissions block with only the permissions this workflow needs, such as contents: read.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L8-L56" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:8-56</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a third-party tool instead of locking it to an exact version. If that tool were ever compromised, future runs could be affected. Locking to a specific version checksum would prevent this.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action is referenced by major version tag only. A compromise of the action repository could alter behavior for future runs. Pinning to a full commit SHA would eliminate tag-rewrite risk. This is a supply-chain hardening best practice rather than an active vulnerability in the current workflow.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L16" rel="noopener noreferrer">.github/workflows/ci.yml:16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0097 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity issue in a third-party library used by this desktop game. Without evidence that an attacker can trigger the vulnerable code, the real-world risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0097 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2026-0097 against a dependency in this Cargo.lock at medium severity. The affected package name and version are not provided in the scanner evidence, and the Cargo.lock excerpt is truncated. The project is a Tauri desktop RPG with a local attack surface. No evidence shows attacker-controlled input reaching the vulnerable code at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0097</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A community-maintained build tool is referenced by a moving version label. If that label were ever redirected to bad code, it would run during your release build. Locking to an exact version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references dtolnay/rust-toolchain using a floating stable tag rather than a SHA digest. This is a third-party action, so a tag re-pointing or account compromise could inject code into the build pipeline. SHA pinning would eliminate this supply-chain risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin dtolnay/rust-toolchain to a full commit SHA instead of the stable tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L27" rel="noopener noreferrer">.github/workflows/release.yml:27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This build step uses a version label instead of a fixed code snapshot. If the tool&#39;s author were hacked, the label could point to malicious code. Pinning to a specific code hash prevents this.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The upload-artifact action is referenced by floating tag v4 rather than a pinned commit SHA. If the action repository were compromised and the tag moved, malicious code would execute in the workflow. The workflow triggers only on push to staging, limiting exposure to maintainers with write access.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions/upload-artifact to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L51" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:51</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0009 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity vulnerability in a library this desktop game depends on. Since there is no evidence an attacker can reach the vulnerable code, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0009 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2026-0009 against a dependency in this Cargo.lock at medium severity. The affected package identity is not included in the scanner output, and the provided Cargo.lock source is truncated, so the specific crate cannot be confirmed. This is a local Tauri desktop application with no demonstrated runtime path from attacker input to the vulnerable code.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0009</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0429 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity issue in a third-party library used by this desktop game. Without evidence that an attacker can trigger the vulnerable code, the real-world risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0429 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0429 against a dependency in this Cargo.lock at medium severity. The affected package name and version are not provided in the scanner evidence, and the Cargo.lock excerpt is truncated. The project is a Tauri desktop RPG application with a local attack surface. No runtime reachability or attacker-input path to the vulnerable code is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0429</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-25h7-pfq9-p65f applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-level security issue in a third-party library. However, the exact library could not be identified, and many of this project&#39;s libraries are only used during development. The practical risk to end users appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-25h7-pfq9-p65f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency. The visible lockfile context shows this project includes numerous dev-only transitive dependencies for build tooling, testing, and CSS processing. The scanner removed package details, so the specific vulnerable package and its classification cannot be confirmed. Without confirming the vulnerable code ships in the production Tauri application and is reachable by attacker-controlled input, the end-user risk remains low for this desktop app.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package and upgrade it. If it is a production dependency, prioritize the upgrade; if dev-only, schedule it as maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-25h7-pfq9-p65f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0415 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity vulnerability in a library this desktop game uses. Since there is no evidence an attacker can reach the vulnerable code, the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0415 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0415 against a dependency in this Cargo.lock at medium severity. The affected package identity is not included in the scanner output, and the provided Cargo.lock source is truncated, preventing confirmation of the specific crate. This is a local Tauri desktop application; no evidence demonstrates attacker-controlled input reaching the vulnerable code at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0415</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This setup step uses a version label instead of a fixed code snapshot. Pinning to a specific code hash prevents supply-chain attacks if the tool is compromised.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action is referenced by floating tag v4 rather than a pinned commit SHA. A compromised tag could inject malicious code into the build environment with access to the GITHUB_TOKEN.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L14" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:14</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0413 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity issue in a third-party library used by this desktop game. Without evidence that an attacker can trigger the vulnerable code, the real-world risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0413 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0413 against a dependency in this Cargo.lock at medium severity. The affected package name and version are not provided in the scanner evidence, and the Cargo.lock excerpt is truncated. The project is a Tauri desktop RPG with a local attack surface. No runtime reachability or attacker-input path to the vulnerable code is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient; consult the advisory details to identify the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0413</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI workflow uses a moving version label for a Rust setup helper instead of locking it to a specific snapshot. If that label were redirected to malicious code, the build process could be affected. This is a minor best-practice gap, not evidence of anything malicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references dtolnay/rust-toolchain by a floating tag (stable) rather than a commit SHA. This is a widely used third-party action for Rust toolchain setup. Using a mutable tag means CI could run altered code if the tag is moved. The action is used only for toolchain installation in a CI build job, so practical impact is limited.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin dtolnay/rust-toolchain to a full commit SHA with a version comment for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L39" rel="noopener noreferrer">.github/workflows/ci.yml:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4w7w-66w2-5vf9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a medium-level security issue in a third-party library. The exact library could not be identified from the provided information, and the practical risk to users of this desktop app appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4w7w-66w2-5vf9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a medium-severity advisory against a lockfile dependency. The scanner removed package details, preventing identification of the specific vulnerable package, its version, and whether it is a production or dev dependency. The project is a local Tauri desktop application with limited external attack surface. Without confirming runtime reachability of the vulnerable code in the shipped application, the risk remains low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and upgrade if a patched version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4w7w-66w2-5vf9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0419 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the libraries this desktop app uses. The issue is rated medium, and because this is a desktop app rather than a public server, the practical risk is likely low. The exact library and whether its problematic code is actually used could not be confirmed from the provided information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0419 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0419 against a dependency in this Tauri desktop app&#39;s Cargo.lock. The advisory is medium severity. The supplied source context is a partial Cargo.lock (first ~640 of ~3500+ lines) and the scanner removed package details, so the specific vulnerable crate, its version, and whether its vulnerable code path is reachable at runtime cannot be confirmed from the supplied evidence. This is a desktop application with limited external attack surface; advisory severity alone does not establish concrete exploitable harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo update or adjust Cargo.toml to pull a fixed version of the flagged dependency. Verify with cargo audit after updating.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0419</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-hmw2-7cc7-3qxx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-level security issue in a third-party library. The exact library could not be identified, and since this is a desktop app where many libraries are build-only, the practical risk to end users appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-hmw2-7cc7-3qxx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency. The visible lockfile portion shows many transitive dependencies are dev-only build tools. The scanner removed package details, so the specific vulnerable package and its production versus dev classification cannot be confirmed. Without establishing that the vulnerable code is in a production dependency reachable by attacker-controlled input in this desktop application, the end-user risk remains low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package and upgrade it. Prioritize production dependencies over dev-only ones.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-hmw2-7cc7-3qxx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0370 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity library issue. Since this is a desktop app and the exact affected library could not be identified from the provided data, the real-world risk appears low. Updating the dependency is still good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0370 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0370 against a dependency in this Cargo.lock. The advisory is medium severity. Package details were stripped from the scanner output and the supplied source excerpt does not cover the full lock file, so the affected crate, its pinned version, and runtime reachability of the vulnerable code cannot be determined. As a Tauri desktop application, the attack surface is primarily local; without confirmed attacker-controlled input reaching the vulnerable path, concrete harm is speculative.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version and re-run cargo audit to confirm resolution.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0370</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub tool instead of locking it to a specific download. This is common but slightly less safe than locking to an exact version.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-node using a floating major-version tag rather than a SHA digest. This is an official GitHub action so tag compromise is unlikely, but SHA pinning is the recommended hardening practice to prevent supply-chain tag-swap attacks.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a full commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L21" rel="noopener noreferrer">.github/workflows/release.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-23c5-xmqv-rm74 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A scanner found a high-level security issue in a third-party library. The exact library could not be identified from the provided information, and the practical risk to users of this desktop app appears low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-23c5-xmqv-rm74 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched a high-severity advisory against a lockfile dependency. The scanner removed package details, preventing confirmation of the specific vulnerable package, its version, and whether it ships in the production application. The project is a Tauri desktop frontend with many dev-only transitive dependencies visible in the lockfile. Without confirming production runtime reachability and an attacker-controlled input path, the end-user risk remains low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific package and upgrade it. Prioritize production dependencies over dev-only ones.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-23c5-xmqv-rm74</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a known issue in one of the project&#39;s dependencies. The project uses a desktop-app framework that can run commands, which is normal for this kind of application. Without knowing exactly which package version is affected, this appears to be a routine dependency update need rather than an active danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched advisory GHSA-3jxr-9vmj-r5cp against a declared dependency in this Tauri desktop frontend project, but package details were removed from the scanner output, preventing definitive identification of the affected package and version. The lockfile root dependencies include @tauri-apps/plugin-shell at ^2.3.3, which is a production dependency with inherent command-execution capability. However, in a Tauri 2.x app, shell plugin invocations are gated by the app&#39;s allowlist configuration, and the resolved version 2.3.3 may already be patched. Without confirming the exact package and vulnerable version range, and given that Tauri shell access is a stated capability of this desktop RPG companion (launching the MCP server process), the advisory likely represents a dependency hygiene issue rather than a directly exploitable runtime flaw.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update @tauri-apps/plugin-shell and other Tauri plugins to their latest 2.x patch versions and verify the Tauri shell allowlist is scoped to only required commands.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0412 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A medium-rated library vulnerability was detected by a scanner. The specific library and whether its vulnerable code is actually used could not be confirmed. For a desktop application, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0412 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0412 against a dependency in this Cargo.lock. The advisory is medium severity. The scanner removed package identifiers and the supplied source excerpt is partial, preventing identification of the specific crate, its version, or whether the vulnerable code path is exercised at runtime. The project is a local desktop RPG tool; without evidence of attacker-controlled input reaching the vulnerable function, the practical impact is uncertain and likely limited.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version and verify with cargo audit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0412</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0417 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity issue in a library used by this desktop app. The exact library and whether its problematic code is reachable could not be determined from the provided evidence, so the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0417 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2024-0417 against a dependency in this Cargo.lock. The advisory is medium severity. Package details were removed from the scanner output and the supplied source excerpt does not include the full lock file, so the affected crate, its pinned version, and runtime reachability cannot be confirmed. The application is a Tauri desktop tool with primarily local attack surface; advisory severity alone does not demonstrate exploitable harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version and re-run cargo audit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0417</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7gcf-g7xr-8hxj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity library issue. The affected library could not be identified from the provided data, and for a desktop app the practical risk is likely low. Updating is still recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7gcf-g7xr-8hxj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched GHSA-7gcf-g7xr-8hxj against a dependency in this Cargo.lock. The advisory is medium severity. The scanner stripped package details and the supplied source excerpt is partial, so the specific crate, version, and runtime reachability of vulnerable code cannot be determined. As a desktop application, external attack surface is limited; without confirmed attacker-controlled input reaching the vulnerable path, concrete harm is speculative.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a fixed version and verify with cargo audit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7gcf-g7xr-8hxj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-434x-w66g-qw3r applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-rated library vulnerability. The specific library and whether its vulnerable code is actually used could not be confirmed from the provided evidence. For a desktop application, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-434x-w66g-qw3r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched GHSA-434x-w66g-qw3r against a dependency in this Cargo.lock. The advisory is medium severity. Package identifiers were removed from the scanner output and the supplied source excerpt does not cover the full lock file, preventing identification of the affected crate, its version, or whether the vulnerable code path is reachable at runtime. The project is a Tauri desktop application; without evidence of attacker-controlled input reaching the vulnerable function, practical impact is uncertain.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version and re-run cargo audit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-434x-w66g-qw3r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0195 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a library issue with an unusual future-dated advisory identifier. The affected library could not be identified from the provided data. For a desktop app, the practical risk is likely low, but the advisory date is atypical and warrants verification.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0195 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2026-0195 against a dependency in this Cargo.lock. The advisory identifier carries a 2026 date, which is unusual and may indicate a recently published or pre-dated advisory. The scanner removed package details and the supplied source excerpt is partial, so the affected crate, version, and runtime reachability cannot be confirmed. The advisory is rated medium severity. As a desktop application with limited external attack surface, and without confirmed attacker-controlled input reaching the vulnerable path, concrete harm is speculative.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Verify the advisory is legitimate via the RustSec database, then update the affected dependency to a patched version if confirmed. Re-run cargo audit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0195</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0075 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity library vulnerability. The exact library and whether its problematic code is actually used could not be confirmed from the provided evidence. For a desktop application, the practical risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0075 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-scanner matched RUSTSEC-2025-0075 against a dependency in this Cargo.lock. The advisory is medium severity. Package details were stripped from the scanner output and the supplied source excerpt does not include the full lock file, so the specific crate, its pinned version, and whether the vulnerable code path is exercised at runtime cannot be determined. The project is a Tauri desktop RPG tool; without evidence of attacker-controlled input reaching the vulnerable function, practical impact is uncertain and likely limited.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the flagged dependency to a patched version and re-run cargo audit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0075</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0057 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found that one of the project&#39;s bundled libraries has a known security issue. However, the specific library and how it&#39;s used could not be confirmed from the available information, and this is a desktop game app with limited exposure to outside attackers.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0057 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2025-0057 against a dependency in this Cargo.lock. The advisory is rated medium severity, but the affected package name and version were removed from scanner output, and the supplied source context does not include the matching package entry. This is a Tauri desktop application for local RPG game management; without identifying the specific crate and confirming runtime reachability of the vulnerable code path, concrete user harm cannot be established. Medium-severity advisories in a desktop app context with no confirmed attacker-controlled input path represent a minor weakness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit or osv-scanner with full output to identify the affected crate, then update it to a patched version if available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0057</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7r86-cg39-jmmj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a build tool dependency. Build tools are only used during development and are not included in the final app that users install, so this does not affect end users. The version present also appears to already include the fix.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7r86-cg39-jmmj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-7r86-cg39-jmmj was matched by OSV-scanner with package details removed. This advisory identifier is associated with esbuild&#39;s development server, which is present as a dev-only dependency at version 0.25.12 in the lockfile. The esbuild dev-server advisory was addressed in versions at or above 0.25.0, so the resolved 0.25.12 likely falls outside the vulnerable range. Even if still matched, esbuild is a build-time tool that does not ship in the Tauri production bundle, so there is no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run npm audit or osv-scanner with full package details to confirm the exact package and version, and update if a vulnerable version is genuinely present.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7r86-cg39-jmmj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6g55-p6wh-862q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a development bundler dependency. This tool is only used when building the app and is not shipped to users, so the risk to end users is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6g55-p6wh-862q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-6g55-p6wh-862q was matched with package details removed. This advisory is commonly associated with Vite, which is declared as a dev dependency at ^7.0.4. Vite is a build-time bundler that does not ship in the Tauri production frontend bundle. The resolved Vite 7.x line is recent and likely outside vulnerable ranges for older Vite advisories. Without confirmed package identification, runtime reachability for end users is not established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Confirm the exact matched package via a full audit run and update the affected dev dependency if a vulnerable version is present.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6g55-p6wh-862q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for the checkout tool instead of locking it to an exact version. Locking to a specific version checksum would prevent future supply-chain risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by major version tag only. Same supply-chain hardening consideration as other unpinned action references in this workflow. No current exploitation path exists; the risk is future tag-rewrite compromise.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0081 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a library used by this project as having a known issue. The specific library could not be identified from the provided data, and since this is a desktop application, the real-world risk is likely low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0081 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2025-0081 against a dependency in this Cargo.lock. The advisory is rated medium severity, but the affected package details were stripped from the scanner output and the supplied source context does not contain the matching entry. The project is a local Tauri desktop RPG tool; without confirming which crate is affected and whether attacker-controlled input reaches the vulnerable code, the practical risk is indeterminate but likely low given the desktop deployment model.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0081</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The first build step uses a version label instead of a fixed code snapshot. Pinning to a specific code hash prevents supply-chain attacks if the tool is compromised.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by floating tag v4 rather than a pinned commit SHA. A compromised tag could inject malicious code at the first step of the workflow, affecting all subsequent steps.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L11" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:11</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-67mh-4wv8-2f99 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a CSS processing library used during development. The version present appears to already contain the fix, and the library is not included in the final app anyway.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-67mh-4wv8-2f99 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-67mh-4wv8-2f99 (medium severity) was matched with package details removed. This advisory is associated with @adobe/css-tools ReDoS, and the lockfile shows @adobe/css-tools at version 4.4.4 marked as dev-only. The known ReDoS fix was in version 4.4.1, so 4.4.4 is likely patched. Additionally, this is a transitive dev dependency of tailwindcss and does not ship in the production bundle.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Verify with a full audit that the matched version is genuinely vulnerable; if so, update the transitive dependency through a dev dependency refresh.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-67mh-4wv8-2f99</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0221 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the project&#39;s dependencies. The affected library could not be identified from the available data, and the desktop nature of the app limits exposure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0221 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2026-0221 against a dependency in this Cargo.lock. The advisory is rated medium severity. Package details were removed from scanner output and the matching entry is not visible in the supplied source context. This is a Tauri desktop game companion; without identifying the affected crate or confirming runtime reachability and attacker input paths, concrete harm cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0221</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rf6f-7fwh-wjgh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency issue but did not specify which package. Without knowing the exact package, this appears to be a routine dependency maintenance item rather than an active security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rf6f-7fwh-wjgh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-rf6f-7fwh-wjgh was matched with package details removed, preventing identification of the affected package and version. The lockfile context visible includes both production and dev dependencies, but without the specific package name it is not possible to confirm runtime reachability or attacker input paths. Given this is a frontend Tauri project where most flagged advisories in similar ecosystems map to build-time tooling, the likely impact is limited to development environments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a full dependency audit with package names visible to identify the affected package and update it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rf6f-7fwh-wjgh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0100 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a dependency for a known issue. The specific library could not be confirmed from the provided data, and the desktop app context limits real-world risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0100 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2025-0100 against a dependency in this Cargo.lock. The advisory is rated medium severity. The affected package name and version were removed from scanner output, and the supplied source context does not include the matching package entry. The project is a local desktop RPG application; without confirming the specific crate, its version, and whether attacker-controlled data reaches the vulnerable code path, the practical impact is indeterminate and likely low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0100</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency issue without specifying the package. This is likely a development-time dependency concern that does not affect users of the finished app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-r28c-9q8g-f849 was matched with package details removed. Without the specific package name and version, runtime reachability and attacker control paths cannot be confirmed. The project is a Tauri desktop frontend where the majority of transitive dependencies in the lockfile are dev-only build tooling that does not ship to end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the exact package via a full audit and update if a vulnerable version is confirmed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3v7f-55p6-f55p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a medium-severity issue in a development dependency. Since development tools are not included in the app users install, the risk to end users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3v7f-55p6-f55p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-3v7f-55p6-f55p (medium severity) was matched with package details removed. This advisory may relate to CSS processing tooling such as @adobe/css-tools or lightningcss, both of which appear as dev-only dependencies in the lockfile. Dev-only dependencies in a Tauri project are not bundled into the production app, so end-user runtime reachability is not established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Confirm the exact package and version with a full audit and update the affected dev dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3v7f-55p6-f55p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mw96-cpmx-2vgc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner flagged a dependency issue without specifying which package is affected. Without this detail, the issue appears to be a routine dependency update need rather than an active threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mw96-cpmx-2vgc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory GHSA-mw96-cpmx-2vgc was matched with package details removed. Without the specific package identification, it is not possible to verify the resolved version, runtime reachability, or whether attacker-controlled input reaches the vulnerable code path. The project&#39;s production dependencies are primarily React, Three.js, Tauri plugins, and utility libraries, while the majority of lockfile entries are dev-only build tooling.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a full dependency audit with package names to identify the affected package and update it to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mw96-cpmx-2vgc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A community-maintained release tool is referenced by a moving version label and has access to your release token. If that label were redirected to bad code, it could abuse that access. Locking to an exact version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references tauri-apps/tauri-action using a floating v0 tag rather than a SHA digest. This is a third-party action that receives the GITHUB_TOKEN, so a tag re-pointing or account compromise could inject code with release-creation privileges. SHA pinning would eliminate this supply-chain risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin tauri-apps/tauri-action to a full commit SHA instead of the v0 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L55" rel="noopener noreferrer">.github/workflows/release.yml:55</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w5hq-g745-h8pq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A build-tool helper used to process the project&#39;s own stylesheet code has a known slowdown bug. Because this tool only runs during development and never touches user input or network data, it cannot be triggered by anyone using the finished app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w5hq-g745-h8pq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-w5hq-g745-h8pq is a medium-severity ReDoS advisory. The visible lockfile portion shows a CSS parsing utility at version 4.4.4 marked dev-only, transitively pulled by the TailwindCSS build toolchain. In this Tauri desktop application, CSS is processed at build time from project source files, not from user-supplied or network-delivered input. The vulnerable code path has no runtime reachability in the shipped application bundle, and no attacker-controlled input reaches the parser during normal operation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected transitive dependency through a TailwindCSS or PostCSS upgrade when convenient; no urgent action required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w5hq-g745-h8pq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f886-m6hf-6m8v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A medium-severity bug was flagged in a packaged library. Based on the project&#39;s structure as a desktop app, the affected library is most likely a development-only tool that does not reach the finished product.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f886-m6hf-6m8v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-f886-m6hf-6m8v is a medium-severity advisory. The specific package could not be confirmed from the visible lockfile portion, but the project&#39;s production dependency list consists of well-maintained packages (React, Three.js, Zod, Zustand, Tauri plugins, markdown renderers) with no known match for this advisory at the declared versions. The remaining dependency tree is dominated by dev-only build tooling (Vite, Vitest, TailwindCSS, PostCSS, Babel). In a Tauri desktop app, dev dependencies do not ship in the final bundle and have no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an audit tool with package names visible to identify and update the specific dependency; no urgent action required for the shipped app.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f886-m6hf-6m8v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v2wj-q39q-566r applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A high-severity bug was flagged in a packaged library. While the severity sounds alarming, this desktop app does not run a web server, so remote attackers cannot send data to trigger the bug. The affected library is most likely part of the build toolchain rather than the app users run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2wj-q39q-566r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-v2wj-q39q-566r is a high-severity advisory. The specific package could not be confirmed from the visible lockfile portion. This project is a Tauri desktop frontend with no server surface exposed to remote clients. The production dependencies are standard, actively maintained packages at recent versions. High-severity advisories in frontend build ecosystems commonly affect archive extraction or process-spawning utilities that are dev-only transitive dependencies with no runtime reachability in the shipped bundle. Without a server listener or remote input path, attacker-controlled data does not reach these code paths at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an audit tool with package names visible to identify the specific dependency and update it; confirm whether it is a dev-only dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2wj-q39q-566r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0416 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability in one of the project&#39;s dependencies. The affected library could not be identified from the available data, and the desktop application context limits exposure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0416 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0416 against a dependency in this Cargo.lock. The advisory is rated medium severity. Package details were stripped from scanner output and the matching entry is not present in the supplied source context. This is a Tauri desktop RPG tool; without identifying the affected crate and confirming runtime reachability of the vulnerable code, concrete user harm cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0416</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qx2v-qp2m-jg93 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A medium-severity bug was flagged in a packaged library. In this desktop app, the affected library is most likely a development tool that does not reach the finished product.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qx2v-qp2m-jg93 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-qx2v-qp2m-jg93 is a medium-severity advisory. The specific package could not be confirmed from the visible lockfile portion. The project&#39;s production dependencies at the declared versions do not match known medium-severity advisories for this ID. The dependency tree is dominated by dev-only build tooling. In a Tauri desktop app, dev dependencies are excluded from the shipped bundle and have no runtime reachability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an audit tool with package names visible to identify and update the specific dependency; no urgent action required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qx2v-qp2m-jg93</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A medium-severity bug was flagged in a packaged library. This type of issue typically affects the local development server used while building the app, not the app that users install and run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-fxqj-rqcc-2cmp is a medium-severity advisory. The specific package could not be confirmed from the visible lockfile portion. This advisory pattern is consistent with development-server request-forwarding issues in build tooling such as bundlers. In a Tauri desktop app, the development server is only used during local development and is not part of the shipped application. No remote attacker can reach the development server during normal end-user operation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build tool dependency when convenient; no urgent action required for the shipped app.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-96hv-2xvq-fx4p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A high-severity bug was flagged in a packaged library. Because this is a desktop app with no web server, remote attackers cannot reach the affected code. The library is most likely used only during development or testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-96hv-2xvq-fx4p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-96hv-2xvq-fx4p is a high-severity advisory. The specific package could not be confirmed from the visible lockfile portion. The project is a Tauri desktop frontend with no exposed server surface. The production dependency list at the declared versions does not match known high-severity advisories for this ID. High-severity advisories in this ecosystem commonly affect dev-only transitive dependencies such as archive handling or DOM simulation libraries used in testing. These have no runtime reachability in the shipped bundle, and no attacker-controlled input reaches them during normal operation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an audit tool with package names visible to identify the specific dependency and update it; confirm whether it is a dev-only dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-96hv-2xvq-fx4p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3ppc-4f35-3m26 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A high-severity bug was flagged in a CSS processing helper used during development. Because it only handles the project&#39;s own stylesheet code and never touches user input or network data, it cannot be triggered by anyone using the finished app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3ppc-4f35-3m26 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-3ppc-4f35-3m26 is a high-severity advisory. The visible lockfile portion shows a CSS parsing utility at version 4.4.4 marked dev-only, which is consistent with the advisory family for that package. The utility is transitively pulled by the TailwindCSS build toolchain and processes only project source CSS at build time. No user-supplied or network-delivered input reaches this parser. The vulnerable code path has no runtime reachability in the shipped Tauri application bundle.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected transitive dependency through a TailwindCSS or PostCSS upgrade when convenient; no urgent action required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3ppc-4f35-3m26</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A high-severity bug was flagged in a packaged library. Because this desktop app does not accept remote connections, attackers cannot send data to trigger the bug. The affected library is most likely part of the build toolchain.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> GHSA-mh99-v99m-4gvg is a high-severity advisory. The specific package could not be confirmed from the visible lockfile portion. The project is a Tauri desktop frontend with no server surface. The production dependencies at the declared versions are standard, actively maintained packages. High-severity advisories in frontend dependency trees frequently affect dev-only utilities such as archive extraction, process spawning, or file-system helpers that are excluded from the shipped bundle. Without a remote input path, attacker-controlled data does not reach these code paths at runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run an audit tool with package names visible to identify the specific dependency and update it; confirm whether it is a dev-only dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This build step uses a third-party tool referenced by a version label instead of a fixed code snapshot. Pinning to a specific code hash prevents supply-chain attacks if the tool is compromised.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The tauri-apps/tauri-action is a third-party action referenced by floating tag v0 rather than a pinned commit SHA. This action receives the GITHUB_TOKEN via environment variable. A compromised tag could exfiltrate the token or inject malicious build artifacts.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin tauri-apps/tauri-action to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L39" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The test job does not explicitly limit what its temporary token can do. Since the job only runs tests and does not modify the repository, the broad permissions are not used, but it is good practice to restrict them.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test job does not declare an explicit permissions block, so it inherits the repository default token permissions. This job only runs npm ci and npm test with no write operations, so broad permissions are unused. Adding a minimal permissions block would follow least-privilege best practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit permissions block with contents: read to the test job to follow least-privilege practice.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L10-L25" rel="noopener noreferrer">.github/workflows/ci.yml:10-25</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0194 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a dependency for a known issue. The specific library could not be confirmed from the provided data, and the desktop app context limits real-world risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0194 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2026-0194 against a dependency in this Cargo.lock. The advisory is rated medium severity. The affected package details were removed from scanner output and the matching entry is not visible in the supplied source context. The project is a local Tauri desktop game companion; without confirming the specific crate, its version, and whether attacker-controlled data reaches the vulnerable code, practical impact is indeterminate and likely low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0194</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-58qx-3vcg-4xpx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A build-time tool used to process CSS styles has a known issue, but it only runs on the developer&#39;s machine when building the app, not when end users are playing the game. The risk to players is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-58qx-3vcg-4xpx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory likely corresponds to @adobe/css-tools, which appears in the lockfile at version 4.4.4 marked as dev-only. This package is a transitive dependency of CSS processing tooling (tailwindcss/postcss) used at build time. Even if the advisory range includes this version, the vulnerable CSS parsing code has no runtime reachability in the shipped Tauri desktop application. A ReDoS or similar parsing issue would require a malicious CSS input during development builds, which is an unlikely attack vector for a local desktop RPG companion app.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dev dependency to the latest patched version when convenient; no urgent action required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-58qx-3vcg-4xpx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-cq8v-f236-94qc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a low-severity issue in one of the project&#39;s dependencies. The specific library could not be identified, and the low severity combined with the desktop app context means the real-world risk is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-cq8v-f236-94qc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched GHSA-cq8v-f236-94qc against a dependency in this Cargo.lock. The advisory is rated low severity. Package details were removed from scanner output and the matching entry is not present in the supplied source context. A low-severity advisory in a desktop application dependency, without confirmed runtime reachability or attacker input paths, represents a minor weakness with minimal practical risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-cq8v-f236-94qc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2c7-rcm5-vvqj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known issue in one of the project&#39;s dependencies, but couldn&#39;t specify which package. Since this is a desktop game app that runs locally on your computer rather than a website, the practical risk is low. The developer should still check and update the flagged package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2c7-rcm5-vvqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a high-severity advisory but removed package details, preventing definitive mapping to a specific dependency in the lockfile. The visible lockfile entries show that the majority of dependencies in this Tauri frontend project are dev-only build tooling (babel, postcss, tailwindcss, esbuild, vite, vitest). This desktop application runs locally without exposing network services, so even if this advisory affects a production dependency, the attack surface for a local RPG companion app is limited. Without confirming the exact package and version, the concrete user harm cannot be established as material.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run the scanner with package details enabled to identify the specific dependency, then update it to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2c7-rcm5-vvqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0411 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability in one of the project&#39;s dependencies. The affected library could not be identified from the available data, and the desktop application context limits exposure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0411 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched RUSTSEC-2024-0411 against a dependency in this Cargo.lock. The advisory is rated medium severity. The affected package name and version were removed from scanner output, and the supplied source context does not include the matching package entry. This is a Tauri desktop RPG application; without identifying the specific crate and confirming whether attacker-controlled input reaches the vulnerable code path, concrete user harm cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run cargo audit with full output to identify the affected crate and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0411</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r6v5-fh4h-64xc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a known issue in one of the building blocks this desktop app uses. The issue is rated medium, and because this is a local desktop game tool rather than a public-facing server, the practical risk is low. The scanner did not include enough detail to confirm which specific component is affected or whether the problem can actually be triggered during normal use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r6v5-fh4h-64xc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A GitHub-sourced medium-severity advisory matched a dependency declared in this Tauri desktop application&#39;s Cargo.lock. The scanner removed package details, so the specific affected crate and its version cannot be confirmed from the supplied evidence. The project is a local desktop RPG companion tool; without identifying the package, its runtime reachability, and whether attacker-controlled input reaches the vulnerable code path, concrete user harm cannot be established. Medium-severity Rust advisories typically address panics, edge-case correctness bugs, or limited-scope issues rather than remote code execution or credential theft.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update affected dependencies to patched versions when convenient. Run cargo update or consult the advisory details to identify and upgrade the specific crate.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r6v5-fh4h-64xc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The whole workflow does not explicitly restrict what its temporary token can do. Since neither job modifies the repository, the extra permissions are not used, but restricting them is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow has no top-level permissions block, so both jobs inherit repository-default GITHUB_TOKEN permissions. Neither job performs write operations, uploads artifacts, or deploys. The broad permissions are unused but represent a least-privilege gap.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a top-level permissions block with contents: read to follow least-privilege practice.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L1-L60" rel="noopener noreferrer">.github/workflows/ci.yml:1-60</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build-check job uses a version label for the checkout tool instead of locking it to an exact version. Locking to a specific version checksum would prevent future supply-chain risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action in the build-check job is referenced by major version tag only. Same supply-chain hardening consideration as other unpinned references. No current exploitation path; risk is future tag-rewrite compromise.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions to full commit SHAs instead of version tags for supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L30" rel="noopener noreferrer">.github/workflows/ci.yml:30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2025-0080 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security database flagged a medium-level issue in a library used by this desktop game app. Since the app runs locally on your computer and the scanner did not specify which library is affected, the real-world danger appears minimal. Updating the library when a fix is available is good practice but not urgent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2025-0080 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RUSTSEC medium-severity advisory (2025-0080) matched a dependency in this Tauri application&#39;s Cargo.lock. Package details were stripped from the scanner output, preventing identification of the affected crate and its pinned version. The application is a local desktop RPG tool with no evidence of internet-facing services that would expose the vulnerable code path to untrusted input. Without runtime reachability and attacker-control analysis, the advisory&#39;s medium severity does not translate to material user harm in this context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the RUSTSEC-2025-0080 advisory, identify the affected crate in Cargo.lock, and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2025-0080</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI workflow uses a version label for a GitHub helper tool instead of locking it to a specific snapshot. If that label were ever redirected to bad code, the build process could be affected. This is a minor best-practice gap, not evidence of anything malicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-node by a floating major tag (v4) rather than a commit SHA. This is a common practice but introduces a supply-chain risk: if the action repository tag is moved to a malicious commit, the CI could execute altered code. The action is a well-known first-party GitHub action used only for Node setup in a CI build job, limiting practical impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a full commit SHA with a version comment for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L33" rel="noopener noreferrer">.github/workflows/ci.yml:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-48c2-rrv3-qjmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-level issue in a dependency but didn&#39;t specify which one. For a desktop game app, this is low risk, but the developer should still update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-48c2-rrv3-qjmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A medium-severity advisory was matched but package details were removed. The project is a Tauri desktop frontend with no server-side attack surface. Many dependencies visible in the lockfile are dev-only tooling. Without identifying the specific package and confirming runtime reachability in the shipped application, concrete user harm cannot be established as material. The advisory severity alone does not indicate immediate danger in this context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific dependency from the scanner output and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-48c2-rrv3-qjmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build-check job does not explicitly limit what its temporary token can do. Since the job only builds the project and does not modify the repository, the broad permissions are not used, but restricting them is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The build-check job does not declare an explicit permissions block, inheriting repository defaults. This job only runs npm ci, npm run build, and a Rust toolchain setup with no write or deploy operations. Broad permissions are unused; a minimal permissions block would follow least-privilege best practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit permissions block with contents: read to the build-check job to follow least-privilege practice.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L27-L60" rel="noopener noreferrer">.github/workflows/ci.yml:27-60</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This setup step uses a third-party tool referenced by a version label instead of a fixed code snapshot. Pinning to a specific code hash prevents supply-chain attacks if the tool is compromised.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dtolnay/rust-toolchain action is a third-party action referenced by floating tag stable rather than a pinned commit SHA. A compromised tag could inject malicious code into the Rust toolchain setup, affecting the build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin dtolnay/rust-toolchain to a specific commit SHA instead of a floating tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L20" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0007 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level known issue in a dependency of this desktop game tool. The app runs locally, and the scanner did not specify which component is affected, so the practical risk is low. Applying the fix when available is recommended but not urgent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0007 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RUSTSEC medium-severity advisory (2026-0007) matched a dependency in this Cargo.lock. The scanner removed package identifiers, so the affected crate and version cannot be determined from the supplied evidence. This is a Tauri desktop application for local RPG gameplay; there is no indication of a network service exposing the dependency&#39;s vulnerable code to external attackers. The advisory&#39;s medium severity, without confirmed runtime reachability or attacker-controlled input, does not indicate material risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Look up RUSTSEC-2026-0007, find the affected crate in the lock file, and upgrade to a patched release.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0007</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-level issue in a dependency but didn&#39;t specify which package. Since this is a locally-run desktop game rather than a web service, the practical risk is limited. The developer should identify and update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched but package details were removed, preventing confirmation of which dependency is affected and whether it ships in the production bundle. The project is a local Tauri desktop application with no network-facing services in the frontend. The visible lockfile shows predominantly dev-only build tooling. Without confirming the specific package, version, and runtime reachability, the advisory severity alone cannot establish material user harm in this desktop app context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific dependency from the scanner output and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0418 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known medium-level security issue was found in a library used by this desktop game app. Because the app runs on your local computer and the specific affected library was not identified, the actual risk is low. Updating the library when a fix is available is good hygiene.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0418 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RUSTSEC medium-severity advisory (2024-0418) matched a dependency in this Tauri desktop application&#39;s Cargo.lock. Package details were removed from the scanner output, preventing identification of the specific crate and version. The project is a local desktop RPG companion with no evidence of internet-facing attack surface that would expose the vulnerable code to untrusted input. Without confirming runtime reachability and attacker control, the medium advisory severity does not establish material user harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consult the RUSTSEC-2024-0418 advisory, identify the affected crate, and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0418</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build-check job checks out code in a way that leaves a temporary access token saved on the runner. Since nothing in the job uses that token afterward or saves any files containing it, there is no real way for it to leak.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action in the build-check job persists the default GITHUB_TOKEN in the local git config. This job performs no subsequent git remote operations and uploads no artifacts, so the persisted credential has no reachable exfiltration path. The token is short-lived and repo-scoped.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add persist-credentials: false to the checkout step if no git remote operations are needed in this job.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L30" rel="noopener noreferrer">.github/workflows/ci.yml:30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0414 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security database flagged a medium-level issue in a building block used by this local desktop game tool. The scanner did not specify which component is affected, and the app is not a public server, so the practical danger is low. Applying the available fix is recommended but not urgent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0414 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RUSTSEC medium-severity advisory (2024-0414) matched a dependency in this Cargo.lock. The scanner stripped package details, so the affected crate and its pinned version cannot be identified from the supplied evidence. This Tauri desktop RPG application has no demonstrated network-facing service that would expose the dependency&#39;s vulnerable code path to external attackers. Without runtime reachability and attacker-control confirmation, the medium advisory severity does not translate to material risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review RUSTSEC-2024-0414, locate the affected crate in Cargo.lock, and upgrade to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0414</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2026-0190 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A security scanner found a medium-level known issue in a dependency of this desktop game app. The app runs locally, and the specific affected library was not identified, so the real-world risk is low. Updating when a fix is available is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2026-0190 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RUSTSEC medium-severity advisory (2026-0190) matched a dependency in this Tauri application&#39;s Cargo.lock. Package identifiers were removed from the scanner output, preventing confirmation of the affected crate and version. The project is a local desktop RPG companion tool with no evidence of external attack surface exposing the vulnerable code. Without runtime reachability and attacker-control analysis, the medium advisory severity does not establish material user harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Look up RUSTSEC-2026-0190, find the affected crate in the lock file, and upgrade to a patched release.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2026-0190</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory RUSTSEC-2024-0420 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A known medium-level security issue was found in a library used by this desktop game app. Because the app runs locally and the specific affected library was not identified, the actual risk is low. Updating the library when a fix is available is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory RUSTSEC-2024-0420 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A RUSTSEC medium-severity advisory (2024-0420) matched a dependency in this Cargo.lock. The scanner removed package details, so the affected crate and its version cannot be determined from the supplied evidence. This is a Tauri desktop RPG application with no demonstrated internet-facing service that would expose the dependency&#39;s vulnerable code to untrusted external input. Without confirming runtime reachability and attacker control, the medium advisory severity does not indicate material risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consult the RUSTSEC-2024-0420 advisory, identify the affected crate in Cargo.lock, and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>RUSTSEC-2024-0420</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fx2h-pf6j-xcff applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a high-level issue in a dependency but didn&#39;t specify which package. For a desktop game app that runs on your own computer, the risk is low. The developer should still identify and update the affected package.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> A high-severity advisory was matched but package details were removed. The project is a Tauri desktop RPG companion that runs locally. The frontend dependencies visible in the lockfile are typical React/Three.js ecosystem packages, with many transitive dependencies marked as dev-only. Without identifying the specific affected package and confirming it ships in the production bundle with attacker-controlled input reaching the vulnerable code, the concrete harm cannot be established as material for this desktop app context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the specific dependency from the scanner output and update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fx2h-pf6j-xcff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (8)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This starts the Tauri development build using a fixed set of arguments. No external input is used, so there is no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> spawn is used to launch Tauri dev mode with a static argument list referencing a temporary config file generated earlier in the same script. No user-controlled or external input reaches the arguments. This is standard dev tooling orchestration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L135-L140" rel="noopener noreferrer">scripts/dev-server.js:135-140</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This starts the Vite development server using a fixed port number chosen by the developer. No external input is used, so there is no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> spawn is used to launch Vite with arguments built from a static command name and a port value derived from the hardcoded PREFERRED_PORT constant range. No user-controlled or external input reaches the arguments. This is standard dev server orchestration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L123-L128" rel="noopener noreferrer">scripts/dev-server.js:123-128</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow caches downloaded packages to speed up builds. This is a normal and safe practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged the npm cache configuration on actions/setup-node. This is standard dependency-cache usage keyed on the lockfile. Cache poisoning would require an attacker to already have write access to the repository or CI cache namespace, at which point the cache is not the primary attack surface. No runtime artifacts are published from the cache itself.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L21" rel="noopener noreferrer">.github/workflows/release.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner worried that build credentials might be accidentally packaged into the uploaded file. However, the upload only includes the finished installer program, not the source code folder where credentials are stored, so there is no real risk here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked concern is that checkout persists the GITHUB_TOKEN in the .git directory and a subsequent artifact upload could leak it. Here the artifact upload path is restricted to built installer executables under the target bundle directory, which does not include the .git directory. The credential cannot be exfiltrated through this artifact.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L11" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:11</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses a standard GitHub token to create releases. The token is not saved into any downloadable files.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged potential credential persistence in artifacts. The workflow passes GITHUB_TOKEN as an environment variable to tauri-action for release creation. This token is scoped to the repository, automatically revoked after the job, and is not written into build artifacts or uploaded as a file. The release artifacts are compiled binaries and release metadata, not credential stores.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L17-L18" rel="noopener noreferrer">.github/workflows/release.yml:17-18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed project setup script with no variable input. It is a normal part of starting the development environment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> execSync is called with a fully static string to run a project preparation script. No interpolation or external input is involved. This is standard dev tooling orchestration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L91" rel="noopener noreferrer">scripts/dev-server.js:91</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a Windows command to stop a process by its ID. The ID comes from parsing the output of a system network command, not from any user or external input, so there is no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> execSync is called with a template string interpolating a PID value. The PID is extracted from netstat output via a strict regex that matches only trailing digits. No user-controlled input reaches this value. This is a Windows-specific dev helper to kill a process occupying the preferred dev port.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L76" rel="noopener noreferrer">scripts/dev-server.js:76</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a Windows network command to find what process is using a specific port. The port number is a fixed constant set by the developer, not anything a user or attacker can control, so there is no injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> execSync is called with a template string interpolating a port value. The port originates from the hardcoded constant PREFERRED_PORT (1420) passed through findAvailablePort, which only iterates integers in a small fixed range. No external or user-controlled input reaches this command. This is a Windows-specific dev helper to free a busy port before starting the dev server.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L63" rel="noopener noreferrer">scripts/dev-server.js:63</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Scanner removed package details for all eight dependency advisories, preventing definitive version verification</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The security scanner flagged eight dependency issues but did not include the specific package names, making it hard to confirm which are real problems. Most flagged items in projects like this are development tools that never reach the final app. A more detailed scan is recommended to identify and update any genuinely vulnerable packages.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight OSV-scanner candidates have their package details removed from the scanner output, which prevents confirming which specific package and resolved version each advisory maps to. The visible lockfile portion shows the root project depends on Tauri 2.x plugins, React 19, Three.js, and standard build tooling (Vite, esbuild, Babel, TailwindCSS, PostCSS) as dev dependencies. In a Tauri desktop app, dev dependencies are not bundled into the shipped production frontend, so advisories affecting dev-only packages have no end-user runtime reachability. The production dependencies that carry inherent capability (plugin-shell, plugin-fs) match the stated purpose of a desktop RPG companion that launches an MCP server and persists state. A full audit with package names visible is needed to confirm whether any production dependency is genuinely running a vulnerable version.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run osv-scanner or npm audit with full package name output to identify each affected package, then update production dependencies first and dev dependencies second.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json#L1-L46" rel="noopener noreferrer">package-lock.json:1-46</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory assessment limited by removed package details and partial lockfile visibility</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The scanner hid the names of the libraries with known bugs, and only a small portion of the dependency list was visible for review. Two bugs were traced to a development-only CSS tool. The rest could not be pinpointed, but because this is a desktop app that does not accept remote connections, the overall risk is low. Running a local security scan that shows library names would help the developer update the right packages.</p>
+    <details><summary>Technical assessment</summary>
+      <p>OSV-scanner removed package names from all eight advisory candidates, and only the first approximately 160 lines of a 300 KB lockfile were supplied as source context. Two candidates could be correlated to a visible dev-only CSS parsing utility at version 4.4.4. The remaining six could not be definitively mapped to specific packages. However, the project is a Tauri desktop frontend with no server surface, the production dependency list consists of well-maintained packages at recent versions, and the dev dependency tree is dominated by build tooling that does not ship in the final bundle. These factors collectively indicate low runtime risk regardless of which specific packages are affected. Running a local audit with package names visible would allow precise identification and targeted updates.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a local dependency audit with package names visible to identify each flagged package, confirm whether each is a dev-only dependency, and update affected packages or their parent packages when convenient.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json#L47-L52" rel="noopener noreferrer">package-lock.json:47-52</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>206 files &middot; 50736262 bytes</dd>
+      <dt>Contextual coverage</dt><dd>88 of 88 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>OpenGrep could not parse some source files; findings from successfully analyzed files are included.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/commit/84a067d667bef275f3bfc0381ab9272bdc9f04e8" rel="noopener noreferrer">84a067d667bef275f3bfc0381ab9272bdc9f04e8</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-07T04:39:37.870Z">Aug 7, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>254520 input &middot; 82933 output &middot; 41603 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>9991340d52305c54f1b29750848c92b112a39f52cf3a3775a83f755ef2ce7f38</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1101728981/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
