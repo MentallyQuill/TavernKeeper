@@ -68,19 +68,7 @@ const canonicalStaffPublisherRun =
     ...canonicalStaffPublisherPushLines,
   ].join("\n") + "\n";
 const canonicalContextualReviewRun = String.raw`progress_count() {
-  node -e '
-    const fs = require("node:fs");
-    const path = process.argv[1];
-    if (!fs.existsSync(path)) {
-      process.stdout.write("0");
-      process.exit(0);
-    }
-    const bundle = JSON.parse(fs.readFileSync(path, "utf8"));
-    const ids = bundle?.progress?.completed_group_ids;
-    if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string" || !/^[0-9a-f]{64}$/u.test(id)) || new Set(ids).size !== ids.length)
-      process.exit(1);
-    process.stdout.write(String(ids.length));
-  ' "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
+  node scripts/contextual-review-progress-count.mjs "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
 }
 run_review() {
   node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'

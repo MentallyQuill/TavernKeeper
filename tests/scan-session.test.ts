@@ -385,7 +385,7 @@ describe("three-phase contextual scan session", () => {
     expect(requests).toBe(0);
     await expect(
       readFile(join(root, "review-progress.json"), "utf8"),
-    ).rejects.toMatchObject({ code: "ENOENT" });
+    ).resolves.toContain(current.group_id);
   });
 
   test("discards an invalid internal checkpoint and restarts the bounded review", async () => {
@@ -450,7 +450,7 @@ describe("three-phase contextual scan session", () => {
     });
     await expect(
       readFile(join(root, "review-progress.json"), "utf8"),
-    ).rejects.toMatchObject({ code: "ENOENT" });
+    ).resolves.toContain(evidence.groups[0]!.group_id);
   });
 
   test("discards a schema-invalid internal checkpoint and restarts the review", async () => {
@@ -474,12 +474,15 @@ describe("three-phase contextual scan session", () => {
     });
     await expect(
       readFile(join(root, "review-progress.json"), "utf8"),
-    ).rejects.toMatchObject({ code: "ENOENT" });
+    ).resolves.toContain("completed_group_ids");
   });
 
   test("publishes the acquired SHA without consulting a newer manifest", async () => {
     const { root } = await preparedSession();
     await completeReview(root);
+    await expect(
+      readFile(join(root, "review-progress.json"), "utf8"),
+    ).resolves.toContain("completed_group_ids");
     const output = join(tmpdir(), `advanced-candidate-${Date.now()}.json`);
     roots.push(output);
     const finalized = await finalizePreparedSession({

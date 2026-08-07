@@ -55,7 +55,7 @@ Require the same progress-aware invariants in `scripts/check-workflow-policy.mjs
 
 - [ ] **Step 1: Add a body-free progress counter**
 
-Use Node.js to emit only the validated nonnegative completed-group count, returning zero when no checkpoint exists.
+Use a dedicated Node.js helper to emit only the validated nonnegative completed-group count, returning zero when no checkpoint exists and suppressing checkpoint-derived parse errors.
 
 - [ ] **Step 2: Compare progress around each invocation**
 
@@ -68,6 +68,10 @@ Allow exactly one `MODEL_PROVIDER/shared/contextual-model` retry without progres
 - [ ] **Step 4: Run focused tests green**
 
 Run `npm.cmd test -- tests/workflows.test.ts` and `npm.cmd run workflows:check`.
+
+- [ ] **Step 5: Preserve terminal progress through review completion**
+
+Keep the final checkpoint in the ephemeral session until finalization so a timeout after `review.json` is written still observes progress and retries into the validated completed review.
 
 ### Task 3: Verify and publish
 

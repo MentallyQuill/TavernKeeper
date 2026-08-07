@@ -21,6 +21,9 @@ const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const workflowPolicyScript = fileURLToPath(
   new URL("../scripts/check-workflow-policy.mjs", import.meta.url),
 );
+const reviewProgressCountScript = fileURLToPath(
+  new URL("../scripts/contextual-review-progress-count.mjs", import.meta.url),
+);
 const publisherAction =
   "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
 const uploadArtifactAction =
@@ -94,6 +97,46 @@ async function expectPolicyFailure(
 }
 
 describe("GitHub workflow security policy", () => {
+  test("the review progress counter never prints malformed checkpoint content", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-review-progress-"));
+    const checkpoint = join(root, "review-progress.json");
+    const canary = "PRIVATE_CHECKPOINT_NARRATIVE_CANARY";
+    try {
+      await writeFile(checkpoint, `{\"progress\":${canary}}\n`);
+      const result = await execFile(process.execPath, [
+        reviewProgressCountScript,
+        checkpoint,
+      ]).catch((error: unknown) => error as { stdout: string; stderr: string });
+      expect(result).toMatchObject({ stdout: "", stderr: "" });
+      expect(`${result.stdout}${result.stderr}`).not.toContain(canary);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("the review progress counter emits only a validated group count", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-review-progress-"));
+    const checkpoint = join(root, "review-progress.json");
+    try {
+      await expect(
+        execFile(process.execPath, [reviewProgressCountScript, checkpoint]),
+      ).resolves.toMatchObject({ stdout: "0", stderr: "" });
+      await writeFile(
+        checkpoint,
+        JSON.stringify({
+          progress: {
+            completed_group_ids: ["a".repeat(64), "b".repeat(64)],
+          },
+        }),
+      );
+      await expect(
+        execFile(process.execPath, [reviewProgressCountScript, checkpoint]),
+      ).resolves.toMatchObject({ stdout: "2", stderr: "" });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
   test("the active workflow set is explicit", async () => {
     const names = (
       await readdir(new URL("../.github/workflows/", import.meta.url))
