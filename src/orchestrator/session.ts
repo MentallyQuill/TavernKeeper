@@ -685,7 +685,6 @@ export async function reviewPreparedSession({
         "repository",
         "Completed contextual review does not match prepared evidence.",
       );
-    await rm(progressPath, { force: true });
     return { status: "reviewed" as const, review: existing.review };
   }
   let progress: z.infer<typeof ContextualReviewProgressSchema> | undefined;
@@ -743,7 +742,6 @@ export async function reviewPreparedSession({
     review,
   });
   await writeExclusive(reviewPath, bundle);
-  await rm(progressPath, { force: true });
   return { status: "reviewed" as const, review };
 }
 
