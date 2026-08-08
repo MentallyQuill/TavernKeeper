@@ -54,6 +54,125 @@ function queued(...targets: TargetV3[]) {
 }
 
 describe("durable backlog planning", () => {
+  test("delays a changed-SHA automatic rescan until its exact deadline", () => {
+    const value = target(41, 1);
+    const base = queued(value);
+    const state = {
+      ...base,
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) => ({
+          ...entry,
+          rescan_not_before: "2026-08-04T12:00:00.000Z",
+        })),
+      },
+    };
+
+    const beforeDeadline = planBatch(
+      manifest(value),
+      emptyIndex,
+      state,
+      "2026-08-04T11:59:59.999Z",
+      "3",
+    );
+    expect(beforeDeadline.targets).toEqual([]);
+    expect(beforeDeadline).toMatchObject({
+      delayedEntries: 1,
+      nextWakeAt: "2026-08-04T12:00:00.000Z",
+    });
+    expect(
+      planBatch(
+        manifest(value),
+        emptyIndex,
+        state,
+        "2026-08-04T12:00:00.000Z",
+        "3",
+      ).targets.map(({ target: planned }) => planned.repository_id),
+    ).toEqual([41]);
+  });
+
+  test("exempts staff, retry, and active policy work from an automatic rescan delay", () => {
+    const staff = target(41, 1);
+    const retry = target(42, 2);
+    const policy = target(43, 3);
+    const base = queued(staff, retry, policy);
+    const state = {
+      ...base,
+      policy_campaigns: [
+        {
+          id: "refresh-43",
+          scanner_policy_version: "3",
+          repository_ids: [43],
+          created_at: now,
+          status: "active" as const,
+        },
+      ],
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) => ({
+          ...entry,
+          rescan_not_before: "2026-08-04T13:00:00.000Z",
+          ...(entry.repository_id === 41
+            ? { staff_requested: true as const }
+            : {}),
+          ...(entry.repository_id === 42
+            ? {
+                consecutive_failures: 1,
+                total_failures: 1,
+                last_failure: {
+                  code: "SCANNER_FAILED",
+                  domain: "target" as const,
+                  component: "opengrep" as const,
+                },
+                last_failed_at: now,
+              }
+            : {}),
+        })),
+      },
+    };
+
+    expect(
+      planBatch(
+        manifest(staff, retry, policy),
+        emptyIndex,
+        state,
+        now,
+        "3",
+      ).targets.map(({ target: planned }) => planned.repository_id),
+    ).toEqual([41, 42, 43]);
+  });
+
+  test("keeps retry scheduling governed by not_before", () => {
+    const value = target(41, 1);
+    const base = queued(value);
+    const state = {
+      ...base,
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) => ({
+          ...entry,
+          consecutive_failures: 1,
+          total_failures: 1,
+          not_before: "2026-08-04T13:00:00.000Z",
+          rescan_not_before: "2026-08-05T12:00:00.000Z",
+          last_failure: {
+            code: "SCANNER_FAILED",
+            domain: "target" as const,
+            component: "opengrep" as const,
+          },
+          last_failed_at: now,
+        })),
+      },
+    };
+
+    const plan = planBatch(manifest(value), emptyIndex, state, now, "3");
+    expect(plan.targets).toEqual([]);
+    expect(plan).toMatchObject({
+      delayedEntries: 1,
+      nextWakeAt: "2026-08-04T13:00:00.000Z",
+    });
+  });
+
   test("selects no more than five lowest due tickets", () => {
     const targets = Array.from({ length: 8 }, (_, index) =>
       target(index + 1, index + 1),

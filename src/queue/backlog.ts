@@ -72,6 +72,38 @@ function reasonFor(
   return "changed";
 }
 
+function isActivePolicyTarget(
+  entry: ScanQueueEntry,
+  state: OperationsState,
+  scannerPolicyVersion: string,
+) {
+  return state.policy_campaigns.some(
+    (campaign) =>
+      campaign.status === "active" &&
+      campaign.scanner_policy_version === scannerPolicyVersion &&
+      campaign.repository_ids.includes(entry.repository_id),
+  );
+}
+
+function effectiveNotBefore(
+  entry: ScanQueueEntry,
+  state: OperationsState,
+  scannerPolicyVersion: string,
+) {
+  const automaticRescanNotBefore =
+    entry.rescan_not_before === undefined ||
+    entry.staff_requested === true ||
+    entry.consecutive_failures > 0 ||
+    isActivePolicyTarget(entry, state, scannerPolicyVersion)
+      ? null
+      : entry.rescan_not_before;
+  return (
+    [entry.not_before, automaticRescanNotBefore]
+      .filter((value): value is string => value !== null)
+      .sort((left, right) => right.localeCompare(left))[0] ?? null
+  );
+}
+
 export function planBatch(
   manifestInput: CurrentTargetManifest,
   indexInput: ReportIndexV5,
@@ -101,12 +133,13 @@ export function planBatch(
           Number(right.consecutive_failures > 0) ||
         left.ticket - right.ticket,
     );
-  const delayed = available.filter(
-    ({ not_before }) => not_before !== null && Date.parse(not_before) > nowMs,
-  );
+  const delayed = available.filter((entry) => {
+    const notBefore = effectiveNotBefore(entry, state, scannerPolicyVersion);
+    return notBefore !== null && Date.parse(notBefore) > nowMs;
+  });
   const nextWakeAt =
     delayed
-      .map(({ not_before }) => not_before!)
+      .map((entry) => effectiveNotBefore(entry, state, scannerPolicyVersion)!)
       .sort((left, right) => left.localeCompare(right))[0] ?? null;
 
   if (state.emergency_stop !== null)
@@ -134,10 +167,14 @@ export function planBatch(
     const probeEntry =
       dueHold === undefined
         ? undefined
-        : available.find(
-            ({ not_before }) =>
-              not_before === null || Date.parse(not_before) <= nowMs,
-          );
+        : available.find((entry) => {
+            const notBefore = effectiveNotBefore(
+              entry,
+              state,
+              scannerPolicyVersion,
+            );
+            return notBefore === null || Date.parse(notBefore) <= nowMs;
+          });
     const targets: PlannedTarget[] = [];
     if (dueHold !== undefined && probeEntry !== undefined) {
       const target = targetByRepositoryId.get(probeEntry.repository_id);
@@ -163,7 +200,7 @@ export function planBatch(
       .map(({ next_probe_at }) => next_probe_at)
       .sort((left, right) => left.localeCompare(right))[0];
     const queueWake = delayed
-      .map(({ not_before }) => not_before!)
+      .map((entry) => effectiveNotBefore(entry, state, scannerPolicyVersion)!)
       .sort((left, right) => left.localeCompare(right))[0];
     return {
       targets,
@@ -183,10 +220,10 @@ export function planBatch(
   }
 
   const runnable = available
-    .filter(
-      ({ not_before }) =>
-        not_before === null || Date.parse(not_before) <= nowMs,
-    )
+    .filter((entry) => {
+      const notBefore = effectiveNotBefore(entry, state, scannerPolicyVersion);
+      return notBefore === null || Date.parse(notBefore) <= nowMs;
+    })
     .map((entry): PlannedTarget => {
       const target = targetByRepositoryId.get(entry.repository_id);
       if (target === undefined || target.target_sha !== entry.target_sha)

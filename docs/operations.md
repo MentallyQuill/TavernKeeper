@@ -88,6 +88,12 @@ created after a prior completed report is appended as an intentional forced
 rescan, and a same-SHA replacement may become preferred without erasing
 history.
 
+Changed-SHA automatic rescans enter the durable queue immediately, but cannot
+run until 48 hours after the latest completed report. Further pushes replace the
+queued SHA without moving that deadline. The cooldown does not apply to initial
+scans, staff-targeted scans, retry entries with a failure streak, or active
+policy-campaign scans.
+
 Ticket allocation is the fairness guarantee. Initial projects receive tickets
 in catalog order. Any failure removes that target from its old position and
 assigns it the next tail ticket, behind every project currently assigned to be
