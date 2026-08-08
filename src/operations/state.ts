@@ -84,6 +84,7 @@ export const ScanQueueEntrySchema = z
     not_before: z.iso.datetime().nullable(),
     last_failure: FailureDescriptorSchema.nullable(),
     last_failed_at: z.iso.datetime().nullable(),
+    rescan_not_before: z.iso.datetime().optional(),
     chronic: z.boolean(),
     failure_history: z
       .array(ScanFailureHistoryEntrySchema)

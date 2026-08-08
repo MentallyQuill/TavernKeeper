@@ -13,6 +13,7 @@ import {
   type OperationsState,
   type ScanQueueEntry,
 } from "../operations/state.js";
+import { effectiveQueueEntryNotBefore } from "./durable-queue.js";
 
 export type BacklogReason = "new" | "changed" | "retry" | "policy" | "staff";
 
@@ -101,12 +102,20 @@ export function planBatch(
           Number(right.consecutive_failures > 0) ||
         left.ticket - right.ticket,
     );
-  const delayed = available.filter(
-    ({ not_before }) => not_before !== null && Date.parse(not_before) > nowMs,
-  );
+  const delayed = available.filter((entry) => {
+    const notBefore = effectiveQueueEntryNotBefore(
+      entry,
+      state,
+      scannerPolicyVersion,
+    );
+    return notBefore !== null && Date.parse(notBefore) > nowMs;
+  });
   const nextWakeAt =
     delayed
-      .map(({ not_before }) => not_before!)
+      .map((entry) =>
+        effectiveQueueEntryNotBefore(entry, state, scannerPolicyVersion),
+      )
+      .filter((value): value is string => value !== null)
       .sort((left, right) => left.localeCompare(right))[0] ?? null;
 
   if (state.emergency_stop !== null)
@@ -134,10 +143,14 @@ export function planBatch(
     const probeEntry =
       dueHold === undefined
         ? undefined
-        : available.find(
-            ({ not_before }) =>
-              not_before === null || Date.parse(not_before) <= nowMs,
-          );
+        : available.find((entry) => {
+            const notBefore = effectiveQueueEntryNotBefore(
+              entry,
+              state,
+              scannerPolicyVersion,
+            );
+            return notBefore === null || Date.parse(notBefore) <= nowMs;
+          });
     const targets: PlannedTarget[] = [];
     if (dueHold !== undefined && probeEntry !== undefined) {
       const target = targetByRepositoryId.get(probeEntry.repository_id);
@@ -163,7 +176,10 @@ export function planBatch(
       .map(({ next_probe_at }) => next_probe_at)
       .sort((left, right) => left.localeCompare(right))[0];
     const queueWake = delayed
-      .map(({ not_before }) => not_before!)
+      .map((entry) =>
+        effectiveQueueEntryNotBefore(entry, state, scannerPolicyVersion),
+      )
+      .filter((value): value is string => value !== null)
       .sort((left, right) => left.localeCompare(right))[0];
     return {
       targets,
@@ -183,10 +199,14 @@ export function planBatch(
   }
 
   const runnable = available
-    .filter(
-      ({ not_before }) =>
-        not_before === null || Date.parse(not_before) <= nowMs,
-    )
+    .filter((entry) => {
+      const notBefore = effectiveQueueEntryNotBefore(
+        entry,
+        state,
+        scannerPolicyVersion,
+      );
+      return notBefore === null || Date.parse(notBefore) <= nowMs;
+    })
     .map((entry): PlannedTarget => {
       const target = targetByRepositoryId.get(entry.repository_id);
       if (target === undefined || target.target_sha !== entry.target_sha)

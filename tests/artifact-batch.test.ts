@@ -8,8 +8,12 @@ import type { ScanTransition } from "../src/cli/transition.js";
 import type { ScanReportV5 } from "../src/contracts/reports-v5.js";
 import type { Target } from "../src/contracts/targets.js";
 import type { FailureDescriptor } from "../src/operations/failure.js";
-import { initialOperationsState } from "../src/operations/state.js";
+import {
+  initialOperationsState,
+  serializeOperationsState,
+} from "../src/operations/state.js";
 import { publishArtifactBatch } from "../src/publish/artifact-batch.js";
+import { appendQueuedTarget } from "../src/queue/durable-queue.js";
 import { fixtureReportV5 } from "./helpers/v5-report.js";
 
 const roots: string[] = [];
@@ -260,6 +264,56 @@ describe("artifact batch publication", () => {
     expect(result).not.toHaveProperty("terminal_failures");
     expect(result).not.toHaveProperty("security_holds");
     expect(result).not.toHaveProperty("shared_holds");
+  });
+
+  test("reports an automatic rescan as delayed until its effective deadline", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const [coolingReport, completedReport] = await Promise.all([
+      reportFor(54, "7"),
+      reportFor(55, "8"),
+    ]);
+    const coolingTarget = targetOf(coolingReport);
+    const completedTarget = targetOf(completedReport);
+    let state = appendQueuedTarget(
+      initialOperationsState(initialAt),
+      coolingTarget,
+    );
+    state = appendQueuedTarget(state, completedTarget);
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.map((entry) =>
+          entry.repository_id === coolingTarget.repository_id
+            ? {
+                ...entry,
+                rescan_not_before: "2026-08-04T06:00:00.000Z",
+              }
+            : entry,
+        ),
+      },
+    };
+    await writeFile(
+      join(root, "operations", "state.json"),
+      serializeOperationsState(state),
+    );
+    await writeOutcome(
+      artifactsRoot,
+      0,
+      completed(completedReport),
+      completedReport,
+    );
+
+    await expect(
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [completedTarget]),
+      ),
+    ).resolves.toMatchObject({
+      queue_remaining: 1,
+      queue_due: 0,
+      queue_delayed: 1,
+      next_wake_at: "2026-08-04T06:00:00.000Z",
+    });
   });
 
   test("a later success removes a previously failed target", async () => {

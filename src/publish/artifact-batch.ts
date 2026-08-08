@@ -15,7 +15,10 @@ import {
 import type { Target } from "../contracts/targets.js";
 import { recordFailure, recordSuccess } from "../operations/retry.js";
 import { parseOperationsState } from "../operations/state.js";
-import { appendQueuedTarget } from "../queue/durable-queue.js";
+import {
+  appendQueuedTarget,
+  effectiveQueueEntryNotBefore,
+} from "../queue/durable-queue.js";
 import { publishCandidates } from "./publisher.js";
 
 const CandidateEnvelopeSchema = z.strictObject({ report: ScanReportV5Schema });
@@ -224,13 +227,16 @@ export async function publishArtifactBatch(
   if (!Number.isFinite(generatedAtMs))
     throw new Error("Publication batch time is invalid.");
   const remaining = published.state.scan_queue.entries;
-  const delayed = remaining.filter(
-    ({ not_before }) =>
-      not_before !== null && Date.parse(not_before) > generatedAtMs,
+  const eligibility = remaining.map((entry) => ({
+    notBefore: effectiveQueueEntryNotBefore(entry, published.state),
+  }));
+  const delayed = eligibility.filter(
+    ({ notBefore }) =>
+      notBefore !== null && Date.parse(notBefore) > generatedAtMs,
   );
-  const due = remaining.filter(
-    ({ not_before }) =>
-      not_before === null || Date.parse(not_before) <= generatedAtMs,
+  const due = eligibility.filter(
+    ({ notBefore }) =>
+      notBefore === null || Date.parse(notBefore) <= generatedAtMs,
   );
   const failedRepositoryIds = new Set(
     failures.map(({ target }) => target.repository_id),
@@ -248,7 +254,7 @@ export async function publishArtifactBatch(
     queue_delayed: delayed.length,
     next_wake_at:
       delayed
-        .map(({ not_before }) => not_before!)
+        .map(({ notBefore }) => notBefore!)
         .sort((left, right) => left.localeCompare(right))[0] ?? null,
     chronic_failures: remaining.filter(
       ({ repository_id, chronic }) =>
