@@ -396,6 +396,56 @@ describe("durable backlog planning", () => {
     ).toEqual([41, 42, 43]);
   });
 
+  test("a legacy repository-probe failure requests one immediate direct probe", () => {
+    const value = target(41, 1);
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const held = recordFailure(queued(value), {
+      target: value,
+      failure,
+      at: now,
+    }).state;
+    const legacy = {
+      ...held,
+      scan_queue: {
+        ...held.scan_queue,
+        entries: held.scan_queue.entries.map((entry) => ({
+          ...entry,
+          consecutive_failures: 1,
+          total_failures: 1,
+          not_before: "2026-08-04T12:05:00.000Z",
+          last_failure: failure,
+          last_failed_at: now,
+          failure_history: [
+            {
+              failed_at: now,
+              failure,
+              error_fingerprint: held.automatic_holds[0]!.error_fingerprint,
+            },
+          ],
+        })),
+      },
+    };
+
+    expect(
+      planBatch(
+        manifest(value),
+        emptyIndex,
+        legacy,
+        "2026-08-04T12:01:00.000Z",
+        "3",
+      ),
+    ).toMatchObject({
+      targets: [],
+      recoveryProbes: 1,
+      providerProbeFingerprint: held.automatic_holds[0]!.error_fingerprint,
+      nextWakeAt: null,
+    });
+  });
+
   test("a cooled automatic rescan cannot become a recovery probe before its deadline", () => {
     const cooled = target(41, 1);
     const failing = target(42, 2);

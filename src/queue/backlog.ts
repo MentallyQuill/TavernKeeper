@@ -13,6 +13,7 @@ import {
   type OperationsState,
   type ScanQueueEntry,
 } from "../operations/state.js";
+import { failureFingerprint } from "../operations/failure.js";
 import { effectiveQueueEntryNotBefore } from "./durable-queue.js";
 
 export type BacklogReason = "new" | "changed" | "retry" | "policy" | "staff";
@@ -134,7 +135,17 @@ export function planBatch(
 
   if (state.automatic_holds.length > 0) {
     const dueHold = [...state.automatic_holds]
-      .filter(({ next_probe_at }) => Date.parse(next_probe_at) <= nowMs)
+      .filter(
+        ({ error_fingerprint, last_failed_at, next_probe_at }) =>
+          Date.parse(next_probe_at) <= nowMs ||
+          state.scan_queue.entries.some(
+            (entry) =>
+              entry.last_failure !== null &&
+              entry.last_failure.domain !== "target" &&
+              entry.last_failed_at === last_failed_at &&
+              failureFingerprint(entry.last_failure) === error_fingerprint,
+          ),
+      )
       .sort((left, right) =>
         [left.next_probe_at, left.error_fingerprint]
           .join(":")
