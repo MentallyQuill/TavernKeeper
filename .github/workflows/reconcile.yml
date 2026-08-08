@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "13 */6 * * *"
   workflow_dispatch:
+    inputs:
+      force_provider_probe:
+        description: Probe the configured provider before its current cooldown expires
+        type: boolean
+        required: false
+        default: false
   workflow_call:
   repository_dispatch:
     types: [tavernary-targets-updated]
@@ -104,6 +110,8 @@ jobs:
         run: npm ci
       - name: Plan bounded ticket batch
         id: plan
+        env:
+          TAVERNKEEPER_FORCE_PROVIDER_PROBE: ${{ github.event.inputs.force_provider_probe || 'false' }}
         shell: bash
         run: |
           planned="$(npm run --silent reconcile)"
@@ -174,7 +182,7 @@ jobs:
         shell: bash
         run: |
           operation="provider-probe-failure"
-          if [[ "$TAVERNKEEPER_PROBE_OUTCOME" = "success" ]]; then
+          if [[ "$TAVERNKEEPER_PROBE_OUTCOME" = "success" ]] || jq -e '.domain == "target"' phase-error.json >/dev/null 2>&1; then
             operation="provider-probe-success"
           fi
           probed_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"

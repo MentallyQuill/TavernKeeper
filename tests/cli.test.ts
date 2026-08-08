@@ -176,7 +176,7 @@ describe("JSON-only orchestration CLIs", () => {
       at: now,
     }).state;
     const fingerprint = held.automatic_holds[0]!.error_fingerprint;
-    const probeAt = "2026-07-31T18:05:00.000Z";
+    const probeAt = "2026-07-31T18:01:00.000Z";
 
     expect(
       buildReconcileMatrix({
@@ -185,6 +185,7 @@ describe("JSON-only orchestration CLIs", () => {
         state: held,
         now: probeAt,
         scannerPolicyVersion: "2",
+        forceProviderProbe: true,
       }),
     ).toMatchObject({
       include: [],

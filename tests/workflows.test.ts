@@ -595,6 +595,13 @@ describe("GitHub workflow security policy", () => {
     expect(value.jobs.plan.outputs.provider_probe_fingerprint).toBe(
       "${{ steps.plan.outputs.provider_probe_fingerprint }}",
     );
+    expect(
+      value.on.workflow_dispatch.inputs.force_provider_probe,
+    ).toMatchObject({ type: "boolean", required: false, default: false });
+    expect(plan?.env).toEqual({
+      TAVERNKEEPER_FORCE_PROVIDER_PROBE:
+        "${{ github.event.inputs.force_provider_probe || 'false' }}",
+    });
     expect(plan?.run).toContain("provider_probe_fingerprint");
     expect(probe.needs).toBe("plan");
     expect(probe.if).toContain("provider_probe_fingerprint != ''");
@@ -613,6 +620,7 @@ describe("GitHub workflow security policy", () => {
     });
     expect(transition?.run).toContain("provider-probe-success");
     expect(transition?.run).toContain("provider-probe-failure");
+    expect(transition?.run).toContain('.domain == "target"');
     expect(transition?.run).toContain("probed_at");
     expect(transition?.run).toContain("npm run --silent retry");
     expect(commit?.run).toContain("git add operations/state.json");
@@ -717,6 +725,14 @@ describe("GitHub workflow security policy", () => {
           "",
         ),
       /contextual review must remain bounded between preparation and V5 finalization/u,
+    );
+  });
+
+  test("workflow policy pins target-domain provider recovery", async () => {
+    await expectPolicyFailure(
+      (text) => text.replace('.domain == "target"', '.domain == "shared"'),
+      /provider probe outcome classifier changed/iu,
+      "reconcile.yml",
     );
   });
 

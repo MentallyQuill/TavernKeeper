@@ -131,6 +131,15 @@ for pass in 1 2 3; do
 done
 exit 1
 `;
+const canonicalProviderProbeOutcomeRun = String.raw`operation="provider-probe-failure"
+if [[ "$TAVERNKEEPER_PROBE_OUTCOME" = "success" ]] || jq -e '.domain == "target"' phase-error.json >/dev/null 2>&1; then
+  operation="provider-probe-success"
+fi
+probed_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+request="$(jq -nc --arg operation "$operation" --arg error_fingerprint "$TAVERNKEEPER_PROBE_FINGERPRINT" --arg probed_at "$probed_at" '{operation:$operation,error_fingerprint:$error_fingerprint,probed_at:$probed_at}')"
+echo "request=$request" >> "$GITHUB_OUTPUT"
+env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
+`;
 const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
@@ -541,6 +550,11 @@ function checkContextualRuntime(file, workflow) {
         file,
         "automatic provider probe must remain bounded and target-free",
       );
+    const outcome = (job?.steps ?? []).find(
+      (step) => step?.name === "Apply provider probe outcome",
+    );
+    if (outcome?.run !== canonicalProviderProbeOutcomeRun)
+      fail(file, "provider probe outcome classifier changed");
   }
 }
 

@@ -21,12 +21,14 @@ export function buildReconcileMatrix({
   state: stateInput,
   now,
   scannerPolicyVersion,
+  forceProviderProbe = false,
 }: {
   manifest: unknown;
   index: unknown;
   state: unknown;
   now: string;
   scannerPolicyVersion: string;
+  forceProviderProbe?: boolean;
 }) {
   const manifest = parseTargetManifest(manifestInput);
   const index = parseReportIndexV5(indexInput);
@@ -44,7 +46,14 @@ export function buildReconcileMatrix({
       provider_probe_fingerprint: null,
     };
   }
-  const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
+  const plan = planBatch(
+    manifest,
+    index,
+    state,
+    now,
+    scannerPolicyVersion,
+    forceProviderProbe,
+  );
   const targetMetadata = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
@@ -100,6 +109,8 @@ async function main() {
     state: stateInput,
     now: new Date().toISOString(),
     scannerPolicyVersion: "3",
+    forceProviderProbe:
+      process.env.TAVERNKEEPER_FORCE_PROVIDER_PROBE === "true",
   });
   return planned;
 }
