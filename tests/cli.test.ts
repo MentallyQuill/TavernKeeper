@@ -341,6 +341,49 @@ describe("JSON-only orchestration CLIs", () => {
     });
   });
 
+  test("clears an automatic rescan cooldown when a targeted scan promotes it to staff work", () => {
+    const priorTarget = { ...target(42), target_sha: "a".repeat(40) };
+    const currentTarget = { ...priorTarget, target_sha: "b".repeat(40) };
+    const index = {
+      schema_version: 5 as const,
+      generated_at: now,
+      reports: [indexedReport(priorTarget, "2026-07-30T18:00:00.000Z")],
+    };
+    const manifest: TargetManifestV2 = {
+      schema_version: 2,
+      generated_at: now,
+      repositories: [{ ...currentTarget, project_kinds: ["extension"] }],
+    };
+    const automaticState = syncScanQueue({
+      manifest,
+      index,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "2",
+    }).state;
+
+    expect(automaticState.scan_queue.entries[0]).toMatchObject({
+      rescan_not_before: "2026-08-01T18:00:00.000Z",
+    });
+
+    const queued = buildTargetedQueueUpdate({
+      manifest,
+      index,
+      state: automaticState,
+      repositoryId: 42,
+      scannerPolicyVersion: "2",
+      requestCreatedAt: now,
+      now,
+    });
+
+    expect(queued.state.scan_queue.entries[0]).toMatchObject({
+      staff_requested: true,
+    });
+    expect(queued.state.scan_queue.entries[0]).not.toHaveProperty(
+      "rescan_not_before",
+    );
+  });
+
   test("lets a staff-targeted request override an already recorded retry", () => {
     const targetValue = target(42);
     const {

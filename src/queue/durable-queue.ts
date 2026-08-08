@@ -66,11 +66,11 @@ export function appendQueuedTarget(
         ...state,
         scan_queue: {
           ...state.scan_queue,
-          entries: state.scan_queue.entries.map((entry) =>
-            entry.repository_id === target.repository_id
-              ? { ...entry, staff_requested: true }
-              : entry,
-          ),
+          entries: state.scan_queue.entries.map((entry) => {
+            if (entry.repository_id !== target.repository_id) return entry;
+            const { rescan_not_before: _ignored, ...staffEntry } = entry;
+            return { ...staffEntry, staff_requested: true };
+          }),
         },
       });
     }
