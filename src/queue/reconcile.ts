@@ -50,7 +50,11 @@ function targetOrder(left: CurrentTarget, right: CurrentTarget) {
   );
 }
 
-function blankEntry(target: CurrentTarget, ticket: number): ScanQueueEntry {
+function blankEntry(
+  target: CurrentTarget,
+  ticket: number,
+  rescanNotBefore?: string,
+): ScanQueueEntry {
   return {
     source_id: target.source_id,
     repository_id: target.repository_id,
@@ -62,8 +66,24 @@ function blankEntry(target: CurrentTarget, ticket: number): ScanQueueEntry {
     not_before: null,
     last_failure: null,
     last_failed_at: null,
+    ...(rescanNotBefore === undefined
+      ? {}
+      : { rescan_not_before: rescanNotBefore }),
     chronic: false,
   };
+}
+
+function hasActivePolicyCampaign(
+  target: CurrentTarget,
+  state: OperationsState,
+  scannerPolicyVersion: string,
+) {
+  return state.policy_campaigns.some(
+    (item) =>
+      item.status === "active" &&
+      item.scanner_policy_version === scannerPolicyVersion &&
+      item.repository_ids.includes(target.repository_id),
+  );
 }
 
 function targetNeedsScan(
@@ -72,12 +92,7 @@ function targetNeedsScan(
   state: OperationsState,
   scannerPolicyVersion: string,
 ) {
-  const campaign = state.policy_campaigns.some(
-    (item) =>
-      item.status === "active" &&
-      item.scanner_policy_version === scannerPolicyVersion &&
-      item.repository_ids.includes(target.repository_id),
-  );
+  const campaign = hasActivePolicyCampaign(target, state, scannerPolicyVersion);
   if (campaign) return true;
   return !index.reports.some(
     (report) =>
@@ -85,6 +100,26 @@ function targetNeedsScan(
       report.target_sha === target.target_sha &&
       report.scanner_policy_version === scannerPolicyVersion,
   );
+}
+
+function automaticRescanNotBefore(input: {
+  target: CurrentTarget;
+  report: ReportIndexV5["reports"][number] | undefined;
+  state: OperationsState;
+  scannerPolicyVersion: string;
+  staffRequested: boolean;
+}) {
+  const { target, report, state, scannerPolicyVersion, staffRequested } = input;
+  if (
+    staffRequested ||
+    hasActivePolicyCampaign(target, state, scannerPolicyVersion) ||
+    report === undefined ||
+    report.target_sha === target.target_sha
+  )
+    return undefined;
+  return new Date(
+    Date.parse(report.completed_at) + 48 * 60 * 60 * 1_000,
+  ).toISOString();
 }
 
 export function reconcileCurrentScanQueue(input: {
@@ -102,6 +137,9 @@ export function reconcileCurrentScanQueue(input: {
 
   const targetByRepositoryId = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
+  );
+  const preferredReportByRepositoryId = new Map(
+    index.reports.map((report) => [report.repository_id, report]),
   );
   const eligibleTargets = manifest.repositories
     .filter((target) =>
@@ -130,20 +168,36 @@ export function reconcileCurrentScanQueue(input: {
       continue;
     }
     existingRepositoryIds.add(entry.repository_id);
+    const rescanNotBefore = automaticRescanNotBefore({
+      target,
+      report: preferredReportByRepositoryId.get(target.repository_id),
+      state,
+      scannerPolicyVersion: input.scannerPolicyVersion,
+      staffRequested: entry.staff_requested === true,
+    });
     if (entry.target_sha !== target.target_sha) {
       entries.push({
-        ...blankEntry(target, entry.ticket),
+        ...blankEntry(target, entry.ticket, rescanNotBefore),
         total_failures: entry.total_failures,
         ...(entry.staff_requested === true ? { staff_requested: true } : {}),
       });
       replaced += 1;
       continue;
     }
-    entries.push({
+    const normalizedEntry = {
       ...entry,
       source_id: target.source_id,
       repository: target.repository,
-    });
+    };
+    if (rescanNotBefore === undefined) {
+      const { rescan_not_before: _ignored, ...entryWithoutRescanDeadline } =
+        normalizedEntry;
+      entries.push(entryWithoutRescanDeadline);
+    } else
+      entries.push({
+        ...normalizedEntry,
+        rescan_not_before: rescanNotBefore,
+      });
     retained += 1;
   }
 
@@ -153,7 +207,19 @@ export function reconcileCurrentScanQueue(input: {
     if (existingRepositoryIds.has(target.repository_id)) continue;
     if (nextTicket >= Number.MAX_SAFE_INTEGER)
       throw new Error("Scan queue ticket space is exhausted.");
-    entries.push(blankEntry(target, nextTicket));
+    entries.push(
+      blankEntry(
+        target,
+        nextTicket,
+        automaticRescanNotBefore({
+          target,
+          report: preferredReportByRepositoryId.get(target.repository_id),
+          state,
+          scannerPolicyVersion: input.scannerPolicyVersion,
+          staffRequested: false,
+        }),
+      ),
+    );
     nextTicket += 1;
     seeded += 1;
   }
