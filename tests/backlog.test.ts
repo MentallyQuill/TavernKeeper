@@ -95,7 +95,7 @@ describe("durable backlog planning", () => {
     ).toEqual([41]);
   });
 
-  test("exempts staff, retry, and active policy work from an automatic rescan delay", () => {
+  test("exempts staff, retry, and active policy work while preserving queue priority", () => {
     const staff = target(41, 1);
     const retry = target(42, 2);
     const policy = target(43, 3);
@@ -143,7 +143,7 @@ describe("durable backlog planning", () => {
         now,
         "3",
       ).targets.map(({ target: planned }) => planned.repository_id),
-    ).toEqual([41, 42, 43]);
+    ).toEqual([41, 43, 42]);
   });
 
   test("keeps retry scheduling governed by not_before", () => {
