@@ -88,6 +88,7 @@ jobs:
       emergency_stopped: ${{ steps.plan.outputs.emergency_stopped }}
       automatic_holds: ${{ steps.plan.outputs.automatic_holds }}
       recovery_probes: ${{ steps.plan.outputs.recovery_probes }}
+      provider_probe_fingerprint: ${{ steps.plan.outputs.provider_probe_fingerprint }}
     steps:
       - name: Check out synchronized TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -114,6 +115,7 @@ jobs:
           echo "emergency_stopped=$(jq -er '.emergency_stopped | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "automatic_holds=$(jq -er '.automatic_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
           echo "recovery_probes=$(jq -er '.recovery_probes | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          echo "provider_probe_fingerprint=$(jq -r '.provider_probe_fingerprint // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
           {
             echo "### TavernKeeper durable queue"
             echo
@@ -132,6 +134,101 @@ jobs:
           TAVERNKEEPER_WAKE_AT: ${{ steps.plan.outputs.next_wake_at }}
         shell: bash
         run: gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"
+
+  probe-provider:
+    needs: plan
+    if: ${{ needs.plan.outputs.provider_probe_fingerprint != '' }}
+    runs-on: ubuntu-latest
+    environment: tavernkeeper-scanner
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Check out synchronized TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Check benign provider compatibility
+        id: provider_check
+        continue-on-error: true
+        timeout-minutes: 5
+        env:
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent provider:check
+      - name: Apply provider probe outcome
+        id: apply_probe
+        env:
+          TAVERNKEEPER_PROBE_FINGERPRINT: ${{ needs.plan.outputs.provider_probe_fingerprint }}
+          TAVERNKEEPER_PROBE_OUTCOME: ${{ steps.provider_check.outcome }}
+        shell: bash
+        run: |
+          operation="provider-probe-failure"
+          if [[ "$TAVERNKEEPER_PROBE_OUTCOME" = "success" ]]; then
+            operation="provider-probe-success"
+          fi
+          probed_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"
+          request="$(jq -nc --arg operation "$operation" --arg error_fingerprint "$TAVERNKEEPER_PROBE_FINGERPRINT" --arg probed_at "$probed_at" '{operation:$operation,error_fingerprint:$error_fingerprint,probed_at:$probed_at}')"
+          echo "request=$request" >> "$GITHUB_OUTPUT"
+          env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
+      - name: Create TavernKeeper Publisher token
+        id: publisher-token
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        with:
+          app-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}
+          private-key: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}
+          owner: MentallyQuill
+          repositories: TavernKeeper
+          permission-contents: write
+      - name: Commit provider recovery state
+        env:
+          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+          TAVERNKEEPER_OPERATION: ${{ steps.apply_probe.outputs.request }}
+        shell: bash
+        run: |
+          run_operation() {
+            env -u GH_TOKEN -u GITHUB_TOKEN npm run --silent retry
+          }
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          git add operations/state.json
+          git diff --cached --quiet && exit 1
+          git commit -m "chore(ops): record provider recovery probe"
+          push_succeeded="false"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              push_succeeded="true"
+              break
+            fi
+            if [[ "$attempt" -lt 3 ]]; then
+              sleep "$((attempt * 15))"
+              git fetch origin main
+              git reset --hard origin/main
+              run_operation
+              git add operations/state.json
+              if git diff --cached --quiet; then
+                push_succeeded="true"
+                break
+              fi
+              git commit -m "chore(ops): record provider recovery probe"
+            fi
+          done
+          test "$push_succeeded" = "true"
+      - name: Dispatch backlog reconciliation
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main
 
   run:
     needs: plan

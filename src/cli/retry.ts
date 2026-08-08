@@ -9,7 +9,11 @@ import {
   resumeSystem,
   serializeOperationsState,
 } from "../operations/state.js";
-import { dueRetries } from "../operations/retry.js";
+import {
+  dueRetries,
+  recordAutomaticProbeFailure,
+  recordAutomaticProbeSuccess,
+} from "../operations/retry.js";
 import { prioritizeQueuedTargetRetry } from "../queue/durable-queue.js";
 import {
   isDirectExecution,
@@ -27,35 +31,78 @@ const OperationSchema = z.discriminatedUnion("operation", [
   z.strictObject({ operation: z.literal("resume") }),
   z.strictObject({ operation: z.literal("release-holds") }),
   z.strictObject({
+    operation: z.literal("provider-probe-success"),
+    error_fingerprint: z.string().regex(/^[a-f0-9]{64}$/u),
+    probed_at: z.iso.datetime(),
+  }),
+  z.strictObject({
+    operation: z.literal("provider-probe-failure"),
+    error_fingerprint: z.string().regex(/^[a-f0-9]{64}$/u),
+    probed_at: z.iso.datetime(),
+  }),
+  z.strictObject({
     operation: z.literal("retry"),
     repository_id: z.number().int().positive(),
   }),
 ]);
 
+export function applyRetryOperation(
+  stateInput: unknown,
+  operationInput: unknown,
+  now: string,
+) {
+  const state = parseOperationsState(stateInput);
+  const operation = OperationSchema.parse(operationInput);
+  if (operation.operation === "due")
+    throw new Error("Due retry inspection does not mutate state.");
+  if (
+    operation.operation === "provider-probe-success" ||
+    operation.operation === "provider-probe-failure"
+  ) {
+    const holdExists = state.automatic_holds.some(
+      ({ error_fingerprint }) =>
+        error_fingerprint === operation.error_fingerprint,
+    );
+    if (!holdExists) return state;
+    return operation.operation === "provider-probe-success"
+      ? recordAutomaticProbeSuccess(
+          state,
+          operation.error_fingerprint,
+          operation.probed_at,
+        )
+      : recordAutomaticProbeFailure(
+          state,
+          operation.error_fingerprint,
+          operation.probed_at,
+        );
+  }
+  return operation.operation === "pause"
+    ? pauseSystem(state, {
+        kind: "staff",
+        reasonCode: operation.reason_code,
+        at: now,
+      })
+    : operation.operation === "resume"
+      ? resumeSystem(state, now)
+      : operation.operation === "release-holds"
+        ? releaseAutomaticHolds(state, now)
+        : parseOperationsState({
+            ...prioritizeQueuedTargetRetry(state, operation.repository_id),
+            updated_at: now,
+          });
+}
+
 async function main() {
   const path = "operations/state.json";
   const state = parseOperationsState(await readJsonFile(path));
-  const operation = OperationSchema.parse(
-    JSON.parse(requiredEnvironment(process.env, "TAVERNKEEPER_OPERATION")),
+  const operationInput = JSON.parse(
+    requiredEnvironment(process.env, "TAVERNKEEPER_OPERATION"),
   );
+  const operation = OperationSchema.parse(operationInput);
   const now = new Date().toISOString();
   if (operation.operation === "due")
     return { status: "due", retries: dueRetries(state, now) };
-  const next =
-    operation.operation === "pause"
-      ? pauseSystem(state, {
-          kind: "staff",
-          reasonCode: operation.reason_code,
-          at: now,
-        })
-      : operation.operation === "resume"
-        ? resumeSystem(state, now)
-        : operation.operation === "release-holds"
-          ? releaseAutomaticHolds(state, now)
-          : parseOperationsState({
-              ...prioritizeQueuedTargetRetry(state, operation.repository_id),
-              updated_at: now,
-            });
+  const next = applyRetryOperation(state, operationInput, now);
   await writeFile(path, serializeOperationsState(next));
   return { status: operation.operation };
 }

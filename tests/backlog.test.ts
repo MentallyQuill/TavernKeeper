@@ -8,8 +8,8 @@ import {
 } from "../src/operations/state.js";
 import {
   dueRetries,
+  recordAutomaticProbeSuccess,
   recordFailure,
-  recordSuccess,
 } from "../src/operations/retry.js";
 import {
   appendQueuedTarget,
@@ -340,7 +340,7 @@ describe("durable backlog planning", () => {
     ).toEqual([42, 43, 41]);
   });
 
-  test("a systemic failure admits one automatic probe then resumes ticket order", () => {
+  test("a systemic failure requests a direct provider probe then resumes ticket order", () => {
     const targets = [target(41, 1), target(42, 2), target(43, 3)];
     const failure = {
       code: "MODEL_PROVIDER",
@@ -374,19 +374,16 @@ describe("durable backlog planning", () => {
       "2026-08-04T12:05:00.000Z",
       "3",
     );
-    expect(probing.targets).toEqual([
-      expect.objectContaining({
-        target: expect.objectContaining({ repository_id: 42 }),
-        recoveryFingerprint: held.automatic_holds[0]!.error_fingerprint,
-      }),
-    ]);
+    expect(probing.targets).toEqual([]);
+    expect(probing.providerProbeFingerprint).toBe(
+      held.automatic_holds[0]!.error_fingerprint,
+    );
     expect(probing.recoveryProbes).toBe(1);
 
-    const recovered = recordSuccess(
+    const recovered = recordAutomaticProbeSuccess(
       held,
-      probing.targets[0]!.target,
+      probing.providerProbeFingerprint!,
       "2026-08-04T12:05:01.000Z",
-      probing.targets[0]!.recoveryFingerprint,
     );
     expect(
       planBatch(
@@ -396,7 +393,7 @@ describe("durable backlog planning", () => {
         "2026-08-04T12:05:01.000Z",
         "3",
       ).targets.map(({ target: value }) => value.repository_id),
-    ).toEqual([43, 41]);
+    ).toEqual([41, 42, 43]);
   });
 
   test("a cooled automatic rescan cannot become a recovery probe before its deadline", () => {
@@ -431,7 +428,7 @@ describe("durable backlog planning", () => {
       dueRetries(held, "2026-08-04T12:05:00.000Z").map(
         ({ repository_id }) => repository_id,
       ),
-    ).toEqual([42]);
+    ).toEqual([]);
   });
 
   test("only an explicit staff emergency stop blocks planning", () => {

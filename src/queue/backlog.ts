@@ -33,6 +33,7 @@ export interface BatchPlan {
   emergencyStopped: boolean;
   automaticHolds: number;
   recoveryProbes: number;
+  providerProbeFingerprint: string | null;
 }
 
 function parseCurrentManifest(input: CurrentTargetManifest) {
@@ -128,6 +129,7 @@ export function planBatch(
       emergencyStopped: true,
       automaticHolds: state.automatic_holds.length,
       recoveryProbes: 0,
+      providerProbeFingerprint: null,
     };
 
   if (state.automatic_holds.length > 0) {
@@ -140,37 +142,7 @@ export function planBatch(
             [right.next_probe_at, right.error_fingerprint].join(":"),
           ),
       )[0];
-    const probeEntry =
-      dueHold === undefined
-        ? undefined
-        : available.find((entry) => {
-            const notBefore = effectiveQueueEntryNotBefore(
-              entry,
-              state,
-              scannerPolicyVersion,
-            );
-            return notBefore === null || Date.parse(notBefore) <= nowMs;
-          });
     const targets: PlannedTarget[] = [];
-    if (dueHold !== undefined && probeEntry !== undefined) {
-      const target = targetByRepositoryId.get(probeEntry.repository_id);
-      if (target === undefined || target.target_sha !== probeEntry.target_sha)
-        throw new Error(
-          "Committed scan queue is not synchronized with the target manifest.",
-        );
-      targets.push({
-        target,
-        reason: reasonFor(
-          probeEntry,
-          target,
-          index,
-          state,
-          scannerPolicyVersion,
-        ),
-        queueEntry: probeEntry,
-        recoveryFingerprint: dueHold.error_fingerprint,
-      });
-    }
     const futureHoldWake = state.automatic_holds
       .filter(({ next_probe_at }) => Date.parse(next_probe_at) > nowMs)
       .map(({ next_probe_at }) => next_probe_at)
@@ -183,18 +155,19 @@ export function planBatch(
       .sort((left, right) => left.localeCompare(right))[0];
     return {
       targets,
-      totalRemaining: Math.max(0, available.length - targets.length),
+      totalRemaining: available.length,
       runnableRemaining: 0,
       delayedEntries: delayed.length,
       nextWakeAt:
-        targets.length > 0
+        dueHold !== undefined
           ? null
           : ([futureHoldWake, queueWake]
               .filter((value): value is string => value !== undefined)
               .sort((left, right) => left.localeCompare(right))[0] ?? null),
       emergencyStopped: false,
       automaticHolds: state.automatic_holds.length,
-      recoveryProbes: targets.length,
+      recoveryProbes: dueHold === undefined ? 0 : 1,
+      providerProbeFingerprint: dueHold?.error_fingerprint ?? null,
     };
   }
 
@@ -229,5 +202,6 @@ export function planBatch(
     emergencyStopped: false,
     automaticHolds: 0,
     recoveryProbes: 0,
+    providerProbeFingerprint: null,
   };
 }

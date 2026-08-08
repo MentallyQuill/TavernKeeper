@@ -167,7 +167,7 @@ describe("artifact batch publication", () => {
     });
   });
 
-  test("publishes successes and rotates all failure domains in request order", async () => {
+  test("publishes successes without charging shared failures to target retries", async () => {
     const { root, artifactsRoot } = await batchRoot();
     const reports = await Promise.all([
       reportFor(42, "a"),
@@ -208,9 +208,9 @@ describe("artifact batch publication", () => {
       reports: 2,
       failures: 2,
       queue_remaining: 2,
-      queue_due: 0,
-      queue_delayed: 2,
-      next_wake_at: "2026-08-04T04:06:00.000Z",
+      queue_due: 2,
+      queue_delayed: 0,
+      next_wake_at: null,
       chronic_failures: 0,
       automatic_holds: 2,
     });
@@ -226,10 +226,20 @@ describe("artifact batch publication", () => {
         }),
       ]),
       scan_queue: {
-        next_ticket: 7,
+        next_ticket: 5,
         entries: [
-          { repository_id: 43, ticket: 5 },
-          { repository_id: 45, ticket: 6 },
+          {
+            repository_id: 43,
+            ticket: 2,
+            consecutive_failures: 0,
+            total_failures: 0,
+          },
+          {
+            repository_id: 45,
+            ticket: 4,
+            consecutive_failures: 0,
+            total_failures: 0,
+          },
         ],
       },
     });
