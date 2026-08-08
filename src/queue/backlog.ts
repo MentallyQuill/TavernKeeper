@@ -81,6 +81,7 @@ export function planBatch(
   stateInput: OperationsState,
   now: string,
   scannerPolicyVersion = "3",
+  forceProviderProbe = false,
 ): BatchPlan {
   const manifest = parseCurrentManifest(manifestInput);
   const index = ReportIndexV5Schema.parse(indexInput);
@@ -137,6 +138,7 @@ export function planBatch(
     const dueHold = [...state.automatic_holds]
       .filter(
         ({ error_fingerprint, last_failed_at, next_probe_at }) =>
+          forceProviderProbe ||
           Date.parse(next_probe_at) <= nowMs ||
           state.scan_queue.entries.some(
             (entry) =>

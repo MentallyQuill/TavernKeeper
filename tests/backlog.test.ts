@@ -446,6 +446,35 @@ describe("durable backlog planning", () => {
     });
   });
 
+  test("an explicit operator probe bypasses only the automatic hold timer", () => {
+    const value = target(41, 1);
+    const held = recordFailure(queued(value), {
+      target: value,
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: now,
+    }).state;
+
+    expect(
+      planBatch(
+        manifest(value),
+        emptyIndex,
+        held,
+        "2026-08-04T12:01:00.000Z",
+        "3",
+        true,
+      ),
+    ).toMatchObject({
+      targets: [],
+      recoveryProbes: 1,
+      providerProbeFingerprint: held.automatic_holds[0]!.error_fingerprint,
+      nextWakeAt: null,
+    });
+  });
+
   test("a cooled automatic rescan cannot become a recovery probe before its deadline", () => {
     const cooled = target(41, 1);
     const failing = target(42, 2);
