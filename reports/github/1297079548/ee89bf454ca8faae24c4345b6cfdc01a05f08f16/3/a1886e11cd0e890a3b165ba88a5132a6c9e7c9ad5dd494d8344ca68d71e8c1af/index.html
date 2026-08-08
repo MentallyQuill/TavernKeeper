@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for al4xdev/alex-tavern at commit ee89bf4.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; al4xdev/alex-tavern</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/al4xdev/alex-tavern" rel="noopener noreferrer">al4xdev/alex-tavern</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/al4xdev/alex-tavern/commit/ee89bf454ca8faae24c4345b6cfdc01a05f08f16" rel="noopener noreferrer">ee89bf4</a></span>
+        <span>Reviewed <time datetime="2026-08-08T03:51:00.395Z">Aug 8, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>21 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build pipeline uses a version label for a Gradle setup tool instead of locking it to a specific, unchangeable version. This is a minor hardening gap, not an active problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references gradle/actions/setup-gradle using a major version tag rather than a full commit SHA. Mutable tags introduce a supply-chain risk if the upstream tag is moved. This is a widely used action maintained by the Gradle team, so practical exploitation is unlikely, but SHA pinning is the recommended practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a full commit SHA and optionally record the version in a comment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L24" rel="noopener noreferrer">.ci-cd/android/action.yml:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build pipeline uses a version label for an artifact upload tool instead of locking it to a specific, unchangeable version. This is a minor hardening gap, not an active problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references actions/upload-artifact a second time using a major version tag rather than a full commit SHA. The same mutable-tag supply-chain consideration applies as for the other unpinned references in this file.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a full commit SHA and optionally record the version in a comment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L46" rel="noopener noreferrer">.ci-cd/android/action.yml:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The automated test workflow does not explicitly limit what permissions it has, so it may inherit more access than necessary. Since the workflow only checks out code and runs tests, this is a minor hygiene issue rather than a real danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test job does not declare an explicit permissions block. Without it, the workflow token inherits the repository default permissions, which may be broader than needed. The job only checks out code and runs a local test action, so no sensitive operation is performed with the token. Adding a minimal permissions declaration is best practice but the absence does not create a concrete exploit path here.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a top-level or job-level permissions block with read-only contents permission to follow least-privilege best practice.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/test.yml#L12-L21" rel="noopener noreferrer">.github/workflows/test.yml:12-21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build pipeline uses a version label for a standard GitHub tool instead of locking it to a specific snapshot. If someone managed to reassign that label to malicious code, the build could run that code. This is a common best-practice gap with very low real-world risk for an official action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/checkout by a mutable major-version tag rather than a commit SHA pin. If the tag were ever moved to a compromised revision, arbitrary code would execute in CI with contents:write permissions. This is a standard hardening gap, not an active vulnerability; the action is an official GitHub-maintained action and tag compromise is unlikely.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a full commit SHA for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/build-apk.yml#L18" rel="noopener noreferrer">.github/workflows/build-apk.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version label for a standard checkout tool instead of locking it to an exact code snapshot. If someone moved that label to bad code, the workflow would use it. This is a common shortcut and the tool is official, so the risk is low, but locking to an exact version is safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout step references actions/checkout@v4, a major-version tag rather than a commit SHA. If the tag were moved to a compromised version, the workflow would pull the new code. This is a widely accepted convention for the official checkout action, and the workflow only uses it to clone the repository for testing. SHA-pinning is the stronger practice but the practical risk is low given the action&#39;s maintainer and usage pattern.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a full commit SHA instead of a floating major-version tag for stronger supply-chain integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/test.yml#L17" rel="noopener noreferrer">.github/workflows/test.yml:17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build pipeline uses a version label for an artifact upload tool instead of locking it to a specific, unchangeable version. This is a minor hardening gap, not an active problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references actions/upload-artifact using a major version tag rather than a full commit SHA. Mutable tags introduce a supply-chain risk if the upstream tag is moved. This is a first-party GitHub action, so practical exploitation is unlikely, but SHA pinning is the recommended practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a full commit SHA and optionally record the version in a comment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L40" rel="noopener noreferrer">.ci-cd/android/action.yml:40</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow&#39;s checkout step leaves a temporary access token saved in the local git configuration by default. This is a common practice and the token is limited in scope and short-lived, but it is cleaner to disable that persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout step uses the default settings of actions/checkout, which persists a scoped GITHUB_TOKEN into the local .git/config for subsequent steps. The workflow explicitly scopes permissions to contents:read and packages:write, and the only subsequent step is a local composite action from the same repository. Token persistence is a known default behavior; exploitation would require a compromised or malicious step reading .git/config, which is not present here. Setting persist-credentials: false would eliminate the residual exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add persist-credentials: false to the checkout step to avoid leaving the token in .git/config.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/docker-publish.yml#L16-L17" rel="noopener noreferrer">.github/workflows/docker-publish.yml:16-17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build pipeline uses a version label for a build tool instead of locking it to a specific, unchangeable version. If someone managed to swap what that label points to, the build could run altered code. This is a minor hardening gap, not an active problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references actions/setup-java using a major version tag rather than a full commit SHA. Major version tags are mutable: if the upstream repository&#39;s tag were moved to a malicious commit, the build would execute untrusted code. This is a first-party GitHub action, so tag compromise is unlikely, but SHA pinning is the recommended hardening practice for CI supply-chain integrity.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a full commit SHA and optionally record the version in a comment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L13" rel="noopener noreferrer">.ci-cd/android/action.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI workflow uses a version label for a login helper instead of locking it to a specific release. If someone hijacked that helper&#39;s label, they could intercept the login token. This is a common shortcut, not a sign of foul play, but pinning to an exact release would be safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references docker/login-action@v3, a major-version tag that is mutable. If the upstream tag were moved to a compromised release, the workflow would execute untrusted code with access to the GitHub token passed as the registry password. This is a supply-chain hardening gap, not evidence of malicious intent; the action is the official Docker login action used for its stated purpose of authenticating to ghcr.io.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin docker/login-action to a full commit SHA with a recorded digest instead of the mutable @v3 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/docker/action.yml#L21" rel="noopener noreferrer">.ci-cd/docker/action.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The test workflow uses a version label for a helper tool instead of locking it to a specific snapshot. If someone moved that label to different code later, tests could run different code. Locking to an exact snapshot removes that risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite test action references astral-sh/setup-uv by a floating major-version tag rather than a commit SHA. A tag can be moved by the upstream maintainer, so a compromised or hijacked tag could substitute different code in future CI runs. This is a supply-chain hardening gap, not an active vulnerability in the current repository state, and the action is a well-known tool used for its stated purpose of installing the uv toolchain.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a specific commit SHA with an integrity comment for reproducible and tamper-resistant CI.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/test/action.yml#L8" rel="noopener noreferrer">.ci-cd/test/action.yml:8</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The build pipeline uses a version label for a Python setup tool instead of locking it to a specific, unchangeable version. This is a minor hardening gap, not an active problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references actions/setup-python using a major version tag rather than a full commit SHA. Mutable tags introduce a supply-chain risk if the upstream tag is moved. This is a first-party GitHub action, so practical exploitation is unlikely, but SHA pinning is the recommended practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a full commit SHA and optionally record the version in a comment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L19" rel="noopener noreferrer">.ci-cd/android/action.yml:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a metadata helper instead of locking it to a specific release. A hijacked label could run bad code during the build. It is a standard helper used normally, but exact pinning would remove the risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references docker/metadata-action@v5, a mutable major-version tag. The action receives repository context to derive image tags and labels but is not handed secrets directly. A tag-swap attack could still execute arbitrary code in the workflow runner. The usage matches the stated build-and-publish purpose and shows no malicious data flow.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin docker/metadata-action to a full commit SHA with a recorded digest instead of the mutable @v5 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/docker/action.yml#L29" rel="noopener noreferrer">.ci-cd/docker/action.yml:29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The test workflow uses a version label for the official Python setup helper instead of locking it to a specific snapshot. Locking to an exact snapshot makes the tests more tamper-resistant.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite test action references actions/setup-python by a floating major-version tag rather than a commit SHA. The same supply-chain consideration applies: a moved tag could alter future CI behavior. The action is the official GitHub Python setup tool used for its stated purpose, and no malicious behavior is present in the current reference.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action reference to a specific commit SHA with an integrity comment for reproducible and tamper-resistant CI.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/test/action.yml#L13" rel="noopener noreferrer">.ci-cd/test/action.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The scanner flagged a possible credential-leakage pattern, but this workflow does not save or upload any files that could carry credentials. The concern does not match what the workflow actually does.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked pattern concerns credentials persisting in artifacts or cache. This workflow performs a checkout and then runs a local test action; it does not upload artifacts, save caches, or otherwise persist the GitHub token beyond the ephemeral runner workspace. The scanner confidence is low and the data flow does not show a credential persistence path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/test.yml#L16-L17" rel="noopener noreferrer">.github/workflows/test.yml:16-17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The checkout step leaves a temporary access token inside the downloaded code folder. If a later step packages that folder and shares it, the token could leak. No packaging step is visible here, so this is a precautionary note rather than a confirmed problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The default behavior of actions/checkout persists the GITHUB_TOKEN into the local .git/config of the workspace. If a downstream step or the local composite action uploads workspace contents (including .git) as an artifact, that token could be exposed in the artifact. No artifact-upload step is visible in this workflow file, and the local action&#39;s contents are not supplied, so runtime reachability cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Set persist-credentials: false on actions/checkout if the token is not needed for subsequent git operations, or ensure no artifact upload includes the .git directory.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/build-apk.yml#L17-L18" rel="noopener noreferrer">.github/workflows/build-apk.yml:17-18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version tag instead of an exact commit hash for the checkout tool. This is standard practice for GitHub&#39;s own actions, but pinning to a specific hash is a stronger safeguard against tampering.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by tag (v4) rather than a commit SHA. If the v4 tag were moved to a malicious version, the workflow would execute it. However, actions/checkout is GitHub&#39;s first-party action, the tag is widely monitored, and the second action reference (./.ci-cd/docker) is a local composite action pinned to repository content. The supply-chain surface is limited to the single first-party action reference.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a specific commit SHA for stronger supply-chain integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.github/workflows/docker-publish.yml#L17" rel="noopener noreferrer">.github/workflows/docker-publish.yml:17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for the image build helper instead of locking it to a specific release. If that label were hijacked, bad code could run during the build and could alter the published image. It is a normal helper used as intended, but exact pinning would be safer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The composite action references docker/build-push-action@v5, a mutable major-version tag. This step performs the actual image build and push using derived tags and labels. A compromised tag would execute arbitrary code with workflow permissions and could tamper with the published image. The action is the official Docker build-push action used for its intended purpose, with no concealed exfiltration or unexpected destinations.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin docker/build-push-action to a full commit SHA with a recorded digest instead of the mutable @v5 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/docker/action.yml#L13" rel="noopener noreferrer">.ci-cd/docker/action.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (2)</summary>
+      <article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a made-up marker string used only inside a test to check that private character thoughts reach the intended agent and nobody else. It is not a real password or API key and is never used to log in to anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a synthetic canary token defined in a test file and deliberately embedded into a fake character thought record. It is never a real credential: it is not loaded from environment or config, never sent to any external service, and exists only so assertions can confirm which agent prompts contain or exclude it. The test file imports only local project modules and pytest, constructs in-memory fixtures, and performs string membership checks. No network, filesystem credential, or provider API is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/602e56228fa46ab49b858ac82dc8cfb46d3f25b6/tests/test_thought_containment.py#L40" rel="noopener noreferrer">tests/test_thought_containment.py:40</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake, made-up label used inside a test to check that private character thoughts stay private. It is not a real password or key, and it never leaves the test file.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched value is a deliberately fabricated test token assigned to a constant named SECRET in a test file. The surrounding code and comments explain it is a nonsense string chosen so that any prompt carrying it must be carrying the planted private thought. It is used only in assertions that verify thought-containment boundaries between agents. It is not a real API key, is not sent to any external service, and is not loaded as configuration. The gitleaks generic-api-key rule matched on the word SECRET and the bracketed token shape, but the data flow is purely local test logic.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/tests/test_thought_containment.py#L40" rel="noopener noreferrer">tests/test_thought_containment.py:40</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>GitHub token is passed through from the calling workflow and used only for release publishing</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The build script receives a permission token from the workflow that calls it and uses that token only to publish releases on GitHub. It does not store or send the token anywhere else.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The composite action receives a GitHub token via an explicit input and assigns it to the GH_TOKEN environment variable for the gh CLI. The token is not hardcoded, logged, or transmitted to any external destination. It is used solely to delete and create GitHub releases within the repository, which matches the stated purpose of building and publishing an Android APK. No credential exfiltration or misuse is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L4-L7" rel="noopener noreferrer">.ci-cd/android/action.yml:4-7</a></li><li><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/android/action.yml#L51-L75" rel="noopener noreferrer">.ci-cd/android/action.yml:51-75</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Registry token is passed only to the official Docker login action for its intended purpose</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The login token is only used to sign in to the project&#39;s own package registry so the image can be published. That is exactly what the workflow is supposed to do, and the token is not sent anywhere else.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The github_token input is forwarded as the registry password to docker/login-action for authentication to ghcr.io. This matches the stated purpose of building and publishing the Docker image to GHCR. No other step receives or transmits the token, and there is no evidence of credential exfiltration or unexpected destinations.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/al4xdev/alex-tavern/blob/ee89bf454ca8faae24c4345b6cfdc01a05f08f16/.ci-cd/docker/action.yml#L13-L17" rel="noopener noreferrer">.ci-cd/docker/action.yml:13-17</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>463 files &middot; 29781492 bytes</dd>
+      <dt>Contextual coverage</dt><dd>19 of 19 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/al4xdev/alex-tavern/commit/ee89bf454ca8faae24c4345b6cfdc01a05f08f16" rel="noopener noreferrer">ee89bf454ca8faae24c4345b6cfdc01a05f08f16</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-08T03:51:00.395Z">Aug 8, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>37529 input &middot; 11199 output &middot; 8231 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>a1886e11cd0e890a3b165ba88a5132a6c9e7c9ad5dd494d8344ca68d71e8c1af</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1297079548/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
