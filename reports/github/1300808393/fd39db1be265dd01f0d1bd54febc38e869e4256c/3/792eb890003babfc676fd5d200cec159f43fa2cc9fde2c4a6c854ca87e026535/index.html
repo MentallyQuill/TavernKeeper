@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for EnchantedRobot/SillyTavern-Character-Tools at commit fd39db1.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; EnchantedRobot/SillyTavern-Character-Tools</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools" rel="noopener noreferrer">EnchantedRobot/SillyTavern-Character-Tools</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/commit/fd39db1be265dd01f0d1bd54febc38e869e4256c" rel="noopener noreferrer">fd39db1</a></span>
+        <span>Reviewed <time datetime="2026-08-08T04:51:17.306Z">Aug 8, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>21 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5xrq-8626-4rwp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged package is a development tool used only for testing or linting, not part of the extension that users actually run. The vulnerability cannot affect people who install and use this SillyTavern extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5xrq-8626-4rwp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The project&#39;s package.json declares only devDependencies (eslint, vitest, globals) with no runtime dependencies. The shipped extension consists of index.js and style.css loaded by SillyTavern; npm dev tooling is not included in the runtime artifact. This advisory matches a transitive dev-only dependency (esbuild 0.21.5 visible in the lockfile, pulled by vitest). The vulnerable code has no runtime reachability for end users of the extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to latest compatible versions to keep the development environment current, but no urgent action is needed for user safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5xrq-8626-4rwp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The automated test workflow uses version labels for its setup steps instead of locking them to exact versions. This is a common minor best-practice gap, not a sign of anything malicious, and it only affects the project&#39;s own test pipeline.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line references actions/setup-node using a major-version tag rather than a commit SHA. The same pattern appears for actions/checkout. This is a CI-only workflow with no deployment, no third-party actions, and no obvious secret exposure beyond the standard GitHub token. A compromised tag could in principle substitute malicious action code, but these are first-party GitHub-maintained actions and the workflow runs only lint and tests on pull requests.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin GitHub Actions to full commit SHAs with version comments for reproducibility and supply-chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L36" rel="noopener noreferrer">.github/workflows/ci.yml:36</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6wh-96g9-6wx3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged package is only used during development and testing. It is not included in the extension that users install, so the vulnerability has no impact on end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6wh-96g9-6wx3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory targets a transitive dependency of the declared devDependencies (vitest or eslint). The package.json has zero runtime dependencies; the extension ships only static JS and CSS to SillyTavern. The vulnerable code path is not reachable in the production extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to resolve the advisory in the development environment; no user-facing risk requires urgent action.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6wh-96g9-6wx3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI workflow doesn&#39;t explicitly declare what permissions it needs. In practice GitHub limits fork-based pull requests to read-only access, and this workflow only runs code checks, so there&#39;s little real risk. Declaring minimal permissions explicitly is a recommended hygiene step.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow has no explicit permissions block, so it inherits the repository default. For pull_request events from forks, GitHub restricts tokens to read-only. This workflow only runs lint and tests with no write operations, artifacts, or secret usage, so the practical risk is minimal. Adding an explicit read-only permissions block is best practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a top-level permissions block with contents: read to make the minimal access explicit.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L1-L42" rel="noopener noreferrer">.github/workflows/ci.yml:1-42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub action instead of locking it to a specific code snapshot. This is very common and low-risk for a simple test workflow, but locking to a specific version snapshot is the recommended best practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action is referenced by major version tag @v4 rather than a pinned commit SHA. This is a first-party GitHub action used in a standard lint/test workflow with no secrets or deployment steps. Tag-based references are common but can be retargeted; SHA pinning is the recommended hardening practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a specific commit SHA instead of the @v4 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L35" rel="noopener noreferrer">.github/workflows/ci.yml:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4w7w-66w2-5vf9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged package is a development-only tool not included in the extension users run, so this vulnerability does not affect end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4w7w-66w2-5vf9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a transitive dev-only dependency. The project declares no runtime npm dependencies; all packages in the lockfile are development tooling for linting and testing. The vulnerable code is not shipped to or executed by end users of the SillyTavern extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to clear the advisory; no urgent user-safety action is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4w7w-66w2-5vf9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-67mh-4wv8-2f99 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged package is used only for development and testing, not in the extension that users install. The vulnerability cannot affect end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-67mh-4wv8-2f99 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory targets a transitive dependency of vitest or eslint, both declared as devDependencies. The extension has no runtime npm dependencies and ships only static frontend assets. The vulnerable code has no runtime reachability in the production extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to resolve the advisory in the development environment; no urgent action is required for user safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-67mh-4wv8-2f99</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5p4m-2wfm-xmqj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Although the advisory is rated high severity, the affected package is a development tool not included in the extension users run. The vulnerability does not reach end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5p4m-2wfm-xmqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory matches a transitive dev-only dependency (likely vite or esbuild pulled by vitest). The package.json declares only devDependencies with no runtime dependencies. The shipped extension is static JS and CSS; the vulnerable code is not executed in the user-facing product.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to the latest compatible versions to resolve the advisory; no urgent user-safety action is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5p4m-2wfm-xmqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard Node.js setup action instead of locking it to a specific code snapshot. Low-risk for a simple test workflow, but locking to a snapshot is best practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The setup-node action is referenced by major version tag @v4 rather than a pinned commit SHA. This is a first-party GitHub action used only to install Node.js for running lint and tests. No secrets or sensitive operations are involved. SHA pinning is recommended hardening.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/setup-node to a specific commit SHA instead of the @v4 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L19" rel="noopener noreferrer">.github/workflows/ci.yml:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged package is a development-only tool not part of the extension users install, so the vulnerability has no impact on end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a transitive dev-only dependency of the declared devDependencies. The extension ships no runtime npm packages; only static frontend assets are loaded by SillyTavern. The vulnerable code is not reachable in production.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to clear the advisory; no urgent user-safety action is required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The advisory is rated high, but the affected package is a development tool not included in the extension users run. The vulnerability does not reach end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory targets a transitive dependency of vitest or eslint, both declared as devDependencies. The project has no runtime npm dependencies; the extension ships only static JS and CSS. The vulnerable code path is not executed by end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to resolve the advisory in the development environment; no urgent user-safety action is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow uses a version label for a standard GitHub action instead of a locked snapshot. Low-risk, but pinning to a specific version is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The checkout action in the lint job is referenced by major version tag @v4 rather than a pinned commit SHA. Same assessment as the other unpinned-uses findings: first-party action, no secrets, no deployment, low practical risk.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a specific commit SHA instead of the @v4 tag.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L18" rel="noopener noreferrer">.github/workflows/ci.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The test job doesn&#39;t explicitly declare its permissions. It only runs tests with no write operations, so practical risk is low. Declaring minimal permissions explicitly is recommended hygiene.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test job has no explicit permissions block and inherits repository defaults. The job only runs npm ci and npm test with no write operations, artifacts, or secrets. For fork pull requests, GitHub defaults to read-only. Adding explicit minimal permissions is best practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a job-level or workflow-level permissions block with contents: read.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L28-L42" rel="noopener noreferrer">.github/workflows/ci.yml:28-42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The lint job doesn&#39;t explicitly declare its permissions. It only runs linting with no write operations, so practical risk is low. Declaring minimal permissions explicitly is recommended hygiene.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The lint job has no explicit permissions block and inherits repository defaults. The job only runs npm ci and npm run lint with no write operations, artifacts, or secrets. For fork pull requests, GitHub defaults to read-only. Adding explicit minimal permissions is best practice.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add a job-level or workflow-level permissions block with contents: read.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L15-L27" rel="noopener noreferrer">.github/workflows/ci.yml:15-27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2v37-7h3g-55p8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The advisory is rated high, but the affected package is a development tool not included in the extension users install. The vulnerability cannot affect end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This high-severity advisory matches a transitive dev-only dependency (likely vite or esbuild from the vitest toolchain). The package.json declares only devDependencies and no runtime dependencies. The shipped extension consists of static frontend assets; the vulnerable code is not reachable in the production extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update devDependencies to the latest compatible versions to resolve the advisory; no urgent user-safety action is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2v37-7h3g-55p8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The flagged tool is only used by developers during testing, not by the extension when it runs. The security issue affects a developer-only feature that is never active for end users of this extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory corresponds to an esbuild development-server vulnerability. The lockfile shows esbuild 0.21.5 as a transitive dependency of vitest, which is declared as a devDependency. The project ships a browser-side SillyTavern extension with no production dependencies; esbuild is never invoked at runtime in the shipped extension. The vulnerable code path requires the esbuild development server to be running and reachable, which does not occur during normal use of this extension. There is no runtime reachability from the shipped artifact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update vitest and its transitive esbuild dependency to current versions at your next development cycle to keep the dev toolchain current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fx2h-pf6j-xcff applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This is the same type of issue as the other flagged item: a developer-only testing tool has a security flaw, but that tool is never used when the extension is actually running for users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory corresponds to a second esbuild development-server vulnerability. The same analysis applies: esbuild 0.21.5 is a transitive devDependency via vitest, the project declares no production dependencies, and the shipped extension does not run the esbuild development server. The vulnerable code path is unreachable in the production artifact and during normal end-user operation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update vitest and its transitive esbuild dependency to current versions at your next development cycle to keep the dev toolchain current.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fx2h-pf6j-xcff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (2)</summary>
+      <article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a possible credential-leakage pattern, but this workflow never creates artifacts or uses secrets, so there is nothing to leak.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags potential credential persistence in artifacts. This workflow does not upload any artifacts and does not use secrets. The checkout action does not persist credentials beyond the job by default. No credential exposure path exists here.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L35" rel="noopener noreferrer">.github/workflows/ci.yml:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a possible credential-leakage pattern, but this workflow never creates artifacts or uses secrets, so there is nothing to leak.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked rule flags potential credential persistence in artifacts. This workflow does not upload any artifacts and does not use secrets. No credential exposure path exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L18" rel="noopener noreferrer">.github/workflows/ci.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>actions/checkout also unpinned</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Another setup step in the same test workflow uses the same version-label approach instead of an exact lock.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Line 18 references actions/checkout@v4 with the same major-version-tag pattern as the flagged setup-node reference. Same minor supply-chain hardening gap applies.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin to a commit SHA for consistency with the setup-node recommendation.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/.github/workflows/ci.yml#L18" rel="noopener noreferrer">.github/workflows/ci.yml:18</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All npm dependencies are dev-only; no runtime dependencies are shipped</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>This extension has no runtime package dependencies. All the flagged packages are development tools used only for testing and code linting, and they are not included when users install the extension. The vulnerability alerts do not affect people who use the extension.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The package.json declares only devDependencies (eslint, vitest, globals) and the manifest ships index.js and style.css as static assets. All OSV-scanner candidates are transitive dependencies of these dev tools. The lockfile confirms esbuild 0.21.5 as a vitest transitive dependency marked dev true. None of these packages are included in or executed by the production extension loaded by SillyTavern, so the advisories have no runtime reachability for end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/blob/fd39db1be265dd01f0d1bd54febc38e869e4256c/package-lock.json#L11-L16" rel="noopener noreferrer">package-lock.json:11-16</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>22 files &middot; 298768 bytes</dd>
+      <dt>Contextual coverage</dt><dd>19 of 19 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/EnchantedRobot/SillyTavern-Character-Tools/commit/fd39db1be265dd01f0d1bd54febc38e869e4256c" rel="noopener noreferrer">fd39db1be265dd01f0d1bd54febc38e869e4256c</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-08T04:51:17.306Z">Aug 8, 2026</time></dd>
+        <dt>History depth</dt><dd>13 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>19812 input &middot; 11056 output &middot; 4566 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>792eb890003babfc676fd5d200cec159f43fa2cc9fde2c4a6c854ca87e026535</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1300808393/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
