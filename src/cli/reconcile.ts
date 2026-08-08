@@ -41,6 +41,7 @@ export function buildReconcileMatrix({
       emergency_stopped: false,
       automatic_holds: 0,
       recovery_probes: 0,
+      provider_probe_fingerprint: null,
     };
   }
   const plan = planBatch(manifest, index, state, now, scannerPolicyVersion);
@@ -83,6 +84,7 @@ export function buildReconcileMatrix({
     emergency_stopped: plan.emergencyStopped,
     automatic_holds: plan.automaticHolds,
     recovery_probes: plan.recoveryProbes,
+    provider_probe_fingerprint: plan.providerProbeFingerprint,
   };
 }
 

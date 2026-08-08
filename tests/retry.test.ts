@@ -8,6 +8,8 @@ import {
 } from "../src/operations/state.js";
 import {
   dueRetries,
+  recordAutomaticProbeFailure,
+  recordAutomaticProbeSuccess,
   recordFailure,
   recordSuccess,
 } from "../src/operations/retry.js";
@@ -67,7 +69,7 @@ describe("automatic scan recovery", () => {
     ]);
   });
 
-  test("every failure rotates the target while systemic failures add automatic backoff", () => {
+  test("only target failures rotate target retry state", () => {
     for (const domain of ["target", "shared", "security"] as const) {
       const failed = recordFailure(queuedState(), {
         target,
@@ -86,10 +88,17 @@ describe("automatic scan recovery", () => {
 
       expect(failed).toMatchObject({ notification: "none", terminal: false });
       expect(failed.state.emergency_stop).toBeNull();
-      expect(failed.entry).toMatchObject({
-        ticket: 2,
-        consecutive_failures: 1,
-      });
+      expect(failed.entry).toMatchObject(
+        domain === "target"
+          ? { ticket: 2, consecutive_failures: 1 }
+          : {
+              ticket: 1,
+              consecutive_failures: 0,
+              total_failures: 0,
+              last_failure: null,
+              not_before: null,
+            },
+      );
       expect(failed.state.automatic_holds).toEqual(
         domain === "target"
           ? []
@@ -172,7 +181,7 @@ describe("automatic scan recovery", () => {
       dueRetries(failed, "2026-08-04T00:05:00.000Z").map(
         ({ repository_id }) => repository_id,
       ),
-    ).toEqual([42]);
+    ).toEqual([]);
     const stopped = pauseSystem(failed, {
       kind: "staff",
       reasonCode: "STAFF_PAUSE",
@@ -188,7 +197,7 @@ describe("automatic scan recovery", () => {
     ).toEqual([]);
   });
 
-  test("only a matching recovery probe clears an automatic hold", () => {
+  test("a direct provider success clears only its matching hold and preserves the queue", () => {
     const failure = {
       code: "MODEL_PROVIDER",
       domain: "shared" as const,
@@ -199,18 +208,18 @@ describe("automatic scan recovery", () => {
       failure,
       at: "2026-08-04T00:00:00.000Z",
     }).state;
-    state = recordSuccess(
+    const queueBefore = state.scan_queue;
+    state = recordAutomaticProbeSuccess(
       state,
-      target,
-      "2026-08-04T00:05:01.000Z",
       failureFingerprint(failure),
+      "2026-08-04T00:05:01.000Z",
     );
 
     expect(state.automatic_holds).toEqual([]);
-    expect(state.scan_queue.entries).toEqual([]);
+    expect(state.scan_queue).toEqual(queueBefore);
   });
 
-  test("a failed probe cannot clear a circuit it did not prove recovered", () => {
+  test("a failed direct probe advances only its hold and preserves the queue", () => {
     const sharedFailure = {
       code: "MODEL_PROVIDER",
       domain: "shared" as const,
@@ -221,21 +230,23 @@ describe("automatic scan recovery", () => {
       failure: sharedFailure,
       at: "2026-08-04T00:00:00.000Z",
     }).state;
-    const failedProbe = recordFailure(held, {
-      target,
-      failure: {
-        code: "SCANNER_FAILED",
-        domain: "target",
-        component: "opengrep",
-      },
-      at: "2026-08-04T00:05:01.000Z",
-      recoveryFingerprint: failureFingerprint(sharedFailure),
-    }).state;
+    const failedProbe = recordAutomaticProbeFailure(
+      held,
+      failureFingerprint(sharedFailure),
+      "2026-08-04T00:05:01.000Z",
+    );
 
-    expect(failedProbe.automatic_holds).toEqual(held.automatic_holds);
+    expect(failedProbe.scan_queue).toEqual(held.scan_queue);
+    expect(failedProbe.automatic_holds).toEqual([
+      expect.objectContaining({
+        consecutive_failures: 2,
+        last_failed_at: "2026-08-04T00:05:01.000Z",
+        next_probe_at: "2026-08-04T00:35:01.000Z",
+      }),
+    ]);
   });
 
-  test("a different systemic probe failure cools both automatic circuits", () => {
+  test("a probe transition rejects an unknown hold fingerprint", () => {
     const providerFailure = {
       code: "MODEL_PROVIDER",
       domain: "shared" as const,
@@ -246,20 +257,39 @@ describe("automatic scan recovery", () => {
       failure: providerFailure,
       at: "2026-08-04T00:00:00.000Z",
     }).state;
-    const failedProbe = recordFailure(held, {
-      target,
-      failure: {
-        code: "MODEL_AUTHENTICATION",
-        domain: "security",
-        component: "contextual-model",
-      },
-      at: "2026-08-04T00:05:01.000Z",
-      recoveryFingerprint: failureFingerprint(providerFailure),
-    }).state;
+    expect(() =>
+      recordAutomaticProbeFailure(
+        held,
+        "f".repeat(64),
+        "2026-08-04T00:05:01.000Z",
+      ),
+    ).toThrow(/automatic recovery hold/iu);
+  });
 
-    expect(failedProbe.automatic_holds).toHaveLength(2);
+  test("a retried failed probe transition is idempotent at the same timestamp", () => {
+    const failure = {
+      code: "MODEL_PROVIDER",
+      domain: "shared" as const,
+      component: "contextual-model" as const,
+    };
+    const held = recordFailure(queuedState(), {
+      target,
+      failure,
+      at: "2026-08-04T00:00:00.000Z",
+    }).state;
+    const fingerprint = failureFingerprint(failure);
+    const once = recordAutomaticProbeFailure(
+      held,
+      fingerprint,
+      "2026-08-04T00:05:01.000Z",
+    );
+
     expect(
-      failedProbe.automatic_holds.map(({ next_probe_at }) => next_probe_at),
-    ).toEqual(["2026-08-04T00:10:01.000Z", "2026-08-04T00:10:01.000Z"]);
+      recordAutomaticProbeFailure(
+        once,
+        fingerprint,
+        "2026-08-04T00:05:01.000Z",
+      ),
+    ).toEqual(once);
   });
 });

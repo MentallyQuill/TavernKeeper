@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
+import { applyRetryOperation } from "../src/cli/retry.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
 import {
   buildTargetedMatrix,
@@ -142,6 +143,65 @@ describe("JSON-only orchestration CLIs", () => {
       supersedes_report_id: null,
       reason: "new",
     });
+  });
+
+  test("reconcile emits a direct provider probe instead of a repository request", () => {
+    const targetValue = target(42);
+    const manifest: TargetManifestV2 = {
+      schema_version: 2,
+      generated_at: now,
+      repositories: [
+        { ...targetValue, project_kinds: [...targetValue.project_kinds] },
+      ],
+    };
+    const index = {
+      schema_version: 5 as const,
+      generated_at: now,
+      reports: [],
+    };
+    const queued = syncScanQueue({
+      manifest,
+      index,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "2",
+    }).state;
+    const held = recordFailure(queued, {
+      target: targetValue,
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: now,
+    }).state;
+    const fingerprint = held.automatic_holds[0]!.error_fingerprint;
+    const probeAt = "2026-07-31T18:05:00.000Z";
+
+    expect(
+      buildReconcileMatrix({
+        manifest,
+        index,
+        state: held,
+        now: probeAt,
+        scannerPolicyVersion: "2",
+      }),
+    ).toMatchObject({
+      include: [],
+      recovery_probes: 1,
+      provider_probe_fingerprint: fingerprint,
+    });
+    expect(
+      applyRetryOperation(
+        held,
+        {
+          operation: "provider-probe-success",
+          error_fingerprint: fingerprint,
+          probed_at: probeAt,
+        },
+        probeAt,
+      ).automatic_holds,
+    ).toEqual([]);
   });
 
   test("targeted scans derive one request from repository ID and live V5 data", () => {

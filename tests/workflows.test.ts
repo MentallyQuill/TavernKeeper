@@ -571,6 +571,62 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("reconcile probes a due provider hold without selecting a repository", async () => {
+    const value = await workflow("reconcile.yml");
+    const planSteps = value.jobs.plan.steps as Workflow[];
+    const plan = planSteps.find(
+      (step) => step.name === "Plan bounded ticket batch",
+    );
+    const probe = value.jobs["probe-provider"];
+    const steps = probe.steps as Workflow[];
+    const check = steps.find(
+      (step) => step.name === "Check benign provider compatibility",
+    );
+    const transition = steps.find(
+      (step) => step.name === "Apply provider probe outcome",
+    );
+    const commit = steps.find(
+      (step) => step.name === "Commit provider recovery state",
+    );
+    const reconcile = steps.find(
+      (step) => step.name === "Dispatch backlog reconciliation",
+    );
+
+    expect(value.jobs.plan.outputs.provider_probe_fingerprint).toBe(
+      "${{ steps.plan.outputs.provider_probe_fingerprint }}",
+    );
+    expect(plan?.run).toContain("provider_probe_fingerprint");
+    expect(probe.needs).toBe("plan");
+    expect(probe.if).toContain("provider_probe_fingerprint != ''");
+    expect(probe.environment).toBe("tavernkeeper-scanner");
+    expect(check).toMatchObject({
+      id: "provider_check",
+      "continue-on-error": true,
+      "timeout-minutes": 5,
+      run: "npm run --silent provider:check",
+      env: {
+        TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
+        TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
+        TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
+        TAVERNKEEPER_ERROR_OUTPUT: "phase-error.json",
+      },
+    });
+    expect(transition?.run).toContain("provider-probe-success");
+    expect(transition?.run).toContain("provider-probe-failure");
+    expect(transition?.run).toContain("probed_at");
+    expect(transition?.run).toContain("npm run --silent retry");
+    expect(commit?.run).toContain("git add operations/state.json");
+    expect(commit?.run).toContain("git fetch origin main");
+    expect(commit?.run).toContain("git reset --hard origin/main");
+    expect(commit?.run).toContain("npm run --silent retry");
+    expect(reconcile?.run).toBe(
+      'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    );
+    expect(JSON.stringify(probe)).not.toMatch(
+      /prepare-target|review-target|finalize-target|candidate\.json/u,
+    );
+  });
+
   test("uploads only authenticated ciphertext and exposes the key only to transport steps", async () => {
     const value = await workflow("scan-and-publish.yml");
     const scanSteps = value.jobs.scan.steps as Workflow[];
@@ -619,6 +675,7 @@ describe("GitHub workflow security policy", () => {
   test("each Publisher App token has one reviewed bounded push consumer", async () => {
     for (const [workflowName, jobName] of [
       ["reconcile.yml", "sync"],
+      ["reconcile.yml", "probe-provider"],
       ["scan-and-publish.yml", "publish"],
     ] as const) {
       const value = await workflow(workflowName);

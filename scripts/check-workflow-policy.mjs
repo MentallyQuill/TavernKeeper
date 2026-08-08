@@ -46,6 +46,28 @@ const canonicalStaffPublisherPushLines = [
   "done",
   'test "$push_succeeded" = "true"',
 ];
+const canonicalProviderProbePushLines = [
+  'push_succeeded="false"',
+  "for attempt in 1 2 3; do",
+  "  if git push origin HEAD:main; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  '  if [[ "$attempt" -lt 3 ]]; then',
+  '    sleep "$((attempt * 15))"',
+  "    git fetch origin main",
+  "    git reset --hard origin/main",
+  "    run_operation",
+  "    git add operations/state.json",
+  "    if git diff --cached --quiet; then",
+  '      push_succeeded="true"',
+  "      break",
+  "    fi",
+  '    git commit -m "chore(ops): record provider recovery probe"',
+  "  fi",
+  "done",
+  'test "$push_succeeded" = "true"',
+];
 const canonicalStaffPublisherRun =
   [
     "run_operation() {",
@@ -167,6 +189,7 @@ const permissionProfiles = {
     jobs: {
       sync: { contents: "read" },
       plan: { contents: "read", actions: "write" },
+      "probe-provider": { contents: "read", actions: "write" },
       run: undefined,
     },
   },
@@ -219,24 +242,35 @@ const protectedManual = new Set([
   "staff-operations.yml",
 ]);
 const mutationJobs = {
-  "policy-rescan.yml": { job: "schedule", environment: "tavernkeeper-staff" },
-  "reconcile.yml": { job: "sync", environment: "tavernkeeper-scanner" },
-  "scan-and-publish.yml": {
-    job: "publish",
-    environment: "tavernkeeper-scanner",
-  },
-  "release-holds.yml": {
-    job: "release",
-    environment: "tavernkeeper-staff",
-  },
-  "staff-operations.yml": {
-    job: "operate",
-    environment: "tavernkeeper-staff",
-  },
-  "targeted-scan.yml": {
-    job: "enqueue",
-    environment: "tavernkeeper-scanner",
-  },
+  "policy-rescan.yml": [{ job: "schedule", environment: "tavernkeeper-staff" }],
+  "reconcile.yml": [
+    { job: "sync", environment: "tavernkeeper-scanner" },
+    { job: "probe-provider", environment: "tavernkeeper-scanner" },
+  ],
+  "scan-and-publish.yml": [
+    {
+      job: "publish",
+      environment: "tavernkeeper-scanner",
+    },
+  ],
+  "release-holds.yml": [
+    {
+      job: "release",
+      environment: "tavernkeeper-staff",
+    },
+  ],
+  "staff-operations.yml": [
+    {
+      job: "operate",
+      environment: "tavernkeeper-staff",
+    },
+  ],
+  "targeted-scan.yml": [
+    {
+      job: "enqueue",
+      environment: "tavernkeeper-scanner",
+    },
+  ],
 };
 const approvedWorkflowSecretNames = new Set([
   "TAVERNKEEPER_ARTIFACT_KEY",
@@ -433,7 +467,9 @@ function checkSecretPlacement(file, workflow) {
       (file === "scan-and-publish.yml" &&
         step?.name === "Contextually assess scanner evidence") ||
       (file === "provider-check.yml" &&
-        step?.name === "Check one benign contextual review");
+        step?.name === "Check one benign contextual review") ||
+      (file === "reconcile.yml" &&
+        step?.name === "Check benign provider compatibility");
     if (!approved)
       fail(file, "model provider secret appears outside a review-only step");
   }
@@ -484,6 +520,26 @@ function checkContextualRuntime(file, workflow) {
       fail(
         file,
         "provider check must make one non-publishing contextual request",
+      );
+  }
+  if (file === "reconcile.yml") {
+    const job = workflow.jobs?.["probe-provider"];
+    const checks = (job?.steps ?? []).filter(
+      (step) =>
+        step?.name === "Check benign provider compatibility" &&
+        step?.run === "npm run --silent provider:check",
+    );
+    if (
+      checks.length !== 1 ||
+      checks[0]?.["continue-on-error"] !== true ||
+      checks[0]?.["timeout-minutes"] !== 5 ||
+      /prepare-target|review-target|finalize-target|candidate\.json/iu.test(
+        JSON.stringify(job),
+      )
+    )
+      fail(
+        file,
+        "automatic provider probe must remain bounded and target-free",
       );
   }
 }
@@ -638,106 +694,116 @@ function checkEncryptedHandoff(file, workflow) {
 }
 
 function checkPublisherBoundary(file, workflow) {
-  const mutation = mutationJobs[file];
-  const publisherLocations = locationsMatching(
-    workflow,
-    publisherSecretPattern,
-  );
-  if (mutation === undefined) {
-    if (publisherLocations.length > 0)
+  const mutations = mutationJobs[file];
+  const jobsWithPublisherSecrets = Object.entries(workflow.jobs ?? {})
+    .filter(([, job]) => publisherSecretPattern.test(JSON.stringify(job)))
+    .map(([jobName]) => jobName);
+  if (mutations === undefined) {
+    if (jobsWithPublisherSecrets.length > 0)
       fail(file, "Publisher App secret appears outside a mutation workflow");
     return;
   }
-  const job = workflow.jobs?.[mutation.job];
-  if (job?.environment !== mutation.environment)
-    fail(file, `${mutation.job} must use ${mutation.environment}`);
-  const steps = job?.steps ?? [];
-  const tokenSteps = steps.filter((step) =>
-    JSON.stringify(step).match(publisherSecretPattern),
-  );
-  const tokenStep = tokenSteps[0];
-  if (
-    tokenSteps.length !== 1 ||
-    tokenStep?.name !== "Create TavernKeeper Publisher token" ||
-    tokenStep?.id !== "publisher-token" ||
-    tokenStep?.uses !== publisherAction ||
-    tokenStep?.with?.owner !== "MentallyQuill" ||
-    tokenStep?.with?.repositories !== "TavernKeeper" ||
-    tokenStep?.with?.["permission-contents"] !== "write"
-  )
-    fail(file, "Publisher App token step changed from the reviewed contract");
-  const consumers = [];
-  walk(workflow, (value, path) => {
-    if (typeof value === "string" && value.includes(publisherToken))
-      consumers.push(path);
-  });
-  const pushStep = steps.find(
-    (step) =>
-      typeof step?.run === "string" &&
-      step.run.includes("git push origin HEAD:main"),
-  );
-  const expectedConsumer = [
-    "jobs",
-    mutation.job,
-    "steps",
-    steps.indexOf(pushStep),
-    "env",
-    "GH_TOKEN",
-  ];
-  if (
-    consumers.length !== 1 ||
-    JSON.stringify(consumers[0]) !== JSON.stringify(expectedConsumer)
-  )
-    fail(
-      file,
-      "Publisher App token is consumed outside the reviewed commit step",
+  const mutationJobNames = new Set(mutations.map(({ job }) => job));
+  if (jobsWithPublisherSecrets.some((job) => !mutationJobNames.has(job)))
+    fail(file, "Publisher App secret appears outside a mutation job");
+  for (const mutation of mutations) {
+    const job = workflow.jobs?.[mutation.job];
+    if (job?.environment !== mutation.environment)
+      fail(file, `${mutation.job} must use ${mutation.environment}`);
+    const steps = job?.steps ?? [];
+    const tokenSteps = steps.filter((step) =>
+      JSON.stringify(step).match(publisherSecretPattern),
     );
-  if (
-    pushStep?.env?.GH_TOKEN !== publisherToken ||
-    !pushStep?.run?.includes("gh auth setup-git") ||
-    /--force|gh workflow run/iu.test(pushStep?.run ?? "")
-  )
-    fail(
-      file,
-      "Publisher-authenticated push changed from the reviewed contract",
+    const tokenStep = tokenSteps[0];
+    if (
+      tokenSteps.length !== 1 ||
+      tokenStep?.name !== "Create TavernKeeper Publisher token" ||
+      tokenStep?.id !== "publisher-token" ||
+      tokenStep?.uses !== publisherAction ||
+      tokenStep?.with?.owner !== "MentallyQuill" ||
+      tokenStep?.with?.repositories !== "TavernKeeper" ||
+      tokenStep?.with?.["permission-contents"] !== "write"
+    )
+      fail(file, "Publisher App token step changed from the reviewed contract");
+    const consumers = [];
+    walk(job, (value, path) => {
+      if (typeof value === "string" && value.includes(publisherToken))
+        consumers.push(path);
+    });
+    const pushStep = steps.find(
+      (step) =>
+        typeof step?.run === "string" &&
+        step.run.includes("git push origin HEAD:main"),
     );
-  const pushRun = pushStep?.run ?? "";
-  if (
-    file === "staff-operations.yml" &&
-    (!same(workflow.concurrency, {
-      group: "tavernkeeper-staff-operations",
-      queue: "max",
-      "cancel-in-progress": false,
-    }) ||
-      !same(pushStep?.env, {
-        GH_TOKEN: publisherToken,
-        OPERATION: "${{ inputs.operation }}",
-        REPOSITORY_ID: "${{ inputs.repository_id }}",
-        REASON_CODE: "${{ inputs.reason_code }}",
-      }))
-  )
-    fail(file, "staff operations must retain their lossless serialized queue");
-  if (file === "staff-operations.yml" && pushRun !== canonicalStaffPublisherRun)
-    fail(file, "staff operation and Publisher token boundary changed");
-  const expectedPushLines =
-    file === "staff-operations.yml"
-      ? canonicalStaffPublisherPushLines
-      : canonicalPublisherPushLines;
-  if (!containsOnlyCanonicalPublisherPush(pushRun, expectedPushLines))
-    fail(
-      file,
-      "Publisher-authenticated push must retain one canonical bounded retry block",
+    const expectedConsumer = [
+      "steps",
+      steps.indexOf(pushStep),
+      "env",
+      "GH_TOKEN",
+    ];
+    if (
+      consumers.length !== 1 ||
+      JSON.stringify(consumers[0]) !== JSON.stringify(expectedConsumer)
+    )
+      fail(
+        file,
+        "Publisher App token is consumed outside the reviewed commit step",
+      );
+    if (
+      pushStep?.env?.GH_TOKEN !== publisherToken ||
+      !pushStep?.run?.includes("gh auth setup-git") ||
+      /--force|gh workflow run/iu.test(pushStep?.run ?? "")
+    )
+      fail(
+        file,
+        "Publisher-authenticated push changed from the reviewed contract",
+      );
+    const pushRun = pushStep?.run ?? "";
+    if (
+      file === "staff-operations.yml" &&
+      (!same(workflow.concurrency, {
+        group: "tavernkeeper-staff-operations",
+        queue: "max",
+        "cancel-in-progress": false,
+      }) ||
+        !same(pushStep?.env, {
+          GH_TOKEN: publisherToken,
+          OPERATION: "${{ inputs.operation }}",
+          REPOSITORY_ID: "${{ inputs.repository_id }}",
+          REASON_CODE: "${{ inputs.reason_code }}",
+        }))
+    )
+      fail(
+        file,
+        "staff operations must retain their lossless serialized queue",
+      );
+    if (
+      file === "staff-operations.yml" &&
+      pushRun !== canonicalStaffPublisherRun
+    )
+      fail(file, "staff operation and Publisher token boundary changed");
+    const expectedPushLines =
+      file === "reconcile.yml" && mutation.job === "probe-provider"
+        ? canonicalProviderProbePushLines
+        : file === "staff-operations.yml"
+          ? canonicalStaffPublisherPushLines
+          : canonicalPublisherPushLines;
+    if (!containsOnlyCanonicalPublisherPush(pushRun, expectedPushLines))
+      fail(
+        file,
+        "Publisher-authenticated push must retain one canonical bounded retry block",
+      );
+    const checkouts = steps.filter(
+      (step) =>
+        typeof step?.uses === "string" &&
+        step.uses.startsWith("actions/checkout@"),
     );
-  const checkouts = steps.filter(
-    (step) =>
-      typeof step?.uses === "string" &&
-      step.uses.startsWith("actions/checkout@"),
-  );
-  if (
-    checkouts.length === 0 ||
-    checkouts.some((step) => step.with?.["persist-credentials"] !== false)
-  )
-    fail(file, "mutation checkout must disable persisted credentials");
+    if (
+      checkouts.length === 0 ||
+      checkouts.some((step) => step.with?.["persist-credentials"] !== false)
+    )
+      fail(file, "mutation checkout must disable persisted credentials");
+  }
 }
 
 function checkTargetedAuthority(file, workflow) {

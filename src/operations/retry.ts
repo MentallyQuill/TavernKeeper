@@ -1,5 +1,6 @@
 import type { Target } from "../contracts/targets.js";
 import {
+  appendQueuedTarget,
   dueQueueEntries,
   removeSuccessfulTarget,
   rotateFailedTarget,
@@ -29,8 +30,32 @@ export function recordFailure(
     recoveryFingerprint?: string | undefined;
   },
 ): FailureTransition {
-  const rotated = rotateFailedTarget(state, input);
-  let automaticHolds = [...rotated.state.automatic_holds];
+  const targetFailure = input.failure.domain === "target";
+  const transitioned = targetFailure
+    ? rotateFailedTarget(state, input)
+    : (() => {
+        const queued = appendQueuedTarget(state, input.target);
+        const entry = queued.scan_queue.entries.find(
+          ({ repository_id, target_sha }) =>
+            repository_id === input.target.repository_id &&
+            target_sha === input.target.target_sha,
+        );
+        if (entry === undefined)
+          throw new Error("Shared scan failure target is not queued.");
+        return {
+          state: OperationsStateSchema.parse({
+            ...queued,
+            updated_at: input.at,
+            active_scans: queued.active_scans.filter(
+              ({ repository_id, target_sha }) =>
+                repository_id !== input.target.repository_id ||
+                target_sha !== input.target.target_sha,
+            ),
+          }),
+          entry,
+        };
+      })();
+  let automaticHolds = [...transitioned.state.automatic_holds];
   let automaticChronic = false;
 
   if (input.failure.domain !== "target") {
@@ -80,14 +105,16 @@ export function recordFailure(
   }
 
   const nextState = OperationsStateSchema.parse({
-    ...rotated.state,
+    ...transitioned.state,
     automatic_holds: automaticHolds,
   });
   return {
     state: nextState,
-    entry: rotated.entry,
+    entry: transitioned.entry,
     notification:
-      rotated.entry.chronic || automaticChronic ? "chronic" : "none",
+      (targetFailure && transitioned.entry.chronic) || automaticChronic
+        ? "chronic"
+        : "none",
     terminal: false,
   };
 }
@@ -96,10 +123,65 @@ export function dueRetries(state: OperationsState, now: string) {
   const due = dueQueueEntries(state, now, Number.MAX_SAFE_INTEGER);
   if (state.automatic_holds.length === 0)
     return due.filter(({ consecutive_failures }) => consecutive_failures > 0);
-  const holdDue = state.automatic_holds.some(
-    ({ next_probe_at }) => Date.parse(next_probe_at) <= Date.parse(now),
+  return [];
+}
+
+function automaticHoldFor(state: OperationsState, errorFingerprint: string) {
+  const hold = state.automatic_holds.find(
+    ({ error_fingerprint }) => error_fingerprint === errorFingerprint,
   );
-  return holdDue ? due.slice(0, 1) : [];
+  if (hold === undefined)
+    throw new Error("Matching automatic recovery hold was not found.");
+  return hold;
+}
+
+export function recordAutomaticProbeSuccess(
+  stateInput: OperationsState,
+  errorFingerprint: string,
+  at: string,
+) {
+  const state = OperationsStateSchema.parse(stateInput);
+  automaticHoldFor(state, errorFingerprint);
+  if (!Number.isFinite(Date.parse(at)))
+    throw new Error("Automatic recovery probe time is invalid.");
+  return OperationsStateSchema.parse({
+    ...state,
+    updated_at: at,
+    automatic_holds: state.automatic_holds.filter(
+      ({ error_fingerprint }) => error_fingerprint !== errorFingerprint,
+    ),
+  });
+}
+
+export function recordAutomaticProbeFailure(
+  stateInput: OperationsState,
+  errorFingerprint: string,
+  at: string,
+) {
+  const state = OperationsStateSchema.parse(stateInput);
+  const hold = automaticHoldFor(state, errorFingerprint);
+  const atMs = Date.parse(at);
+  if (!Number.isFinite(atMs))
+    throw new Error("Automatic recovery probe time is invalid.");
+  if (atMs <= Date.parse(hold.last_failed_at)) return state;
+  const lastFailedAt =
+    atMs > Date.parse(hold.last_failed_at) ? at : hold.last_failed_at;
+  const consecutiveFailures = hold.consecutive_failures + 1;
+  return OperationsStateSchema.parse({
+    ...state,
+    updated_at: at,
+    automatic_holds: state.automatic_holds.map((candidate) =>
+      candidate.error_fingerprint === errorFingerprint
+        ? {
+            ...candidate,
+            last_failed_at: lastFailedAt,
+            consecutive_failures: consecutiveFailures,
+            next_probe_at: scanRetryAt(lastFailedAt, consecutiveFailures),
+            chronic: consecutiveFailures >= 5,
+          }
+        : candidate,
+    ),
+  });
 }
 
 export function recordSuccess(
