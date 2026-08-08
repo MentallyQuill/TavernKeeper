@@ -1,0 +1,902 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for NeoTavern/NeoTavern-Frontend at commit a0d833c.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; NeoTavern/NeoTavern-Frontend</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/NeoTavern/NeoTavern-Frontend" rel="noopener noreferrer">NeoTavern/NeoTavern-Frontend</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/NeoTavern/NeoTavern-Frontend/commit/a0d833c98dde05cea38bb372e5baa55529b82dde" rel="noopener noreferrer">a0d833c</a></span>
+        <span>Reviewed <time datetime="2026-08-08T07:15:09.397Z">Aug 8, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">12 material concerns identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>12 material</span>
+        <span>24 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <article class="finding risk-material">
+    <h3>Dependency advisory GHSA-p9ff-h696-f583 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A serious security flaw was found in a software package this project relies on. Because the project processes content from users and AI services, a flaw like this could potentially be misused. The exact details of which package is affected were not fully visible in the provided evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p9ff-h696-f583 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-p9ff-h696-f583) against a dependency in the lockfile. The provided source excerpt shows the root package declares production dependencies used for expression parsing, HTML sanitization, markdown rendering, and API proxying. The project handles user-generated and AI-generated content, meaning attacker-controlled input may reach vulnerable code paths in production dependencies. The specific flagged package identity and resolved version were not visible in the truncated source context, so runtime reachability cannot be definitively confirmed. A high-severity advisory in a production dependency for this type of project warrants attention.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run a fresh dependency audit to identify the specific package, confirm the resolved version falls within the advisory range, and update to a fixed version. Verify whether attacker-controlled input reaches the vulnerable code path in the project runtime.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p9ff-h696-f583</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-pm4m-ph32-ghv5 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A serious security flaw was found in a package this project uses for processing content. Since the project displays content from users and AI, a flaw in content processing could potentially be exploited to cause harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-pm4m-ph32-ghv5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-pm4m-ph32-ghv5) against a dependency in the lockfile. The project declares production dependencies for HTML sanitization, markdown rendering, and content templating. The project renders AI-generated and user-generated content, meaning attacker-controlled input likely reaches these code paths. A high-severity advisory in a content-processing production dependency could allow content injection or denial of service. The specific package identity and resolved version were not visible in the truncated source context, so the exact vulnerability and reachability cannot be definitively confirmed.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run a fresh dependency audit to identify the specific package, confirm the resolved version, and update to a fixed version. Verify whether untrusted content reaches the vulnerable code path.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-pm4m-ph32-ghv5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-v2hh-gcrm-f6hx applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A serious security flaw was found in a package this project uses to clean untrusted content. Since the project displays content from users and AI services, a flaw in the content-cleaning component could potentially allow harmful content to slip through.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2hh-gcrm-f6hx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-v2hh-gcrm-f6hx) against a dependency in the lockfile. The project declares dompurify as a production dependency for HTML sanitization, and the project renders AI-generated and user-generated content. A high-severity advisory in a sanitization library is security-critical because bypasses can allow script injection in content-rendering contexts. The specific resolved version of the flagged package was not visible in the truncated source context, so it cannot be confirmed whether the declared version range resolves to a version within the advisory range or whether a transitive dependency is affected.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run a fresh dependency audit to identify the specific package and resolved version. Update to a version outside the advisory range. If the affected package is a sanitization library, prioritize this update and verify that content sanitization remains effective.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2hh-gcrm-f6hx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4c8g-83qw-93j6 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A security scanner found that one of the project&#39;s bundled libraries has a known security issue. The scanner did not include which specific library was affected, so the real-world risk cannot be fully confirmed, but the project&#39;s use of a local web server and AI content processing means the issue could matter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that addresses the advisory. Run a dependency audit with package details visible to identify and remediate the specific package.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4c8g-83qw-93j6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-5p4m-2wfm-xmqj applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability in one of the project&#39;s libraries. Without knowing which library is affected, the exact danger is unclear, but the project handles web content and AI responses, so the issue should be addressed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5p4m-2wfm-xmqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in this lockfile. Package details were stripped from the scanner output, and the truncated source context does not include the matching lockfile entry, preventing independent verification of the specific package, resolved version, or runtime reachability. The project serves web content locally and processes untrusted AI model output, so vulnerable parsing or rendering libraries could be exploitable depending on the package involved.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version. Run a dependency audit with full package details to identify the specific library and upgrade it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5p4m-2wfm-xmqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-v2wj-q39q-566r applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A security scanner identified a known vulnerability in a bundled library. The specific library was not named in the scanner output, so the exact impact is uncertain, but the project&#39;s web-serving and content-processing features mean it should be fixed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2wj-q39q-566r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in this lockfile. The scanner removed package details, and the provided source excerpt does not reach the matching lockfile entry, so the specific vulnerable package and its resolved version cannot be confirmed. Given the project includes production dependencies for web serving, proxying, and content rendering, a vulnerable dependency in any of these areas could present runtime risk.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves the advisory. Use a dependency scanner that reports package names to identify and remediate the specific library.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2wj-q39q-566r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4cwx-7wf7-3272 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A security scanner found a known security issue in one of the project&#39;s libraries. The affected library was not identified in the scanner results, so the precise risk is unclear, but the project&#39;s content handling means it should be addressed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4cwx-7wf7-3272 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version. Run a dependency audit with visible package details to identify and upgrade the specific library.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4cwx-7wf7-3272</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability in a bundled library. The specific library was not named, so the exact danger is uncertain, but the project&#39;s web-serving and content-processing capabilities mean it should be addressed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in this lockfile. The scanner output does not include package details, and the provided source excerpt is truncated before the matching lockfile entry, so the specific vulnerable package, resolved version, and runtime reachability cannot be independently confirmed. The project includes production dependencies for web serving, proxy middleware, and content rendering, so a vulnerable dependency in these areas could present exploitable risk.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a version that resolves the advisory. Use a dependency scanner that reports package names to identify and remediate the specific library.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-8r6m-32jq-jx6q applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A security scanner found a known security issue in one of the project&#39;s libraries. The affected library was not identified in the scanner results, so the precise risk is unclear, but the project&#39;s content handling means it should be fixed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8r6m-32jq-jx6q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory against a dependency in this lockfile. Package details were stripped from the scanner output, and the truncated source context does not reach the matching lockfile entry, preventing independent verification of the specific package, resolved version, or runtime reachability. The project processes AI-generated content and renders it in a browser context, so vulnerable content-handling libraries could be exploitable depending on the package involved.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version. Run a dependency audit with visible package details to identify and upgrade the specific library.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8r6m-32jq-jx6q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-2v37-7h3g-55p8 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security flaw was found in one of the libraries this project uses. The project mainly runs on your own computer, which limits the danger, but it can be configured to share access over a local network. Updating the affected library to a fixed version is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8 against a dependency resolved in the lockfile with high scanner confidence, confirming the vulnerable version is present. The project declares runtime dependencies including express, http-proxy-middleware, handlebars, dompurify, marked, js-yaml, and fast-xml-parser that process user-supplied or external content. The application is primarily local-first (localhost:8787) but supports LAN exposure via host 0.0.0.0 configuration, which increases the attack surface. Without the specific package identity in the scanner output, exact runtime reachability cannot be fully traced, but the advisory is confirmed present in the shipped lockfile.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the package matched by GHSA-2v37-7h3g-55p8 in the lockfile and upgrade it to a version that includes the fix. Run npm audit or osv-scanner after updating to confirm resolution.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2v37-7h3g-55p8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security flaw was found in one of the project&#39;s libraries. Since the app can be exposed to other devices on your network, someone on the same network could potentially exploit it. Updating the library is recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 against a dependency in the lockfile with high scanner confidence. The project includes multiple runtime dependencies that handle untrusted input including markdown parsing, HTML sanitization, YAML and XML parsing, and HTTP proxying. The local-first deployment model reduces exposure, but the configurable LAN mode and basic-auth option indicate the server component can face network attackers. The advisory is confirmed in the shipped dependency tree.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the package matched by GHSA-rgw5-rvv9-x895 in the lockfile and upgrade it to a patched version. Verify the fix with osv-scanner after updating.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-fx2h-pf6j-xcff applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; medium confidence</p>
+    <p>A known security flaw was found in one of the project&#39;s libraries. The app handles content from user imports like character cards and chat messages, so updating the affected library is important to prevent potential exploitation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff against a dependency in the lockfile with high scanner confidence. The project processes user-supplied content such as chat messages, character cards, and lorebooks through libraries including marked, dompurify, handlebars, and fast-xml-parser. If the advisory affects one of these content-processing libraries, attacker-controlled input from imported character cards or chat content could reach the vulnerable code path. The local deployment model limits but does not eliminate exposure.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the package matched by GHSA-fx2h-pf6j-xcff in the lockfile and upgrade it to a patched version. Confirm resolution with osv-scanner after updating.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fx2h-pf6j-xcff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6wh-96g9-6wx3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate security warning was found for a package used by this project. These types of issues usually have limited impact, and the package may only be used during development rather than in the live application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6wh-96g9-6wx3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-v6wh-96g9-6wx3) against a dependency in the lockfile. The project declares both production and devDependencies, and several declared devDependencies are complex packages that commonly appear in advisory feeds. Medium-severity advisories in build-time or test-time dependencies do not affect the production runtime. Even if this affects a production dependency, medium-severity issues typically have limited concrete user harm. The specific package identity was not visible in the truncated source context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and update if a fixed version is available. If the package is a devDependency, the priority is lower.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6wh-96g9-6wx3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-jr45-8vmc-qm54 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate security warning was found for a package used by this project. If the package is only used during development or building, it does not affect the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jr45-8vmc-qm54 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-jr45-8vmc-qm54) against a dependency in the lockfile. The project declares devDependencies including build tooling and test frameworks that commonly appear in advisory feeds. Medium-severity advisories in build-time dependencies do not affect the production runtime. The specific package identity and whether it is a production or dev dependency were not visible in the truncated source context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and update if a fixed version is available. Confirm whether the package is a production or development dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jr45-8vmc-qm54</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-55q2-fjhq-7xh7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate security warning was found for a package this project uses. The project includes a small server component, so there is some possibility the issue could affect how requests are handled, but medium-severity issues usually have limited impact.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-55q2-fjhq-7xh7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-55q2-fjhq-7xh7) against a dependency in the lockfile. The project declares production dependencies for server-side operations including an Express server and proxy middleware. A medium-severity advisory in server or proxy packages could have some runtime relevance if attacker-controlled requests reach the vulnerable code. However, medium-severity issues typically result in limited concrete harm such as request handling edge cases or information exposure. The specific package identity was not visible in the truncated source context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and update if a fixed version is available. Assess whether external requests can reach the vulnerable code path.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-55q2-fjhq-7xh7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate security warning was found for a package used by this project. These types of issues usually have limited impact on the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-8xcm-r25x-g524) against a dependency in the lockfile. The project declares both production and devDependencies. Medium-severity advisories commonly affect build-time tooling, test frameworks, or libraries with limited attack surface such as browser detection utilities. The specific package identity was not visible in the truncated source context, so runtime reachability cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and update if a fixed version is available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4w7w-66w2-5vf9 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A moderate security warning was found for a package used by this project. If the package is only used during development, it does not affect the live application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4w7w-66w2-5vf9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-4w7w-66w2-5vf9) against a dependency in the lockfile. The project declares both production and devDependencies including test and build tooling that commonly appear in advisory feeds. Medium-severity advisories in build-time dependencies do not affect the production runtime. The specific package identity was not visible in the truncated source context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency audit to identify the specific package and update if a fixed version is available. Confirm whether the package is a production or development dependency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4w7w-66w2-5vf9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. Without knowing which package is affected, it is unclear whether the vulnerability can actually be exploited in this project.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-3jxr-9vmj-r5cp) against a dependency in the lockfile, but package details were removed from the scanner output. The provided source context shows only the first 641 lines of a 445 KB lockfile, covering top-level dependency declarations and mostly @babel/* dev dependencies. Without knowing which specific package and resolved version matched, runtime reachability and attacker-controlled input paths cannot be confirmed. The project declares production dependencies including express, http-proxy-middleware, dompurify, handlebars, and marked that process requests and untrusted content, so the advisory could be relevant if it targets one of those, but it could equally be a transitive dev-only dependency.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v56q-mh7h-f735 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. It is unclear whether the vulnerability affects the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v56q-mh7h-f735 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-v56q-mh7h-f735) against a dependency in the lockfile, but package details were removed. The visible lockfile context does not include the specific package or resolved version that triggered this match. The project includes both production server-side dependencies (express, http-proxy-middleware) and dev tooling (vite, vitest, jsdom, sass); without knowing which package matched, runtime reachability cannot be determined.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v56q-mh7h-f735</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. It is unclear whether the vulnerability affects the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-7p8r-x3mc-p8w7) against a dependency in the lockfile, but package details were removed. The provided source context does not reveal which specific package or resolved version matched. Without that information, whether the vulnerable code is present in production runtime versus dev-only tooling cannot be confirmed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2j3-45gr-mqc4 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a low-severity vulnerability warning for one of the project&#39;s dependencies. The specific package name was not included, but low-severity issues typically have limited impact.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2j3-45gr-mqc4 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a low-severity advisory (GHSA-c2j3-45gr-mqc4) against a dependency in the lockfile, but package details were removed. The low scanner severity suggests limited impact. Without knowing the specific package, runtime reachability cannot be confirmed, but low-severity advisories typically represent edge-case or limited-scope issues.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory and update it to a fixed version when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2j3-45gr-mqc4</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-28wg-ghj8-5hjv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. It is unclear whether the vulnerability affects the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-28wg-ghj8-5hjv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-28wg-ghj8-5hjv) against a dependency in the lockfile, but package details were removed. The visible source context does not include the matching package or resolved version. The project declares production dependencies that handle HTTP requests and untrusted content (express, http-proxy-middleware, dompurify, handlebars, marked), so if the advisory targets one of those, it could be relevant; if it targets a dev-only transitive dependency, it would not affect production runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-28wg-ghj8-5hjv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. It is unclear whether the vulnerability affects the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-r28c-9q8g-f849) against a dependency in the lockfile, but package details were removed. Without the specific package name and resolved version, runtime reachability and attacker-controlled input paths cannot be assessed. The advisory could target a production dependency or a dev-only transitive dependency.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xvcm-6775-5m9r applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a known vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. It is unclear whether the vulnerability affects the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xvcm-6775-5m9r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a high-severity advisory (GHSA-xvcm-6775-5m9r) against a dependency in the lockfile, but package details were removed. The provided source context does not reveal which specific package or resolved version matched. Without that information, whether the vulnerable code is exercised in production cannot be determined.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xvcm-6775-5m9r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a medium-severity vulnerability warning for one of the project&#39;s dependencies, but the specific package name was not included in the report. It is unclear whether the vulnerability affects the running application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> OSV-Scanner matched a medium-severity advisory (GHSA-v3r7-h72x-cjcm) against a dependency in the lockfile, but package details were removed. Without the specific package name and resolved version, runtime reachability cannot be confirmed. The project includes production dependencies that process untrusted content, so the advisory could be relevant if it targets one of those packages.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify which dependency triggered this advisory, update it to a fixed version, and verify whether the vulnerable code path is reachable in production.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a moderate-level issue in one of the project&#39;s libraries. Since the app runs locally and the specific library was not identified, the practical risk appears low, but updating dependencies is still good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency when convenient. Run a dependency audit with package details to identify the specific library and upgrade it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner found a moderate-level issue in one of the project&#39;s libraries. Since the app runs locally and the specific library was not identified, the practical risk appears low, but updating dependencies is still good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency when convenient. Run a dependency audit with package details to identify the specific library and upgrade it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (8)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a CSS styling rule for the settings panel layout. It does not modify startup behavior or persist anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is inside a scoped SCSS style block and defines a CSS class selector with layout properties. There is no startup persistence, execution, or state modification of any kind. The scanner matched on the class name text, not on any executable behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L473" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:473</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS layout rule, not a startup or persistence mechanism.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector inside a scoped style block containing only flexbox layout declarations. No persistence, startup, or execution logic is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L458" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:458</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS styling definition for the profile content area. It has nothing to do with startup persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector within a scoped SCSS block with only display and layout properties. No startup modification or persistence behavior exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L479" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:479</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a settings form definition that tells the app which API key field to show for the AI21 provider. It references a label for the key, not the key itself. No real password or secret is exposed here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a UI configuration object that assigns a constant reference SECRET_KEYS.AI21 to a secretKey property on a key-manager widget. No literal credential value is present; the value is an imported enum constant used to identify which user-supplied API key the key-manager widget should manage. The gitleaks generic-api-key rule matched on the property name and surrounding key-related identifiers, not on an actual secret.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/api-connection-definition.ts#L169" rel="noopener noreferrer">src/api-connection-definition.ts:169</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is just styling for how a row of text is displayed on screen. It does not change how the app starts up or save anything persistently.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector inside a Vue component style block. It defines layout properties for a profile row UI element. There is no startup modification, persistence mechanism, script execution, or data flow present. The scanner match is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/mythic-agents/components/NpcTab.vue#L304" rel="noopener noreferrer">src/extensions/built-in/mythic-agents/components/NpcTab.vue:304</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a settings screen definition that tells the app where to let users enter their AI21 API key. It does not contain any real password or key value, just a label pointing to where the key would be stored.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a UI configuration object for an AI21 API key-manager widget. The property secretKey is assigned SECRET_KEYS.AI21, which is an imported constant from the project&#39;s constants module used as a slot identifier for the key-manager widget. No actual credential value is present in the source; the scanner matched on the property name and constant reference pattern rather than a real secret.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/9cfab2df275892dfce7d8ecf4176463b6338c515/src/api-connection-definition.ts#L169" rel="noopener noreferrer">src/api-connection-definition.ts:169</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is just visual styling for a section of the chat memory popup. It does not change how the app starts up or persist anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS style rule inside a scoped style block of a Vue popup component. It defines border, padding, and margin for a profile selector section. There is no startup modification, persistence mechanism, script execution, or data flow present. The scanner match is a false positive on static styling.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/chat-memory/MemoryPopup.vue#L109" rel="noopener noreferrer">src/extensions/built-in/chat-memory/MemoryPopup.vue:109</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a CSS layout rule for profile control buttons. It does not affect startup or persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS class selector in a scoped style block containing only flexbox layout declarations. There is no executable code, persistence mechanism, or startup modification.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L464" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:464</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>All four candidates are CSS class definitions in a scoped style block</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Every flagged line is just CSS styling code for arranging UI elements. None of them modify startup behavior or persist data.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All four flagged lines fall within the scoped SCSS style section of a Vue single-file component. Each is a CSS class selector with only layout properties such as display, flex-direction, gap, and padding. The scanner rule appears to have matched on class names containing words like management, controls, actions, and content, producing false positives with no executable or persistence-relevant code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L458" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:458</a></li><li><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L464" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:464</a></li><li><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L473" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:473</a></li><li><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L479" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:479</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>422 files &middot; 3464351 bytes</dd>
+      <dt>Contextual coverage</dt><dd>35 of 35 candidates assessed</dd>
+      </dl>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 3 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/commit/a0d833c98dde05cea38bb372e5baa55529b82dde" rel="noopener noreferrer">a0d833c98dde05cea38bb372e5baa55529b82dde</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-08T07:15:09.397Z">Aug 8, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>3</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>135630 input &middot; 46401 output &middot; 43322 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>1507efd18121b2571cb3a04e675b0761eff9485b9efde0726f1acf9cfab64e96</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1095193888/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
