@@ -620,7 +620,9 @@ describe("GitHub workflow security policy", () => {
     });
     expect(transition?.run).toContain("provider-probe-success");
     expect(transition?.run).toContain("provider-probe-failure");
-    expect(transition?.run).toContain('.domain == "target"');
+    expect(transition?.run).toContain(
+      "npm run --silent probe-outcome -- phase-error.json",
+    );
     expect(transition?.run).toContain("probed_at");
     expect(transition?.run).toContain("npm run --silent retry");
     expect(commit?.run).toContain("git add operations/state.json");
@@ -730,7 +732,11 @@ describe("GitHub workflow security policy", () => {
 
   test("workflow policy pins target-domain provider recovery", async () => {
     await expectPolicyFailure(
-      (text) => text.replace('.domain == "target"', '.domain == "shared"'),
+      (text) =>
+        text.replace(
+          "npm run --silent probe-outcome -- phase-error.json",
+          "jq -e '.domain == \"target\"' phase-error.json",
+        ),
       /provider probe outcome classifier changed/iu,
       "reconcile.yml",
     );

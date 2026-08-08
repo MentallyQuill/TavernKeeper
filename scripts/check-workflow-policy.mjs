@@ -132,7 +132,7 @@ done
 exit 1
 `;
 const canonicalProviderProbeOutcomeRun = String.raw`operation="provider-probe-failure"
-if [[ "$TAVERNKEEPER_PROBE_OUTCOME" = "success" ]] || jq -e '.domain == "target"' phase-error.json >/dev/null 2>&1; then
+if [[ "$TAVERNKEEPER_PROBE_OUTCOME" = "success" ]] || npm run --silent probe-outcome -- phase-error.json >/dev/null 2>&1; then
   operation="provider-probe-success"
 fi
 probed_at="$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)"

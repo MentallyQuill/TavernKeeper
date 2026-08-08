@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
+import { probeFailureProvesSharedRecovery } from "../src/cli/probe-outcome.js";
 import { applyRetryOperation } from "../src/cli/retry.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
 import {
@@ -100,6 +101,31 @@ function indexedReport(
 }
 
 describe("JSON-only orchestration CLIs", () => {
+  test("only complete target contextual failures prove shared provider recovery", () => {
+    expect(
+      probeFailureProvesSharedRecovery({
+        code: "MODEL_EVIDENCE_INVALID",
+        domain: "target",
+        component: "contextual-model",
+      }),
+    ).toBe(true);
+    expect(probeFailureProvesSharedRecovery({ domain: "target" })).toBe(false);
+    expect(
+      probeFailureProvesSharedRecovery({
+        code: "MODEL_PROVIDER",
+        domain: "target",
+        component: "contextual-model",
+      }),
+    ).toBe(false);
+    expect(
+      probeFailureProvesSharedRecovery({
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      }),
+    ).toBe(false);
+  });
+
   test("reconcile emits no more than five self-contained scan requests", () => {
     const manifest: TargetManifestV2 = {
       schema_version: 2,
