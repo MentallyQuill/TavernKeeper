@@ -6,7 +6,11 @@ import {
   initialOperationsState,
   pauseSystem,
 } from "../src/operations/state.js";
-import { recordFailure, recordSuccess } from "../src/operations/retry.js";
+import {
+  dueRetries,
+  recordFailure,
+  recordSuccess,
+} from "../src/operations/retry.js";
 import {
   appendQueuedTarget,
   rotateFailedTarget,
@@ -393,6 +397,41 @@ describe("durable backlog planning", () => {
         "3",
       ).targets.map(({ target: value }) => value.repository_id),
     ).toEqual([43, 41]);
+  });
+
+  test("a cooled automatic rescan cannot become a recovery probe before its deadline", () => {
+    const cooled = target(41, 1);
+    const failing = target(42, 2);
+    const base = queued(cooled, failing);
+    const cooling = {
+      ...base,
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) =>
+          entry.repository_id === cooled.repository_id
+            ? {
+                ...entry,
+                rescan_not_before: "2026-08-04T13:00:00.000Z",
+              }
+            : entry,
+        ),
+      },
+    };
+    const held = recordFailure(cooling, {
+      target: failing,
+      failure: {
+        code: "MODEL_PROVIDER",
+        domain: "shared",
+        component: "contextual-model",
+      },
+      at: now,
+    }).state;
+
+    expect(
+      dueRetries(held, "2026-08-04T12:05:00.000Z").map(
+        ({ repository_id }) => repository_id,
+      ),
+    ).toEqual([42]);
   });
 
   test("only an explicit staff emergency stop blocks planning", () => {

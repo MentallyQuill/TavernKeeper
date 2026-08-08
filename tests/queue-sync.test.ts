@@ -4,8 +4,11 @@ import { describe, expect, test } from "vitest";
 
 import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
 import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
-import { initialOperationsState } from "../src/operations/state.js";
-import { serializeOperationsState } from "../src/operations/state.js";
+import {
+  initialOperationsState,
+  serializeOperationsState,
+} from "../src/operations/state.js";
+import { planBatch } from "../src/queue/backlog.js";
 import {
   appendQueuedTarget,
   rotateFailedTarget,
@@ -219,6 +222,45 @@ describe("scan queue synchronization", () => {
         target_sha: "b".repeat(40),
         rescan_not_before: "2026-08-04T12:00:00.000Z",
       },
+    ]);
+  });
+
+  test("plans a synchronized changed-SHA rescan at its exact deadline", () => {
+    const changed = target(41, 1, "b");
+    const synchronized = syncScanQueue({
+      manifest: manifest(changed),
+      index: indexWithPreviousRepositoryReport,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "3",
+    }).state;
+
+    expect(
+      planBatch(
+        manifest(changed),
+        indexWithPreviousRepositoryReport,
+        synchronized,
+        "2026-08-04T11:59:59.999Z",
+        "3",
+      ),
+    ).toMatchObject({
+      targets: [],
+      delayedEntries: 1,
+      nextWakeAt: "2026-08-04T12:00:00.000Z",
+    });
+    expect(
+      planBatch(
+        manifest(changed),
+        indexWithPreviousRepositoryReport,
+        synchronized,
+        "2026-08-04T12:00:00.000Z",
+        "3",
+      ).targets,
+    ).toEqual([
+      expect.objectContaining({
+        target: expect.objectContaining({ repository_id: 41 }),
+        reason: "changed",
+      }),
     ]);
   });
 

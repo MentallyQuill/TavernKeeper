@@ -48,6 +48,31 @@ function parseTargetIdentity(target: Target) {
   });
 }
 
+export function effectiveQueueEntryNotBefore(
+  entry: ScanQueueEntry,
+  state: OperationsState,
+  scannerPolicyVersion = "3",
+) {
+  const activePolicyTarget = state.policy_campaigns.some(
+    (campaign) =>
+      campaign.status === "active" &&
+      campaign.scanner_policy_version === scannerPolicyVersion &&
+      campaign.repository_ids.includes(entry.repository_id),
+  );
+  const automaticRescanNotBefore =
+    entry.rescan_not_before === undefined ||
+    entry.staff_requested === true ||
+    entry.consecutive_failures > 0 ||
+    activePolicyTarget
+      ? null
+      : entry.rescan_not_before;
+  return (
+    [entry.not_before, automaticRescanNotBefore]
+      .filter((value): value is string => value !== null)
+      .sort((left, right) => right.localeCompare(left))[0] ?? null
+  );
+}
+
 export function appendQueuedTarget(
   stateInput: OperationsState,
   targetInput: Target,
@@ -98,6 +123,7 @@ export function dueQueueEntries(
   stateInput: OperationsState,
   now: string,
   limit = 5,
+  scannerPolicyVersion = "3",
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const nowMs = Date.parse(now);
@@ -106,10 +132,14 @@ export function dueQueueEntries(
     throw new Error("Queue selection limit is invalid.");
   if (state.emergency_stop !== null) return [];
   return [...state.scan_queue.entries]
-    .filter(
-      ({ not_before }) =>
-        not_before === null || Date.parse(not_before) <= nowMs,
-    )
+    .filter((entry) => {
+      const notBefore = effectiveQueueEntryNotBefore(
+        entry,
+        state,
+        scannerPolicyVersion,
+      );
+      return notBefore === null || Date.parse(notBefore) <= nowMs;
+    })
     .sort((left, right) => left.ticket - right.ticket)
     .slice(0, limit);
 }
