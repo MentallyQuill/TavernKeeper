@@ -28,20 +28,19 @@ jobs:
         with:
           ref: main
           persist-credentials: false
-      - name: Compare committed and deployed report indexes
+      - name: Compare committed and deployed source commits
         id: compare
         shell: bash
         run: |
           source_sha="$(git rev-parse HEAD)"
-          expected="$(sha256sum reports/index.json | cut -d' ' -f1)"
-          actual=""
+          deployed_source=""
           if curl --fail --silent --show-error --location --max-redirs 0 \
-            --output "$RUNNER_TEMP/live-index.json" \
-            "https://mentallyquill.github.io/TavernKeeper/reports/index.json"; then
-            actual="$(sha256sum "$RUNNER_TEMP/live-index.json" | cut -d' ' -f1)"
+            --output "$RUNNER_TEMP/deployment-source.txt" \
+            "https://mentallyquill.github.io/TavernKeeper/deployment-source.txt"; then
+            deployed_source="$(tr -d '\r\n' < "$RUNNER_TEMP/deployment-source.txt")"
           fi
           echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
-          if [[ "$actual" = "$expected" ]]; then
+          if [[ "$deployed_source" = "$source_sha" ]]; then
             echo "deploy_required=false" >> "$GITHUB_OUTPUT"
           else
             echo "deploy_required=true" >> "$GITHUB_OUTPUT"

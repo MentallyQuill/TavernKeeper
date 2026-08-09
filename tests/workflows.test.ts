@@ -963,8 +963,17 @@ describe("GitHub workflow security policy", () => {
       new URL("../.github/workflows/deploy-pages.yml", import.meta.url),
       "utf8",
     );
+    const reconcile = await readFile(
+      new URL("../.github/workflows/pages-reconcile.yml", import.meta.url),
+      "utf8",
+    );
     expect(text).toMatch(/merge-base --is-ancestor/iu);
-    expect(text).toMatch(/reports\/index\.json/iu);
+    expect(text).toMatch(/sha256sum \.site\/reports\/index\.json/iu);
+    expect(text).not.toMatch(/sha256sum reports\/index\.json/iu);
+    expect(text).toMatch(/\.site\/deployment-source\.txt/iu);
+    expect(text).toMatch(/TavernKeeper\/deployment-source\.txt/iu);
+    expect(reconcile).toMatch(/TavernKeeper\/deployment-source\.txt/iu);
+    expect(reconcile).not.toMatch(/sha256sum reports\/index\.json/iu);
     expect(text).toMatch(/actions\/workflows\/.+\/dispatches/iu);
     expect(text).not.toMatch(/token_budget|priority|mode:/iu);
   });

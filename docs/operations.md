@@ -176,7 +176,7 @@ Every selected matrix target still finishes independently. The serialized
 publisher retains complete reports from peer repositories and applies all queue
 transitions in request order. Ordinary continuation uses only persisted queue
 work and does not wait for deployment. `pages-reconcile.yml` independently
-checks committed versus deployed report indexes every fifteen minutes and
+checks the committed main SHA against the deployed source marker every fifteen minutes and
 repairs drift. External project owners receive no operational-failure
 notification.
 
