@@ -4,6 +4,11 @@ import { z } from "zod";
 
 import type { InventoryClassification } from "../inventory/classify.js";
 import type { Inventory } from "../inventory/inventory-handler.js";
+import {
+  JavascriptAnalysisCoverageSchema,
+  type JavascriptAnalysisCoverage,
+} from "../scanners/javascript-analysis-types.js";
+import { selectJavascriptCandidates } from "../scanners/javascript-candidates.js";
 import { findingFingerprint, type ScannerRun } from "../scanners/types.js";
 import { ConfidenceSchema, SeveritySchema, type Finding } from "./reports.js";
 import { FullShaSchema, TargetSchema, type Target } from "./targets.js";
@@ -53,11 +58,22 @@ const ScanPackageInventoryFileSchema = z.strictObject({
   executable: z.boolean(),
 });
 
+export const LegacyScanPackageTools = [
+  "inventory",
+  "tavernkeeper-static",
+  "gitleaks",
+  "opengrep",
+  "osv-scanner",
+  "zizmor",
+  "malcontent",
+] as const;
+
 export const RequiredScanPackageTools = [
   "inventory",
   "tavernkeeper-static",
   "gitleaks",
   "opengrep",
+  "javascript-analysis",
   "osv-scanner",
   "zizmor",
   "malcontent",
@@ -93,10 +109,9 @@ const ScanPackageToolSchema = z
       .optional(),
   })
   .superRefine((tool, context) => {
-    if (
-      (tool.status === "completed-with-limitations") !==
-      (tool.limitations !== undefined)
-    )
+    const opengrepLimitations =
+      tool.name === "opengrep" && tool.status === "completed-with-limitations";
+    if (opengrepLimitations !== (tool.limitations !== undefined))
       context.addIssue({
         code: "custom",
         path: ["limitations"],
@@ -104,7 +119,7 @@ const ScanPackageToolSchema = z
           "Only completed tools with limitations may declare limitations.",
       });
     if (
-      tool.status === "completed-with-limitations" &&
+      tool.limitations !== undefined &&
       (tool.name !== "opengrep" ||
         tool.limitations?.some(
           (limitation) =>
@@ -115,6 +130,17 @@ const ScanPackageToolSchema = z
         code: "custom",
         path: ["limitations"],
         message: "Only OpenGrep supports bounded coverage limitations.",
+      });
+    if (
+      tool.status === "completed-with-limitations" &&
+      tool.name !== "opengrep" &&
+      tool.name !== "javascript-analysis"
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["status"],
+        message:
+          "Only OpenGrep and JavaScript analysis support bounded coverage limitations.",
       });
   });
 
@@ -143,7 +169,7 @@ const ScanPackageFindingSchema = z
     { path: ["line_end"], message: "Line range is invalid." },
   );
 
-export const ScanPackageV1Schema = z.strictObject({
+const ScanPackageV1ObjectSchema = z.strictObject({
   schema_version: z.literal(1),
   target: TargetSchema,
   scanner_version: VersionSchema,
@@ -160,6 +186,7 @@ export const ScanPackageV1Schema = z.strictObject({
     files: z.array(ScanPackageInventoryFileSchema),
   }),
   tools: z.array(ScanPackageToolSchema),
+  javascript_analysis: JavascriptAnalysisCoverageSchema.optional(),
   findings: z.array(ScanPackageFindingSchema),
   evidence_validation: z.strictObject({
     findings: CountSchema,
@@ -167,6 +194,35 @@ export const ScanPackageV1Schema = z.strictObject({
     fingerprints_validated: CountSchema,
   }),
 });
+
+export const ScanPackageV1Schema = ScanPackageV1ObjectSchema.superRefine(
+  (scanPackage, context) => {
+    const javascriptTool = scanPackage.tools.find(
+      ({ name }) => name === "javascript-analysis",
+    );
+    if (
+      scanPackage.scanner_policy_version === "4" &&
+      scanPackage.javascript_analysis === undefined
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["javascript_analysis"],
+        message: "JavaScript coverage is required for scanner policy 4.",
+      });
+    if (
+      scanPackage.javascript_analysis !== undefined &&
+      (javascriptTool === undefined ||
+        javascriptTool.status === "not-applicable" ||
+        (scanPackage.javascript_analysis.status === "complete") !==
+          (javascriptTool.status === "completed"))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["javascript_analysis"],
+        message: "JavaScript coverage and tool status are inconsistent.",
+      });
+  },
+);
 
 export type ScanPackageV1 = z.infer<typeof ScanPackageV1Schema>;
 
@@ -181,6 +237,7 @@ export interface BuildScanPackageInput {
   tools: ReadonlyArray<
     Pick<ScannerRun, "name" | "version" | "status" | "limitations">
   >;
+  javascriptAnalysis?: JavascriptAnalysisCoverage;
   findings: readonly Finding[];
 }
 
@@ -192,6 +249,7 @@ function expectedToolForOrigin(origin: string) {
     tavernkeeper: "tavernkeeper-static",
     gitleaks: "gitleaks",
     opengrep: "opengrep",
+    "javascript-analysis": "javascript-analysis",
     "osv-scanner": "osv-scanner",
     zizmor: "zizmor",
     malcontent: "malcontent",
@@ -254,15 +312,44 @@ export function validateScanPackageEvidence(input: unknown): ScanPackageV1 {
   )
     throw new Error("Scan Package classification count is inconsistent.");
 
+  const requiredTools =
+    scanPackage.scanner_policy_version === "4"
+      ? RequiredScanPackageTools
+      : LegacyScanPackageTools;
   if (
-    scanPackage.tools.length !== RequiredScanPackageTools.length ||
+    scanPackage.tools.length !== requiredTools.length ||
     new Set(scanPackage.tools.map(({ name }) => name)).size !==
-      RequiredScanPackageTools.length ||
-    RequiredScanPackageTools.some(
+      requiredTools.length ||
+    requiredTools.some(
       (name) => !scanPackage.tools.some((tool) => tool.name === name),
     )
   )
     throw new Error("Scan Package required tool coverage is incomplete.");
+
+  if (scanPackage.javascript_analysis !== undefined) {
+    const candidates = selectJavascriptCandidates(
+      scanPackage.inventory.files.map((file) => ({
+        path: file.path,
+        bytes: file.bytes,
+        sha256: file.sha256,
+        kind: file.kind,
+        likelyMinified: file.likely_minified,
+        executable: file.executable,
+      })),
+    );
+    const candidateBytes = candidates.reduce(
+      (total, candidate) => total + candidate.bytes,
+      0,
+    );
+    if (
+      scanPackage.javascript_analysis.candidates !== candidates.length ||
+      scanPackage.javascript_analysis.candidate_bytes !== candidateBytes ||
+      scanPackage.javascript_analysis.representations.raw !== candidates.length
+    )
+      throw new Error(
+        "Scan Package JavaScript coverage candidate inventory is inconsistent.",
+      );
+  }
 
   const completedTools = new Set(
     scanPackage.tools
@@ -337,6 +424,10 @@ export function buildScanPackage(input: BuildScanPackageInput): ScanPackageV1 {
   const findings = [...findingsByFingerprint.values()].sort((left, right) =>
     left.fingerprint.localeCompare(right.fingerprint),
   );
+  const toolOrder =
+    input.scannerPolicyVersion === "4"
+      ? RequiredScanPackageTools
+      : LegacyScanPackageTools;
   const tools = input.tools
     .map(({ name, version, status, limitations }) => ({
       name,
@@ -346,12 +437,8 @@ export function buildScanPackage(input: BuildScanPackageInput): ScanPackageV1 {
     }))
     .sort(
       (left, right) =>
-        RequiredScanPackageTools.indexOf(
-          left.name as (typeof RequiredScanPackageTools)[number],
-        ) -
-        RequiredScanPackageTools.indexOf(
-          right.name as (typeof RequiredScanPackageTools)[number],
-        ),
+        toolOrder.indexOf(left.name as never) -
+        toolOrder.indexOf(right.name as never),
     );
   const scanPackage = ScanPackageV1Schema.parse({
     schema_version: 1,
@@ -382,6 +469,9 @@ export function buildScanPackage(input: BuildScanPackageInput): ScanPackageV1 {
         .sort((left, right) => left.path.localeCompare(right.path)),
     },
     tools,
+    ...(input.javascriptAnalysis === undefined
+      ? {}
+      : { javascript_analysis: input.javascriptAnalysis }),
     findings,
     evidence_validation: {
       findings: findings.length,

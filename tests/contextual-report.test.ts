@@ -13,6 +13,7 @@ import { sanitizeReportV5 } from "../src/publish/sanitize.js";
 import { renderReportV5Html } from "../src/publish/render-report.js";
 import { buildContextualReport } from "../src/report/contextual-report.js";
 import { normalizeFinding } from "../src/scanners/types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
 
 const targetSha = "a".repeat(40);
 const finding = normalizeFinding({
@@ -45,7 +46,7 @@ const scanPackage = buildScanPackage({
   },
   history: { baseSha: null, commits: 1 },
   scannerVersion: "1.0.0",
-  scannerPolicyVersion: "3",
+  scannerPolicyVersion: "4",
   ruleCatalogVersion: "1",
   inventory: {
     root: "C:/scan/repository",
@@ -73,10 +74,35 @@ const scanPackage = buildScanPackage({
     { name: "tavernkeeper-static", version: "2", status: "completed" },
     { name: "gitleaks", version: "8.30.1", status: "completed" },
     { name: "opengrep", version: "1.26.0", status: "completed" },
+    {
+      name: "javascript-analysis",
+      version: JAVASCRIPT_ANALYSIS_VERSION,
+      status: "completed",
+    },
     { name: "osv-scanner", version: "2.4.0", status: "not-applicable" },
     { name: "zizmor", version: "1.28.0", status: "not-applicable" },
     { name: "malcontent", version: "1.25.7", status: "not-applicable" },
   ],
+  javascriptAnalysis: {
+    status: "complete",
+    candidates: 1,
+    candidate_bytes: sourceFile.bytes,
+    representations: {
+      raw: 1,
+      decoded: 0,
+      normalized: 0,
+      bundle_modules: 0,
+    },
+    stages: {
+      raw_signatures: 1,
+      raw_ast: 1,
+      raw_opengrep: 1,
+      derived_signatures: 0,
+      derived_ast: 0,
+      derived_opengrep: 0,
+    },
+    unresolved: [],
+  },
   findings: [finding],
 });
 const group: EvidenceContextGroup = {
@@ -294,10 +320,10 @@ describe("contextual V5 reports", () => {
     expect(report.report_id).toBe(report.report_digest);
     expect(report.report_id).toBe(reportIdentity(report));
     expect(reportPath(report)).toBe(
-      `reports/github/42/${targetSha}/3/${report.report_id}`,
+      `reports/github/42/${targetSha}/4/${report.report_id}`,
     );
     expect(reportUrl(report)).toBe(
-      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/3/${report.report_id}/`,
+      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/4/${report.report_id}/`,
     );
     expect(ScanReportV5Schema.parse(report)).toEqual(report);
   });

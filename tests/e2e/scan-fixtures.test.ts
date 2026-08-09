@@ -26,6 +26,9 @@ import { publishCandidates } from "../../src/publish/publisher.js";
 import { reportPath } from "../../src/publish/report-path.js";
 import { buildSite } from "../../src/site/build-site.js";
 import type { ScannerRun } from "../../src/scanners/types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../../src/scanners/javascript-analysis.js";
+import { selectJavascriptCandidates } from "../../src/scanners/javascript-candidates.js";
+import type { InventoryFile } from "../../src/inventory/inventory-handler.js";
 import { fixtureReportV5 } from "../helpers/v5-report.js";
 
 const repositoryRoot = dirname(
@@ -69,7 +72,13 @@ async function doesNotExist(path: string) {
 function scannerRuns(
   applicability: { osv: boolean; zizmor: boolean; malcontent: boolean },
   findings: Finding[],
+  inventoryFiles: readonly InventoryFile[],
 ): ScannerRun[] {
+  const javascriptCandidates = selectJavascriptCandidates(inventoryFiles);
+  const candidateBytes = javascriptCandidates.reduce(
+    (total, candidate) => total + candidate.bytes,
+    0,
+  );
   return [
     {
       name: "tavernkeeper-static",
@@ -88,6 +97,32 @@ function scannerRuns(
       version: "1.26.0",
       status: "completed",
       findings: [],
+    },
+    {
+      name: "javascript-analysis",
+      version: JAVASCRIPT_ANALYSIS_VERSION,
+      status: "completed",
+      findings: [],
+      javascriptAnalysis: {
+        status: "complete",
+        candidates: javascriptCandidates.length,
+        candidate_bytes: candidateBytes,
+        representations: {
+          raw: javascriptCandidates.length,
+          decoded: 0,
+          normalized: 0,
+          bundle_modules: 0,
+        },
+        stages: {
+          raw_signatures: javascriptCandidates.length,
+          raw_ast: javascriptCandidates.length,
+          raw_opengrep: javascriptCandidates.length,
+          derived_signatures: 0,
+          derived_ast: 0,
+          derived_opengrep: 0,
+        },
+        unresolved: [],
+      },
     },
     {
       name: "osv-scanner",
@@ -149,8 +184,12 @@ async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV4) {
           };
     },
     structuralScan: scanStructuralFiles,
-    scanners: async ({ classification, structuralFindings }) =>
-      scannerRuns(classification.applicability, structuralFindings ?? []),
+    scanners: async ({ classification, structuralFindings, inventoryFiles }) =>
+      scannerRuns(
+        classification.applicability,
+        structuralFindings ?? [],
+        inventoryFiles,
+      ),
     verifyHead: async () => ({ ok: true, value: targetSha }),
   };
   const spec: ScanRepositorySpec = {
@@ -188,7 +227,7 @@ describe("in-process hostile-data safety and deterministic publication gate", ()
         },
       },
     });
-    expect(result.ok && result.value.scanPackage.tools).toHaveLength(7);
+    expect(result.ok && result.value.scanPackage.tools).toHaveLength(8);
   });
 
   test("preserves credential exfiltration candidates for contextual review", async () => {

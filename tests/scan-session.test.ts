@@ -13,6 +13,7 @@ import {
   reviewPreparedSession,
 } from "../src/orchestrator/session.js";
 import { findingFingerprint } from "../src/scanners/types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
 
 const roots: string[] = [];
 const targetSha = "a".repeat(40);
@@ -39,6 +40,11 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     { name: "tavernkeeper-static", version: "2", status: "completed" as const },
     { name: "gitleaks", version: "8.30.1", status: "completed" as const },
     { name: "opengrep", version: "1.26.0", status: "completed" as const },
+    {
+      name: "javascript-analysis",
+      version: JAVASCRIPT_ANALYSIS_VERSION,
+      status: "completed" as const,
+    },
     {
       name: "osv-scanner",
       version: "2.4.0",
@@ -99,6 +105,26 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
       },
     },
     tools: options.omitTool ? tools.slice(0, -1) : tools,
+    javascript_analysis: {
+      status: "complete" as const,
+      candidates: 1,
+      candidate_bytes: 12,
+      representations: {
+        raw: 1,
+        decoded: 0,
+        normalized: 0,
+        bundle_modules: 0,
+      },
+      stages: {
+        raw_signatures: 1,
+        raw_ast: 1,
+        raw_opengrep: 1,
+        derived_signatures: 0,
+        derived_ast: 0,
+        derived_opengrep: 0,
+      },
+      unresolved: [],
+    },
     findings: [
       {
         origin: "tavernkeeper",

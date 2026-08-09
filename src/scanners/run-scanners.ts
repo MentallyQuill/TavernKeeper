@@ -1,8 +1,13 @@
+import { tmpdir } from "node:os";
+
 import type { ScannerPins, ScannerPolicyV4 } from "../config/policy.js";
 import type { Finding } from "../contracts/reports.js";
 import type { InventoryClassification } from "../inventory/classify.js";
+import type { InventoryFile } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
 import { runGitleaks, type GitleaksHistory } from "./gitleaks.js";
+import { runJavascriptAnalysis } from "./javascript-analysis.js";
+import { selectJavascriptCandidates } from "./javascript-candidates.js";
 import { runMalcontent } from "./malcontent.js";
 import { runOpenGrep } from "./opengrep.js";
 import { runOsv } from "./osv.js";
@@ -30,6 +35,7 @@ export interface ApplicableScannerSpec {
   root: string;
   history: GitleaksHistory;
   classification: InventoryClassification;
+  inventoryFiles: readonly InventoryFile[];
   structuralFiles: StaticSourceFile[];
   structuralFindings?: Finding[];
   runner: CommandRunner;
@@ -44,6 +50,7 @@ export interface ScannerAdapterDependencies {
   staticScan: typeof scanStaticRules;
   gitleaks: typeof runGitleaks;
   opengrep: typeof runOpenGrep;
+  javascriptAnalysis: typeof runJavascriptAnalysis;
   osv: typeof runOsv;
   zizmor: typeof runZizmor;
   malcontent: typeof runMalcontent;
@@ -53,6 +60,7 @@ const defaultAdapters: ScannerAdapterDependencies = {
   staticScan: scanStaticRules,
   gitleaks: runGitleaks,
   opengrep: runOpenGrep,
+  javascriptAnalysis: runJavascriptAnalysis,
   osv: runOsv,
   zizmor: runZizmor,
   malcontent: runMalcontent,
@@ -138,14 +146,42 @@ export async function runApplicableScanners(
       }),
     ),
   );
+  const javascriptPaths = selectJavascriptCandidates(spec.inventoryFiles).map(
+    ({ path }) => path,
+  );
+  const openGrepRun = await runScanner("opengrep", "OpenGrep", () =>
+    adapters.opengrep({
+      root: spec.root,
+      rulesRoot: spec.rulesRoot,
+      runner: spec.runner,
+      version: spec.pins.opengrep.version,
+      expectedPaths: javascriptPaths,
+      maxTargetBytes: spec.policy.inventory.maxFileBytes,
+      ...executable(spec.executables, "opengrep"),
+    }),
+  );
+  if (openGrepRun.pathCoverage === undefined)
+    throw new ScannerError(
+      "MALFORMED_SCANNER_OUTPUT",
+      "system",
+      "Repository OpenGrep omitted JavaScript path coverage.",
+      "opengrep",
+    );
+  runs.push(openGrepRun);
   runs.push(
-    await runScanner("opengrep", "OpenGrep", () =>
-      adapters.opengrep({
+    await runScanner("javascript-analysis", "JavaScript analysis", () =>
+      adapters.javascriptAnalysis({
         root: spec.root,
-        rulesRoot: spec.rulesRoot,
+        inventoryFiles: spec.inventoryFiles,
+        rawOpenGrepCoverage: openGrepRun.pathCoverage!,
         runner: spec.runner,
-        version: spec.pins.opengrep.version,
-        ...executable(spec.executables, "opengrep"),
+        rulesRoot: spec.rulesRoot,
+        policy: spec.policy,
+        temporaryRoot: spec.temporaryRoot ?? tmpdir(),
+        opengrepVersion: spec.pins.opengrep.version,
+        ...(spec.executables?.opengrep === undefined
+          ? {}
+          : { opengrepExecutable: spec.executables.opengrep }),
       }),
     ),
   );

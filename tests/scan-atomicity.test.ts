@@ -14,6 +14,7 @@ import {
   ScannerError,
   type ScannerRun,
 } from "../src/scanners/types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
 
 const targetSha = "a".repeat(40);
 const sourceFile = {
@@ -90,6 +91,7 @@ function scannerRuns(withFinding = false): ScannerRun[] {
       ["tavernkeeper-static", "4"],
       ["gitleaks", "8.30.1"],
       ["opengrep", "1.26.0"],
+      ["javascript-analysis", JAVASCRIPT_ANALYSIS_VERSION],
       ["osv-scanner", "2.4.0"],
       ["zizmor", "1.28.0"],
       ["malcontent", "1.25.7"],
@@ -101,6 +103,30 @@ function scannerRuns(withFinding = false): ScannerRun[] {
       ? "not-applicable"
       : "completed",
     findings: withFinding && name === "tavernkeeper-static" ? [finding()] : [],
+    ...(name === "javascript-analysis"
+      ? {
+          javascriptAnalysis: {
+            status: "complete" as const,
+            candidates: 0,
+            candidate_bytes: 0,
+            representations: {
+              raw: 0,
+              decoded: 0,
+              normalized: 0,
+              bundle_modules: 0,
+            },
+            stages: {
+              raw_signatures: 0,
+              raw_ast: 0,
+              raw_opengrep: 0,
+              derived_signatures: 0,
+              derived_ast: 0,
+              derived_opengrep: 0,
+            },
+            unresolved: [],
+          },
+        }
+      : {}),
   }));
 }
 
@@ -206,6 +232,7 @@ describe("atomic deterministic repository evidence", () => {
       "tavernkeeper-static",
       "gitleaks",
       "opengrep",
+      "javascript-analysis",
       "osv-scanner",
       "zizmor",
       "malcontent",

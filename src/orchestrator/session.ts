@@ -32,6 +32,8 @@ import { planHistory } from "../git/history.js";
 import { classifyInventory } from "../inventory/classify.js";
 import { inventoryRepository } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
+import { JavascriptAnalysisCoverageSchema } from "../scanners/javascript-analysis-types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../scanners/javascript-analysis.js";
 import {
   CompletedContextualReviewSchema,
   ContextualReviewProgressError,
@@ -144,6 +146,7 @@ const PreparedSessionObjectSchema = z.strictObject({
         .optional(),
     }),
   ),
+  javascript_analysis: JavascriptAnalysisCoverageSchema,
   findings: z.array(FindingSchema),
 });
 
@@ -232,6 +235,7 @@ function scanPackageFor(prepared: PreparedSession) {
     inventory,
     classification,
     tools: prepared.tools,
+    javascriptAnalysis: prepared.javascript_analysis,
     findings: prepared.findings,
   });
 }
@@ -451,6 +455,7 @@ export async function prepareTargetSession({
         commits: history.value.historyCommits,
       },
       classification,
+      inventoryFiles: inventory.files,
       structuralFiles: [],
       structuralFindings,
       runner,
@@ -464,6 +469,7 @@ export async function prepareTargetSession({
       "tavernkeeper-static": policy.version,
       gitleaks: pins.gitleaks.version,
       opengrep: pins.opengrep.version,
+      "javascript-analysis": JAVASCRIPT_ANALYSIS_VERSION,
       "osv-scanner": pins.osvScanner.version,
       zizmor: pins.zizmor.version,
       malcontent: pins.malcontent.version,
@@ -529,6 +535,9 @@ export async function prepareTargetSession({
           ...(limitations === undefined ? {} : { limitations }),
         })),
       ],
+      javascript_analysis: orderedRuns.find(
+        ({ name }) => name === "javascript-analysis",
+      )!.javascriptAnalysis!,
       findings,
     };
     const prepared = PreparedSessionSchema.parse({
