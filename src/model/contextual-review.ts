@@ -1,13 +1,12 @@
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import { z } from "zod";
 import {
-  ContextualCompletedReviewResponseJsonSchema,
   ContextualAssessmentInputSchema,
   ContextualAssessmentSchema,
   ContextualObservationProgressSchema,
   ContextualObservationSchema,
-  ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
+  contextualReviewResponseJsonSchemaForGroup,
   sanitizeContextualReviewNarratives,
   type ContextualAssessment,
   type ContextualAssessmentInput,
@@ -552,9 +551,10 @@ async function reviewGroup(
         userContent: prompt.userContent,
         responseJsonSchema: {
           name: "tavernkeeper_contextual_review",
-          schema: finalAttempt
-            ? ContextualCompletedReviewResponseJsonSchema
-            : ContextualReviewResponseJsonSchema,
+          schema: contextualReviewResponseJsonSchemaForGroup(
+            group,
+            finalAttempt,
+          ),
         },
         ...(spec.provider.fetchImpl === undefined
           ? {}
@@ -597,6 +597,7 @@ async function reviewGroup(
             "MODEL_EVIDENCE_INVALID",
             "repository",
             "Contextual reviewer requested context for an unknown candidate.",
+            "assessment_candidate_id",
           );
         if (!spec.expandContext)
           throw new ModelRequestError(

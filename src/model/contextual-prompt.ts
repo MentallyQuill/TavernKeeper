@@ -45,6 +45,10 @@ function repairGuidance(diagnostic: ModelResponseDiagnostic) {
       return "Every assessment must contain exactly candidate_id, evidence_ids, disposition, impact, exploitability, confidence, recommended_risk, technical_explanation, layman_explanation, and developer_action, with one assessment per supplied candidate.";
     case "observation_schema":
       return "Every observation must contain exactly related_candidate_ids, evidence_ids, disposition, impact, exploitability, confidence, recommended_risk, title, technical_explanation, layman_explanation, developer_action, and locations. Use an empty observations array when no valid observation exists. Do not add observation_id.";
+    case "observation_evidence_ids":
+      return "Every observation related_candidate_ids and evidence_ids value must cite only identifiers supplied in this evidence group. Use an empty observations array when no fully supported observation exists.";
+    case "observation_locations":
+      return "Every observation location path and line must be copied exactly from the supplied source context for this evidence group. Use an empty observations array when no fully supplied location supports the observation.";
     case "response_json":
       return "Return one complete JSON object only, with no prose, markdown fence, second object, or truncated suffix.";
     case "response_content":

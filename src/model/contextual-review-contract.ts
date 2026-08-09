@@ -364,15 +364,15 @@ const CompleteReviewResponseSchema = z
     observations: z.array(ContextualObservationInputSchema).max(64),
   })
   .superRefine((response, context) => {
-    const candidateIds = response.assessments.map(
-      (assessment) => assessment.candidate_id,
-    );
-    if (new Set(candidateIds).size !== candidateIds.length) {
-      context.addIssue({
-        code: "custom",
-        path: ["assessments"],
-        message: "Completed response candidate IDs must be unique.",
-      });
+    const seenCandidateIds = new Set<string>();
+    for (const [index, assessment] of response.assessments.entries()) {
+      if (seenCandidateIds.has(assessment.candidate_id))
+        context.addIssue({
+          code: "custom",
+          path: ["assessments", index, "candidate_id"],
+          message: "Completed response candidate IDs must be unique.",
+        });
+      seenCandidateIds.add(assessment.candidate_id);
     }
     for (const [index, assessment] of response.assessments.entries()) {
       if (
@@ -418,6 +418,148 @@ export const ContextualReviewResponseJsonSchema = structuredOutputJsonSchema(
 
 export const ContextualCompletedReviewResponseJsonSchema =
   structuredOutputJsonSchema(ContextualCompletedReviewWireResponseSchema);
+
+type ContextualReviewSchemaGroup = {
+  path: string;
+  candidates: ReadonlyArray<{
+    candidate_id: string;
+    evidence_id: string;
+  }>;
+};
+
+function jsonSchemaObject(
+  value: unknown,
+  label: string,
+): Record<string, unknown> {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    throw new Error(`Generated contextual JSON Schema is missing ${label}.`);
+  return value as Record<string, unknown>;
+}
+
+function jsonSchemaProperties(value: unknown, label: string) {
+  return jsonSchemaObject(jsonSchemaObject(value, label).properties, label);
+}
+
+function constrainStringSchema(value: unknown, allowed: readonly string[]) {
+  const schema = jsonSchemaObject(value, "an identifier field");
+  delete schema.pattern;
+  schema.enum = [...allowed];
+}
+
+function specializeCompletedReviewSchema(
+  value: unknown,
+  group: ContextualReviewSchemaGroup,
+  candidateIds: readonly string[],
+  evidenceIds: readonly string[],
+) {
+  const review = jsonSchemaObject(value, "the completed review branch");
+  const reviewProperties = jsonSchemaProperties(
+    review,
+    "completed review properties",
+  );
+  const assessments = jsonSchemaObject(
+    reviewProperties.assessments,
+    "the assessments array",
+  );
+  assessments.minItems = candidateIds.length;
+  assessments.maxItems = candidateIds.length;
+  const assessmentProperties = jsonSchemaProperties(
+    jsonSchemaObject(assessments.items, "the assessment item"),
+    "assessment properties",
+  );
+  constrainStringSchema(assessmentProperties.candidate_id, candidateIds);
+  constrainStringSchema(
+    jsonSchemaObject(
+      assessmentProperties.evidence_ids,
+      "assessment evidence IDs",
+    ).items,
+    evidenceIds,
+  );
+
+  const observationProperties = jsonSchemaProperties(
+    jsonSchemaObject(
+      jsonSchemaObject(reviewProperties.observations, "the observations array")
+        .items,
+      "the observation item",
+    ),
+    "observation properties",
+  );
+  constrainStringSchema(
+    jsonSchemaObject(
+      observationProperties.related_candidate_ids,
+      "observation candidate IDs",
+    ).items,
+    candidateIds,
+  );
+  constrainStringSchema(
+    jsonSchemaObject(
+      observationProperties.evidence_ids,
+      "observation evidence IDs",
+    ).items,
+    evidenceIds,
+  );
+  const locationProperties = jsonSchemaProperties(
+    jsonSchemaObject(
+      jsonSchemaObject(observationProperties.locations, "observation locations")
+        .items,
+      "the observation location item",
+    ),
+    "observation location properties",
+  );
+  const path = jsonSchemaObject(locationProperties.path, "the location path");
+  delete path.minLength;
+  delete path.maxLength;
+  path.const = group.path;
+}
+
+export function contextualReviewResponseJsonSchemaForGroup(
+  group: ContextualReviewSchemaGroup,
+  completionRequired: boolean,
+) {
+  if (!RepositoryPathSchema.safeParse(group.path).success)
+    throw new Error("Contextual review group path is invalid.");
+  if (group.candidates.length === 0)
+    throw new Error("Contextual review group has no candidates.");
+  const candidateIds = group.candidates.map(({ candidate_id }) => candidate_id);
+  const evidenceIds = [
+    ...new Set(group.candidates.map(({ evidence_id }) => evidence_id)),
+  ];
+  if (
+    new Set(candidateIds).size !== candidateIds.length ||
+    candidateIds.some((value) => !IdentifierSchema.safeParse(value).success) ||
+    evidenceIds.some((value) => !IdentifierSchema.safeParse(value).success)
+  )
+    throw new Error("Contextual review group identities are invalid.");
+
+  const schema = structuredClone(
+    completionRequired
+      ? ContextualCompletedReviewResponseJsonSchema
+      : ContextualReviewResponseJsonSchema,
+  );
+  const rootProperties = jsonSchemaProperties(schema, "root properties");
+  const review = jsonSchemaObject(rootProperties.review, "the review property");
+  let completed: unknown = review;
+  let needsMoreContext: unknown;
+  if (!completionRequired) {
+    if (!Array.isArray(review.anyOf) || review.anyOf.length !== 2)
+      throw new Error("Generated contextual JSON Schema union is invalid.");
+    [completed, needsMoreContext] = review.anyOf;
+  }
+  specializeCompletedReviewSchema(completed, group, candidateIds, evidenceIds);
+  if (needsMoreContext !== undefined) {
+    const moreProperties = jsonSchemaProperties(
+      needsMoreContext,
+      "needs-more-context properties",
+    );
+    const requestedCandidates = jsonSchemaObject(
+      moreProperties.candidate_ids,
+      "requested candidate IDs",
+    );
+    requestedCandidates.maxItems = candidateIds.length;
+    constrainStringSchema(requestedCandidates.items, candidateIds);
+  }
+  return schema;
+}
 
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;
 export type ContextualAssessmentInput = z.infer<

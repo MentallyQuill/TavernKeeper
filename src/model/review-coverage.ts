@@ -6,15 +6,26 @@ import {
   type ContextualObservation,
   type ContextualReviewResponse,
 } from "./contextual-review-contract.js";
-import { ModelRequestError } from "./openai-compatible-client.js";
+import {
+  ModelRequestError,
+  type ModelResponseDiagnostic,
+} from "./openai-compatible-client.js";
 
 type CompletedResponse = Extract<
   ContextualReviewResponse,
   { status: "complete" }
 >;
 
-function evidenceError(message: string): never {
-  throw new ModelRequestError("MODEL_EVIDENCE_INVALID", "repository", message);
+function evidenceError(
+  message: string,
+  diagnostic: ModelResponseDiagnostic,
+): never {
+  throw new ModelRequestError(
+    "MODEL_EVIDENCE_INVALID",
+    "repository",
+    message,
+    diagnostic,
+  );
 }
 
 function suppliedLines(group: EvidenceContextGroup) {
@@ -39,10 +50,16 @@ function validateLocations(
   const lines = suppliedLines(group);
   for (const location of locations) {
     if (location.path !== group.path)
-      evidenceError("Contextual review cited an unsupplied file path.");
+      evidenceError(
+        "Contextual review cited an unsupplied file path.",
+        "observation_locations",
+      );
     for (let line = location.line_start; line <= location.line_end; line += 1)
       if (!lines.has(line))
-        evidenceError("Contextual review cited an unsupplied source line.");
+        evidenceError(
+          "Contextual review cited an unsupplied source line.",
+          "observation_locations",
+        );
   }
 }
 
@@ -133,7 +150,10 @@ export function validateCompletedGroupReview(
     group.candidates.map((candidate) => candidate.evidence_id),
   );
   if (candidates.size !== group.candidates.length)
-    evidenceError("Evidence group contains duplicate candidate identities.");
+    evidenceError(
+      "Evidence group contains duplicate candidate identities.",
+      "assessment_candidate_id",
+    );
   if (
     review.assessments.length !== candidates.size ||
     review.assessments.some(
@@ -142,6 +162,7 @@ export function validateCompletedGroupReview(
   )
     evidenceError(
       "Contextual review did not assess every supplied candidate exactly once.",
+      "assessment_candidate_id",
     );
   for (const assessment of review.assessments) {
     const candidate = candidates.get(assessment.candidate_id)!;
@@ -149,7 +170,10 @@ export function validateCompletedGroupReview(
       !assessment.evidence_ids.includes(candidate.evidence_id) ||
       assessment.evidence_ids.some((evidenceId) => !evidenceIds.has(evidenceId))
     )
-      evidenceError("Contextual review cited unknown candidate evidence.");
+      evidenceError(
+        "Contextual review cited unknown candidate evidence.",
+        "assessment_evidence_ids",
+      );
   }
   for (const observation of review.observations) {
     if (
@@ -160,7 +184,10 @@ export function validateCompletedGroupReview(
         (evidenceId) => !evidenceIds.has(evidenceId),
       )
     )
-      evidenceError("Contextual observation cited unknown evidence.");
+      evidenceError(
+        "Contextual observation cited unknown evidence.",
+        "observation_evidence_ids",
+      );
     validateLocations(group, observation.locations);
   }
   const assessmentById = new Map(
