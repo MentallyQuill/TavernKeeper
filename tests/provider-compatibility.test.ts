@@ -43,6 +43,7 @@ describe("model provider contextual compatibility check", () => {
     });
     const fetchImpl = vi
       .fn<typeof fetch>()
+      .mockResolvedValueOnce(compatibleResponse('{"status":"ok"}'))
       .mockResolvedValueOnce(compatibleResponse(content))
       .mockResolvedValueOnce(compatibleResponse(content));
 
@@ -60,9 +61,23 @@ describe("model provider contextual compatibility check", () => {
       contextualReview: "passed",
     });
 
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
-    const unionRequest = fetchImpl.mock.calls[0]!;
-    const finalRequest = fetchImpl.mock.calls[1]!;
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+    const baselineRequest = fetchImpl.mock.calls[0]!;
+    const unionRequest = fetchImpl.mock.calls[1]!;
+    const finalRequest = fetchImpl.mock.calls[2]!;
+    const baselineBody = JSON.parse(String(baselineRequest[1]?.body));
+    expect(baselineBody.response_format).toMatchObject({
+      type: "json_schema",
+      json_schema: {
+        name: "tavernkeeper_provider_baseline",
+        strict: true,
+        schema: {
+          type: "object",
+          required: ["status"],
+          additionalProperties: false,
+        },
+      },
+    });
     expect(unionRequest[1]?.headers).toMatchObject({
       Authorization: "Bearer test-key",
     });
@@ -122,9 +137,32 @@ describe("model provider contextual compatibility check", () => {
     expect(body.response_format.type).toBe("json_schema");
   });
 
+  test("distinguishes the contextual contract from a passing baseline", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(compatibleResponse('{"status":"ok"}'))
+      .mockResolvedValueOnce(new Response(null, { status: 400 }));
+
+    await expect(
+      checkModelProviderCompatibility({
+        endpoint: "https://provider.example/api/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_PROVIDER",
+      diagnostic: "provider_contextual_contract_rejected",
+      httpStatus: 400,
+    });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+  });
+
   test("rejects an incomplete local assessment schema without returning model text", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
+      .mockResolvedValueOnce(compatibleResponse('{"status":"ok"}'))
       .mockImplementation(async () =>
         compatibleResponse('{"status":"complete"}'),
       );
@@ -141,7 +179,7 @@ describe("model provider contextual compatibility check", () => {
       code: "MODEL_INVALID_RESPONSE",
       scope: "repository",
     });
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
   });
 
   test("rejects a valid domain response when the provider ignores the wire envelope", async () => {
@@ -166,6 +204,7 @@ describe("model provider contextual compatibility check", () => {
     });
     const fetchImpl = vi
       .fn<typeof fetch>()
+      .mockResolvedValueOnce(compatibleResponse('{"status":"ok"}'))
       .mockImplementation(async () => compatibleResponse(content));
 
     await expect(
@@ -181,6 +220,6 @@ describe("model provider contextual compatibility check", () => {
       scope: "repository",
       diagnostic: "review_schema",
     });
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
   });
 });

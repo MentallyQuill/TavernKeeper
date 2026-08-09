@@ -1,8 +1,14 @@
 import { createHash } from "node:crypto";
 
+import { z } from "zod";
+
 import { EvidenceContextGroupSchema } from "../context/evidence-context.js";
 import { reviewEvidenceGroups } from "./contextual-review.js";
-import type { ProviderConnectivityRequest } from "./openai-compatible-client.js";
+import {
+  ModelRequestError,
+  requestTextCompletion,
+  type ProviderConnectivityRequest,
+} from "./openai-compatible-client.js";
 
 const candidateIds = ["c", "d", "e", "f"].map((value) => value.repeat(64));
 const source = [
@@ -42,6 +48,43 @@ const fixtureCandidates = [
 export async function checkModelProviderCompatibility(
   request: ProviderConnectivityRequest,
 ) {
+  const baseline = await requestTextCompletion({
+    ...request,
+    maxOutputTokens: 128,
+    systemContent: "Return only the requested strict JSON object.",
+    userContent: 'Return {"status":"ok"}.',
+    responseJsonSchema: {
+      name: "tavernkeeper_provider_baseline",
+      schema: {
+        type: "object",
+        properties: { status: { type: "string", enum: ["ok"] } },
+        required: ["status"],
+        additionalProperties: false,
+      },
+    },
+  });
+  let baselineContent: unknown;
+  try {
+    baselineContent = JSON.parse(baseline.content);
+  } catch {
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Provider baseline returned malformed JSON.",
+      "response_json",
+    );
+  }
+  if (
+    !z.strictObject({ status: z.literal("ok") }).safeParse(baselineContent)
+      .success
+  )
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "system",
+      "Provider baseline violated its strict JSON contract.",
+      "response_json",
+    );
+
   const group = EvidenceContextGroupSchema.parse({
     group_id: "b".repeat(64),
     repository: "tavernkeeper/provider-compatibility",
@@ -97,30 +140,48 @@ export async function checkModelProviderCompatibility(
         "A benign compatibility fixture for TavernKeeper contextual review.",
     },
   });
-  const runCompatibilityReview = (maxImmediateAttempts: number) =>
-    reviewEvidenceGroups({
-      groups: [group],
-      provider: {
-        endpoint: request.endpoint,
-        apiKey: request.apiKey,
-        model: request.model,
-        ...(request.fetchImpl === undefined
-          ? {}
-          : { fetchImpl: request.fetchImpl }),
-        ...(request.resolveAddresses === undefined
-          ? {}
-          : { resolveAddresses: request.resolveAddresses }),
-      },
-      policy: {
-        version: "2",
-        promptVersion: "contextual-review-v5",
-        schemaVersion: "contextual-assessment-v1",
-        maxImmediateAttempts,
-        maxOutputTokens: 8_192,
-        maxResponseBytes: 1_000_000,
-        timeoutMs: request.timeoutMs ?? 60_000,
-      },
-    });
+  const runCompatibilityReview = async (maxImmediateAttempts: number) => {
+    try {
+      return await reviewEvidenceGroups({
+        groups: [group],
+        provider: {
+          endpoint: request.endpoint,
+          apiKey: request.apiKey,
+          model: request.model,
+          ...(request.fetchImpl === undefined
+            ? {}
+            : { fetchImpl: request.fetchImpl }),
+          ...(request.resolveAddresses === undefined
+            ? {}
+            : { resolveAddresses: request.resolveAddresses }),
+        },
+        policy: {
+          version: "2",
+          promptVersion: "contextual-review-v5",
+          schemaVersion: "contextual-assessment-v1",
+          maxImmediateAttempts,
+          maxOutputTokens: 8_192,
+          maxResponseBytes: 1_000_000,
+          timeoutMs: request.timeoutMs ?? 60_000,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof ModelRequestError &&
+        error.code === "MODEL_PROVIDER" &&
+        error.scope === "system"
+      )
+        throw new ModelRequestError(
+          error.code,
+          error.scope,
+          "Provider rejected the contextual review contract.",
+          "provider_contextual_contract_rejected",
+          error.httpStatus,
+          error.usage,
+        );
+      throw error;
+    }
+  };
   const reviews = [
     await runCompatibilityReview(2),
     await runCompatibilityReview(1),
