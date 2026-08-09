@@ -124,8 +124,8 @@ For every exact target, TavernKeeper:
    ecosystem prompt and strict response schema;
 6. rejects missing context, invented citations, invalid structured output,
    provider errors, and hard scanner or evidence-integrity failures;
-7. publishes bounded unresolved JavaScript coverage as `incomplete`, with a
-   material risk floor and no invented immediate-danger basis;
+7. publishes bounded unresolved JavaScript coverage as `incomplete`, without
+   changing advisory color or concern counts;
 8. constructs the complete Technical Report V5;
 9. transports the sanitized candidate through authenticated encryption; and
 10. atomically publishes immutable JSON/HTML, history, and the preferred index

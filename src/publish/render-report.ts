@@ -96,6 +96,9 @@ function assessmentAdvisoryItem(
     file_role: candidate.file_role,
     origin: candidate.origin,
     rule_id: candidate.rule_id,
+    category: candidate.category,
+    title: candidate.title,
+    explanation: candidate.explanation,
   };
 }
 
@@ -103,17 +106,34 @@ function observationAdvisoryItem(
   report: ScanReportV5,
   observation: ScanReportV5["observations"][number],
 ) {
-  const candidate = report.candidates.find(({ candidate_id }) =>
-    observation.related_candidate_ids.includes(candidate_id),
+  const candidatesById = new Map(
+    report.candidates.map((candidate) => [candidate.candidate_id, candidate]),
   );
-  return candidate === undefined
-    ? observation
-    : {
-        ...observation,
-        file_role: candidate.file_role,
-        origin: candidate.origin,
-        rule_id: candidate.rule_id,
-      };
+  const candidates = observation.related_candidate_ids
+    .map((candidateId) => candidatesById.get(candidateId))
+    .filter((candidate) => candidate !== undefined);
+  const completeRelatedSet =
+    candidates.length === observation.related_candidate_ids.length;
+  const shippedRelatedSet =
+    completeRelatedSet &&
+    candidates.every(({ file_role }) =>
+      ["production", "generated", "vendored"].includes(file_role),
+    );
+  return {
+    ...observation,
+    file_role: shippedRelatedSet
+      ? ("production" as const)
+      : ("unknown" as const),
+    origin: candidates.some(({ origin }) => origin === "osv-scanner")
+      ? "osv-scanner"
+      : candidates.map(({ origin }) => origin).join(" "),
+    rule_id: candidates.map(({ rule_id }) => rule_id).join(" "),
+    category: candidates.map(({ category }) => category).join(" "),
+    title: [observation.title, ...candidates.map(({ title }) => title)].join(
+      " ",
+    ),
+    explanation: candidates.map(({ explanation }) => explanation).join(" "),
+  };
 }
 
 function contextualFinding(

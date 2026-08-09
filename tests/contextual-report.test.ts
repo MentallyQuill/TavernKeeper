@@ -242,6 +242,91 @@ function legacyImportedTemplateReport() {
   });
 }
 
+function legacyMultiCandidateObservationReport(
+  reverseCandidates = false,
+  unconfirmedSecond = false,
+  shippedSecond = false,
+) {
+  const report = structuredClone(legacyImportedTemplateReport());
+  const firstCandidate = report.candidates[0]!;
+  const firstAssessment = report.assessments[0]!;
+  Object.assign(firstAssessment, {
+    disposition: "expected_behavior",
+    impact: "none",
+    exploitability: "unlikely",
+    confidence: "high",
+    recommended_risk: "low",
+    technical_explanation: "The individual scanner match is expected.",
+    layman_explanation: "This individual match is expected.",
+    developer_action: "none",
+  });
+  const secondCandidate = {
+    ...firstCandidate,
+    candidate_id: "e".repeat(64),
+    evidence_id: "e".repeat(64),
+    file_role:
+      unconfirmedSecond || shippedSecond
+        ? ("production" as const)
+        : ("fixture" as const),
+    path: "test/template-fixture.ts",
+    title: "Fixture template execution",
+    explanation: unconfirmedSecond
+      ? "The runtime path remains unconfirmed in the available evidence."
+      : firstCandidate.explanation,
+  };
+  const secondAssessment = {
+    ...firstAssessment,
+    candidate_id: secondCandidate.candidate_id,
+    evidence_ids: [secondCandidate.evidence_id],
+    locations: [{ path: secondCandidate.path, line_start: 2, line_end: 2 }],
+  };
+  report.candidates = reverseCandidates
+    ? [secondCandidate, firstCandidate]
+    : [firstCandidate, secondCandidate];
+  report.assessments = [firstAssessment, secondAssessment];
+  report.observations = [
+    {
+      observation_id: "d".repeat(64),
+      related_candidate_ids: [
+        firstCandidate.candidate_id,
+        secondCandidate.candidate_id,
+      ],
+      evidence_ids: [firstCandidate.evidence_id, secondCandidate.evidence_id],
+      disposition: "material_vulnerability",
+      impact: "high",
+      exploitability: "plausible",
+      confidence: "high",
+      recommended_risk: "material",
+      title: "Combined template execution path",
+      technical_explanation:
+        "The two scanner matches combine into a potentially exploitable execution path.",
+      layman_explanation:
+        "Together these matches could allow template code execution.",
+      developer_action: "Review both cited locations before release.",
+      locations: [
+        { path: firstCandidate.path, line_start: 2, line_end: 2 },
+        { path: secondCandidate.path, line_start: 2, line_end: 2 },
+      ],
+    },
+  ];
+  report.review_coverage = { required: 2, completed: 2 };
+  report.coverage.evidence_validation = {
+    status: "completed",
+    validated_candidates: 2,
+  };
+  report.counts = buildContextualCountsV5(
+    report.candidates.length,
+    report.assessments,
+    report.observations,
+  );
+  const identity = reportIdentity(report);
+  return ScanReportV5Schema.parse({
+    ...report,
+    report_id: identity,
+    report_digest: identity,
+  });
+}
+
 test("parses immutable policy-2 reports while requiring exposure in policy 3", () => {
   const current = validReport();
   const legacy = structuredClone(current) as unknown as {
@@ -731,6 +816,68 @@ describe("contextual V5 reports", () => {
     expect(html).toContain("No material or immediate-danger concern");
     expect(html).toContain("Imported preset template executes JavaScript");
     expect(html).toContain("<strong>Minor caution</strong>");
+  });
+
+  test("uses non-OSV candidate uncertainty when rendering a legacy dependency finding", () => {
+    const report = structuredClone(legacyImportedTemplateReport());
+    Object.assign(report.candidates[0]!, {
+      origin: "javascript-analysis",
+      rule_id: "javascript.xray.unsafe-stmt",
+      category: "dependency-vulnerability",
+      explanation:
+        "The affected package version remains unknown in the supplied evidence.",
+    });
+    const identity = reportIdentity(report);
+    const html = renderReportV5Html({
+      ...report,
+      report_id: identity,
+      report_digest: identity,
+    });
+
+    expect(html).toContain(
+      'class="assessment-summary surface risk-mark risk-low"',
+    );
+    expect(html).toContain("<strong>Minor caution</strong>");
+  });
+
+  test("requires every related legacy observation candidate to be shipped regardless of order", () => {
+    for (const report of [
+      legacyMultiCandidateObservationReport(),
+      legacyMultiCandidateObservationReport(true),
+    ]) {
+      const html = renderReportV5Html(report);
+      expect(html).toContain(
+        'class="assessment-summary surface risk-mark risk-low"',
+      );
+      expect(html).toContain("Combined template execution path");
+      expect(html).not.toContain("1 material concern identified.");
+    }
+  });
+
+  test("uses unconfirmed evidence from every related legacy observation candidate", () => {
+    for (const report of [
+      legacyMultiCandidateObservationReport(false, true),
+      legacyMultiCandidateObservationReport(true, true),
+    ]) {
+      const html = renderReportV5Html(report);
+      expect(html).toContain(
+        'class="assessment-summary surface risk-mark risk-low"',
+      );
+      expect(html).not.toContain("1 material concern identified.");
+    }
+  });
+
+  test("keeps a fully shipped supported legacy observation yellow regardless of order", () => {
+    for (const report of [
+      legacyMultiCandidateObservationReport(false, false, true),
+      legacyMultiCandidateObservationReport(true, false, true),
+    ]) {
+      const html = renderReportV5Html(report);
+      expect(html).toContain(
+        'class="assessment-summary surface risk-mark risk-material"',
+      );
+      expect(html).toContain("1 material concern identified.");
+    }
   });
 
   test.each(["material", "high"] as const)(

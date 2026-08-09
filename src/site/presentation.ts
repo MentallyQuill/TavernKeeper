@@ -31,8 +31,12 @@ type AdvisoryItem = Pick<
     | "unknown";
   origin?: string;
   rule_id?: string;
+  category?: string;
+  title?: string;
+  explanation?: string;
   technical_explanation?: string;
   layman_explanation?: string;
+  developer_action?: string;
 };
 
 export interface ProjectAdvisory {
@@ -240,6 +244,9 @@ function immediateDangerBasis(item: AdvisoryItem): DangerBasis | null {
   return null;
 }
 
+const legacyUnconfirmedEvidencePattern =
+  /(?:\bnot (?:demonstrated|established|confirmed|shown)\b|\b(?:unconfirmed|unknown)\b|\binsufficient evidence\b|\bno (?:concrete |demonstrated )?(?:data flow|runtime (?:path|reachability)|attacker-controlled (?:path|trigger|input))\b|\b(?:data flow|runtime (?:path|reachability)|affected (?:package )?version) (?:is |was |remains )?(?:absent|missing|unclear|unknown|unconfirmed)\b)/iu;
+
 function legacyMaterialRisk(item: AdvisoryItem) {
   const correlationOnly =
     item.origin === "javascript-analysis" &&
@@ -248,10 +255,21 @@ function legacyMaterialRisk(item: AdvisoryItem) {
       "javascript.download-to-execution",
       "javascript.correlated.download-to-execution",
     ].includes(item.rule_id ?? "");
+  const contextualEvidence = [
+    item.technical_explanation,
+    item.layman_explanation,
+    item.developer_action,
+    item.title,
+    item.explanation,
+    item.category,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
   return (
     item.risk_exposure === undefined &&
     item.origin !== "osv-scanner" &&
     !correlationOnly &&
+    !legacyUnconfirmedEvidencePattern.test(contextualEvidence) &&
     item.disposition === "material_vulnerability" &&
     item.confidence === "high" &&
     ["medium", "high", "critical"].includes(item.impact) &&

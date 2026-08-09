@@ -160,17 +160,19 @@ recommendations (`low`, `material`, or `high`), but it does not assign the
 project's public color. Tavernary's separate strict synthesis applies
 deterministic minimum-risk floors and produces the final project assessment:
 
-- `low` / teal includes expected behavior, no concerns, minor sensitivities,
-  and small hardening weaknesses;
-- `material` / orange represents a meaningful potential vulnerability;
-- `high` / red represents high-confidence credible malicious or compromised
-  behavior, or a high-confidence critical vulnerability that is readily
-  exploitable in the shipped project.
+- `low` / teal includes expected behavior, minor security hygiene, coverage
+  limitations, and risk whose exposure or reachability is not demonstrated;
+- `material` / yellow represents a high-confidence, demonstrated,
+  non-malicious vulnerability in shipped or executable behavior with
+  medium-or-greater impact and plausible-or-greater exploitability; and
+- `high` / red represents high-confidence demonstrated malicious or
+  compromised behavior, or a demonstrated critical vulnerability that is
+  readily exploitable in the shipped project.
 
 For dependency advisories, the contextual policy must establish the shipped
 version, runtime reachability, attacker control, and concrete user harm.
 Scanner or advisory severity alone cannot produce red. Uncertainty remains
-material/orange.
+teal with its findings and limitations visible.
 
 Freshness is separate. An older assessment retains its risk color and gains a
 clock marker while an updated scan is pending. Gray means no completed final

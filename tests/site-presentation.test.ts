@@ -157,6 +157,53 @@ describe("public site presentation", () => {
     });
   });
 
+  test("downgrades a legacy unsafe-statement finding with unconfirmed reachability", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "javascript-analysis",
+          rule_id: "javascript.xray.unsafe-stmt",
+          technical_explanation:
+            "Runtime reachability is not demonstrated by the available evidence.",
+          layman_explanation:
+            "The risky-looking statement may not run in the shipped path.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "low",
+      counts: { high: 0, material: 0, low: 1 },
+    });
+  });
+
+  test("downgrades non-OSV legacy dependency evidence with an unknown affected version", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "javascript-analysis",
+          rule_id: "javascript.xray.unsafe-stmt",
+          category: "dependency-vulnerability",
+          explanation:
+            "The affected package version remains unknown in the supplied evidence.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "low",
+      counts: { high: 0, material: 0, low: 1 },
+    });
+  });
+
   test("names a mixed immediate-danger basis without hiding either cause", () => {
     const advisory = deriveProjectAdvisory([
       {
