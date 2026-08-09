@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { buildScanPackage } from "../src/contracts/scan-package.js";
 import {
+  DETERMINISTIC_REVIEW_FALLBACK_LIMITATION,
   PUBLIC_JAVASCRIPT_UNRESOLVED_MAX,
   publicJavascriptAnalysisCoverage,
   ScanReportV5Schema,
@@ -385,6 +386,63 @@ describe("contextual V5 reports", () => {
         expect.stringMatching(/non-text artifacts.*raw contents/iu),
       ]),
     );
+  });
+
+  test("publishes exact conservative fallback coverage and its fixed warning", () => {
+    const fallbackReview: CompletedContextualReview = {
+      ...review,
+      coverage: {
+        required: 1,
+        completed: 1,
+        model_completed: 0,
+        deterministic_fallback: 1,
+      },
+      assessments: review.assessments.map((assessment) => ({
+        ...assessment,
+        disposition: "material_vulnerability" as const,
+        impact: "medium" as const,
+        exploitability: "plausible" as const,
+        confidence: "low" as const,
+        recommended_risk: "material" as const,
+        technical_explanation:
+          "Contextual model assessment was unavailable within the bounded review window.",
+        layman_explanation:
+          "Automated contextual review could not resolve this scanner warning.",
+        developer_action: "Manually inspect the cited evidence before release.",
+      })),
+      completion_ids: [],
+    };
+
+    const report = buildContextualReport(
+      { scanPackage, review: fallbackReview, evidenceGroups: [group] },
+      {
+        targetSha,
+        completedAt: "2026-08-02T12:00:00.000Z",
+        reportVersion: 1,
+        supersedesReportId: null,
+        limitations: [
+          "This advisory review cannot prove the absence of unknown behavior.",
+        ],
+      },
+    );
+
+    expect(report.review_coverage).toEqual({
+      required: 1,
+      completed: 1,
+      model_completed: 0,
+      deterministic_fallback: 1,
+    });
+    expect(report.limitations).toContain(
+      DETERMINISTIC_REVIEW_FALLBACK_LIMITATION,
+    );
+    expect(renderReportV5Html(report)).toContain(
+      "0 model &middot; 1 conservative fallback",
+    );
+    const withoutWarning = structuredClone(report);
+    withoutWarning.limitations = withoutWarning.limitations.filter(
+      (limitation) => limitation !== DETERMINISTIC_REVIEW_FALLBACK_LIMITATION,
+    );
+    expect(ScanReportV5Schema.safeParse(withoutWarning).success).toBe(false);
   });
 
   test("sorts, deduplicates, and caps public unresolved JavaScript stages", () => {

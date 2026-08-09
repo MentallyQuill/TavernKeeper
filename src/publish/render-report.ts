@@ -308,6 +308,7 @@ export function renderReportV5Html(input: unknown) {
       <dl class="metadata coverage-summary">
       <dt>Inventory</dt><dd>${escapeHtml(report.coverage.inventory.files)} files &middot; ${escapeHtml(report.coverage.inventory.bytes)} bytes</dd>
       <dt>Contextual coverage</dt><dd>${escapeHtml(report.review_coverage.completed)} of ${escapeHtml(report.review_coverage.required)} candidates assessed</dd>
+      ${report.review_coverage.model_completed === undefined ? "" : `<dt>Assessment method</dt><dd>${escapeHtml(report.review_coverage.model_completed)} model &middot; ${escapeHtml(report.review_coverage.deterministic_fallback ?? 0)} conservative fallback</dd>`}
       </dl>
       ${javascriptCoverage(report)}
       <h3>Tools</h3>

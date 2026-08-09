@@ -79,6 +79,8 @@ export const INCOMPLETE_JAVASCRIPT_LIMITATION =
   "JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.";
 export const METADATA_ONLY_EVIDENCE_LIMITATION =
   "One or more scanner candidates refer to non-text artifacts. Their size, digest, and scanner metadata were verified, but raw contents were not provided to the contextual model.";
+export const DETERMINISTIC_REVIEW_FALLBACK_LIMITATION =
+  "One or more scanner candidates did not receive contextual model assessment within the bounded review window. They remain conservatively classified as material concerns and require manual inspection.";
 
 function unresolvedIdentity(value: z.infer<typeof JavascriptUnresolvedSchema>) {
   return `${value.path}\u0000${value.stage}\u0000${value.reason}\u0000${value.recovered}`;
@@ -316,6 +318,8 @@ export const ScanReportV5Schema = z
     review_coverage: z.strictObject({
       required: CountSchema,
       completed: CountSchema,
+      model_completed: CountSchema.optional(),
+      deterministic_fallback: CountSchema.optional(),
     }),
     candidates: z.array(CandidateV5Schema),
     assessments: z.array(PublishedContextualAssessmentSchema),
@@ -344,6 +348,48 @@ export const ScanReportV5Schema = z
         path: ["limitations"],
         message:
           "Incomplete JavaScript coverage requires its fixed public limitation.",
+      });
+    const modelCompleted = report.review_coverage.model_completed;
+    const deterministicFallback = report.review_coverage.deterministic_fallback;
+    if (
+      (modelCompleted === undefined) !==
+        (deterministicFallback === undefined) ||
+      (modelCompleted !== undefined &&
+        deterministicFallback !== undefined &&
+        modelCompleted + deterministicFallback !==
+          report.review_coverage.completed)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["review_coverage"],
+        message: "Review method coverage must account for every candidate.",
+      });
+    if (
+      (deterministicFallback !== undefined && deterministicFallback > 0) !==
+      report.limitations.includes(DETERMINISTIC_REVIEW_FALLBACK_LIMITATION)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["limitations"],
+        message:
+          "Deterministic review fallback requires its fixed public limitation.",
+      });
+    if (
+      (deterministicFallback ?? 0) >
+      report.assessments.filter(
+        (assessment) =>
+          assessment.disposition === "material_vulnerability" &&
+          assessment.impact === "medium" &&
+          assessment.exploitability === "plausible" &&
+          assessment.confidence === "low" &&
+          assessment.recommended_risk === "material",
+      ).length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["review_coverage", "deterministic_fallback"],
+        message:
+          "Deterministic fallback coverage must remain conservatively material.",
       });
     const metadataOnlyEvidence =
       report.coverage.evidence_validation.status ===

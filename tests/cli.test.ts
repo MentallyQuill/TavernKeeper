@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import { describe, expect, test } from "vitest";
+import { describe, expect, test, vi } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
 import { buildQueueSynchronization } from "../src/cli/sync-queue.js";
@@ -682,15 +682,25 @@ describe("JSON-only orchestration CLIs", () => {
   });
 
   test("reviews a prepared target without a checkout path", async () => {
+    const provider = {
+      endpoint: "https://api.openai.com/v1/chat/completions",
+      apiKey: "github-actions-oidc",
+      model: "gpt-5.6-luna",
+      requestCompletion: vi.fn(),
+    };
+    const createProvider = vi.fn(() => provider);
     const result = await reviewConfiguredTarget(
       {
         TAVERNKEEPER_SESSION_ROOT: "C:/runner/tavernkeeper-session-42",
-        TAVERNKEEPER_API_ENDPOINT:
-          "https://provider.example/v1/chat/completions",
-        TAVERNKEEPER_API_KEY: "test-key",
-        TAVERNKEEPER_MODEL: "configured/model",
+        OPENAI_WIF_AUDIENCE: "openai://tavernkeeper",
+        OPENAI_IDENTITY_PROVIDER_ID: "wip_test",
+        OPENAI_SERVICE_ACCOUNT_ID: "svc_test",
+        ACTIONS_ID_TOKEN_REQUEST_URL:
+          "https://pipelines.actions.githubusercontent.com/token",
+        ACTIONS_ID_TOKEN_REQUEST_TOKEN: "github-runtime-token",
       },
       {
+        createProvider,
         loadPolicy: async () => ({
           version: "2",
           promptVersion: "contextual-review-v5",
@@ -698,10 +708,13 @@ describe("JSON-only orchestration CLIs", () => {
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
           maxResponseBytes: 5_000_000,
-          timeoutMs: 300_000,
+          timeoutMs: 120_000,
+          maxModelCandidates: 128,
+          maxReviewMs: 1_200_000,
         }),
         review: async (spec) => {
           expect(spec.sessionRoot).toBe("C:/runner/tavernkeeper-session-42");
+          expect(spec.provider).toBe(provider);
           expect(spec.expandContext).toBeTypeOf("function");
           return { status: "reviewed", review: {} as never };
         },
@@ -709,6 +722,7 @@ describe("JSON-only orchestration CLIs", () => {
     );
 
     expect(result).toEqual({ status: "reviewed" });
+    expect(createProvider).toHaveBeenCalledOnce();
     const source = await readFile(
       new URL("../src/cli/review-target.ts", import.meta.url),
       "utf8",

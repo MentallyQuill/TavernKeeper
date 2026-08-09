@@ -232,13 +232,13 @@ export function renderLandingHtml(index: ReportIndexV5) {
     <section class="content-section" id="how-it-works" aria-labelledby="how-title">
       <div class="section-heading">
         <h2 id="how-title">How it works</h2>
-        <p class="secondary">The process is exact-commit, complete-or-nothing, and designed to keep untrusted project code from becoming executable.</p>
+        <p class="secondary">The process is exact-commit, bounded, and designed to keep untrusted project code from becoming executable.</p>
       </div>
       <ol class="steps">
         <li><strong>Pin the target.</strong> Tavernary supplies an eligible GitHub repository identity and exact commit.</li>
         <li><strong>Inspect without executing.</strong> TavernKeeper inventories the checkout and runs required deterministic scanners against it as data.</li>
-        <li><strong>Review candidate context.</strong> Bounded candidate context is sent to the named configured model provider under a strict response schema.</li>
-        <li><strong>Validate and publish.</strong> Complete evidence and review coverage is validated before a sanitized immutable report is published.</li>
+        <li><strong>Review candidate context.</strong> Prioritized bounded evidence is sent directly to OpenAI GPT-5.6 Luna using a short-lived GitHub Actions identity and strict JSON Schema.</li>
+        <li><strong>Validate and publish.</strong> Every candidate receives either validated model assessment or a disclosed conservative material fallback before a sanitized immutable report is published.</li>
       </ol>
     </section>
 
@@ -255,11 +255,11 @@ export function renderLandingHtml(index: ReportIndexV5) {
     <section class="content-section boundaries" aria-label="Scanning boundaries">
       <div>
         <h3>What TavernKeeper does</h3>
-        <p>TavernKeeper treats the checkout as untrusted data. It inventories the exact commit, runs required deterministic scanners, and sends bounded candidate context to the named configured model provider for structured contextual assessment.</p>
+        <p>TavernKeeper treats the checkout as untrusted data. It inventories the exact commit, runs required deterministic scanners, and sends prioritized bounded evidence directly to OpenAI GPT-5.6 Luna for strict structured assessment.</p>
       </div>
       <div>
         <h3>What TavernKeeper never does</h3>
-        <p>It does not run dependencies, scripts, builds, tests, Actions, or target executables. Incomplete scanner, review, evidence, or publication coverage produces no report.</p>
+        <p>It does not run dependencies, scripts, builds, tests, Actions, or target executables. Missing model coverage is never called clean; it becomes a disclosed material fallback. Invalid scanner evidence or publication coverage produces no report.</p>
       </div>
     </section>
 

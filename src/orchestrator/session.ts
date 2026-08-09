@@ -781,6 +781,7 @@ export async function reviewPreparedSession({
       groups: evidence.groups,
       provider,
       policy,
+      allowDeterministicFallback: true,
       ...(checkpoint === undefined ? {} : { progress: checkpoint }),
       onProgress: async (nextProgress) =>
         writeAtomic(

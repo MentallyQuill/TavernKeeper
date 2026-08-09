@@ -96,6 +96,139 @@ function reviewContent(review: unknown) {
 }
 
 describe("contextual evidence review", () => {
+  test("prioritizes JavaScript trojan evidence and conservatively covers the bounded remainder", async () => {
+    const workflow = group(".github/workflows/ci.yml", [ids[0]!]);
+    workflow.candidates[0]!.origin = "zizmor";
+    workflow.candidates[0]!.category = "workflow-permissions";
+    const javascript = group("dist/payload.min.js", [ids[1]!]);
+    javascript.candidates[0]!.origin = "javascript-analysis";
+    javascript.candidates[0]!.category = "obfuscation";
+    javascript.candidates[0]!.scanner_severity = "high";
+    javascript.candidates[0]!.scanner_confidence = "high";
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: "completion-javascript-first",
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [assessment(ids[1]!, javascript.path, 2)],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      }),
+    );
+
+    const result = await reviewEvidenceGroups({
+      groups: [workflow, javascript],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: { ...policy, maxModelCandidates: 1, maxReviewMs: 60_000 },
+      allowDeterministicFallback: true,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledOnce();
+    expect(requestCompletion.mock.calls[0]![0].userContent).toContain(
+      javascript.group_id,
+    );
+    expect(result.coverage).toEqual({
+      required: 2,
+      completed: 2,
+      model_completed: 1,
+      deterministic_fallback: 1,
+    });
+    expect(result.assessments.map(({ candidate_id }) => candidate_id)).toEqual([
+      ids[0],
+      ids[1],
+    ]);
+    expect(result.assessments[0]).toMatchObject({
+      disposition: "material_vulnerability",
+      impact: "medium",
+      exploitability: "plausible",
+      confidence: "low",
+      recommended_risk: "material",
+    });
+  });
+
+  test("falls back once after a provider failure and never sends metadata-only content", async () => {
+    const first = group("dist/first.js", [ids[0]!]);
+    first.candidates[0]!.origin = "javascript-analysis";
+    first.candidates[0]!.category = "dynamic-execution";
+    const second = group("dist/second.js", [ids[1]!]);
+    second.candidates[0]!.origin = "javascript-analysis";
+    second.candidates[0]!.category = "obfuscation";
+    const font = group("assets/font.ttf", [ids[2]!]);
+    font.source_kind = "metadata-only";
+    font.context.source =
+      "Metadata-only evidence; raw bytes were not supplied.";
+    const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {
+      throw new ModelRequestError(
+        "MODEL_PROVIDER",
+        "system",
+        "Provider unavailable.",
+      );
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups: [font, first, second],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxImmediateAttempts: 1,
+        maxModelCandidates: 128,
+        maxReviewMs: 60_000,
+      },
+      allowDeterministicFallback: true,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledOnce();
+    expect(requestCompletion.mock.calls[0]![0].userContent).not.toContain(
+      font.group_id,
+    );
+    expect(result.coverage).toEqual({
+      required: 3,
+      completed: 3,
+      model_completed: 0,
+      deterministic_fallback: 3,
+    });
+    expect(result.completion_ids).toEqual([]);
+    expect(result.assessments).toHaveLength(3);
+    expect(
+      result.assessments.every((item) => item.recommended_risk === "material"),
+    ).toBe(true);
+    expect(
+      CompletedContextualReviewSchema.safeParse({
+        ...result,
+        assessments: result.assessments.map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                disposition: "expected_behavior",
+                impact: "none",
+                exploitability: "unlikely",
+                confidence: "high",
+                recommended_risk: "low",
+              }
+            : item,
+        ),
+      }).success,
+    ).toBe(false);
+  });
+
   test("reviews every file group and covers every candidate exactly once", async () => {
     const groups = [
       group("src/a.ts", ids.slice(0, 2)),
@@ -141,7 +274,12 @@ describe("contextual evidence review", () => {
     });
 
     expect(requestCompletion).toHaveBeenCalledTimes(2);
-    expect(result.coverage).toEqual({ required: 3, completed: 3 });
+    expect(result.coverage).toEqual({
+      required: 3,
+      completed: 3,
+      model_completed: 3,
+      deterministic_fallback: 0,
+    });
     expect(result.assessments.map((item) => item.candidate_id)).toEqual(ids);
     expect(result.assessments.map((item) => item.locations)).toEqual([
       [{ path: "src/a.ts", line_start: 2, line_end: 2 }],
@@ -325,7 +463,12 @@ describe("contextual evidence review", () => {
     });
 
     expect(requestCompletion).toHaveBeenCalledTimes(2);
-    expect(result.coverage).toEqual({ required: 1, completed: 1 });
+    expect(result.coverage).toEqual({
+      required: 1,
+      completed: 1,
+      model_completed: 1,
+      deterministic_fallback: 0,
+    });
   });
 
   test("classifies a schema-invalid assessment without exposing model text", async () => {
