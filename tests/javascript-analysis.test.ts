@@ -158,6 +158,32 @@ describe("integrated JavaScript derivative analysis", () => {
     expect(run.javascriptAnalysis?.stages.derived_opengrep).toBe(1);
   });
 
+  test("does not treat decoded display text or repeated normalization as a coverage gap", async () => {
+    const normalizationInputs: string[] = [];
+    const source = String.raw`const label="\uD83D\uDC41\uFE0F Manually run continuity state extraction";`;
+    const run = await analyzeFixture(source, undefined, {
+      normalize: async (input) => {
+        normalizationInputs.push(input);
+        return {
+          derivatives: [
+            {
+              id: "normalized",
+              content: `${input}\n`,
+              transform: "webcrack-normalized",
+            },
+          ],
+        };
+      },
+    });
+
+    expect(normalizationInputs).toEqual([source]);
+    expect(run.javascriptAnalysis).toMatchObject({
+      status: "complete",
+      unresolved: [],
+      representations: { raw: 1, decoded: 1, normalized: 1 },
+    });
+  });
+
   test("fails closed when inventory content changes after hashing", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-digest-"));
     await writeFile(join(root, "app.js"), "const changed=true");
