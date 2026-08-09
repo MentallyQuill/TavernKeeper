@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { readFile } from "node:fs/promises";
 
 import type { InventoryClassification } from "../src/inventory/classify.js";
 import { runApplicableScanners } from "../src/scanners/run-scanners.js";
@@ -127,6 +128,17 @@ const baseSpec = {
 };
 
 describe("scanner coordinator", () => {
+  test("production smoke covers OpenGrep path closure and JavaScript derivatives", async () => {
+    const source = await readFile(
+      new URL("../scripts/smoke-scanners.ts", import.meta.url),
+      "utf8",
+    );
+    expect(source).toContain("runJavascriptAnalysis");
+    expect(source).toContain("pathCoverage");
+    expect(source).toContain("bundle_modules");
+    expect(source).toContain("decoded");
+  });
+
   test("runs JavaScript analysis after repository OpenGrep and records conditional absence", async () => {
     const adapters = {
       staticScan: vi.fn(() => []),

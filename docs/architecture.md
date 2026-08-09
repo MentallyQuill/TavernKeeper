@@ -31,11 +31,13 @@ Tavernary target manifest (repository ID + exact SHA)
   -> input-free wake, repository-ID hint, or scheduled reconciliation
   -> TavernKeeper synchronizes the durable ticket queue
   -> TavernKeeper selects at most 5 due targets in ticket order
-  -> at most 2 disposable scan jobs run concurrently
+  -> at most 2 credential-free prepare jobs run concurrently
   -> exact checkout and portable-path inventory
-  -> history, TavernKeeper rules, and all applicable pinned scanners
+  -> history, pinned scanners, and policy-4 JavaScript derivative analysis
   -> normalized candidates and deterministic Scan Package digest
   -> bounded file context for every candidate
+  -> target checkout deleted; prepared-${repository_id} GitHub artifact
+  -> fresh review job validates the artifact without target source
   -> configured model returns schema-validated contextual assessments
   -> exact-HEAD, evidence, coverage, schema, and sanitizer validation
   -> authenticated encrypted candidate handoff
@@ -63,6 +65,14 @@ Malcontent image is digest-pinned, network-disabled, read-only, capability-free,
 and receives only a read-only target mount. Raw target data remains in
 disposable runner storage.
 
+Policy 4 treats every inventoried JavaScript and TypeScript path as a scan
+candidate, including committed dependencies, generated bundles, and minified
+distributions. Repository OpenGrep must account for the exact raw path set.
+Literal-only decoders and trusted, non-executing webcrack normalization produce
+bounded derivatives; signatures, JS-X-Ray, and OpenGrep rescan every novel
+representation. Only original repository paths and fixed provenance survive.
+The complete pipeline and limits are in [`SCANNING.md`](SCANNING.md).
+
 The normalized evidence set becomes Scan Package V1. Package and policy digests
 bind each report to its evidence and rule versions. Deterministic scanners are
 candidate locators, not verdict engines. Every candidate is grouped with
@@ -70,16 +80,24 @@ bounded source context, related data-flow evidence, project-purpose metadata,
 and a versioned SillyTavern ecosystem context. Repository text is explicitly
 untrusted and cannot override the reviewer prompt or response contract.
 
-Provider secrets exist only in the contextual-review step. Preparation and
-finalization cannot read them. The model is selected through runtime
-configuration; model choice cannot change the accepted assessment vocabulary,
-coverage rules, evidence binding, or V5 report schema. Raw provider responses
-and hidden reasoning are never persisted or published.
+Provider secrets exist only in the fresh contextual-review job. The
+credential-free prepare job cannot read model, artifact-encryption, or
+Publisher credentials. Its target checkout is deleted before the bounded
+`prepared-${repository_id}` GitHub artifact is uploaded. The review job has no
+target checkout path and restores only validated redacted evidence. The model
+is selected through runtime configuration; model choice cannot change the
+accepted assessment vocabulary, coverage rules, evidence binding, or V5 report
+schema. Raw provider responses and hidden reasoning are never persisted or
+published.
 
 ## Atomic reporting
 
-Every applicable scanner must complete, and every candidate must receive
-exactly one valid contextual assessment. TavernKeeper attaches each
+Every required scanner must produce a validated result, and every finding
+candidate must receive exactly one valid contextual assessment. Bounded
+policy-4 JavaScript limitations publish as explicit `incomplete` coverage and
+raise an otherwise-low advisory to material; they never invent immediate
+danger. Hard scanner or integrity failures still produce no report.
+TavernKeeper attaches each
 assessment's location from validated deterministic candidate evidence instead
 of asking the model to reproduce it. Model-authored observation locations must
 still match supplied source context. Evidence validation proves cited paths,
@@ -122,8 +140,9 @@ stop. Manifest V2 remains a temporary compatibility input and uses the earlier
 Top-30/new/old order when seeding.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
-scanner and contextual-policy versions, and report version. Matrix jobs encrypt
-sanitized outcomes before a one-day artifact handoff. A serialized publisher
+scanner and contextual-policy versions, and report version. Prepare matrix jobs
+first use one-day secret-free GitHub artifacts; review matrix jobs then encrypt
+sanitized outcomes before a second one-day artifact handoff. A serialized publisher
 decrypts in ephemeral storage, prevalidates the whole successful subset, writes
 immutable V5 JSON and script-free HTML plus repository history, updates the
 preferred V5 index, and rolls back partial writes on failure.

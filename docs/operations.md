@@ -19,9 +19,10 @@ Configure these secrets in `tavernkeeper-scanner`:
 - `TAVERNKEEPER_MODEL`: provider model identifier. Model selection is runtime
   configuration and is not hardcoded into scan policy.
 
-Provider credentials are exposed only to the contextual-review step and the
-protected provider compatibility check. They are absent from acquisition,
-scanners, finalization, artifacts, publication, and telemetry. A model change
+Provider credentials are exposed only to the fresh contextual-review job and
+the protected provider compatibility check. They are absent from acquisition,
+scanners, the secret-free prepared artifact, finalization, publication, and
+telemetry. A model change
 must pass `provider-check.yml` against the complete contextual response schema
 before production scanning resumes. TavernKeeper requests strict
 OpenAI-compatible `json_schema` structured output using that response schema,
@@ -31,8 +32,12 @@ with HTTP 400 or 422 receives one compatibility retry in `json_object` mode;
 authentication, quota, and other provider failures never trigger that retry.
 Do not add automatic model fallback.
 
-The shared workflow encrypts the sanitized candidate and transition envelope
-with AES-256-GCM before upload, removes the plaintext handoff, retains the
+The credential-free prepare job first uploads one bounded
+`prepared-${repository_id}` artifact for one day. It contains only validated
+scanner metadata, coverage, provenance digests, and redacted evidence windows;
+it receives no repository secret. A fresh review job validates that artifact
+without a target checkout. The shared workflow then encrypts the sanitized
+candidate and transition envelope with AES-256-GCM before upload, removes the plaintext handoff, retains the
 ciphertext artifact for one day, and decrypts it only in the serialized
 publisher job. Generate the artifact key with a cryptographically secure random
 source. Never reuse an App key.
@@ -67,7 +72,8 @@ recovery work does not wait for the safety-net schedule. Reconciliation first
 synchronizes Tavernary's live V2 or V3 target manifest and TavernKeeper's V5
 preferred current reports into committed schema-3 queue state. It then selects
 at most five due tickets and calls `scan-and-publish.yml`, which runs at most two
-scan jobs concurrently. Standard, retry, targeted, and policy-campaign scans
+credential-free prepare jobs and two fresh review jobs concurrently. Standard,
+retry, targeted, and policy-campaign scans
 converge on the same automatic V5 publication path. Committed queue work starts
 the next input-free batch independently of Pages deployment.
 
@@ -110,16 +116,21 @@ concurrency limit.
 For every exact target, TavernKeeper:
 
 1. acquires and inventories the repository without executing target code;
-2. completes all required applicable deterministic scanners;
+2. runs all required deterministic scanners, including policy-4 raw, decoded,
+   normalized, and bundle-module JavaScript analysis;
 3. validates and groups every candidate with bounded evidence context;
-4. asks the configured model to assess every candidate under the versioned
+4. revalidates exact HEAD, deletes the target checkout, and validates a bounded
+   secret-free GitHub artifact on a fresh runner;
+5. asks the configured model to assess every finding candidate under the versioned
    ecosystem prompt and strict response schema;
-5. rejects missing context, incomplete coverage, invented citations, invalid
-   structured output, provider errors, and exhausted token or byte limits;
-6. revalidates exact HEAD and constructs the complete Technical Report V5;
-7. transports the sanitized candidate through authenticated encryption; and
-8. atomically publishes immutable JSON/HTML, history, and the preferred index
-   for every complete successful outcome in the batch.
+6. rejects missing context, invented citations, invalid structured output,
+   provider errors, and hard scanner or evidence-integrity failures;
+7. publishes bounded unresolved JavaScript coverage as `incomplete`, with a
+   material risk floor and no invented immediate-danger basis;
+8. constructs the complete Technical Report V5;
+9. transports the sanitized candidate through authenticated encryption; and
+10. atomically publishes immutable JSON/HTML, history, and the preferred index
+    for every complete successful outcome in the batch.
 
 The model may classify candidate evidence as expected behavior, a minor
 weakness, a material vulnerability, or credible malicious behavior. It does
@@ -170,19 +181,20 @@ repairs drift. External project owners receive no operational-failure
 notification.
 
 Provider exhaustion, context insufficiency, invalid model output, and missing
-review coverage are failures, never permission to skip candidates, reduce the
-policy, switch models automatically, infer a low result, or publish an
-incomplete repository report.
+review coverage are failures, never permission to skip finding candidates,
+reduce the policy, switch models automatically, or infer a low result. A
+bounded deterministic JavaScript parser or transform limitation is different:
+it is published as explicit incomplete coverage and cannot appear low. See
+[`SCANNING.md`](SCANNING.md).
 
-The contextual-review workflow step has a 16-minute outer timeout in addition
-to the model client's request policy. This guard covers a provider that returns
-headers but never closes its response stream. A timed-out step still reaches
-the always-run sanitized transition, encrypted publication, queue rotation,
-and continuation path; it cannot retain the global scan concurrency slot
-indefinitely. Source-level response-stream diagnostics and repair remain in the
-coordinated Scan Failure Resilience scope.
+Each contextual-review attempt has a 20-minute process timeout in addition to
+the model client's request policy, and the retrying review job is bounded at 62
+minutes. These guards cover a provider that returns headers but never closes
+its response stream. A timed-out step still reaches the always-run sanitized
+transition, encrypted publication, queue rotation, and continuation path; it
+cannot retain the global scan concurrency slot indefinitely.
 
-OpenGrep policy 3 treats only warning-level code 2 `Other syntax error` and
+OpenGrep policy 4 treats only warning-level code 2 `Other syntax error` and
 warning-level code 3 `PartialParsing` tuple diagnostics as bounded parser
 limitations. Valid findings remain eligible for contextual review when those
 warnings occur. Unknown warnings, error-level diagnostics, malformed output,
@@ -231,9 +243,11 @@ prompt, or assessment-policy defect, staff change global versioned policy
 through ordinary code review and TavernKeeper automatically rescans affected
 targets.
 
-No production candidate waits for review, dismissal, or recoloring. Scanner,
-context, model, schema, coverage, evidence, sanitizer, or tool incompleteness
-publishes nothing and enters the classified retry path.
+No production candidate waits for review, dismissal, or recoloring. Context,
+model, schema, evidence, sanitizer, tool-integrity, or hard scanner failure
+publishes nothing and enters the classified retry path. Bounded policy-4
+JavaScript coverage limitations publish visibly as incomplete and raise an
+otherwise-low advisory to material.
 Complete high/immediate-danger reports are published through the same path as
 all other results. They remain visible in TavernKeeper and Tavernary and never
 automatically hide, quarantine, downrank, or delist a project.
@@ -257,10 +271,12 @@ credentials do not appear in reports or site output; the public report-index
 digest equals the deployed source digest; contextual review covers every
 candidate; and Tavernary imports only matching repository IDs and SHAs.
 
-`npm run test:e2e` uses controlled doubles for Git history, external scanner
-adapters, model transport, and exact-HEAD verification. Real provider behavior,
-digest-pinned tools, and exact validated checkouts remain release and
-live-canary gates.
+`npm run test:e2e` uses controlled doubles for Git history, external binary
+adapters, model transport, and exact-HEAD verification while exercising the
+real non-executing JavaScript derivative engine over inert hostile canaries.
+`npm run scanners:smoke` proves raw OpenGrep path closure plus real decoded and
+bundle-module rescans with the pinned binary on Linux x64. Real provider
+behavior and exact validated checkouts remain release and live-canary gates.
 
 For the durable-queue rollout: publish and verify Tavernary's complete ranked
 manifest; migrate to schema V3; confirm the automatic legacy stop became a

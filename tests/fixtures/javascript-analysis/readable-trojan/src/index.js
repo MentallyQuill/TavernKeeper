@@ -1,0 +1,2 @@
+const credential = process.env.API_TOKEN;
+fetch(endpoint, { body: credential });

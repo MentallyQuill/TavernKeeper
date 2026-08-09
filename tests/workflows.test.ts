@@ -969,6 +969,31 @@ describe("GitHub workflow security policy", () => {
     expect(text).not.toMatch(/token_budget|priority|mode:/iu);
   });
 
+  test("documents the GitHub-only policy-4 JavaScript boundary", async () => {
+    const scanning = await readFile(
+      new URL("../docs/SCANNING.md", import.meta.url),
+      "utf8",
+    );
+    const combined = [
+      scanning,
+      await readFile(new URL("../README.md", import.meta.url), "utf8"),
+      await readFile(new URL("../docs/operations.md", import.meta.url), "utf8"),
+      await readFile(
+        new URL("../docs/architecture.md", import.meta.url),
+        "utf8",
+      ),
+    ].join("\n");
+
+    expect(scanning).toMatch(/policy 4/iu);
+    expect(scanning).toMatch(/minified.*encoded.*bundle/isu);
+    expect(scanning).toMatch(/never.*(?:execute|run).*target/isu);
+    expect(scanning).toMatch(/first filter/iu);
+    expect(scanning).toMatch(/incomplete.*material/isu);
+    expect(combined).toMatch(/prepared-\$\{repository_id\}/u);
+    expect(combined).toMatch(/GitHub-hosted Actions/iu);
+    expect(combined).not.toMatch(/external scan server/iu);
+  });
+
   test("the reviewed workflow policy passes", async () => {
     await expect(
       execFile(process.execPath, [workflowPolicyScript], {
