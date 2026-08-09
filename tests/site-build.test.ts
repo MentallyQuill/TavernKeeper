@@ -110,7 +110,8 @@ describe("Pages site allowlist", () => {
     expect(landing).toContain(
       "No material or immediate-danger concern was identified",
     );
-    expect(landing).toContain("bounded candidate context");
+    expect(landing).toContain("OpenAI GPT-5.6 Luna");
+    expect(landing).toContain("conservative material fallback");
     expect(landing).toContain(
       "does not run dependencies, scripts, builds, tests, Actions, or target executables",
     );

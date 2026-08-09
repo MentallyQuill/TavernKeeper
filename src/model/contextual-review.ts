@@ -40,6 +40,8 @@ export interface ContextualReviewPolicy {
   maxOutputTokens: number;
   maxResponseBytes: number;
   timeoutMs: number;
+  maxModelCandidates?: number;
+  maxReviewMs?: number;
 }
 
 type RequestCompletion = (
@@ -73,7 +75,12 @@ export const CompletedContextualReviewSchema = z
     model: z.string().trim().min(1).max(200),
     provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
     endpoint_origin: z.url(),
-    coverage: z.strictObject({ required: CountSchema, completed: CountSchema }),
+    coverage: z.strictObject({
+      required: CountSchema,
+      completed: CountSchema,
+      model_completed: CountSchema.optional(),
+      deterministic_fallback: CountSchema.optional(),
+    }),
     assessments: z.array(ContextualAssessmentSchema),
     observations: z.array(ContextualObservationSchema),
     usage: UsageSchema,
@@ -108,6 +115,20 @@ export const CompletedContextualReviewSchema = z
         code: "custom",
         path: ["coverage"],
         message: "Persisted contextual review coverage must be complete.",
+      });
+    if (
+      (review.coverage.model_completed === undefined) !==
+        (review.coverage.deterministic_fallback === undefined) ||
+      (review.coverage.model_completed !== undefined &&
+        review.coverage.deterministic_fallback !== undefined &&
+        review.coverage.model_completed +
+          review.coverage.deterministic_fallback !==
+          review.coverage.completed)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["coverage"],
+        message: "Review method coverage must account for every assessment.",
       });
     if (new Set(review.completion_ids).size !== review.completion_ids.length)
       context.addIssue({
@@ -208,6 +229,7 @@ export interface ReviewEvidenceGroupsSpec {
   progress?: ContextualReviewProgress | undefined;
   onProgress?:
     ((progress: ContextualReviewProgress) => Promise<void>) | undefined;
+  allowDeterministicFallback?: boolean | undefined;
   expandContext?: (
     group: EvidenceContextGroup,
     request: Extract<
@@ -383,7 +405,12 @@ function validatePolicy(policy: ContextualReviewPolicy) {
     !Number.isInteger(policy.maxResponseBytes) ||
     policy.maxResponseBytes < 1 ||
     !Number.isInteger(policy.timeoutMs) ||
-    policy.timeoutMs < 1
+    policy.timeoutMs < 1 ||
+    (policy.maxModelCandidates !== undefined &&
+      (!Number.isInteger(policy.maxModelCandidates) ||
+        policy.maxModelCandidates < 1)) ||
+    (policy.maxReviewMs !== undefined &&
+      (!Number.isInteger(policy.maxReviewMs) || policy.maxReviewMs < 1))
   )
     throw new ModelRequestError(
       "MODEL_CONFIGURATION",
@@ -404,10 +431,112 @@ function progressError(message: string): never {
   throw new ContextualReviewProgressError(message);
 }
 
+const highValueCategories = new Set([
+  "code-execution",
+  "credential-exposure",
+  "credential-theft",
+  "data-exfiltration",
+  "dynamic-execution",
+  "install-hook",
+  "obfuscation",
+  "persistence",
+  "supply-chain-risk",
+]);
+
+function evidencePriority(group: EvidenceContextGroup) {
+  const originWeight: Record<string, number | undefined> = {
+    "javascript-analysis": 1_000,
+    malcontent: 800,
+    tavernkeeper: 700,
+    opengrep: 600,
+    gitleaks: 500,
+    "osv-scanner": 300,
+    zizmor: 100,
+  };
+  const severityWeight = {
+    critical: 300,
+    high: 200,
+    medium: 100,
+    low: 20,
+    info: 0,
+  } as const;
+  const confidenceWeight = { high: 60, medium: 30, low: 0 } as const;
+  const candidateScore = Math.max(
+    ...group.candidates.map(
+      (candidate) =>
+        (originWeight[candidate.origin] ?? 0) +
+        severityWeight[candidate.scanner_severity] +
+        confidenceWeight[candidate.scanner_confidence] +
+        (highValueCategories.has(candidate.category) ? 250 : 0),
+    ),
+  );
+  const javascriptPath = /(?:\.min)?\.(?:c|m)?js(?:x)?$/iu.test(group.path)
+    ? 200
+    : 0;
+  return candidateScore + javascriptPath;
+}
+
+function boundedReviewPlan(
+  groups: readonly EvidenceContextGroup[],
+  policy: ContextualReviewPolicy,
+) {
+  const candidateLimit = policy.maxModelCandidates ?? 128;
+  const ranked = groups
+    .filter((group) => group.source_kind === "text")
+    .map((group) => ({ group, priority: evidencePriority(group) }))
+    .sort(
+      (left, right) =>
+        right.priority - left.priority ||
+        left.group.group_id.localeCompare(right.group.group_id),
+    );
+  const modelGroups: EvidenceContextGroup[] = [];
+  const fallbackGroups = groups.filter(
+    (group) => group.source_kind === "metadata-only",
+  );
+  let selectedCandidates = 0;
+  for (const { group } of ranked) {
+    if (selectedCandidates + group.candidates.length <= candidateLimit) {
+      modelGroups.push(group);
+      selectedCandidates += group.candidates.length;
+    } else fallbackGroups.push(group);
+  }
+  return { modelGroups, fallbackGroups };
+}
+
+function conservativeFallback(
+  group: EvidenceContextGroup,
+  repositoryPaths: readonly string[],
+) {
+  return validateCompletedGroupReview(
+    group,
+    {
+      status: "complete",
+      assessments: group.candidates.map((candidate) => ({
+        candidate_id: candidate.candidate_id,
+        evidence_ids: [candidate.evidence_id],
+        disposition: "material_vulnerability" as const,
+        impact: "medium" as const,
+        exploitability: "plausible" as const,
+        confidence: "low" as const,
+        recommended_risk: "material" as const,
+        technical_explanation:
+          "Contextual model assessment was unavailable within the bounded review window. The scanner evidence remains unresolved and is conservatively retained.",
+        layman_explanation:
+          "Automated contextual review could not resolve this scanner warning, so it remains a material concern.",
+        developer_action:
+          "Manually inspect the cited evidence and confirm the intended behavior before release.",
+      })),
+      observations: [],
+    },
+    repositoryPaths,
+  );
+}
+
 function validatedProgress(
   input: ContextualReviewProgress | undefined,
   spec: ReviewEvidenceGroupsSpec,
   endpoint: URL,
+  modelGroups: readonly EvidenceContextGroup[],
 ): ValidatedContextualReviewProgress | undefined {
   if (input === undefined) return undefined;
   const parsed = ContextualReviewProgressSchema.safeParse(input);
@@ -420,7 +549,7 @@ function validatedProgress(
     progress.endpoint_origin !== endpoint.origin
   )
     progressError("Contextual review progress provider identity changed.");
-  const completedGroups = spec.groups.slice(
+  const completedGroups = modelGroups.slice(
     0,
     progress.completed_group_ids.length,
   );
@@ -528,6 +657,7 @@ async function reviewGroup(
   spec: ReviewEvidenceGroupsSpec,
   usage: ModelUsage,
   completionIds: string[],
+  deadline: number,
 ) {
   let group = initialGroup;
   let repair: ContextualReviewRepair | undefined;
@@ -538,6 +668,13 @@ async function reviewGroup(
     attempt += 1
   ) {
     try {
+      const remainingMs = deadline - Date.now();
+      if (remainingMs < 1)
+        throw new ModelRequestError(
+          "MODEL_PROVIDER",
+          "system",
+          "Contextual model review reached its bounded time limit.",
+        );
       const finalAttempt = attempt === spec.policy.maxImmediateAttempts;
       const prompt = buildContextualReviewPrompt(group, repair, finalAttempt);
       const request = spec.provider.requestCompletion ?? requestTextCompletion;
@@ -547,7 +684,7 @@ async function reviewGroup(
         model: spec.provider.model,
         maxOutputTokens: spec.policy.maxOutputTokens,
         maxResponseBytes: spec.policy.maxResponseBytes,
-        timeoutMs: spec.policy.timeoutMs,
+        timeoutMs: Math.min(spec.policy.timeoutMs, remainingMs),
         systemContent: prompt.systemContent,
         userContent: prompt.userContent,
         responseJsonSchema: {
@@ -699,7 +836,16 @@ export async function reviewEvidenceGroups(
   const observations: ContextualObservation[] = [];
   const usage = zeroUsage();
   const completionIds: string[] = [];
-  const validated = validatedProgress(spec.progress, spec, endpoint);
+  const fallbackEnabled = spec.allowDeterministicFallback === true;
+  const plan = fallbackEnabled
+    ? boundedReviewPlan(spec.groups, spec.policy)
+    : { modelGroups: [...spec.groups], fallbackGroups: [] };
+  const validated = validatedProgress(
+    spec.progress,
+    spec,
+    endpoint,
+    plan.modelGroups,
+  );
   const progress = validated?.progress;
   if (validated !== undefined) {
     assessments.push(...validated.assessments);
@@ -708,10 +854,32 @@ export async function reviewEvidenceGroups(
     completionIds.push(...validated.progress.completion_ids);
   }
   const completedGroupIds = [...(progress?.completed_group_ids ?? [])];
-  for (const group of spec.groups.slice(completedGroupIds.length)) {
-    const reviewed = await reviewGroup(group, spec, usage, completionIds);
+  let modelCompleted = assessments.length;
+  let deterministicFallback = 0;
+  const fallbackGroups = [...plan.fallbackGroups];
+  const deadline = Date.now() + (spec.policy.maxReviewMs ?? 1_200_000);
+  for (
+    let index = completedGroupIds.length;
+    index < plan.modelGroups.length;
+    index += 1
+  ) {
+    const group = plan.modelGroups[index]!;
+    let reviewed;
+    try {
+      reviewed = await reviewGroup(group, spec, usage, completionIds, deadline);
+    } catch (error) {
+      if (
+        !fallbackEnabled ||
+        !(error instanceof ModelRequestError) ||
+        error.code === "MODEL_CONFIGURATION"
+      )
+        throw error;
+      fallbackGroups.push(...plan.modelGroups.slice(index));
+      break;
+    }
     assessments.push(...reviewed.assessments);
     observations.push(...reviewed.observations);
+    modelCompleted += reviewed.assessments.length;
     completedGroupIds.push(group.group_id);
     if (spec.onProgress !== undefined)
       await spec.onProgress(
@@ -743,6 +911,24 @@ export async function reviewEvidenceGroups(
         }),
       );
   }
+  const repositoryPaths = spec.groups.map(({ path }) => path);
+  for (const group of fallbackGroups) {
+    const reviewed = conservativeFallback(group, repositoryPaths);
+    assessments.push(...reviewed.assessments);
+    deterministicFallback += reviewed.assessments.length;
+  }
+  const candidateOrder = new Map(
+    spec.groups
+      .flatMap((group) =>
+        group.candidates.map((candidate) => candidate.candidate_id),
+      )
+      .map((candidateId, index) => [candidateId, index]),
+  );
+  assessments.sort(
+    (left, right) =>
+      candidateOrder.get(left.candidate_id)! -
+      candidateOrder.get(right.candidate_id)!,
+  );
   if (
     new Set(observations.map((item) => item.observation_id)).size !==
     observations.length
@@ -759,7 +945,12 @@ export async function reviewEvidenceGroups(
     model: spec.provider.model,
     provider: endpoint.hostname,
     endpoint_origin: endpoint.origin,
-    coverage: { required: candidateIds.size, completed: assessments.length },
+    coverage: {
+      required: candidateIds.size,
+      completed: assessments.length,
+      model_completed: modelCompleted,
+      deterministic_fallback: deterministicFallback,
+    },
     assessments,
     observations,
     usage,

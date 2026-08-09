@@ -1,8 +1,14 @@
 import { createHash } from "node:crypto";
 
 import { EvidenceContextGroupSchema } from "../context/evidence-context.js";
-import { reviewEvidenceGroups } from "./contextual-review.js";
-import type { ProviderConnectivityRequest } from "./openai-compatible-client.js";
+import {
+  reviewEvidenceGroups,
+  type ContextualReviewProvider,
+} from "./contextual-review.js";
+
+interface ProviderCompatibilityRequest extends ContextualReviewProvider {
+  timeoutMs?: number;
+}
 
 const candidateIds = ["c", "d", "e", "f"].map((value) => value.repeat(64));
 const source = [
@@ -40,7 +46,7 @@ const fixtureCandidates = [
 ] as const;
 
 export async function checkModelProviderCompatibility(
-  request: ProviderConnectivityRequest,
+  request: ProviderCompatibilityRequest,
 ) {
   const group = EvidenceContextGroupSchema.parse({
     group_id: "b".repeat(64),
@@ -104,6 +110,9 @@ export async function checkModelProviderCompatibility(
         endpoint: request.endpoint,
         apiKey: request.apiKey,
         model: request.model,
+        ...(request.requestCompletion === undefined
+          ? {}
+          : { requestCompletion: request.requestCompletion }),
         ...(request.fetchImpl === undefined
           ? {}
           : { fetchImpl: request.fetchImpl }),
@@ -129,13 +138,19 @@ export async function checkModelProviderCompatibility(
     reviews.some(
       (review) =>
         review.coverage.required !== candidateIds.length ||
-        review.coverage.completed !== candidateIds.length,
+        review.coverage.completed !== candidateIds.length ||
+        (review.coverage.model_completed !== undefined &&
+          review.coverage.model_completed !== candidateIds.length) ||
+        (review.coverage.deterministic_fallback ?? 0) !== 0,
     )
   )
     throw new Error("Provider compatibility review coverage is incomplete.");
   return {
     status: "passed" as const,
-    authMode: "bearer" as const,
+    authMode:
+      request.requestCompletion === undefined
+        ? ("bearer" as const)
+        : ("workload-identity" as const),
     contextualReview: "passed" as const,
   };
 }
