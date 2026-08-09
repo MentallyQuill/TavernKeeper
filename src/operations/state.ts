@@ -18,6 +18,31 @@ const SafeNonnegativeIntegerSchema = z
   .max(Number.MAX_SAFE_INTEGER);
 const FingerprintSchema = z.string().regex(/^[a-f0-9]{64}$/u);
 
+export const CatalogChangeSchema = z.enum(["new", "updated"]);
+
+export const CatalogObservationSchema = z
+  .strictObject({
+    initialized_at: z.iso.datetime(),
+    repositories: z.array(
+      z.strictObject({
+        repository_id: SafePositiveIntegerSchema,
+        target_sha: FullShaSchema,
+      }),
+    ),
+  })
+  .refine(
+    ({ repositories }) =>
+      repositories.every(
+        (entry, index) =>
+          index === 0 ||
+          repositories[index - 1]!.repository_id < entry.repository_id,
+      ),
+    {
+      path: ["repositories"],
+      message: "Observed repositories must be unique and sorted.",
+    },
+  );
+
 export const ScanFailureHistoryEntrySchema = z
   .strictObject({
     failed_at: z.iso.datetime(),
@@ -85,6 +110,7 @@ export const ScanQueueEntrySchema = z
     last_failure: FailureDescriptorSchema.nullable(),
     last_failed_at: z.iso.datetime().nullable(),
     rescan_not_before: z.iso.datetime().optional(),
+    catalog_change: CatalogChangeSchema.optional(),
     chronic: z.boolean(),
     failure_history: z
       .array(ScanFailureHistoryEntrySchema)
@@ -246,6 +272,7 @@ export const OperationsStateSchema = z
     coverage_started_at: z.iso.datetime().nullable(),
     emergency_stop: EmergencyStopSchema.nullable(),
     automatic_holds: z.array(AutomaticRecoveryHoldSchema),
+    catalog_observation: CatalogObservationSchema.nullable().optional(),
     scan_queue: ScanQueueSchema,
     active_scans: z.array(ActiveScanSchema),
     policy_campaigns: z.array(PolicyCampaignSchema),
@@ -288,6 +315,8 @@ export const OperationsStateSchema = z
 export type ScanQueueEntry = z.infer<typeof ScanQueueEntrySchema>;
 export type ScanQueue = z.infer<typeof ScanQueueSchema>;
 export type AutomaticRecoveryHold = z.infer<typeof AutomaticRecoveryHoldSchema>;
+export type CatalogChange = z.infer<typeof CatalogChangeSchema>;
+export type CatalogObservation = z.infer<typeof CatalogObservationSchema>;
 export type OperationsState = z.infer<typeof OperationsStateSchema>;
 
 export function initialOperationsState(now: string): OperationsState {
@@ -297,6 +326,7 @@ export function initialOperationsState(now: string): OperationsState {
     coverage_started_at: null,
     emergency_stop: null,
     automatic_holds: [],
+    catalog_observation: null,
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: [],
     policy_campaigns: [],
