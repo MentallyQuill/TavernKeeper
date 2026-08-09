@@ -2,6 +2,7 @@ import type {
   EvidenceContextGroup,
   FileRole,
 } from "../context/evidence-context.js";
+import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   buildContextualCountsV5,
   INCOMPLETE_JAVASCRIPT_LIMITATION,
@@ -151,7 +152,7 @@ export function buildContextualReport(
       "Report target SHA must match the Scan Package target SHA.",
     );
   if (
-    scanPackage.scanner_policy_version !== "4" ||
+    scanPackage.scanner_policy_version !== CURRENT_SCANNER_POLICY_VERSION ||
     scanPackage.rule_catalog_version !== RULE_CATALOG_VERSION
   )
     throw new Error("Contextual report policy versions are unsupported.");

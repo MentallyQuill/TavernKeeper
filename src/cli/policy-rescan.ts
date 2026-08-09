@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { writeFile } from "node:fs/promises";
 
-import { loadScannerPolicy } from "../config/policy.js";
+import {
+  CURRENT_SCANNER_POLICY_PATH,
+  loadScannerPolicy,
+} from "../config/policy.js";
 import {
   parseTargetManifest,
   requireTargetManifestV2,
@@ -21,7 +24,7 @@ import { TARGET_MANIFEST_URL } from "./reconcile.js";
 
 async function main() {
   const [policy, manifest, state] = await Promise.all([
-    loadScannerPolicy("config/scanner-policy.v4.json"),
+    loadScannerPolicy(CURRENT_SCANNER_POLICY_PATH),
     fetchFixedJson(TARGET_MANIFEST_URL).then((value) =>
       requireTargetManifestV2(parseTargetManifest(value)),
     ),

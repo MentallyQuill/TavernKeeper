@@ -9,6 +9,7 @@ import { parseTargetManifest } from "../contracts/targets.js";
 import { parseOperationsState } from "../operations/state.js";
 import { planBatch } from "../queue/backlog.js";
 import { ScanRequestSchema } from "./staff-request.js";
+import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 
 export const TARGET_MANIFEST_URL =
   "https://tavernary.org/security/tavernkeeper-targets.json";
@@ -20,14 +21,14 @@ export function buildReconcileMatrix({
   index: indexInput,
   state: stateInput,
   now,
-  scannerPolicyVersion,
+  scannerPolicyVersion = CURRENT_SCANNER_POLICY_VERSION,
   forceProviderProbe = false,
 }: {
   manifest: unknown;
   index: unknown;
   state: unknown;
   now: string;
-  scannerPolicyVersion: string;
+  scannerPolicyVersion?: string;
   forceProviderProbe?: boolean;
 }) {
   const manifest = parseTargetManifest(manifestInput);
@@ -108,7 +109,6 @@ async function main() {
     index: indexInput,
     state: stateInput,
     now: new Date().toISOString(),
-    scannerPolicyVersion: "3",
     forceProviderProbe:
       process.env.TAVERNKEEPER_FORCE_PROVIDER_PROBE === "true",
   });

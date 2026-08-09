@@ -32,6 +32,33 @@ const failure = {
 };
 
 describe("durable scan ticket operations", () => {
+  test("uses the current policy for campaign cooldown bypass by default", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    state = {
+      ...state,
+      policy_campaigns: [
+        {
+          id: "policy-4-canary",
+          scanner_policy_version: "4",
+          repository_ids: [42],
+          created_at: at,
+          status: "active",
+        },
+      ],
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.map((entry) => ({
+          ...entry,
+          rescan_not_before: "2026-08-06T00:00:00.000Z",
+        })),
+      },
+    };
+
+    expect(
+      dueQueueEntries(state, at).map(({ repository_id }) => repository_id),
+    ).toEqual([42]);
+  });
+
   test("appends targets after every ticket already assigned", () => {
     let state = initialOperationsState(at);
     state = appendQueuedTarget(state, target(42));

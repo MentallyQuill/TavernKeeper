@@ -1,4 +1,5 @@
 import { TargetSchema, type Target } from "../contracts/targets.js";
+import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   FailureDescriptorSchema,
   failureFingerprint,
@@ -51,7 +52,7 @@ function parseTargetIdentity(target: Target) {
 export function effectiveQueueEntryNotBefore(
   entry: ScanQueueEntry,
   state: OperationsState,
-  scannerPolicyVersion = "3",
+  scannerPolicyVersion: string = CURRENT_SCANNER_POLICY_VERSION,
 ) {
   const activePolicyTarget = state.policy_campaigns.some(
     (campaign) =>
@@ -123,7 +124,7 @@ export function dueQueueEntries(
   stateInput: OperationsState,
   now: string,
   limit = 5,
-  scannerPolicyVersion = "3",
+  scannerPolicyVersion: string = CURRENT_SCANNER_POLICY_VERSION,
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const nowMs = Date.parse(now);

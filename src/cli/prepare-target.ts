@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import {
+  CURRENT_SCANNER_POLICY_PATH,
   loadScannerPins,
   loadScannerPolicy,
   ScannerPolicyV4Schema,
@@ -16,9 +17,7 @@ async function main() {
   );
   const repositoryRoot = process.cwd();
   const policy = ScannerPolicyV4Schema.parse(
-    await loadScannerPolicy(
-      join(repositoryRoot, "config", "scanner-policy.v4.json"),
-    ),
+    await loadScannerPolicy(join(repositoryRoot, CURRENT_SCANNER_POLICY_PATH)),
   );
   const pins = await loadScannerPins(
     join(repositoryRoot, "config", "scanners.v1.json"),
