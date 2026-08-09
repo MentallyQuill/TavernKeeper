@@ -151,7 +151,6 @@ jobs:
     permissions:
       contents: read
       actions: write
-      id-token: write
     steps:
       - name: Check out synchronized TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -170,9 +169,9 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
         env:
-          OPENAI_WIF_AUDIENCE: ${{ vars.OPENAI_WIF_AUDIENCE }}
-          OPENAI_IDENTITY_PROVIDER_ID: ${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}
-          OPENAI_SERVICE_ACCOUNT_ID: ${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         run: npm run --silent provider:check
       - name: Apply provider probe outcome

@@ -8,37 +8,29 @@ normative in [`development-rules.md`](development-rules.md).
 
 ## Runtime configuration
 
-Configure this secret in `tavernkeeper-scanner`:
+Configure these secrets in `tavernkeeper-scanner`:
 
 - `TAVERNKEEPER_ARTIFACT_KEY`: canonical base64 encoding of exactly 32 random
   bytes, used only for the authenticated matrix-to-publisher handoff.
+- `TAVERNKEEPER_API_ENDPOINT`: the configured provider's complete
+  OpenAI-compatible chat-completions endpoint.
+- `TAVERNKEEPER_API_KEY`: provider credential sent as an
+  `Authorization: Bearer` header.
+- `TAVERNKEEPER_MODEL`: provider model identifier. Model selection is runtime
+  configuration and is not hardcoded into scan policy.
 
-Configure these non-secret environment variables in `tavernkeeper-scanner`:
-
-- `OPENAI_WIF_AUDIENCE`: the audience configured on the OpenAI workload
-  identity provider.
-- `OPENAI_IDENTITY_PROVIDER_ID`: the OpenAI workload identity provider ID.
-- `OPENAI_SERVICE_ACCOUNT_ID`: the OpenAI service account bound to the exact
-  GitHub Actions identity.
-
-The OpenAI workload identity mapping must restrict trust to this repository,
-the reviewed workflow and ref, and the `tavernkeeper-scanner` environment.
-Only the fresh contextual-review job and protected provider compatibility jobs
-receive GitHub's `id-token: write` permission. They exchange the GitHub OIDC
-token for a short-lived OpenAI token; TavernKeeper stores no model API key.
-Acquisition, scanners, the secret-free prepared artifact, finalization,
-publication, and telemetry receive neither the OIDC permission nor token.
-
-The endpoint and model are fixed in trusted code to OpenAI and
-`gpt-5.6-luna`. TavernKeeper requests only strict `json_schema` structured
-output and never downgrades to JSON mode. It independently validates the local
-schema, evidence identity, and candidate coverage. Model review prioritizes
-first-party JavaScript, obfuscation, dynamic execution, credential, persistence,
-and malware evidence, reviews at most 128 candidates, and stops after a
-20-minute wall-clock budget. Metadata-only evidence, candidates beyond the
-budget, and the unresolved remainder after a provider failure receive a fixed
-low-confidence material assessment. Reports disclose exact model and fallback
-counts and never turn missing model coverage into a clean result.
+Provider credentials are exposed only to the fresh contextual-review job and
+the protected provider compatibility check. They are absent from acquisition,
+scanners, the secret-free prepared artifact, finalization, publication, and
+telemetry. A model change
+must pass `provider-check.yml` against the complete contextual response schema
+before production scanning resumes. TavernKeeper requests strict
+OpenAI-compatible `json_schema` structured output using that response schema,
+then independently validates the exact local schema, evidence identity, and
+complete candidate coverage. A provider that explicitly rejects JSON Schema
+with HTTP 400 or 422 receives one compatibility retry in `json_object` mode;
+authentication, quota, and other provider failures never trigger that retry.
+Do not add automatic model fallback.
 
 The credential-free prepare job first uploads one bounded
 `prepared-${repository_id}` artifact for one day. It contains only validated
@@ -233,9 +225,7 @@ reset gate.
 ## Staff workflows
 
 - `provider-check.yml` makes one benign, bounded review request and validates
-  GitHub-to-OpenAI workload identity, the fixed Luna model, and the strict
-  response contract. Unlike production scans, it does not accept deterministic
-  fallback as a passing provider check.
+  the configured endpoint, Bearer authentication, model, and response contract.
 - `targeted-scan.yml` accepts only a repository-ID hint from the immutable
   Tavernary wake-App actor, refetches the public V2 or V3 manifest, synchronizes
   the current queue, commits the targeted tail ticket, and dispatches ordinary
@@ -255,13 +245,11 @@ prompt, or assessment-policy defect, staff change global versioned policy
 through ordinary code review and TavernKeeper automatically rescans affected
 targets.
 
-No production candidate waits for review, dismissal, or recoloring. Invalid
-prepared context, evidence, sanitizer, tool integrity, or hard scanner failure
-publishes nothing and enters the classified retry path. A model outage, model
-schema failure, bounded model budget, or metadata-only candidate instead
-publishes visible conservative material assessments with exact fallback
-coverage. Bounded policy-4 JavaScript limitations also publish visibly and
-raise an otherwise-low advisory to material.
+No production candidate waits for review, dismissal, or recoloring. Context,
+model, schema, evidence, sanitizer, tool-integrity, or hard scanner failure
+publishes nothing and enters the classified retry path. Bounded policy-4
+JavaScript and metadata-only contextual coverage limitations publish visibly
+and raise an otherwise-low advisory to material.
 Complete high/immediate-danger reports are published through the same path as
 all other results. They remain visible in TavernKeeper and Tavernary and never
 automatically hide, quarantine, downrank, or delist a project.
@@ -279,8 +267,8 @@ npm run scanners:smoke
 actionlint .github/workflows/*.yml
 ```
 
-Run `provider-check.yml` after configuring or changing the OpenAI workload
-identity mapping or service account. Confirm hostile fixture markers, raw model output, hidden reasoning, and
+Run `provider-check.yml` after configuring or changing the endpoint, key, or
+model. Confirm hostile fixture markers, raw model output, hidden reasoning, and
 credentials do not appear in reports or site output; the public report-index
 digest equals the deployed source digest; contextual review covers every
 candidate; and Tavernary imports only matching repository IDs and SHAs.

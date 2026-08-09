@@ -1,11 +1,12 @@
 import { checkModelProviderCompatibility } from "../model/provider-check.js";
-import { createOpenAIWorkloadIdentityProvider } from "../model/openai-workload-identity.js";
-import { isDirectExecution, runJsonCli } from "./io.js";
+import { isDirectExecution, requiredEnvironment, runJsonCli } from "./io.js";
 
 export function checkConfiguredProvider(environment: NodeJS.ProcessEnv) {
-  return checkModelProviderCompatibility(
-    createOpenAIWorkloadIdentityProvider(environment),
-  );
+  return checkModelProviderCompatibility({
+    endpoint: requiredEnvironment(environment, "TAVERNKEEPER_API_ENDPOINT"),
+    apiKey: requiredEnvironment(environment, "TAVERNKEEPER_API_KEY"),
+    model: requiredEnvironment(environment, "TAVERNKEEPER_MODEL"),
+  });
 }
 
 if (isDirectExecution(import.meta.url))

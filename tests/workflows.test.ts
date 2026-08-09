@@ -21,6 +21,9 @@ const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const workflowPolicyScript = fileURLToPath(
   new URL("../scripts/check-workflow-policy.mjs", import.meta.url),
 );
+const reviewProgressCountScript = fileURLToPath(
+  new URL("../scripts/contextual-review-progress-count.mjs", import.meta.url),
+);
 const publisherAction =
   "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
 const uploadArtifactAction =
@@ -106,14 +109,7 @@ describe("GitHub workflow security policy", () => {
     expect(JSON.stringify(prepare)).not.toMatch(
       /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
     );
-    expect(review.permissions).toMatchObject({
-      contents: "read",
-      "id-token": "write",
-    });
-    expect(JSON.stringify(review)).toContain("OPENAI_WIF_AUDIENCE");
-    expect(JSON.stringify(review)).not.toMatch(
-      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u,
-    );
+    expect(JSON.stringify(review)).toContain("TAVERNKEEPER_API_KEY");
     expect(JSON.stringify(review)).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
 
     const prepareUpload = (prepare.steps as Workflow[]).find(
@@ -134,6 +130,46 @@ describe("GitHub workflow security policy", () => {
       uses: downloadArtifactAction,
       with: { name: "prepared-${{ matrix.request.repository_id }}" },
     });
+  });
+
+  test("the review progress counter never prints malformed checkpoint content", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-review-progress-"));
+    const checkpoint = join(root, "review-progress.json");
+    const canary = "PRIVATE_CHECKPOINT_NARRATIVE_CANARY";
+    try {
+      await writeFile(checkpoint, `{\"progress\":${canary}}\n`);
+      const result = await execFile(process.execPath, [
+        reviewProgressCountScript,
+        checkpoint,
+      ]).catch((error: unknown) => error as { stdout: string; stderr: string });
+      expect(result).toMatchObject({ stdout: "", stderr: "" });
+      expect(`${result.stdout}${result.stderr}`).not.toContain(canary);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("the review progress counter emits only a validated group count", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-review-progress-"));
+    const checkpoint = join(root, "review-progress.json");
+    try {
+      await expect(
+        execFile(process.execPath, [reviewProgressCountScript, checkpoint]),
+      ).resolves.toMatchObject({ stdout: "0", stderr: "" });
+      await writeFile(
+        checkpoint,
+        JSON.stringify({
+          progress: {
+            completed_group_ids: ["a".repeat(64), "b".repeat(64)],
+          },
+        }),
+      );
+      await expect(
+        execFile(process.execPath, [reviewProgressCountScript, checkpoint]),
+      ).resolves.toMatchObject({ stdout: "2", stderr: "" });
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 
   test("the active workflow set is explicit", async () => {
@@ -300,11 +336,7 @@ describe("GitHub workflow security policy", () => {
         new URL("../config/contextual-review.v2.json", import.meta.url),
         "utf8",
       ),
-    ) as {
-      timeoutMs: number;
-      maxModelCandidates: number;
-      maxReviewMs: number;
-    };
+    ) as { timeoutMs: number };
 
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
     expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
@@ -317,33 +349,49 @@ describe("GitHub workflow security policy", () => {
       "npm run --silent finalize-target -- candidate.json",
     );
     expect(steps[reviewIndex]?.run).toContain("npm run --silent review-target");
+    expect(steps[reviewIndex]?.run).toContain('code == "MODEL_PROVIDER"');
     expect(steps[reviewIndex]?.run).toContain('code:"MODEL_REVIEW_TIMEOUT"');
     expect(steps[reviewIndex]?.run).toContain(
-      "timeout --signal=TERM --kill-after=5s 22m",
+      "timeout --signal=TERM --kill-after=5s 20m",
     );
-    expect(steps[reviewIndex]?.run).not.toContain("for pass in");
-    expect(steps[reviewIndex]?.run).not.toContain("progress_count");
+    expect(steps[reviewIndex]?.run).toContain("for pass in 1 2 3; do");
+    expect(steps[reviewIndex]?.run).toContain("progress_count() {");
+    expect(steps[reviewIndex]?.run).toContain(
+      'progress_before="$(progress_count)"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'progress_after="$(progress_count)"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'if [[ "$progress_after" -gt "$progress_before" ]]; then',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'provider_no_progress_retries="0"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then',
+    );
+    expect(steps[reviewIndex]?.run).toContain('sleep "$((pass * 5))"');
     expect(steps[reviewIndex]?.run).toContain("rm -f phase-error.json");
-    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(25);
-    expect(reviewConfig).toMatchObject({
-      timeoutMs: 120_000,
-      maxModelCandidates: 128,
-      maxReviewMs: 1_200_000,
-    });
+    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(62);
+    expect(reviewConfig.timeoutMs).toBe(300_000);
     expect(steps[reviewIndex]?.env).toMatchObject({
-      OPENAI_WIF_AUDIENCE: "${{ vars.OPENAI_WIF_AUDIENCE }}",
-      OPENAI_IDENTITY_PROVIDER_ID: "${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}",
-      OPENAI_SERVICE_ACCOUNT_ID: "${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}",
+      TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
+      TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
+      TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
     });
     expect(`${source}\n${packageSource}`).not.toMatch(
       /deep-scan|tavernkeeper-model-cache/iu,
     );
-    const modelIdentitySteps = steps.filter((step) =>
-      /OPENAI_(?:WIF_AUDIENCE|IDENTITY_PROVIDER_ID|SERVICE_ACCOUNT_ID)/u.test(
+    const providerSecretSteps = steps.filter((step) =>
+      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u.test(
         JSON.stringify(step),
       ),
     );
-    expect(modelIdentitySteps.map((step) => step.name)).toEqual([
+    expect(providerSecretSteps.map((step) => step.name)).toEqual([
       "Contextually assess scanner evidence",
     ]);
     const dependencies = prepareSteps.find(
@@ -546,19 +594,15 @@ describe("GitHub workflow security policy", () => {
     const value = await workflow("provider-check.yml");
     expect(value.jobs.authorize.environment).toBe("tavernkeeper-staff");
     expect(value.jobs.check.environment).toBe("tavernkeeper-scanner");
-    expect(value.jobs.check.permissions).toMatchObject({
-      contents: "read",
-      "id-token": "write",
-    });
     const steps = value.jobs.check.steps as Workflow[];
     const check = steps.find(
       (step) => step.name === "Check one benign contextual review",
     );
     expect(check?.run).toBe("npm run --silent provider:check");
     expect(check?.env).toEqual({
-      OPENAI_WIF_AUDIENCE: "${{ vars.OPENAI_WIF_AUDIENCE }}",
-      OPENAI_IDENTITY_PROVIDER_ID: "${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}",
-      OPENAI_SERVICE_ACCOUNT_ID: "${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}",
+      TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
+      TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
+      TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
     });
     expect(JSON.stringify(value)).not.toMatch(
       /publish|candidate\.json|git push/iu,
@@ -600,20 +644,15 @@ describe("GitHub workflow security policy", () => {
     expect(probe.needs).toBe("plan");
     expect(probe.if).toContain("provider_probe_fingerprint != ''");
     expect(probe.environment).toBe("tavernkeeper-scanner");
-    expect(probe.permissions).toMatchObject({
-      contents: "read",
-      actions: "write",
-      "id-token": "write",
-    });
     expect(check).toMatchObject({
       id: "provider_check",
       "continue-on-error": true,
       "timeout-minutes": 5,
       run: "npm run --silent provider:check",
       env: {
-        OPENAI_WIF_AUDIENCE: "${{ vars.OPENAI_WIF_AUDIENCE }}",
-        OPENAI_IDENTITY_PROVIDER_ID: "${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}",
-        OPENAI_SERVICE_ACCOUNT_ID: "${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}",
+        TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
+        TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
+        TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
         TAVERNKEEPER_ERROR_OUTPUT: "phase-error.json",
       },
     });
@@ -743,24 +782,28 @@ describe("GitHub workflow security policy", () => {
 
   test("workflow policy rejects an unbounded contextual review step", async () => {
     await expectPolicyFailure(
-      (text) => text.replace("        timeout-minutes: 25\n", ""),
+      (text) => text.replace("        timeout-minutes: 62\n", ""),
       /contextual review must remain bounded between preparation and V5 finalization/u,
     );
   });
 
-  test("workflow policy pins the exact bounded Luna invocation", async () => {
-    await expectPolicyFailure(
-      (text) => text.replace("--kill-after=5s 22m", "--kill-after=5s 60m"),
-      /contextual review must remain bounded between preparation and V5 finalization/u,
-    );
-  });
-
-  test("workflow policy rejects removal of workload identity", async () => {
+  test("workflow policy pins the exact contextual resume loop", async () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "          OPENAI_WIF_AUDIENCE: ${{ vars.OPENAI_WIF_AUDIENCE }}\n",
-          "",
+          '(.code == "MODEL_PROVIDER" and .domain == "shared"',
+          '(.code == "MODEL_PROVIDER" and .domain != "security"',
+        ),
+      /contextual review must remain bounded between preparation and V5 finalization/u,
+    );
+  });
+
+  test("workflow policy rejects removal of the no-progress cutoff", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          'if [[ "$progress_after" -gt "$progress_before" ]]; then',
+          'if [[ "$progress_after" -ge "$progress_before" ]]; then',
         ),
       /contextual review must remain bounded between preparation and V5 finalization/u,
     );

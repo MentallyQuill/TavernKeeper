@@ -128,7 +128,6 @@ jobs:
     environment: tavernkeeper-scanner
     permissions:
       contents: read
-      id-token: write
     strategy:
       fail-fast: false
       max-parallel: 2
@@ -237,20 +236,55 @@ jobs:
         id: review
         if: ${{ steps.restore.outcome == 'success' && steps.restore.outputs.prepared == 'true' }}
         continue-on-error: true
-        timeout-minutes: 25
+        timeout-minutes: 62
         env:
-          OPENAI_WIF_AUDIENCE: ${{ vars.OPENAI_WIF_AUDIENCE }}
-          OPENAI_IDENTITY_PROVIDER_ID: ${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}
-          OPENAI_SERVICE_ACCOUNT_ID: ${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}
+          TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
+          TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
+          TAVERNKEEPER_MODEL: ${{ secrets.TAVERNKEEPER_MODEL }}
           TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         shell: bash
         run: |
-          node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
-          if timeout --signal=TERM --kill-after=5s 22m npm run --silent review-target; then
-            rm -f phase-error.json
-            exit 0
-          fi
+          progress_count() {
+            node scripts/contextual-review-progress-count.mjs "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
+          }
+          run_review() {
+            node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
+            if timeout --signal=TERM --kill-after=5s 20m npm run --silent review-target; then
+              rm -f phase-error.json
+              return 0
+            fi
+            return 1
+          }
+          retryable_review_failure() {
+            jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
+          }
+          provider_review_failure() {
+            jq -e '.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
+          }
+          provider_no_progress_retries="0"
+          for pass in 1 2 3; do
+            progress_before="$(progress_count)"
+            if run_review; then
+              exit 0
+            fi
+            progress_after="$(progress_count)"
+            if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then
+              exit 1
+            fi
+            if [[ "$progress_after" -gt "$progress_before" ]]; then
+              rm -f phase-error.json
+              sleep "$((pass * 5))"
+              continue
+            fi
+            if provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]; then
+              provider_no_progress_retries="$((provider_no_progress_retries + 1))"
+              rm -f phase-error.json
+              sleep "$((pass * 5))"
+              continue
+            fi
+            exit 1
+          done
           exit 1
       - name: Finalize contextual V5 report
         id: finalize
