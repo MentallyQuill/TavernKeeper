@@ -190,6 +190,9 @@ export function renderReportV5Html(input: unknown) {
   const advisory = deriveProjectAdvisory(
     [...report.assessments, ...report.observations],
     report.coverage.javascript_analysis?.status ?? "legacy",
+    report.coverage.evidence_validation.status === "completed-with-limitations"
+      ? report.coverage.evidence_validation.metadata_only_candidates
+      : 0,
   );
   const risk = advisory.risk;
   const summary = projectAdvisorySummary(advisory);

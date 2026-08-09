@@ -98,6 +98,24 @@ describe("public site presentation", () => {
     expect(advisory.dangerBasis).toBeNull();
   });
 
+  test("presents metadata-only contextual coverage as material, not low", () => {
+    const direct = deriveProjectAdvisory([], "complete", 1);
+    const indexed = deriveIndexedProjectAdvisory({
+      contextual_review_policy_version: "2",
+      counts: {
+        recommended_risk: { high: 0, material: 0, low: 1 },
+        disposition: { credible_malicious_behavior: 0 },
+      },
+      coverage: {
+        javascript_analysis_status: "complete",
+        metadata_only_candidates: 1,
+      },
+    } as never);
+
+    expect(direct.risk).toBe("material");
+    expect(indexed.risk).toBe("material");
+  });
+
   test("formats public identity without losing exact machine values", () => {
     expect(shortSha("1bce1fa73fe6c0fe8e767c773a832b94bb336720")).toBe(
       "1bce1fa",

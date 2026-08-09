@@ -113,6 +113,11 @@ export function projectReportToIndexV5(
       ).length,
       evidence_validated:
         report.coverage.evidence_validation.validated_candidates,
+      metadata_only_candidates:
+        report.coverage.evidence_validation.status ===
+        "completed-with-limitations"
+          ? report.coverage.evidence_validation.metadata_only_candidates
+          : 0,
       review_required: report.review_coverage.required,
       review_completed: report.review_coverage.completed,
       javascript_analysis_status:

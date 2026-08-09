@@ -94,9 +94,12 @@ published.
 
 Every required scanner must produce a validated result, and every finding
 candidate must receive exactly one valid contextual assessment. Bounded
-policy-4 JavaScript limitations publish as explicit `incomplete` coverage and
-raise an otherwise-low advisory to material; they never invent immediate
-danger. Hard scanner or integrity failures still produce no report.
+policy-4 JavaScript limitations publish as explicit `incomplete` coverage.
+Findings on non-text artifacts publish verified scanner metadata as
+`completed-with-limitations` contextual evidence without sending raw binary to
+the model. Either limitation raises an otherwise-low advisory to material; it
+never invents immediate danger. Hard scanner or integrity failures still
+produce no report.
 TavernKeeper attaches each
 assessment's location from validated deterministic candidate evidence instead
 of asking the model to reproduce it. Model-authored observation locations must
@@ -126,10 +129,10 @@ than the failure descriptor. Unknown failures use the sanitized shared circuit,
 so unexpected diagnostics receive a finite automatic probe instead of halting
 the catalog.
 
-OpenGrep exposes bounded `parser_syntax` and `rule_timeout` categories, and
-unsupported non-text contextual evidence exposes `evidence_non_text`. Model
-schema retries receive the rejected field category only; identical corrective
-feedback is not retried indefinitely.
+OpenGrep exposes bounded `parser_syntax` and `rule_timeout` categories.
+Non-text findings remain evidence candidates with an explicit metadata-only
+coverage limitation. Model schema retries receive the rejected field category
+only; identical corrective feedback is not retried indefinitely.
 
 Operations state schema V3 persists one monotonic ticket ledger. Tavernary
 manifest V3 adds a complete positive `popularity_rank`, which controls initial

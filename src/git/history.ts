@@ -55,6 +55,21 @@ async function readHistoryCount(
     : err("HISTORY_FAILED", "Could not count bounded history.");
 }
 
+async function hasCommit(
+  root: string,
+  sha: string,
+  runner: CommandRunner,
+): Promise<Result<boolean, "HISTORY_FAILED">> {
+  const result = await runner.run(
+    "git",
+    ["rev-parse", "--verify", "--quiet", `${sha}^{commit}`],
+    historyOptions(root),
+  );
+  if (!result.ok || ![0, 1].includes(result.value.exitCode))
+    return err("HISTORY_FAILED", "Could not inspect bounded commit history.");
+  return ok(result.value.exitCode === 0);
+}
+
 export async function planHistory(
   root: string,
   previousShas: string[],
@@ -69,6 +84,9 @@ export async function planHistory(
   const repositoryRoot = resolve(root);
 
   for (const previousSha of previousShas) {
+    const available = await hasCommit(repositoryRoot, previousSha, runner);
+    if (!available.ok) return available;
+    if (!available.value) continue;
     const ancestor = await runner.run(
       "git",
       ["merge-base", "--is-ancestor", previousSha, "HEAD"],

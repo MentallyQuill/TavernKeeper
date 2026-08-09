@@ -202,8 +202,10 @@ nonzero exits, and process failures remain target-local scanner failures unless
 the pinned tool itself is unavailable, which is a shared transient failure.
 Rejected OpenGrep diagnostics are categorized as `parser_syntax` or
 `rule_timeout` when possible; paths and raw diagnostic text are not persisted.
-A scanner finding that requires unsupported binary context is categorized as
-`evidence_non_text` for that exact target.
+A scanner finding on a non-text artifact retains its verified size, digest, and
+scanner metadata without exposing raw binary to the model. The report publishes
+`completed-with-limitations` contextual coverage and cannot appear low solely
+because the model could not inspect the raw contents.
 
 Invalid contextual-model responses receive one corrective prompt that names
 only the rejected schema field category. If the next response fails in the
@@ -246,8 +248,8 @@ targets.
 No production candidate waits for review, dismissal, or recoloring. Context,
 model, schema, evidence, sanitizer, tool-integrity, or hard scanner failure
 publishes nothing and enters the classified retry path. Bounded policy-4
-JavaScript coverage limitations publish visibly as incomplete and raise an
-otherwise-low advisory to material.
+JavaScript and metadata-only contextual coverage limitations publish visibly
+and raise an otherwise-low advisory to material.
 Complete high/immediate-danger reports are published through the same path as
 all other results. They remain visible in TavernKeeper and Tavernary and never
 automatically hide, quarantine, downrank, or delist a project.

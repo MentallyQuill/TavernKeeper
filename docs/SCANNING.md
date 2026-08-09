@@ -38,6 +38,20 @@ coverage, provenance digests, and character-bounded redacted evidence windows;
 it contains no raw scanner payload, provider response, full repository file, or
 full derivative.
 
+Previous reports are an optional optimization for bounded history. When their
+commit objects are outside the hostile repository's shallow checkout,
+TavernKeeper skips those unavailable objects and scans paths changed across the
+newest twenty available commits. An unavailable prior object cannot fail the
+exact target or weaken the current-tree scan.
+
+Static scanner findings on non-text artifacts remain candidates. TavernKeeper
+rechecks the artifact byte length and SHA-256 digest, passes only fixed
+metadata—not raw binary—to contextual review, publishes
+`completed-with-limitations` evidence coverage, and raises an otherwise-low
+advisory to material. This preserves Trojan and payload signals without
+executing or decoding untrusted binaries or claiming complete contextual
+coverage.
+
 ## Static JavaScript pipeline
 
 Every inventoried `.js`, `.cjs`, `.mjs`, `.jsx`, `.ts`, `.cts`, `.mts`, and

@@ -117,6 +117,7 @@ const group: EvidenceContextGroup = {
   file_role: "production",
   target_sha: targetSha,
   evidence_sha: targetSha,
+  source_kind: "text",
   source_bytes: 24,
   source_sha256: sourceFile.sha256,
   ecosystem_context_version: "sillytavern-community-v1",
@@ -150,7 +151,7 @@ const group: EvidenceContextGroup = {
 };
 const review: CompletedContextualReview = {
   policy_version: "2",
-  prompt_version: "contextual-review-v4",
+  prompt_version: "contextual-review-v5",
   schema_version: "contextual-assessment-v1",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
@@ -339,6 +340,50 @@ describe("contextual V5 reports", () => {
     });
     expect(report.limitations).toEqual(
       expect.arrayContaining([expect.stringMatching(/no clean conclusion/iu)]),
+    );
+  });
+
+  test("publishes metadata-only evidence as incomplete contextual coverage", () => {
+    const metadataOnlyGroup: EvidenceContextGroup = {
+      ...group,
+      source_kind: "metadata-only",
+      context: {
+        ...group.context,
+        imports: "",
+        source:
+          "Non-text artifact. Raw contents were not provided to the contextual model.",
+        expansions: [
+          "Non-text artifact. Raw contents were not provided to the contextual model.",
+        ],
+      },
+    };
+
+    const report = buildContextualReport(
+      {
+        scanPackage,
+        review,
+        evidenceGroups: [metadataOnlyGroup],
+      },
+      {
+        targetSha,
+        completedAt: "2026-08-02T12:00:00.000Z",
+        reportVersion: 1,
+        supersedesReportId: null,
+        limitations: [
+          "This advisory review cannot prove the absence of unknown behavior.",
+        ],
+      },
+    );
+
+    expect(report.coverage.evidence_validation).toEqual({
+      status: "completed-with-limitations",
+      validated_candidates: 1,
+      metadata_only_candidates: 1,
+    });
+    expect(report.limitations).toEqual(
+      expect.arrayContaining([
+        expect.stringMatching(/non-text artifacts.*raw contents/iu),
+      ]),
     );
   });
 

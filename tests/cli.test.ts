@@ -90,6 +90,7 @@ function indexedReport(
       tools_completed: 4,
       tools_not_applicable: 3,
       evidence_validated: 0,
+      metadata_only_candidates: 0,
       review_required: 0,
       review_completed: 0,
       javascript_analysis_status: "legacy" as const,
@@ -692,7 +693,7 @@ describe("JSON-only orchestration CLIs", () => {
       {
         loadPolicy: async () => ({
           version: "2",
-          promptVersion: "contextual-review-v4",
+          promptVersion: "contextual-review-v5",
           schemaVersion: "contextual-assessment-v1",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,

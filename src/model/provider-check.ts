@@ -50,6 +50,7 @@ export async function checkModelProviderCompatibility(
     file_role: "documentation",
     target_sha: "0".repeat(40),
     evidence_sha: "0".repeat(40),
+    source_kind: "text",
     source_bytes: Buffer.byteLength(source),
     source_sha256: createHash("sha256").update(source).digest("hex"),
     ecosystem_context_version: "sillytavern-community-v1",
@@ -112,7 +113,7 @@ export async function checkModelProviderCompatibility(
       },
       policy: {
         version: "2",
-        promptVersion: "contextual-review-v4",
+        promptVersion: "contextual-review-v5",
         schemaVersion: "contextual-assessment-v1",
         maxImmediateAttempts,
         maxOutputTokens: 8_192,

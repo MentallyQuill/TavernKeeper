@@ -114,6 +114,50 @@ describe("bounded history planning", () => {
     });
   });
 
+  test("falls back when a previous report commit is absent from the shallow clone", async () => {
+    const calls: string[][] = [];
+    const runner: CommandRunner = {
+      async run(_command, args) {
+        calls.push(args);
+        if (args[0] === "rev-parse")
+          return {
+            ok: true,
+            value: { exitCode: 1, stdout: "", stderr: "" },
+          };
+        if (args.includes("merge-base"))
+          throw new Error(
+            "An absent optional commit must not reach merge-base.",
+          );
+        if (args.includes("log"))
+          return {
+            ok: true,
+            value: { exitCode: 0, stdout: "src/current.ts\0", stderr: "" },
+          };
+        return {
+          ok: true,
+          value: { exitCode: 0, stdout: "20\n", stderr: "" },
+        };
+      },
+    };
+
+    const result = await planHistory("C:/repository", [newestPrevious], runner);
+
+    expect(result).toEqual({
+      ok: true,
+      value: {
+        baseSha: null,
+        historyCommits: 20,
+        changedPaths: ["src/current.ts"],
+      },
+    });
+    expect(calls).toContainEqual([
+      "rev-parse",
+      "--verify",
+      "--quiet",
+      `${newestPrevious}^{commit}`,
+    ]);
+  });
+
   test("uses current bounded history when the newest report already targets HEAD", async () => {
     const runner: CommandRunner = {
       async run(_command, args) {

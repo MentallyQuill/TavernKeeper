@@ -6,6 +6,7 @@ import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   buildContextualCountsV5,
   INCOMPLETE_JAVASCRIPT_LIMITATION,
+  METADATA_ONLY_EVIDENCE_LIMITATION,
   publicJavascriptAnalysisCoverage,
   ScanReportV5Schema,
   type CandidateV5,
@@ -56,6 +57,7 @@ const coverageLimitationText = {
 function reportLimitations(
   scanPackage: ScanPackageV1,
   configured: readonly string[],
+  evidenceGroups: readonly EvidenceContextGroup[],
 ) {
   const scannerLimitations = scanPackage.tools.flatMap((tool) =>
     (tool.limitations ?? []).map(
@@ -66,11 +68,17 @@ function reportLimitations(
     scanPackage.javascript_analysis?.status === "incomplete"
       ? [INCOMPLETE_JAVASCRIPT_LIMITATION]
       : [];
+  const contextualLimitations = evidenceGroups.some(
+    (group) => group.source_kind === "metadata-only",
+  )
+    ? [METADATA_ONLY_EVIDENCE_LIMITATION]
+    : [];
   return [
     ...new Set([
       ...configured,
       ...scannerLimitations,
       ...javascriptLimitations,
+      ...contextualLimitations,
     ]),
   ];
 }
@@ -168,6 +176,12 @@ export function buildContextualReport(
     input.review.assessments,
     input.review.observations,
   );
+  const metadataOnlyCandidates = input.evidenceGroups.reduce(
+    (total, group) =>
+      total +
+      (group.source_kind === "metadata-only" ? group.candidates.length : 0),
+    0,
+  );
   const withoutIdentity = {
     schema_version: 5 as const,
     report_version: options.reportVersion,
@@ -216,8 +230,14 @@ export function buildContextualReport(
         scanPackage.javascript_analysis!,
       ),
       evidence_validation: {
-        status: "completed" as const,
+        status:
+          metadataOnlyCandidates > 0
+            ? ("completed-with-limitations" as const)
+            : ("completed" as const),
         validated_candidates: candidates.length,
+        ...(metadataOnlyCandidates > 0
+          ? { metadata_only_candidates: metadataOnlyCandidates }
+          : {}),
       },
     },
     review_coverage: input.review.coverage,
@@ -225,7 +245,11 @@ export function buildContextualReport(
     assessments: input.review.assessments,
     observations: input.review.observations,
     counts,
-    limitations: reportLimitations(scanPackage, options.limitations),
+    limitations: reportLimitations(
+      scanPackage,
+      options.limitations,
+      input.evidenceGroups,
+    ),
   };
   const identity = reportIdentity({
     ...withoutIdentity,

@@ -15,7 +15,7 @@ import {
 const ids = ["a", "b", "c"].map((character) => character.repeat(64));
 const policy = {
   version: "2",
-  promptVersion: "contextual-review-v4",
+  promptVersion: "contextual-review-v5",
   schemaVersion: "contextual-assessment-v1",
   maxImmediateAttempts: 3,
   maxOutputTokens: 8_192,
@@ -35,6 +35,7 @@ function group(
     file_role: "production",
     target_sha: "d".repeat(40),
     evidence_sha: "d".repeat(40),
+    source_kind: "text",
     source_bytes: 1,
     source_sha256: "e".repeat(64),
     ecosystem_context_version: "sillytavern-community-v1",
@@ -590,7 +591,7 @@ describe("contextual evidence review", () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const invalidProgress: ContextualReviewProgress = {
       policy_version: "2",
-      prompt_version: "contextual-review-v4",
+      prompt_version: "contextual-review-v5",
       schema_version: "contextual-assessment-v1",
       model: "configured/model:thinking",
       provider: "provider.example",

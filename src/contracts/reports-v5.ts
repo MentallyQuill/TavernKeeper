@@ -77,6 +77,8 @@ const InventoryCoverageV5Schema = z.strictObject({
 export const PUBLIC_JAVASCRIPT_UNRESOLVED_MAX = 100;
 export const INCOMPLETE_JAVASCRIPT_LIMITATION =
   "JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.";
+export const METADATA_ONLY_EVIDENCE_LIMITATION =
+  "One or more scanner candidates refer to non-text artifacts. Their size, digest, and scanner metadata were verified, but raw contents were not provided to the contextual model.";
 
 function unresolvedIdentity(value: z.infer<typeof JavascriptUnresolvedSchema>) {
   return `${value.path}\u0000${value.stage}\u0000${value.reason}\u0000${value.recovered}`;
@@ -240,6 +242,30 @@ export function buildContextualCountsV5(
   return ContextualCountsV5Schema.parse(counts);
 }
 
+const EvidenceValidationCoverageV5Schema = z
+  .discriminatedUnion("status", [
+    z.strictObject({
+      status: z.literal("completed"),
+      validated_candidates: CountSchema,
+    }),
+    z.strictObject({
+      status: z.literal("completed-with-limitations"),
+      validated_candidates: CountSchema,
+      metadata_only_candidates: z.number().int().positive(),
+    }),
+  ])
+  .superRefine((coverage, context) => {
+    if (
+      coverage.status === "completed-with-limitations" &&
+      coverage.metadata_only_candidates > coverage.validated_candidates
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["metadata_only_candidates"],
+        message: "Metadata-only candidates cannot exceed validated candidates.",
+      });
+  });
+
 const ReportIdentityV5Fields = {
   report_id: DigestSchema,
   report_digest: DigestSchema,
@@ -285,10 +311,7 @@ export const ScanReportV5Schema = z
       inventory: InventoryCoverageV5Schema,
       tools: z.array(ToolCoverageSchema).min(1),
       javascript_analysis: PublicJavascriptAnalysisCoverageSchema.optional(),
-      evidence_validation: z.strictObject({
-        status: z.literal("completed"),
-        validated_candidates: CountSchema,
-      }),
+      evidence_validation: EvidenceValidationCoverageV5Schema,
     }),
     review_coverage: z.strictObject({
       required: CountSchema,
@@ -321,6 +344,18 @@ export const ScanReportV5Schema = z
         path: ["limitations"],
         message:
           "Incomplete JavaScript coverage requires its fixed public limitation.",
+      });
+    const metadataOnlyEvidence =
+      report.coverage.evidence_validation.status ===
+      "completed-with-limitations";
+    if (
+      metadataOnlyEvidence !==
+      report.limitations.includes(METADATA_ONLY_EVIDENCE_LIMITATION)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["limitations"],
+        message: "Metadata-only evidence requires its fixed public limitation.",
       });
     if (report.contextual_review_policy_version === "2") {
       for (const [index, assessment] of report.assessments.entries())
@@ -502,6 +537,7 @@ export const ReportIndexEntryV5Schema = z
       tools_completed: CountSchema,
       tools_not_applicable: CountSchema,
       evidence_validated: CountSchema,
+      metadata_only_candidates: CountSchema.default(0),
       review_required: CountSchema,
       review_completed: CountSchema,
       javascript_analysis_status: z
