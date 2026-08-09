@@ -120,11 +120,14 @@ describe("conditional scanner adapters", () => {
       findings: [
         expect.objectContaining({
           origin: "osv-scanner",
-          rule_id: "GHSA-aaaa-bbbb-cccc",
+          rule_id: expect.stringMatching(
+            /^GHSA-aaaa-bbbb-cccc:pkg:[a-f0-9]{24}$/u,
+          ),
           category: "dependency-vulnerability",
           severity: "high",
           confidence: "high",
           path: "package-lock.json",
+          evidence_sha: null,
           title: "Known vulnerable npm dependency: example@1.0.0",
           explanation:
             "OSV-Scanner matched a known advisory for npm package example at resolved version 1.0.0.",
@@ -153,6 +156,123 @@ describe("conditional scanner adapters", () => {
       findings: [],
     });
     expect(runner.calls).toHaveLength(0);
+  });
+
+  test("OSV accepts and safely renders a v2.4 commit-addressed package", async () => {
+    const commit = "b8da07095979310818f0efde2ef3c69ea70d62c5";
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "deps_flatten.txt", type: "lockfile" },
+            packages: [
+              {
+                package: {
+                  name: "https://fuchsia.googlesource.com/third_party/perfetto",
+                  version: "",
+                  ecosystem: "",
+                  commit,
+                },
+                vulnerabilities: [{ id: "OSV-2023-72" }],
+              },
+            ],
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    const run = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("deps_flatten.txt")],
+      runner,
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(run.findings).toEqual([
+      expect.objectContaining({
+        rule_id: expect.stringMatching(/^OSV-2023-72:pkg:[a-f0-9]{24}$/u),
+        title: `Known vulnerable commit dependency: ${commit}`,
+        explanation: `OSV-Scanner matched a known advisory for a commit-addressed dependency at commit ${commit}.`,
+      }),
+    ]);
+    expect(JSON.stringify(run.findings)).not.toContain(
+      "fuchsia.googlesource.com",
+    );
+  });
+
+  test("OSV preserves package-specific findings deterministically", async () => {
+    const packages: Array<{
+      name: string;
+      version: string;
+      ecosystem: string;
+      commit?: string;
+    }> = [
+      { name: "example", version: "1.0.0", ecosystem: "npm" },
+      { name: "example", version: "2.0.0", ecosystem: "npm" },
+      { name: "example", version: "1.0.0", ecosystem: "PyPI" },
+      { name: "different", version: "1.0.0", ecosystem: "npm" },
+      {
+        name: "https://example.invalid/repository",
+        version: "",
+        ecosystem: "",
+        commit: "a".repeat(40),
+      },
+      {
+        name: "https://example.invalid/repository",
+        version: "",
+        ecosystem: "",
+        commit: "b".repeat(40),
+      },
+    ];
+    const report = (orderedPackages: typeof packages) =>
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "package-lock.json", type: "lockfile" },
+            packages: orderedPackages.map((identity) => ({
+              package: identity,
+              vulnerabilities: [{ id: "GHSA-aaaa-bbbb-cccc" }],
+            })),
+          },
+        ],
+      });
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+    const forward = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("package-lock.json")],
+      runner: new JsonRunner(report(packages), 1),
+      version: "2.4.0",
+      temporaryRoot,
+    });
+    const reverse = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("package-lock.json")],
+      runner: new JsonRunner(report([...packages].reverse()), 1),
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(forward.findings).toHaveLength(6);
+    expect(
+      new Set(forward.findings.map(({ fingerprint }) => fingerprint)).size,
+    ).toBe(6);
+    expect(forward.findings.map(({ title }) => title).sort()).toEqual(
+      packages
+        .map(({ commit, ecosystem, name, version }) =>
+          version.length === 0
+            ? `Known vulnerable commit dependency: ${commit}`
+            : `Known vulnerable ${ecosystem} dependency: ${name}@${version}`,
+        )
+        .sort(),
+    );
+    expect(reverse.findings).toEqual(forward.findings);
   });
 
   test.each([

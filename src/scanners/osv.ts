@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
@@ -21,17 +22,19 @@ const UNSAFE_PUBLIC_IDENTITY =
   /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/u;
 const URL_LIKE_IDENTITY = /\b(?:https?|ftp):\/\/|\bwww\./iu;
 
-const PackageIdentityStringSchema = (maximum: number) =>
+const PackageIdentitySourceStringSchema = (maximum: number) =>
   z
     .string()
     .trim()
-    .min(1)
     .max(maximum)
     .refine(
-      (value) =>
-        !UNSAFE_PUBLIC_IDENTITY.test(value) && !URL_LIKE_IDENTITY.test(value),
-      "OSV package identity contains unsafe public text.",
+      (value) => !UNSAFE_PUBLIC_IDENTITY.test(value),
+      "OSV package identity contains unsafe text.",
     );
+
+function isSafePublicIdentity(value: string) {
+  return value.length > 0 && !URL_LIKE_IDENTITY.test(value);
+}
 
 const VulnerabilitySchema = z.looseObject({
   id: z.string().min(1).max(120),
@@ -39,11 +42,36 @@ const VulnerabilitySchema = z.looseObject({
     .looseObject({ severity: z.string().optional() })
     .optional(),
 });
-const PackageIdentitySchema = z.looseObject({
-  name: PackageIdentityStringSchema(160),
-  version: PackageIdentityStringSchema(160),
-  ecosystem: PackageIdentityStringSchema(80),
-});
+const PackageIdentitySchema = z
+  .looseObject({
+    name: PackageIdentitySourceStringSchema(160),
+    version: PackageIdentitySourceStringSchema(160),
+    ecosystem: PackageIdentitySourceStringSchema(80),
+    commit: z
+      .string()
+      .trim()
+      .regex(/^[a-f0-9]{7,64}$/iu)
+      .optional(),
+  })
+  .superRefine(({ commit, ecosystem, name, version }, context) => {
+    if (version.length === 0) {
+      if (commit === undefined)
+        context.addIssue({
+          code: "custom",
+          message: "OSV package identity needs a version or commit.",
+        });
+      return;
+    }
+    if (
+      !isSafePublicIdentity(ecosystem) ||
+      !isSafePublicIdentity(name) ||
+      !isSafePublicIdentity(version)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "OSV package identity contains unsafe public text.",
+      });
+  });
 const PackageSchema = z.looseObject({
   package: PackageIdentitySchema,
   vulnerabilities: z.array(VulnerabilitySchema).max(100_000),
@@ -80,14 +108,41 @@ function severity(value: string | undefined): Severity {
 }
 
 function findingTitle({
+  commit,
   ecosystem,
   name,
   version,
 }: z.infer<typeof PackageIdentitySchema>) {
+  if (version.length === 0)
+    return `Known vulnerable commit dependency: ${commit}`;
   const detailed = `Known vulnerable ${ecosystem} dependency: ${name}@${version}`;
   return detailed.length <= 200
     ? detailed
     : `Known vulnerable dependency: ${name}`;
+}
+
+function findingExplanation({
+  commit,
+  ecosystem,
+  name,
+  version,
+}: z.infer<typeof PackageIdentitySchema>) {
+  return version.length === 0
+    ? `OSV-Scanner matched a known advisory for a commit-addressed dependency at commit ${commit}.`
+    : `OSV-Scanner matched a known advisory for ${ecosystem} package ${name} at resolved version ${version}.`;
+}
+
+function findingRuleId(
+  vulnerabilityId: string,
+  { commit, ecosystem, name, version }: z.infer<typeof PackageIdentitySchema>,
+) {
+  const address =
+    version.length > 0 ? `version:${version}` : `commit:${commit}`;
+  const identity = createHash("sha256")
+    .update(JSON.stringify([vulnerabilityId, ecosystem, name, address]))
+    .digest("hex")
+    .slice(0, 24);
+  return `${vulnerabilityId.slice(0, 91)}:pkg:${identity}`;
 }
 
 function parseReport(root: string, stdout: string) {
@@ -109,7 +164,7 @@ function parseReport(root: string, stdout: string) {
         entry.vulnerabilities.map((vulnerability) =>
           normalizeFinding({
             origin: "osv-scanner",
-            ruleId: vulnerability.id,
+            ruleId: findingRuleId(vulnerability.id, entry.package),
             category: "dependency-vulnerability",
             severity: severity(vulnerability.database_specific?.severity),
             confidence: "high",
@@ -118,7 +173,7 @@ function parseReport(root: string, stdout: string) {
             lineEnd: null,
             evidenceSha: null,
             title: findingTitle(entry.package),
-            explanation: `OSV-Scanner matched a known advisory for ${entry.package.ecosystem} package ${entry.package.name} at resolved version ${entry.package.version}.`,
+            explanation: findingExplanation(entry.package),
           }),
         ),
       );
