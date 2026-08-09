@@ -147,6 +147,39 @@ function safeReportFailureDetail(error: unknown) {
   return "OpenGrep output violated a bounded adapter invariant.";
 }
 
+const OPEN_GREP_OPTIONS = [
+  "--verbose",
+  "--disable-version-check",
+  "--disable-nosem",
+  "--no-git-ignore",
+  "--x-ignore-semgrepignore-files",
+  "--no-rewrite-rule-ids",
+  "--exclude",
+  "--no-exclude-minified-files",
+  "--max-target-bytes",
+  "--config",
+] as const;
+
+function safeStderrShape(value: string) {
+  const normalized = value.toLowerCase();
+  const category =
+    /unknown option|unknown argument|unrecognized option|unexpected argument|invalid option/iu.test(
+      normalized,
+    )
+      ? "option-error"
+      : /config|rule/iu.test(normalized)
+        ? "config-error"
+        : /target|path|file/iu.test(normalized)
+          ? "target-error"
+          : normalized.trim() === ""
+            ? "empty"
+            : "other";
+  const mentions = OPEN_GREP_OPTIONS.filter((option) =>
+    normalized.includes(option),
+  );
+  return `stderr class ${category}${mentions.length === 0 ? "" : `; option mentions ${mentions.join(", ")}`}`;
+}
+
 function boundedJsonObject(value: string, start: number) {
   let depth = 0;
   let inString = false;
@@ -411,7 +444,7 @@ export async function runOpenGrep({
     throw new ScannerError(
       error.code,
       error.scope,
-      `${error.message} Process shape: exit ${result.value.exitCode}; stdout ${Buffer.byteLength(result.value.stdout, "utf8")} bytes; stderr ${Buffer.byteLength(result.value.stderr, "utf8")} bytes.`,
+      `${error.message} Process shape: exit ${result.value.exitCode}; stdout ${Buffer.byteLength(result.value.stdout, "utf8")} bytes; stderr ${Buffer.byteLength(result.value.stderr, "utf8")} bytes; ${safeStderrShape(result.value.stderr)}.`,
       error.component,
       error.diagnostic,
     );

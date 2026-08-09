@@ -257,7 +257,11 @@ describe("OpenGrep adapter", () => {
   });
 
   test("reports only process shape when OpenGrep returns no JSON", async () => {
-    const runner = new OpenGrepRunner("", 2, "unsupported invocation");
+    const runner = new OpenGrepRunner(
+      "",
+      2,
+      "opengrep: unknown option '--no-exclude-minified-files'",
+    );
 
     await expect(
       runOpenGrep({
@@ -269,7 +273,7 @@ describe("OpenGrep adapter", () => {
     ).rejects.toMatchObject({
       code: "MALFORMED_SCANNER_OUTPUT",
       message: expect.stringContaining(
-        "exit 2; stdout 0 bytes; stderr 22 bytes",
+        "stderr class option-error; option mentions --no-exclude-minified-files",
       ),
     });
   });
