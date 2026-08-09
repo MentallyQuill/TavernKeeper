@@ -190,35 +190,47 @@ function parseReport(
     ].sort();
     if (expectedPaths !== undefined && report.paths === undefined)
       throw new Error("OpenGrep omitted expected path coverage.");
-    const scanned = (report.paths?.scanned ?? []).map((path) =>
+    const reportedScanned = (report.paths?.scanned ?? []).map((path) =>
       normalizePath(root, path),
     );
-    const skipped = (report.paths?.skipped ?? []).map((value) => {
+    const reportedSkipped = (report.paths?.skipped ?? []).map((value) => {
       const parsed = OpenGrepSkippedPathSchema.parse(value);
       return {
         path: normalizePath(root, parsed.path),
         reason: skippedReason(parsed.reason),
       };
     });
-    const skippedPaths = skipped.map(({ path }) => path);
+    const reportedSkippedPaths = reportedSkipped.map(({ path }) => path);
     if (
-      new Set(scanned).size !== scanned.length ||
-      new Set(skippedPaths).size !== skippedPaths.length ||
-      scanned.some((path) => skippedPaths.includes(path))
+      new Set(reportedScanned).size !== reportedScanned.length ||
+      new Set(reportedSkippedPaths).size !== reportedSkippedPaths.length
     )
-      throw new Error("OpenGrep path coverage is contradictory.");
+      throw new Error("OpenGrep path coverage contains duplicates.");
+    let scanned = reportedScanned;
+    let skipped = reportedSkipped;
     if (expectedPaths !== undefined) {
       const expected = expectedPaths.map((path) => normalizePath(root, path));
       if (new Set(expected).size !== expected.length)
         throw new Error("OpenGrep expected paths must be unique.");
-      const accounted = [...scanned, ...skippedPaths];
-      const expectedSet = new Set(expected);
+      const scannedSet = new Set(reportedScanned);
+      const skippedByPath = new Map(
+        reportedSkipped.map((entry) => [entry.path, entry] as const),
+      );
       if (
-        accounted.length !== expected.length ||
-        accounted.some((path) => !expectedSet.has(path)) ||
-        expected.some((path) => !accounted.includes(path))
+        expected.some(
+          (path) => !scannedSet.has(path) && !skippedByPath.has(path),
+        )
       )
         throw new Error("OpenGrep did not account for expected paths.");
+      const expectedSet = new Set(expected);
+      skipped = reportedSkipped.filter(({ path }) => expectedSet.has(path));
+      const skippedSet = new Set(skipped.map(({ path }) => path));
+      scanned = expected.filter(
+        (path) => scannedSet.has(path) && !skippedSet.has(path),
+      );
+    } else {
+      const skippedSet = new Set(reportedSkippedPaths);
+      scanned = reportedScanned.filter((path) => !skippedSet.has(path));
     }
     return {
       findings,
@@ -264,6 +276,7 @@ export async function runOpenGrep({
     [
       "scan",
       "--json",
+      "--verbose",
       "--disable-version-check",
       "--disable-nosem",
       "--no-git-ignore",

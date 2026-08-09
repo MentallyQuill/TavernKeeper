@@ -173,6 +173,7 @@ describe("OpenGrep adapter", () => {
     expect(runner.calls[0]?.args).toEqual([
       "scan",
       "--json",
+      "--verbose",
       "--disable-version-check",
       "--disable-nosem",
       "--no-git-ignore",
@@ -490,7 +491,7 @@ describe("OpenGrep adapter", () => {
     const report = JSON.parse(resultJson()) as Record<string, unknown>;
     report.results = [];
     report.paths = {
-      scanned: ["dist/app.min.js"],
+      scanned: ["dist/app.min.js", "dist/large.js", "src/harmless.txt"],
       skipped: [{ path: "dist/large.js", reason: "Too_big" }],
     };
     const run = await runOpenGrep({
@@ -513,22 +514,8 @@ describe("OpenGrep adapter", () => {
       paths: { scanned: [], skipped: [] },
     },
     {
-      name: "conflicting",
-      paths: {
-        scanned: ["dist/app.js"],
-        skipped: [{ path: "dist/app.js", reason: "Timeout" }],
-      },
-    },
-    {
       name: "duplicate",
       paths: { scanned: ["dist/app.js", "dist/app.js"], skipped: [] },
-    },
-    {
-      name: "unexpected",
-      paths: {
-        scanned: ["dist/app.js", "dist/other.js"],
-        skipped: [],
-      },
     },
   ])("rejects $name expected-path accounting", async ({ paths }) => {
     const report = JSON.parse(resultJson()) as Record<string, unknown>;
@@ -543,6 +530,28 @@ describe("OpenGrep adapter", () => {
         expectedPaths: ["dist/app.js"],
       }),
     ).rejects.toMatchObject({ code: "MALFORMED_SCANNER_OUTPUT" });
+  });
+
+  test("filters non-JavaScript repository paths from expected path coverage", async () => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = {
+      scanned: ["dist/app.js", "src/harmless.txt"],
+      skipped: [],
+    };
+
+    const run = await runOpenGrep({
+      root: "C:/scan/repository",
+      rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+      runner: new OpenGrepRunner(JSON.stringify(report)),
+      version: "1.26.0",
+      expectedPaths: ["dist/app.js"],
+    });
+
+    expect(run.pathCoverage).toEqual({
+      scanned: ["dist/app.js"],
+      skipped: [],
+    });
   });
 
   test("rejects an unknown skipped-target reason", async () => {
