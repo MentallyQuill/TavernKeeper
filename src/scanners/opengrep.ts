@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import {
   ConfidenceSchema,
@@ -291,6 +293,7 @@ export async function runOpenGrep({
   version,
   expectedPaths,
   maxTargetBytes = 268_435_456,
+  temporaryRoot = tmpdir(),
 }: {
   root: string;
   rulesRoot: string;
@@ -299,65 +302,85 @@ export async function runOpenGrep({
   version: string;
   expectedPaths?: readonly string[];
   maxTargetBytes?: number;
+  temporaryRoot?: string;
 }): Promise<ScannerRun> {
-  const result = await runner.run(
-    executable,
-    [
-      "scan",
-      "--json",
-      "--verbose",
-      "--disable-version-check",
-      "--disable-nosem",
-      "--no-git-ignore",
-      "--x-ignore-semgrepignore-files",
-      "--no-rewrite-rule-ids",
-      "--exclude=.git",
-      "--no-exclude-minified-files",
-      `--max-target-bytes=${maxTargetBytes}`,
-      "--config",
-      rulesRoot,
-      root,
-    ],
-    {
-      cwd: root,
-      environment: restrictedEnvironment({
-        NO_COLOR: "1",
-        SEMGREP_SEND_METRICS: "off",
-      }),
-      timeoutMs: 600_000,
-      maxOutputBytes: 50_000_000,
-      shell: false,
-    },
-  );
-  if (!result.ok) throw scannerExecutionError("opengrep", result.error.code);
-  if (
-    result.value.exitCode !== 0 &&
-    result.value.exitCode !== 2 &&
-    result.value.exitCode !== 3
-  )
-    throw new ScannerError(
-      "SCANNER_FAILED",
-      "system",
-      `OpenGrep exited with code ${result.value.exitCode}.`,
-      "opengrep",
+  const operationRoot = await mkdtemp(join(temporaryRoot, "opengrep-"));
+  try {
+    const reportPath = join(operationRoot, "report.json");
+    const result = await runner.run(
+      executable,
+      [
+        "scan",
+        "--json",
+        "--output",
+        reportPath,
+        "--verbose",
+        "--disable-version-check",
+        "--disable-nosem",
+        "--no-git-ignore",
+        "--x-ignore-semgrepignore-files",
+        "--no-rewrite-rule-ids",
+        "--exclude=.git",
+        "--no-exclude-minified-files",
+        `--max-target-bytes=${maxTargetBytes}`,
+        "--config",
+        rulesRoot,
+        root,
+      ],
+      {
+        cwd: root,
+        environment: restrictedEnvironment({
+          NO_COLOR: "1",
+          SEMGREP_SEND_METRICS: "off",
+        }),
+        timeoutMs: 600_000,
+        maxOutputBytes: 50_000_000,
+        shell: false,
+      },
     );
-  const parsed = parseReport(
-    root,
-    result.value.stdout,
-    result.value.exitCode,
-    expectedPaths,
-  );
-  return {
-    name: "opengrep",
-    version,
-    status:
-      parsed.limitations.length === 0
-        ? "completed"
-        : "completed-with-limitations",
-    ...(parsed.limitations.length === 0
-      ? {}
-      : { limitations: parsed.limitations }),
-    findings: parsed.findings,
-    pathCoverage: parsed.pathCoverage,
-  };
+    if (!result.ok) throw scannerExecutionError("opengrep", result.error.code);
+    if (
+      result.value.exitCode !== 0 &&
+      result.value.exitCode !== 2 &&
+      result.value.exitCode !== 3
+    )
+      throw new ScannerError(
+        "SCANNER_FAILED",
+        "system",
+        `OpenGrep exited with code ${result.value.exitCode}.`,
+        "opengrep",
+      );
+    let report: string;
+    try {
+      report = await readFile(reportPath, "utf8");
+    } catch {
+      throw new ScannerError(
+        "MALFORMED_SCANNER_OUTPUT",
+        "system",
+        "OpenGrep did not write its dedicated JSON report.",
+        "opengrep",
+      );
+    }
+    const parsed = parseReport(
+      root,
+      report,
+      result.value.exitCode,
+      expectedPaths,
+    );
+    return {
+      name: "opengrep",
+      version,
+      status:
+        parsed.limitations.length === 0
+          ? "completed"
+          : "completed-with-limitations",
+      ...(parsed.limitations.length === 0
+        ? {}
+        : { limitations: parsed.limitations }),
+      findings: parsed.findings,
+      pathCoverage: parsed.pathCoverage,
+    };
+  } finally {
+    await rm(operationRoot, { recursive: true, force: true });
+  }
 }

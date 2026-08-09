@@ -118,6 +118,7 @@ async function main() {
       version: pins.opengrep.version,
       expectedPaths: javascriptPaths,
       maxTargetBytes: policy.inventory.maxFileBytes,
+      temporaryRoot: join(toolsDir, "tmp"),
     });
     if (opengrep.pathCoverage === undefined)
       throw new Error("OpenGrep smoke omitted path coverage.");

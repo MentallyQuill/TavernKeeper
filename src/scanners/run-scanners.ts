@@ -158,6 +158,7 @@ export async function runApplicableScanners(
       expectedPaths: javascriptPaths,
       maxTargetBytes: spec.policy.inventory.maxFileBytes,
       ...executable(spec.executables, "opengrep"),
+      ...temporaryRoot(spec.temporaryRoot),
     }),
   );
   if (openGrepRun.pathCoverage === undefined)
