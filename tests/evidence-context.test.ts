@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, open, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -10,7 +10,6 @@ import {
   EvidenceContextGroupsSchema,
   expandEvidenceContextGroup,
 } from "../src/context/evidence-context.js";
-import { classifyFailure } from "../src/operations/failure.js";
 import { normalizeFinding } from "../src/scanners/types.js";
 
 const roots: string[] = [];
@@ -22,7 +21,7 @@ afterEach(async () => {
 });
 
 describe("evidence context builder", () => {
-  test("types a non-text scanner finding as target-local", async () => {
+  test("preserves a non-text scanner finding as verified metadata-only evidence", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-binary-context-"));
     roots.push(root);
     const binary = Buffer.from([0, 1, 2, 3]);
@@ -41,7 +40,7 @@ describe("evidence context builder", () => {
       explanation: "A scanner identified a binary payload.",
     });
 
-    const error = await buildEvidenceContextGroups({
+    const groups = await buildEvidenceContextGroups({
       checkoutRoot: root,
       target: {
         source_id: "github-42",
@@ -66,14 +65,84 @@ describe("evidence context builder", () => {
         totals: { files: 1, bytes: binary.byteLength },
         totalBytes: binary.byteLength,
       },
-    }).catch((value: unknown) => value);
-
-    expect(classifyFailure(error)).toEqual({
-      code: "EVIDENCE_CONTEXT_UNSUPPORTED",
-      domain: "target",
-      component: "evidence-context",
-      diagnostic: "evidence_non_text",
     });
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]).toMatchObject({
+      path: "payload.bin",
+      source_kind: "metadata-only",
+      source_bytes: binary.byteLength,
+      source_sha256: createHash("sha256").update(binary).digest("hex"),
+    });
+    expect(groups[0]?.candidates).toHaveLength(1);
+    expect(groups[0]?.context.imports).toBe("");
+    expect(groups[0]?.context.source).toMatch(/non-text artifact/iu);
+    expect(groups[0]?.context.source).toMatch(/raw contents.*not provided/iu);
+    expect(groups[0]?.context.source).not.toContain(binary.toString("utf8"));
+    expect(groups[0]?.context.expansions).toEqual([
+      groups[0]?.context.source,
+      groups[0]?.context.source,
+    ]);
+  });
+
+  test("streams metadata-only verification beyond the prepared-artifact ceiling", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-large-binary-"));
+    roots.push(root);
+    const bytes = 24 * 1024 * 1024;
+    const path = join(root, "large-payload.bin");
+    const handle = await open(path, "w");
+    await handle.truncate(bytes);
+    await handle.close();
+    const hash = createHash("sha256");
+    const zeroChunk = Buffer.alloc(64 * 1024);
+    for (let offset = 0; offset < bytes; offset += zeroChunk.byteLength)
+      hash.update(zeroChunk);
+    const finding = normalizeFinding({
+      origin: "malcontent",
+      ruleId: "large-binary-payload",
+      category: "malware",
+      severity: "high",
+      confidence: "medium",
+      path: "large-payload.bin",
+      lineStart: null,
+      lineEnd: null,
+      evidenceSha: null,
+      title: "Large binary payload",
+      explanation: "A scanner identified a large binary payload.",
+    });
+
+    const groups = await buildEvidenceContextGroups({
+      checkoutRoot: root,
+      target: {
+        source_id: "github-43",
+        provider: "github",
+        repository_id: 43,
+        repository: "owner/large-binary",
+        canonical_url: "https://github.com/owner/large-binary",
+        target_sha: "b".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "large-payload.bin",
+            bytes,
+            sha256: hash.digest("hex"),
+            kind: "oversized",
+          },
+        ],
+        totals: { files: 1, bytes },
+        totalBytes: bytes,
+      },
+    });
+
+    expect(groups[0]).toMatchObject({
+      source_kind: "metadata-only",
+      source_bytes: bytes,
+    });
+    expect(groups[0]?.context.source.length).toBeLessThan(1_000);
   });
 
   test("groups findings by file with project and enclosing source context", async () => {

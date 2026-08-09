@@ -5,7 +5,7 @@ import {
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import type { ModelResponseDiagnostic } from "./openai-compatible-client.js";
 
-export const CONTEXTUAL_PROMPT_VERSION = "contextual-review-v4";
+export const CONTEXTUAL_PROMPT_VERSION = "contextual-review-v5";
 export const CONTEXTUAL_SCHEMA_VERSION = "contextual-assessment-v1";
 
 export interface ContextualReviewPrompt {
@@ -75,6 +75,8 @@ Ecosystem context version: ${ECOSYSTEM_CONTEXT_VERSION}
 ${ecosystemContext()}
 
 Review every supplied scanner candidate using its actual code, data flow, destination, timing, disclosure, file role, and stated project purpose. Scanner names, keywords, and scanner severity are candidate-locating evidence, not a final security conclusion.
+
+When source_kind is metadata-only, the artifact bytes were hash-and-size verified but its raw contents were not supplied to you. Review the scanner metadata without inventing artifact behavior. Metadata-only evidence must not be treated as proof of a low-risk conclusion; the final report applies an explicit contextual coverage limitation independently of your candidate assessment.
 
 For dependency advisories, analyze the dependency version actually present in the shipped version, whether the vulnerable code has runtime reachability, whether attacker control reaches the vulnerable input, and what concrete user harm can result. Advisory severity alone is not an immediate-danger conclusion.
 

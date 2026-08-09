@@ -29,11 +29,16 @@ export interface ProjectAdvisory {
 type RecommendedRiskCounts = ContextualCountsV5["recommended_risk"];
 type JavascriptAnalysisStatus = "complete" | "incomplete" | "legacy";
 
-function applyJavascriptCoverage(
+function applyCoverageLimitations(
   advisory: ProjectAdvisory,
-  status: JavascriptAnalysisStatus,
+  javascriptStatus: JavascriptAnalysisStatus,
+  metadataOnlyCandidates: number,
 ): ProjectAdvisory {
-  if (status !== "incomplete" || advisory.risk !== "low") return advisory;
+  if (
+    (javascriptStatus !== "incomplete" && metadataOnlyCandidates === 0) ||
+    advisory.risk !== "low"
+  )
+    return advisory;
   return {
     ...advisory,
     risk: "material",
@@ -237,6 +242,7 @@ function immediateDangerBasis(item: AdvisoryItem): DangerBasis | null {
 export function deriveProjectAdvisory(
   items: readonly AdvisoryItem[],
   javascriptAnalysisStatus: JavascriptAnalysisStatus = "legacy",
+  metadataOnlyCandidates = 0,
 ): ProjectAdvisory {
   let malicious = false;
   let exploitable = false;
@@ -265,7 +271,7 @@ export function deriveProjectAdvisory(
         : exploitable
           ? "critical_exploitable_vulnerability"
           : null;
-  return applyJavascriptCoverage(
+  return applyCoverageLimitations(
     {
       risk:
         dangerBasis !== null
@@ -277,6 +283,7 @@ export function deriveProjectAdvisory(
       counts,
     },
     javascriptAnalysisStatus,
+    metadataOnlyCandidates,
   );
 }
 
@@ -285,7 +292,7 @@ export function deriveIndexedProjectAdvisory(
 ): ProjectAdvisory {
   const published = entry.counts.recommended_risk;
   if (entry.contextual_review_policy_version !== "2")
-    return applyJavascriptCoverage(
+    return applyCoverageLimitations(
       {
         risk: published.high + published.material > 0 ? "material" : "low",
         dangerBasis: null,
@@ -296,6 +303,7 @@ export function deriveIndexedProjectAdvisory(
         },
       },
       entry.coverage.javascript_analysis_status,
+      entry.coverage.metadata_only_candidates,
     );
   const malicious = entry.counts.disposition.credible_malicious_behavior;
   const dangerBasis: DangerBasis | null =
@@ -306,7 +314,7 @@ export function deriveIndexedProjectAdvisory(
         : published.high > malicious
           ? "mixed"
           : "malicious_or_compromised";
-  return applyJavascriptCoverage(
+  return applyCoverageLimitations(
     {
       risk:
         dangerBasis !== null
@@ -318,6 +326,7 @@ export function deriveIndexedProjectAdvisory(
       counts: { ...published },
     },
     entry.coverage.javascript_analysis_status,
+    entry.coverage.metadata_only_candidates,
   );
 }
 

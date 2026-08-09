@@ -130,6 +130,10 @@ export async function buildSite({
   await copyTree(sources[0]!, join(output, "reports"));
   await copyTree(sources[1]!, join(output, "schemas"));
   await copyTree(sources[2]!, join(output, "rules"));
+  await writeFile(
+    join(output, "reports", "index.json"),
+    `${JSON.stringify(index, null, 2)}\n`,
+  );
   await mkdir(join(output, "assets"), { recursive: true });
   await copyTree(sources[3]!, join(output, "assets"));
   await writeFile(join(output, "index.html"), renderLandingHtml(index));

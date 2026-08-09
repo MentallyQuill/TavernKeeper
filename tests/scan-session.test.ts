@@ -179,6 +179,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
       file_role: "production" as const,
       target_sha: targetSha,
       evidence_sha: targetSha,
+      source_kind: "text" as const,
       source_bytes: 12,
       source_sha256: "b".repeat(64),
       ecosystem_context_version: "sillytavern-community-v1" as const,
@@ -285,7 +286,7 @@ async function completeReview(root: string) {
     },
     policy: {
       version: "2",
-      promptVersion: "contextual-review-v4",
+      promptVersion: "contextual-review-v5",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 3,
       maxOutputTokens: 32_768,
@@ -515,7 +516,7 @@ describe("three-phase contextual scan session", () => {
           evidence_digest: evidence.evidence_digest,
           progress: {
             policy_version: "2",
-            prompt_version: "contextual-review-v4",
+            prompt_version: "contextual-review-v5",
             schema_version: "contextual-assessment-v1",
             model: "configured/model:thinking",
             provider: "provider.example",
@@ -587,7 +588,7 @@ describe("three-phase contextual scan session", () => {
         },
         policy: {
           version: "2",
-          promptVersion: "contextual-review-v4",
+          promptVersion: "contextual-review-v5",
           schemaVersion: "contextual-assessment-v1",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
@@ -623,7 +624,7 @@ describe("three-phase contextual scan session", () => {
           evidence_digest: evidence.evidence_digest,
           progress: {
             policy_version: "2",
-            prompt_version: "contextual-review-v4",
+            prompt_version: "contextual-review-v5",
             schema_version: "contextual-assessment-v1",
             model: "configured/model:thinking",
             provider: "provider.example",

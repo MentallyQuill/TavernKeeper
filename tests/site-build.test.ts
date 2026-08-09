@@ -55,6 +55,9 @@ describe("Pages site allowlist", () => {
     );
     const report = await fixtureReportV5();
     const entry = projectReportToIndexV5(report);
+    const legacyEntry = structuredClone(entry);
+    delete (legacyEntry.coverage as Record<string, unknown>)
+      .metadata_only_candidates;
     const reportDirectory = join(root, ...reportPath(report).split("/"));
     const historyDirectory = join(root, ...historyPath(report).split("/"));
     await Promise.all([
@@ -66,7 +69,7 @@ describe("Pages site allowlist", () => {
       `${JSON.stringify({
         schema_version: 5,
         generated_at: "2026-08-03T12:00:00.000Z",
-        reports: [entry],
+        reports: [legacyEntry],
       })}\n`,
     );
     await writeFile(
@@ -139,9 +142,17 @@ describe("Pages site allowlist", () => {
     expect(historyHtml).toContain("TavernKeeper Scan History");
     expect(historyHtml).not.toContain("old history html");
 
-    expect(
+    const publishedIndex = JSON.parse(
       await readFile(join(output, "reports", "index.json"), "utf8"),
-    ).toContain('"schema_version":5');
+    );
+    expect(publishedIndex).toMatchObject({
+      schema_version: 5,
+      reports: [
+        {
+          coverage: { metadata_only_candidates: 0 },
+        },
+      ],
+    });
     await expect(
       readFile(join(output, "src", "secret.ts")),
     ).rejects.toMatchObject({ code: "ENOENT" });

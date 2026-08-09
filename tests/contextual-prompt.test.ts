@@ -29,6 +29,7 @@ describe("SillyTavern ecosystem context", () => {
       file_role: "production",
       target_sha: "b".repeat(40),
       evidence_sha: "b".repeat(40),
+      source_kind: "text",
       source_bytes: 1,
       source_sha256: "d".repeat(64),
       ecosystem_context_version: ECOSYSTEM_CONTEXT_VERSION,
@@ -61,7 +62,7 @@ describe("SillyTavern ecosystem context", () => {
     const prompt = buildContextualReviewPrompt(group);
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
-    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v4");
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v5");
     expect(prompt.systemContent).toMatch(
       /top-level object.*key named review.*status="complete"/isu,
     );
@@ -81,6 +82,17 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.userContent).not.toContain("// expanded");
     expect(prompt.userContent).toContain(groupId);
     expect(prompt.userContent).toContain("BEGIN_UNTRUSTED_REPOSITORY_DATA");
+
+    const metadataOnlyPrompt = buildContextualReviewPrompt({
+      ...group,
+      source_kind: "metadata-only",
+    });
+    expect(metadataOnlyPrompt.systemContent).toMatch(
+      /metadata-only.*not.*proof of a low-risk conclusion/isu,
+    );
+    expect(metadataOnlyPrompt.userContent).toContain(
+      '\"source_kind\": \"metadata-only\"',
+    );
 
     const completionRequired = buildContextualReviewPrompt(
       group,

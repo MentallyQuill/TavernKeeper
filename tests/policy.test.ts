@@ -53,7 +53,7 @@ describe("deterministic scanner policy", () => {
     );
     expect(policy).toMatchObject({
       version: "2",
-      promptVersion: "contextual-review-v4",
+      promptVersion: "contextual-review-v5",
       schemaVersion: "contextual-assessment-v1",
       maxImmediateAttempts: 3,
       timeoutMs: 300_000,

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { resolve, sep } from "node:path";
 
@@ -56,6 +57,7 @@ const FileRoleSchema = z.enum([
   "vendored",
   "unknown",
 ]);
+const EvidenceSourceKindSchema = z.enum(["text", "metadata-only"]);
 const EvidenceRepresentationSchema = z.strictObject({
   stage: z.enum(["raw", "decoded", "normalized", "bundle-module"]),
   sha256: DigestSchema,
@@ -84,6 +86,7 @@ export const EvidenceContextGroupSchema = z.strictObject({
   file_role: FileRoleSchema,
   target_sha: FullShaSchema,
   evidence_sha: FullShaSchema,
+  source_kind: EvidenceSourceKindSchema,
   source_bytes: z.number().int().nonnegative(),
   source_sha256: DigestSchema,
   ecosystem_context_version: z.literal("sillytavern-community-v1"),
@@ -225,6 +228,17 @@ export async function loadEvidenceSourceFromCheckout({
   runner: CommandRunner;
 }) {
   const group = EvidenceContextGroupSchema.parse(groupInput);
+  if (group.source_kind === "metadata-only") {
+    if (group.evidence_sha === group.target_sha) {
+      await verifyFileIdentity(
+        absoluteInventoryPath(checkoutRoot, group.path),
+        group.source_bytes,
+        group.source_sha256,
+        "Metadata-only evidence changed after preparation.",
+      );
+    }
+    return group.context.source;
+  }
   if (group.evidence_sha === group.target_sha) {
     const contents = await readFile(
       absoluteInventoryPath(checkoutRoot, group.path),
@@ -293,6 +307,28 @@ async function readVerifiedText(
   }
   return contents.toString("utf8");
 }
+
+async function verifyFileIdentity(
+  path: string,
+  expectedBytes: number,
+  expectedSha256: string,
+  errorMessage: string,
+) {
+  const hash = createHash("sha256");
+  let bytes = 0;
+  for await (const chunk of createReadStream(path, {
+    highWaterMark: 64 * 1024,
+  })) {
+    bytes += chunk.length;
+    if (bytes > expectedBytes) throw new Error(errorMessage);
+    hash.update(chunk);
+  }
+  if (bytes !== expectedBytes || hash.digest("hex") !== expectedSha256)
+    throw new Error(errorMessage);
+}
+
+const METADATA_ONLY_SOURCE =
+  "Non-text artifact. Raw contents were not provided to the contextual model. The repository artifact was verified against its inventory byte count and SHA-256 digest; only scanner candidate metadata is available for contextual assessment.";
 
 function classifyFileRole(path: string): FileRole {
   const normalized = path.toLowerCase();
@@ -599,6 +635,7 @@ export async function buildEvidenceContextGroups({
         : firstFinding.evidence_sha;
     const hint = selectedHint.get(firstFinding.fingerprint);
     let source: string;
+    let sourceKind: z.infer<typeof EvidenceSourceKindSchema> = "text";
     let sourceBytes: number;
     let sourceSha256: string;
     if (hint !== undefined) {
@@ -609,7 +646,18 @@ export async function buildEvidenceContextGroups({
       const file = inventoryByPath.get(path);
       if (!file)
         throw new Error(`Evidence path is absent from inventory: ${path}`);
-      source = await readVerifiedText(checkoutRoot, file);
+      if (file.kind === "text") {
+        source = await readVerifiedText(checkoutRoot, file);
+      } else {
+        await verifyFileIdentity(
+          absoluteInventoryPath(checkoutRoot, file.path),
+          file.bytes,
+          file.sha256,
+          `Evidence file changed after inventory: ${file.path}`,
+        );
+        source = METADATA_ONLY_SOURCE;
+        sourceKind = "metadata-only";
+      }
       sourceBytes = file.bytes;
       sourceSha256 = file.sha256;
     } else {
@@ -676,28 +724,33 @@ export async function buildEvidenceContextGroups({
           sha256: sourceSha256,
           transform_depth: 0,
         });
-      const contextSource = sourceWindows(
-        source,
-        locations,
-        SOURCE_CONTEXT_LINES,
-        maxEvidenceCharactersPerFinding,
-      );
-      const expansions = Array.from(
-        { length: PRECOMPUTED_EXPANSIONS },
-        (_, index) =>
-          sourceWindows(
-            source,
-            locations,
-            SOURCE_CONTEXT_LINES * 4 ** (index + 1),
-            maxEvidenceCharactersPerFinding,
-          ),
-      );
+      const contextSource =
+        sourceKind === "metadata-only"
+          ? source
+          : sourceWindows(
+              source,
+              locations,
+              SOURCE_CONTEXT_LINES,
+              maxEvidenceCharactersPerFinding,
+            );
+      const expansions =
+        sourceKind === "metadata-only"
+          ? Array.from({ length: PRECOMPUTED_EXPANSIONS }, () => source)
+          : Array.from({ length: PRECOMPUTED_EXPANSIONS }, (_, index) =>
+              sourceWindows(
+                source,
+                locations,
+                SOURCE_CONTEXT_LINES * 4 ** (index + 1),
+                maxEvidenceCharactersPerFinding,
+              ),
+            );
       groups.push({
         group_id: digest([
           target.source_id,
           target.target_sha,
           evidenceSha,
           path,
+          sourceKind,
           sourceSha256,
           candidates.map((candidate) => candidate.candidate_id),
         ]),
@@ -707,13 +760,17 @@ export async function buildEvidenceContextGroups({
         file_role: classifyFileRole(path),
         target_sha: target.target_sha,
         evidence_sha: evidenceSha ?? target.target_sha,
+        source_kind: sourceKind,
         source_bytes: sourceBytes,
         source_sha256: sourceSha256,
         ecosystem_context_version: ECOSYSTEM_CONTEXT_VERSION,
         ecosystem_context: ecosystemContext(),
         candidates,
         context: {
-          imports: importContext(redactSource(source)),
+          imports:
+            sourceKind === "metadata-only"
+              ? ""
+              : importContext(redactSource(source)),
           source: contextSource,
           expansions,
           representations,

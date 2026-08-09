@@ -75,6 +75,7 @@ const indexWithPreviousRepositoryReport: ReportIndexV5 = {
         tools_completed: 4,
         tools_not_applicable: 3,
         evidence_validated: 0,
+        metadata_only_candidates: 0,
         review_required: 0,
         review_completed: 0,
         javascript_analysis_status: "legacy",
