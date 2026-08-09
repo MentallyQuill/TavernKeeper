@@ -119,7 +119,8 @@ function advancePolicyCampaigns(
         (report) =>
           report.repository_id === repositoryId &&
           report.target_sha === target.target_sha &&
-          report.scanner_policy_version === campaign.scanner_policy_version,
+          report.scanner_policy_version === campaign.scanner_policy_version &&
+          Date.parse(report.completed_at) >= Date.parse(campaign.created_at),
       );
     });
     return {

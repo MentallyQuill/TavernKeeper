@@ -371,13 +371,42 @@ describe("scan queue synchronization", () => {
         },
       ],
     };
-    const publishedState = removeSuccessfulTarget(campaignState, covered, now);
-
-    const completed = syncScanQueue({
+    const waiting = syncScanQueue({
       manifest: manifest(covered),
       index: indexWithPreviousRepositoryReport,
-      state: publishedState,
+      state: campaignState,
       now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+    expect(waiting.state.scan_queue.entries).toEqual([
+      expect.objectContaining({ repository_id: 41 }),
+    ]);
+    expect(waiting.state.policy_campaigns).toEqual([
+      expect.objectContaining({
+        id: "policy-3-regression",
+        repository_ids: [41],
+        status: "active",
+      }),
+    ]);
+
+    const postCampaignIndex = {
+      ...indexWithPreviousRepositoryReport,
+      generated_at: "2026-08-04T12:01:30.000Z",
+      reports: indexWithPreviousRepositoryReport.reports.map((report) => ({
+        ...report,
+        completed_at: "2026-08-04T12:01:30.000Z",
+      })),
+    };
+    const publishedState = removeSuccessfulTarget(
+      waiting.state,
+      covered,
+      "2026-08-04T12:01:30.000Z",
+    );
+    const completed = syncScanQueue({
+      manifest: manifest(covered),
+      index: postCampaignIndex,
+      state: publishedState,
+      now: "2026-08-04T12:02:00.000Z",
       scannerPolicyVersion: "3",
     });
     expect(completed.state.scan_queue.entries).toEqual([]);
@@ -391,9 +420,9 @@ describe("scan queue synchronization", () => {
 
     const stable = syncScanQueue({
       manifest: manifest(covered),
-      index: indexWithPreviousRepositoryReport,
+      index: postCampaignIndex,
       state: completed.state,
-      now: "2026-08-04T12:02:00.000Z",
+      now: "2026-08-04T12:03:00.000Z",
       scannerPolicyVersion: "3",
     });
     expect(stable.changed).toBe(false);
