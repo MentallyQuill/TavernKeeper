@@ -112,7 +112,7 @@ export function publicJavascriptAnalysisCoverage(
       input.unresolved.map((value) => [unresolvedIdentity(value), value]),
     ).entries(),
   ]
-    .sort(([left], [right]) => left.localeCompare(right))
+    .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
     .slice(0, PUBLIC_JAVASCRIPT_UNRESOLVED_MAX)
     .map(([, value]) => value);
   return PublicJavascriptAnalysisCoverageSchema.parse({

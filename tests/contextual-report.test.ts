@@ -409,6 +409,34 @@ describe("contextual V5 reports", () => {
     );
   });
 
+  test("uses the schema's canonical order for mixed-case unresolved paths", () => {
+    const coverage = structuredClone(scanPackage.javascript_analysis!);
+    coverage.status = "incomplete";
+    coverage.unresolved = [
+      {
+        path: "src/components/lorebook/ImportLorebookDialog.tsx",
+        stage: "raw-ast",
+        reason: "parse",
+        recovered: false,
+      },
+      {
+        path: "src/components/MarkdownContent.tsx",
+        stage: "raw-ast",
+        reason: "parse",
+        recovered: false,
+      },
+    ];
+
+    expect(
+      publicJavascriptAnalysisCoverage(coverage).unresolved.map(
+        ({ path }) => path,
+      ),
+    ).toEqual([
+      "src/components/MarkdownContent.tsx",
+      "src/components/lorebook/ImportLorebookDialog.tsx",
+    ]);
+  });
+
   test("publishes JavaScript-analysis candidates with their tool version", () => {
     const javascriptFinding = normalizeFinding({
       origin: "javascript-analysis",
