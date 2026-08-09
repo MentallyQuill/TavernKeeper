@@ -1,0 +1,1613 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for NeoTavern/NeoTavern-Frontend at commit a0d833c.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; NeoTavern/NeoTavern-Frontend</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/NeoTavern/NeoTavern-Frontend" rel="noopener noreferrer">NeoTavern/NeoTavern-Frontend</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/NeoTavern/NeoTavern-Frontend/commit/a0d833c98dde05cea38bb372e5baa55529b82dde" rel="noopener noreferrer">a0d833c</a></span>
+        <span>Reviewed <time datetime="2026-08-09T15:52:59.070Z">Aug 9, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">20 material concerns identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>20 material</span>
+        <span>55 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <article class="finding risk-material">
+    <h3>Dependency advisory GHSA-p9ff-h696-f583 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>The scanner reports a serious issue in a dependency, but the supplied evidence does not identify the package or show whether the risky code can be reached.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p9ff-h696-f583 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is metadata for a high-severity advisory only. The affected dependency, installed version, vulnerable component, runtime reachability, attacker-controlled input, and concrete impact are absent, so the finding cannot be validated contextually.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p9ff-h696-f583</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-v6wh-96g9-6wx3 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>The scanner reports a dependency problem, but there is not enough information to tell whether it affects users in practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6wh-96g9-6wx3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a medium-severity advisory identifier is supplied. No package, version, affected code path, attacker input, or resulting harm is available for contextual assessment.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6wh-96g9-6wx3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-jr45-8vmc-qm54 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a possible dependency weakness, but the evidence does not show what it is or whether the application uses the affected behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jr45-8vmc-qm54 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate contains only an advisory reference and scanner severity. Package identity, shipped version, runtime reachability, controllable input, and exploit consequences are unavailable.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jr45-8vmc-qm54</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-pm4m-ph32-ghv5 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>The scanner flags a high-severity dependency issue, but the supplied information cannot establish whether users are exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-pm4m-ph32-ghv5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The high scanner rating is not sufficient to establish impact. The affected dependency and version, vulnerable functionality, runtime reachability, attacker control, and concrete harm are omitted.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-pm4m-ph32-ghv5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-55q2-fjhq-7xh7 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A possible dependency weakness was reported, but no details show whether it can affect this frontend.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-55q2-fjhq-7xh7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only the advisory identifier and medium scanner severity are supplied. There is no evidence of affected package version, reachable vulnerable code, attacker-controlled data, or user impact.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-55q2-fjhq-7xh7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-v2hh-gcrm-f6hx applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>The scanner reports a high-severity issue in a dependency, but the evidence is too incomplete to determine real exposure.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2hh-gcrm-f6hx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> No package name, installed version, vulnerable behavior, runtime path, attacker input, or concrete consequence is provided; scanner severity alone cannot establish an immediate danger.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2hh-gcrm-f6hx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>The scanner found a possible medium-severity dependency issue, but there is no evidence explaining whether it affects actual use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied record lacks dependency identity, resolved version, advisory mechanics, reachable code path, attacker-controlled input, and impact; contextual validation is not possible.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4w7w-66w2-5vf9 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A dependency warning was generated, but the supplied evidence does not identify a practical risk to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4w7w-66w2-5vf9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a medium-severity advisory reference is available. The package, shipped version, vulnerable operation, runtime reachability, controllable input, and concrete harm are not shown.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, installed version, advisory details, reachability, and fixed version before remediation is prioritized.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4w7w-66w2-5vf9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4c8g-83qw-93j6 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4c8g-83qw-93j6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-5p4m-2wfm-xmqj applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5p4m-2wfm-xmqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5p4m-2wfm-xmqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-v2wj-q39q-566r applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2wj-q39q-566r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2wj-q39q-566r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4cwx-7wf7-3272 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4cwx-7wf7-3272 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4cwx-7wf7-3272</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency findings lack the records needed for contextual validation</h3>
+    <p><strong>material risk</strong> &middot; low confidence</p>
+    <p>The report shows eight dependency alerts, but removes the package names and versions. Without those details, the actual user risk cannot be determined.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The evidence is a production lockfile with scanner advisory identifiers, but package details were explicitly removed and the shown excerpt does not include resolved package records. Dependency-version matching, runtime reachability, attacker-input flow, and concrete impact therefore remain unassessed.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Supply the complete lockfile dependency records and advisory details, including affected and fixed versions, vulnerable functions, reachability, and attacker-input requirements.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json#L1-L41" rel="noopener noreferrer">package-lock.json:1-41</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-8r6m-32jq-jx6q applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8r6m-32jq-jx6q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8r6m-32jq-jx6q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in an unspecified installed library, but the available evidence does not show what the library does or whether the issue can affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, affected component, runtime reachability, attacker-controlled input, and concrete impact were removed. The finding cannot be reduced to expected behavior from this evidence alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the affected package, resolved version, advisory details, and runtime reachability so remediation can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-2v37-7h3g-55p8 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A dependency was matched to a published security advisory, but the supplied evidence does not identify which package is affected or whether the vulnerable behavior can be reached.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, runtime reachability, attacker-controlled input, and concrete impact are omitted. The advisory cannot be fully contextualized from the supplied evidence, so immediate danger is not established, but remediation analysis is warranted.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, determine runtime reachability and attacker-controlled input, then update or pin the dependency if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2v37-7h3g-55p8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A dependency was matched to a published security advisory, but the supplied evidence does not identify which package is affected or whether the vulnerable behavior can be reached.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, runtime reachability, attacker-controlled input, and concrete impact are omitted. The advisory cannot be fully contextualized from the supplied evidence, so immediate danger is not established, but remediation analysis is warranted.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, determine runtime reachability and attacker-controlled input, then update or pin the dependency if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-fx2h-pf6j-xcff applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A dependency was matched to a published security advisory, but the supplied evidence does not identify which package is affected or whether the vulnerable behavior can be reached.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an advisory match in the production lockfile, but package identity, resolved version, vulnerable range, runtime reachability, attacker-controlled input, and concrete impact are omitted. The advisory cannot be fully contextualized from the supplied evidence, so immediate danger is not established, but remediation analysis is warranted.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, determine runtime reachability and attacker-controlled input, then update or pin the dependency if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fx2h-pf6j-xcff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v56q-mh7h-f735 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v56q-mh7h-f735 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v56q-mh7h-f735</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2j3-45gr-mqc4 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2j3-45gr-mqc4 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a low-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2j3-45gr-mqc4</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-28wg-ghj8-5hjv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-28wg-ghj8-5hjv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-28wg-ghj8-5hjv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This tooling file runs the project&#39;s build command through the operating system shell. That is normal for a build helper, but shell mode can make command handling more dependent on the surrounding environment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file synchronously invokes a fixed package-manager build command with inherited environment variables and inherited standard streams. Shell execution increases exposure to platform-specific shell interpretation and command resolution, but the command and arguments shown are static; no user-controlled input or external destination is evidenced. This supports a minor hardening concern, not a material vulnerability or malicious behavior finding.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider removing shell mode unless shell features are required, and ensure the build script and package lifecycle hooks are reviewed separately.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/scripts/build-profile.js#L8-L12" rel="noopener noreferrer">scripts/build-profile.js:8-12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xvcm-6775-5m9r applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xvcm-6775-5m9r to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xvcm-6775-5m9r</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A dependency was flagged by a vulnerability database, but the supplied evidence does not say which package or whether the risky code is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a medium-severity advisory for a declared production dependency, but package identity, installed version, vulnerable range, reachability, attacker-controlled input, and concrete impact are absent.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability and advisory applicability, then upgrade or apply the vendor fix if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (46)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads a named environment setting so the launcher can configure its application port.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context shows process environment variables being read for documented launcher configuration. No serialization or outbound transmission is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L121" rel="noopener noreferrer">launcher.js:121</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads selected environment settings so users can configure its ports, backend, and authentication. The supplied code does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation is environment-variable access during configuration loading. Values are assigned to local runtime configuration and no exfiltration destination or transmission is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L113" rel="noopener noreferrer">launcher.js:113</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads an environment setting to choose the launcher host address.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shown code maps a named environment variable to application host configuration; the evidence does not show credential handling or exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L117" rel="noopener noreferrer">launcher.js:117</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a local development proxy for background resources, matching the frontend’s stated architecture.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged configuration routes a frontend resource prefix to the local application backend during development. It uses a loopback destination and does not show credential collection, external transmission, hidden execution, or persistence. The scanner’s generic link signal is therefore consistent with ordinary frontend-backend integration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L36" rel="noopener noreferrer">vite.config.ts:36</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher places its own configuration values into environment variables for the processes it starts. The supplied evidence does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged assignments serialize configured launcher state into process.env before starting the internal backend. This is consistent with passing runtime configuration to a child process, with no external destination or credential exfiltration shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L353" rel="noopener noreferrer">launcher.js:353</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This match is only a CSS styling block for profile controls; it does not establish startup behavior or persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context places the match within the component&#39;s scoped stylesheet. No startup hook, storage write, process execution, or persistence mechanism is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L473" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:473</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads a setting for the internal backend port, which is needed to start the bundled backend.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The context shows a named environment override parsed into internal backend port configuration, consistent with the launcher purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L123" rel="noopener noreferrer">launcher.js:123</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads an environment setting to choose a build profile; it does not show secrets being collected or sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited line checks process environment variables for build-mode selection. The supplied context shows no serialization of the environment, credential access, or network transmission associated with this signal.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L79" rel="noopener noreferrer">vite.config.ts:79</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher runs a fixed version-control query to identify the current application revision. This does not execute user-provided text or send data to an external service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation invokes a fixed command with a fixed working directory and only reads the resulting revision identifier. No attacker-controlled command string or sensitive output flow is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L162" rel="noopener noreferrer">launcher.js:162</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script passes the existing environment to the build command so normal build settings and credentials remain available locally. The supplied code does not send that information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The environment object is derived from the process environment and adds a build marker, then is supplied to a local build invocation. No destination other than the child process is shown, and no environment value is serialized or transmitted by this file. The scanner signal is therefore contextualized as build-tool behavior rather than credential theft evidence in this artifact. Developer action is none because this is proportionate to the tooling role; review build scripts invoked by the child process separately if needed.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/scripts/build-profile.js#L4" rel="noopener noreferrer">scripts/build-profile.js:4</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This forwards character-related requests to the local backend, which is expected for this frontend.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged entry is a development proxy for character data and targets the local backend. The supplied source shows no remote host, secret handling, obfuscation, or unrelated data transfer. This behavior is proportionate to a frontend designed to operate with a SillyTavern-compatible backend.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L35" rel="noopener noreferrer">vite.config.ts:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher passes its configured application port to the backend process so the components can communicate.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The application port is converted to text and assigned to a named environment variable during startup. This is ordinary child-process configuration and does not itself disclose secrets.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L352" rel="noopener noreferrer">launcher.js:352</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This local proxy supports persona requests between the frontend and backend.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched configuration forwards persona requests to a loopback backend during development. That is a direct implementation of the application’s frontend/backend design. No external destination, credential exposure, concealed execution, or persistent behavior is evidenced.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L33" rel="noopener noreferrer">vite.config.ts:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads a password from an environment variable so it can configure local authentication. The supplied evidence does not show the password being uploaded or disclosed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The value is assigned to local configuration during startup. The provided context shows no serialization to a remote destination, logging, or other exfiltration path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L137" rel="noopener noreferrer">launcher.js:137</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This match is only CSS layout code for the settings panel and does not make the application start automatically.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited line is in a scoped style section and defines visual layout properties only. It provides no evidence of startup modification or executable persistence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L458" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:458</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads selected environment settings so users can configure its ports, backend, and authentication. The supplied code does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation is environment-variable access during configuration loading. Values are assigned to local runtime configuration and no exfiltration destination or transmission is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L114" rel="noopener noreferrer">launcher.js:114</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This match is a visual styling rule for the profile content area, not a mechanism that changes startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context shows the candidate inside a Vue scoped stylesheet with display, spacing, padding, background, and border declarations. No persistence operation is evidenced.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L479" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:479</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This forwards ordinary API calls to the local backend and is expected application plumbing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged entry proxies the application API to a local backend and enables origin adjustment for that connection. The supplied evidence does not show forwarding to an internet service or extracting sensitive values. The behavior is consistent with the documented all-in-one local deployment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L34" rel="noopener noreferrer">vite.config.ts:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads an environment setting to select an external backend address.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shown assignment configures the documented external-backend mode. No secret value or transmission destination is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L119" rel="noopener noreferrer">launcher.js:119</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The launcher uses network-related configuration as part of connecting the frontend to its intended backend. The scanner label alone does not show an unsafe destination or hidden transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only scanner metadata is supplied for the flagged link signal. The available source context shows documented backend repositories and configurable backend URLs, consistent with the launcher purpose, without evidence of credential transmission.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L31" rel="noopener noreferrer">launcher.js:31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text only adds the package version to generated type-file comments during the build. It does not send information anywhere or access user credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a template interpolation of the build-time npm package-version environment value within a documentation comment supplied to the type declaration writer. The evidence shows no network destination, persistence, runtime execution, credential handling, or serialization of broader process state. The scanner signal is therefore consistent with ordinary build metadata generation rather than credential theft or environment exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.types.ts#L18" rel="noopener noreferrer">vite.config.types.ts:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads selected environment settings so users can configure its ports, backend, and authentication. The supplied code does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation is environment-variable access during configuration loading. Values are assigned to local runtime configuration and no exfiltration destination or transmission is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L110" rel="noopener noreferrer">launcher.js:110</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged value is part of the interface definition for entering an AI provider key. It is not shown as a hard-coded secret.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line declares a key-manager widget associated with a provider-specific secret-key identifier. The supplied source shows configuration metadata, not a credential value, transmission, logging, or exfiltration path. This is consistent with a frontend that supports user-supplied model-provider credentials; the removed match prevents independent validation of the exact token-like text, but the surrounding structure strongly indicates a secret-field declaration rather than embedded credential exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/api-connection-definition.ts#L169" rel="noopener noreferrer">src/api-connection-definition.ts:169</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher passes the internal backend port to the backend it starts. This is needed for normal operation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The internal backend port is serialized into a process environment variable before spawning the backend. The shown flow has no network transmission or unrelated data collection.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L351" rel="noopener noreferrer">launcher.js:351</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher tells the backend whether it should use the internally managed backend. This is a normal startup setting.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> A boolean configuration value is converted to text and exposed to the child backend through process.env. This is proportionate to the launcher’s all-in-one backend-management purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L354" rel="noopener noreferrer">launcher.js:354</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The launcher uses network-related configuration as part of connecting the frontend to its intended backend. The scanner label alone does not show an unsafe destination or hidden transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only scanner metadata is supplied for the flagged link signal. The available source context shows documented backend repositories and configurable backend URLs, consistent with the launcher purpose, without evidence of credential transmission.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L34" rel="noopener noreferrer">launcher.js:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is part of the visual styling for an NPC profile row. It does not show the application changing startup settings or creating persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context places the match in a stylesheet rule defining flex layout, spacing, and font size. No startup hook, filesystem write, scheduled task, service registration, or other persistence operation is present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/mythic-agents/components/NpcTab.vue#L304" rel="noopener noreferrer">src/extensions/built-in/mythic-agents/components/NpcTab.vue:304</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher starts the local backend with a fixed program and fixed script name. The evidence does not show user input being inserted into a command.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The process creation uses a fixed executable and fixed argument array, with a configured working directory and piped output. Although process spawning is powerful, the supplied flow does not demonstrate shell interpretation or attacker-controlled command construction.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L362-L365" rel="noopener noreferrer">launcher.js:362-365</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads a setting controlling whether the bundled backend is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The environment override directly controls the documented internal-backend mode and does not itself expose data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L116" rel="noopener noreferrer">launcher.js:116</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This local proxy handles CSRF-token requests needed by the frontend and backend.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched configuration routes CSRF-token requests to the loopback backend. Such routing is normal when a browser frontend and local server are developed on separate ports. The evidence shows no external destination, token disclosure, or suspicious transformation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L32" rel="noopener noreferrer">vite.config.ts:32</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a reference to a named provider secret used by the interface&#39;s API-key manager, not an exposed key value.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line defines a provider configuration item with a key-manager widget and a constant identifying which secret to manage. The supplied evidence shows no literal credential, transmission, logging, or external destination; the pattern is a false positive caused by credential-related configuration terminology.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/9cfab2df275892dfce7d8ecf4176463b6338c515/src/api-connection-definition.ts#L169" rel="noopener noreferrer">src/api-connection-definition.ts:169</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This forwards thumbnail requests to the local backend for display in the frontend.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged entry is a loopback proxy for thumbnail resources. It is directly related to rendering backend-hosted media and contains no evidence of remote collection, credential use, hidden execution, or persistence. The generic network-access finding is expected in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L37" rel="noopener noreferrer">vite.config.ts:37</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads selected environment settings so users can configure its ports, backend, and authentication. The supplied code does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation is environment-variable access during configuration loading. Values are assigned to local runtime configuration and no exfiltration destination or transmission is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L111" rel="noopener noreferrer">launcher.js:111</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged network settings send the frontend&#39;s normal local API requests to its local backend, which matches the application&#39;s design.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The proxy configuration routes application paths to a local backend and rewrites one login-check path. This is consistent with a frontend/backend development setup; no external destination or credential exfiltration is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L40" rel="noopener noreferrer">vite.config.ts:40</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged section only controls the visual layout of a profile-selection area. It does not start programs, change startup settings, or create persistence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context shows a stylesheet rule defining borders, spacing, and layout for the profile section. No persistence mechanism, startup modification, execution, or data flow is present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/chat-memory/MemoryPopup.vue#L109" rel="noopener noreferrer">src/extensions/built-in/chat-memory/MemoryPopup.vue:109</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher passes the selected external backend address to the backend process so external-backend mode can work.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The configured external backend URL is assigned to a named environment variable for the managed backend. The surrounding code also uses that configured endpoint as the intended proxy target; no unrelated destination or covert transmission is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L355" rel="noopener noreferrer">launcher.js:355</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This forwards user-related requests to the local backend so the frontend can function.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched configuration proxies user requests to the local backend. Although user data may pass through this route as part of normal application operation, the destination is loopback and no unrelated disclosure or external transmission is shown. This is proportionate to the stated frontend purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L38" rel="noopener noreferrer">vite.config.ts:38</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads a setting controlling automatic backend updates.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The context shows a boolean configuration override for an explicitly documented auto-update feature. Update behavior itself is not shown here.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L120" rel="noopener noreferrer">launcher.js:120</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads a local backend-path setting from an environment variable to select the intended SillyTavern installation. No credential theft or external transmission is shown.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The value is used as local configuration for backend path resolution. The supplied evidence does not demonstrate serialization to a network destination or use as a secret-bearing payload.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L124" rel="noopener noreferrer">launcher.js:124</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads selected environment settings so users can configure its ports, backend, and authentication. The supplied code does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation is environment-variable access during configuration loading. Values are assigned to local runtime configuration and no exfiltration destination or transmission is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L115" rel="noopener noreferrer">launcher.js:115</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads selected environment settings so users can configure its ports, backend, and authentication. The supplied code does not show those values being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation is environment-variable access during configuration loading. Values are assigned to local runtime configuration and no exfiltration destination or transmission is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L112" rel="noopener noreferrer">launcher.js:112</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads a setting controlling whether the internal backend is exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shown environment override controls a documented exposure option; no network binding or authorization outcome is included in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L118" rel="noopener noreferrer">launcher.js:118</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This match is only CSS for arranging profile controls and does not alter what runs when the application starts.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited line is within a stylesheet and contains visual flexbox layout declarations. The evidence does not show startup registration, file modification, or any persistence action.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L464" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:464</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads an environment setting to enable or disable basic authentication.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The context maps a named environment variable to the documented authentication configuration. It does not show password disclosure or outbound use.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L122" rel="noopener noreferrer">launcher.js:122</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged line imports the operating-system module to apply a documented Android compatibility fix; it does not show data theft.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source uses the operating-system module to inspect CPU availability and substitute a single synthetic CPU entry when Android or Termux reports none. This occurs in build tooling, not user-session code. No credential access, network destination, serialization, or exfiltration flow is present in the evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L3" rel="noopener noreferrer">vite.config.ts:3</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads a local backend-path setting from an environment variable for configuration. The supplied evidence does not show that this value contains or exposes credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The operation assigns an environment-controlled path to local configuration. No external destination, secret extraction, or disclosure behavior is evidenced.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L125" rel="noopener noreferrer">launcher.js:125</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>422 files &middot; 3464351 bytes</dd>
+      <dt>Contextual coverage</dt><dd>74 of 74 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>222 files &middot; 1635391 bytes</dd>
+        <dt>Representations</dt><dd>222 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>222 raw signatures &middot; 17 raw AST &middot; 222 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>src/ai-config-definition.ts</code> &mdash; raw-ast / parse</li><li><code>src/api-connection-definition.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/backgrounds.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/characters.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/chat.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/connection.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/extensions.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/generation.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/media.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/personas.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/presets.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/provider-definitions.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/secrets.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/settings.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/tokenizer.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/world-info.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useAutoSave.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useCharacterTokens.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useChatGeneration.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useChatMedia.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useChatView.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useDraggable.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useModelCapabilities.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useResizable.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useStrictI18n.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useToast.ts</code> &mdash; raw-ast / parse</li><li><code>src/constants.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/composables/use-extension-settings.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/data-utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/prompt-presets.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/chat-message.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/connection-profile.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/extension-extra.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/structured-generation.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/structured-request-format.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-branching/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-branching/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-branching/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-memory/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-memory/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-memory/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/translator.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/generation-tools/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/generation-tools/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/generation-tools/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/GroupChatService.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/commentator.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/composables/useMythicState.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/defaults.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/event-generator.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/llm.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/oracle.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/scene-manager.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/test/mythic-agents.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/une.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/notebook/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/notebook/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/notebook/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/phone/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/phone/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/phone/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/RewriteService.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteContext.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteOneShot.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteSessions.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteSettings.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/test/rewrite-types.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/test/rewrite-utils.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/roadway/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/roadway/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/roadway/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/tools/urlInspector.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/tools/webSearch.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/text-to-speech/index.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/commit/a0d833c98dde05cea38bb372e5baa55529b82dde" rel="noopener noreferrer">a0d833c98dde05cea38bb372e5baa55529b82dde</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-09T15:52:59.070Z">Aug 9, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>api.openai.com &middot; gpt-5.6-luna</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v5</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>128746 input &middot; 17444 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>42ae888da12c47b6d478413b25f17b57d4d827f79016ba3fc25f074831925618</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1095193888/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>

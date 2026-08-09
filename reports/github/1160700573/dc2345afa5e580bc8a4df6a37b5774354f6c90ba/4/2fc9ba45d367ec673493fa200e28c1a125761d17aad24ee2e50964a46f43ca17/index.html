@@ -1,0 +1,2268 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for pixelnull/sillytavern-DeepLore at commit dc2345a.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; pixelnull/sillytavern-DeepLore</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/pixelnull/sillytavern-DeepLore" rel="noopener noreferrer">pixelnull/sillytavern-DeepLore</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/pixelnull/sillytavern-DeepLore/commit/dc2345afa5e580bc8a4df6a37b5774354f6c90ba" rel="noopener noreferrer">dc2345a</a></span>
+        <span>Reviewed <time datetime="2026-08-09T15:57:43.656Z">Aug 9, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">1 material concern identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>1 material</span>
+        <span>110 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <article class="finding risk-material">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>The scanner reports both downloading data and executing code somewhere in this file, but the supplied excerpt does not show whether they are connected. If connected and reachable by an attacker, this could let downloaded content run as the user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence establishes only a broad correlation across lines 130–1799 between a network retrieval primitive and a dynamic execution sink. It does not provide the relevant statements, data-flow edges, destination, trigger, or attacker-control path, so exploitation and intent cannot be determined.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the full source or narrowed code/data-flow context for the reported retrieval and execution operations, including whether downloaded data reaches the sink and when it runs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L130-L1799" rel="noopener noreferrer">src/ui/settings-ui.js:130-1799</a></dd>
+      </dl>
+    </details>
+  </article>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The automated test job may receive more GitHub access than it needs. The supplied workflow does not show a harmful action, but limiting access would reduce damage if a test step or dependency were compromised.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports excessive workflow permissions, but the supplied excerpt contains only checkout, Node setup, dependency installation, tests, and linting, with no demonstrated privileged operation or attacker-controlled execution path. This supports a hardening issue rather than an immediate vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit least-privilege permissions block and grant only the permissions required by the test workflow.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/.github/workflows/tests.yml#L9-L20" rel="noopener noreferrer">.github/workflows/tests.yml:9-20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow downloads a reusable action by a movable version label. If that label or its release were compromised, future test runs could execute unwanted code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source shows a mutable version reference for the checkout action. Because the workflow runs dependency installation and project tests on a hosted runner, a compromised action reference could execute code in the workflow context; no compromise or secret exposure is demonstrated here.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin the action to an immutable commit SHA and update it deliberately through reviewed changes.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/.github/workflows/tests.yml#L12" rel="noopener noreferrer">.github/workflows/tests.yml:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The workflow downloads the Node setup action by a movable version label. A compromised update could run code during automated tests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source shows a mutable version reference for the Node setup action. The action executes before package installation and tests, so an upstream reference compromise could affect the runner, although the evidence does not show malicious behavior or a concrete exposed secret.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Pin the action to an immutable commit SHA and update it deliberately through reviewed changes.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/.github/workflows/tests.yml#L13" rel="noopener noreferrer">.github/workflows/tests.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-h67p-54hq-rp68 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in a dependency, but the supplied evidence does not show which package is affected or whether the extension uses it when running.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-h67p-54hq-rp68 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence identifies only an advisory and a lockfile candidate. Package identity, affected version, reachability, attacker-controlled input, and runtime impact are unavailable; the visible manifest places the direct dependency in development tooling.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the dependency and installed version, confirm whether it is production-reachable, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-h67p-54hq-rp68</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The scanner reports a high-severity dependency issue, but there is not enough information to tell whether it affects the running extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only the advisory identifier and generic scanner explanation are supplied. The affected package, version range, runtime reachability, input path, and concrete impact cannot be established.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the dependency and installed version, confirm runtime reachability and attacker-controlled input, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5p4m-2wfm-xmqj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A known dependency advisory was detected, but the supplied material does not establish a practical attack against users of this extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5p4m-2wfm-xmqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate lacks package identity and version details. No runtime import, attacker-controlled input, or exploitable execution path is shown.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the dependency and installed version, determine whether vulnerable code is loaded in production, and remediate if reachable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5p4m-2wfm-xmqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-52cp-r559-cp3m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The scanner found a reported dependency problem, but the evidence does not show that the affected code runs or can be reached by an attacker.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-52cp-r559-cp3m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Advisory metadata alone is insufficient for a material finding. The supplied context omits the matched package, installed version, reachability, and attacker influence over vulnerable data.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Resolve the advisory to its package and shipped version, assess production reachability, and update the dependency where necessary.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-52cp-r559-cp3m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The advisory may concern a dependency used only during development, but the supplied evidence does not identify it or prove that distinction.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The lockfile scanner result is not accompanied by package details. Runtime use, vulnerable code path, input control, and resulting harm remain unestablished.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Determine the affected package and version and verify whether the vulnerable behavior is reachable in the shipped extension; patch if so.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner warning alone does not show that users are exposed; more dependency and runtime information is needed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied candidate contains only an advisory identifier and generic match statement. No package, version, reachability, attacker-controlled input, or concrete impact is provided.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected dependency and installed version, assess whether production code reaches the vulnerable functionality, and remediate if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (101)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension creates a local HTTPS address to help diagnose its user-configured Obsidian connection. This is part of its stated vault-integration setup, not evidence of contacting an unrelated service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shown code constructs a certificate-diagnostic address from the configured host and port after a local connection failure. The destination is user-supplied and tied to the Obsidian REST API workflow; no external fixed destination or concealed transmission is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L419" rel="noopener noreferrer">src/vault/obsidian-api.js:419</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code reads the connection details entered in the setup wizard and uses them to test the user&#39;s Obsidian vault connection. That is the feature&#39;s stated purpose, not a hidden destination or suspicious link.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a fixed host fallback used with user-supplied host, port, API key, and protocol settings before calling the imported connection-test routine. The surrounding code displays certificate guidance and opens a returned certificate URL only after a connection error and user click. The supplied evidence shows no concealed external destination, automatic credential exfiltration, obfuscation, or unrelated persistence; the actual imported network implementation is not included here but is not needed to contextualize this literal signal as expected connection behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L374" rel="noopener noreferrer">src/ui/setup-wizard.js:374</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. The retained source context shows ordinary settings UI behavior, including user-visible connection links, without enough data to establish concealed or harmful network access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L880" rel="noopener noreferrer">src/ui/settings-ui.js:880</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged operation checks the configured Obsidian host before sending a request, which fits the extension&#39;s stated purpose of connecting to a local vault.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is on host validation immediately before request construction. The supplied context shows validation intended to restrict requests to loopback or LAN hosts, with the bearer token added only afterward. No arbitrary external destination or concealed transfer is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L242" rel="noopener noreferrer">src/vault/obsidian-api.js:242</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This reads a host and port that the user entered into the setup wizard so the extension can display the selected vault connection. The supplied evidence does not show data being sent elsewhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L1057" rel="noopener noreferrer">src/ui/setup-wizard.js:1057</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a configurable local proxy address used by an AI note feature. The supplied evidence does not show secret collection or data being sent to an unrelated destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged fixed network value is a loopback proxy endpoint associated with an explicitly documented AI Notepad connection setting. The evidence shows configuration only and no exfiltration flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L117" rel="noopener noreferrer">settings.js:117</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fixed hostname check in a proxy URL validator. It blocks a cloud metadata address rather than contacting it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied code compares the parsed hostname against a small denylist and throws before constructing or sending the proxy request. The scanner signal does not show a suspicious destination or data exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ai/proxy-api.js#L31" rel="noopener noreferrer">src/ai/proxy-api.js:31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that checks whether analytics can safely handle a specially named entry without changing the underlying object prototype.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line constructs a test input using a prototype-sensitive property name, then invokes the analytics recorder and asserts that the resulting prefixed key is an own property containing a normal value. The supplied context shows defensive test coverage rather than an unsafe assignment or attacker-controlled execution path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/unit.mjs#L3651" rel="noopener noreferrer">test/unit.mjs:3651</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a local proxy setting for the session-summary feature, not evidence of a suspicious outside connection.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed endpoint is loopback and is paired with documented Session Scribe connection configuration. No request construction, credential handling, or external destination is supplied.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L149" rel="noopener noreferrer">settings.js:149</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a local-network address check used before connecting to Obsidian. The scanner signal alone does not show a suspicious external link.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied code validates an Obsidian host and restricts accepted destinations to loopback or private/link-local address ranges before API-key use. No external destination or concealed execution is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L34" rel="noopener noreferrer">src/vault/obsidian-api.js:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This value sets the default local address for an Obsidian vault, matching the extension’s stated purpose of connecting to a local Obsidian service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited code assigns a loopback host during migration of an existing vault configuration. It is a local default, not an external destination or data transmission mechanism.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L481" rel="noopener noreferrer">settings.js:481</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner noticed a possible obfuscation pattern, but the supplied evidence does not show hidden behavior or executable payloads. The flagged file is a large unit-test file containing ordinary imports and test code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is based only on a low-confidence static obfuscation signal. Supplied context identifies the artifact as a test module and does not retain the matched literals or demonstrate concealed execution, data collection, persistence, credential access, or an external destination. The project purpose and visible imports are consistent with testing application functionality, so the signal alone does not establish a security issue or malicious behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/unit.mjs#L1" rel="noopener noreferrer">test/unit.mjs:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged behavior is a local connection check for the Obsidian service that this extension is designed to use. It checks nearby localhost ports over HTTP and HTTPS, optionally including the user-provided service key, rather than sending data to an unrelated external destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source constructs requests from a configurable host, defaulting to localhost, and scans a bounded port range around the documented Obsidian Local REST API port. Requests are GET probes with an optional caller-supplied bearer token, bounded by timeout and abort handling. The evidence shows no external destination, persistence, obfuscation, or unrelated collection in this candidate&#39;s code context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/scanner.js#L32" rel="noopener noreferrer">src/vault/scanner.js:32</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension downloads its own nearby icon and displays it in the drawer. This is a normal interface feature, not a download of executable code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The network request targets a relative module-resolved SVG asset. The response is read as text and inserted into the drawer as markup; no dynamic JavaScript evaluation, command execution, remote script loading, or user-controlled destination is shown in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/drawer/drawer.js#L223-L238" rel="noopener noreferrer">src/drawer/drawer.js:223-238</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The available evidence is a low-confidence scanner signal in a test file. The supplied context shows ordinary delete-safety tests and does not show hidden or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is based only on a low-confidence obfuscation heuristic; matched literals and the underlying flagged construct were not retained. The visible file context is a test module importing validators and exercising path-safety checks, with no demonstrated concealed execution, persistence, credential handling, or external destination.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-delete-safety.test.mjs#L1" rel="noopener noreferrer">test/prompts-delete-safety.test.mjs:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test value representing a local proxy address. The supplied evidence shows it is checked for settings migration and preserved for rollback, not sent elsewhere or executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal occurs in a regression test fixture. The fixed localhost proxy value is assigned to a settings object, passed through migration logic, and asserted unchanged. No network operation, credential handling, or execution sink is shown in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L7909" rel="noopener noreferrer">test/regression.test.mjs:7909</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This check rejects local or reserved network addresses to reduce the risk of unwanted internal-network requests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code tests the parsed hostname against explicit local and private-network conditions, with an intentional exception for the documented loopback address. The matched network-access signal reflects validation logic, not an outbound request.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ai/proxy-api.js#L51" rel="noopener noreferrer">src/ai/proxy-api.js:51</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner flagged a local proxy address in a test that checks cache invalidation. The supplied evidence does not show harmful networking or data transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited context uses fixed loopback proxy values solely as inputs to a settings-key construction and equality test. No request, credential access, or external destination is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L868" rel="noopener noreferrer">test/regression.test.mjs:868</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test fixture for checking that a saved local proxy setting remains unchanged. It does not show the extension contacting an outside service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is located in a test object containing a localhost proxy URL. The surrounding code invokes pure migration logic and compares the resulting setting with the expected value; the supplied evidence does not show request construction, transmission, or dynamic execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L7898" rel="noopener noreferrer">test/regression.test.mjs:7898</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner suspects that a workflow artifact could preserve credentials, but the supplied workflow has no artifact-upload step. More workflow context is needed to confirm whether this finding applies.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate metadata identifies an artifact credential-persistence rule, while the supplied source excerpt shows no artifact action, upload command, or credential-handling operation. The finding is therefore not substantiated by the available source.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Inspect the complete workflow and artifact configuration; prevent credentials or other sensitive files from entering uploaded artifacts, and remove artifact upload if unnecessary.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/.github/workflows/tests.yml#L12" rel="noopener noreferrer">.github/workflows/tests.yml:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged operation starts a local-network scan for the Obsidian vault service, which matches the extension&#39;s documented connection and discovery feature. The scan is user-triggered through this popup and uses the configured local host and authentication key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence shows a call to the imported vault scanner with a host defaulting to loopback, a configured port center and radius, an abort signal, and progress callbacks. This is proportionate to the documented localhost vault-discovery workflow; no external destination or concealed execution is shown in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/vault-scan-popup.js#L151" rel="noopener noreferrer">src/ui/vault-scan-popup.js:151</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test using a local address to simulate a failed AI proxy request. It checks that secret text is removed from error messages, rather than sending real user data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context shows a regression test mocking fetch, invoking the proxy helper with a loopback URL, and asserting that API-key-like and bearer-token-like values do not appear in the resulting error. No production execution or external destination is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L5059" rel="noopener noreferrer">test/regression.test.mjs:5059</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that an in-progress local connection test can be cancelled. It does not demonstrate hidden networking or data theft.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The context shows a mocked fetch that waits for an abort signal, followed by a local loopback request and assertions for an aborted result. This is cancellation-behavior testing, not an outbound production data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L4996" rel="noopener noreferrer">test/regression.test.mjs:4996</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that checks a deliberately invalid prompt deletion request is rejected before any network operation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is in a test file and invokes the extension&#39;s prompt-deletion API with an empty path prefix. The assertion expects a failure result, indicating input validation rather than harmful network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L182" rel="noopener noreferrer">test/prompts-api.test.mjs:182</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged value is a short fixed test hash used to check duplicate-entry handling. The supplied evidence does not show hidden execution, data collection, or a suspicious destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal occurs in a test fixture at the reported line, where a deterministic content-hash-like value is assigned before testing strip-and-dedup behavior. No decoding, dynamic execution, credential access, network activity, or persistence is shown in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/stages.test.mjs#L712" rel="noopener noreferrer">test/stages.test.mjs:712</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test confirms that an unknown prompt name cannot be deleted.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test calls the deletion function with an unrecognized prompt stem and expects an unsuccessful result. The fixed local address is test input, not evidence of an outbound action succeeding.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L207" rel="noopener noreferrer">test/prompts-api.test.mjs:207</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a local proxy address used for AI-generated search, matching the extension&#39;s stated retrieval feature.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The value is a loopback proxy configuration for AI Search. The project purpose explicitly includes optional AI retrieval, while supplied evidence contains no hidden transmission or unrelated recipient.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L81" rel="noopener noreferrer">settings.js:81</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension checks the alternate local HTTP endpoint when HTTPS fails so it can explain whether the problem is a certificate, authentication, or connectivity issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fallback request targets the configured Obsidian host and alternate port, validates the host first, uses a short timeout, and sends the API key as the authentication header required by the local REST API. This matches the documented connection-diagnostic purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L464" rel="noopener noreferrer">src/vault/obsidian-api.js:464</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. The available source context shows normal user-facing connection configuration and no demonstrated malicious link flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L328" rel="noopener noreferrer">src/ui/settings-ui.js:328</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flagged line is a test that checks whether the extension rejects a missing folder prefix. It does not itself send data, open an external connection, or run hidden code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context shows a negative test invoking a prompt-folder listing function with a null prefix and asserting failure. The scanner signal is therefore attributable to test input text, not suspicious runtime network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L222" rel="noopener noreferrer">test/prompts-api.test.mjs:222</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flagged line is test data containing a local vault address and placeholder key, used to verify that removing a vault does not happen when confirmation fails. It does not show a real connection or data transfer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context places the signal inside a regression test fixture. The host values are loopback addresses and the key-like values are static placeholders. No network operation, credential collection, or external destination is shown in the candidate context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L5849" rel="noopener noreferrer">test/regression.test.mjs:5849</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a fixed test value used to check cache behavior. It does not show hidden instructions, secret theft, or an external connection.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context places the match in an integration test that constructs a cache object with ordinary fixed identifiers and compares them against equivalent fixed values. No decoding, execution, credential access, persistence, or network destination is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/integration.mjs#L648" rel="noopener noreferrer">test/integration.mjs:648</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension deliberately blocks a few dangerous local destinations while allowing the documented local proxy address.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied lines reject localhost, unspecified-address, IPv6 loopback, and an IPv4-mapped loopback representation. These are defensive URL checks in a deprecated proxy module and do not disclose data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ai/proxy-api.js#L35" rel="noopener noreferrer">src/ai/proxy-api.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flagged line is a security test using a deliberately unsafe-looking folder path to confirm traversal is blocked. It is not an attack performed by the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context shows a test passing a parent-directory traversal prefix to the folder-listing function and asserting a false result. This is defensive validation of path handling, with no evidence of execution or data transmission.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L217" rel="noopener noreferrer">test/prompts-api.test.mjs:217</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test verifies that a cancelled local connection attempt returns the right status and does not continue waiting. That matches the extension&#39;s connection-diagnostic purpose.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied test pre-aborts an AbortController, replaces fetch with a recording mock, calls the proxy connection helper against loopback, and checks the aborted result. No credential access or external transmission is evidenced.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L5079" rel="noopener noreferrer">test/regression.test.mjs:5079</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. No suspicious endpoint, hidden navigation, or credential transfer is demonstrated by the retained context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L245" rel="noopener noreferrer">src/ui/settings-ui.js:245</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged pattern is a regular expression used to recognize frontmatter keys. The supplied context shows ordinary metadata parsing and preservation, not secret collection, hidden execution, or data transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed expression is anchored to a complete line, uses Unicode character classes, and is applied to frontmatter lines for key detection. The supplied evidence does not demonstrate attacker-controlled repeated input, catastrophic backtracking, network activity, credential access, persistence, or concealed behavior. The scanner signal alone is insufficient to establish an unsafe-regex vulnerability; performance impact is unlikely in this bounded line-oriented use.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/helpers.js#L350" rel="noopener noreferrer">src/helpers.js:350</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner detected a literal used in a test file, but the supplied context shows ordinary test data rather than hidden or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The available evidence identifies an encoded-literal signal without retaining the matched value or showing its use. The surrounding supplied source is regression-test code and does not establish obfuscation serving malicious execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L820" rel="noopener noreferrer">test/regression.test.mjs:820</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line is part of protection against sending an Obsidian key to an unsafe address, not evidence of data theft.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shown host-validation logic rejects a blocked metadata address and other disallowed destinations. The scanner candidate lacks retained matched literals, but the supplied source context explains the network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L35" rel="noopener noreferrer">src/vault/obsidian-api.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.sql-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged section is instructions sent to the librarian AI describing the JSON response format and editor behavior. It does not perform database queries or execute user-controlled SQL.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.sql-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate covers a template literal containing static prompt text, JSON examples, interpolated configuration text, and response-format rules. The supplied code shows no SQL construction, database API invocation, query execution, or attacker-controlled value reaching a database sink in the flagged range.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.sql-injection</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/librarian/librarian-session.js#L617-L686" rel="noopener noreferrer">src/librarian/librarian-session.js:617-686</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When the user clicks the vault-scan control, the extension opens a local-vault discovery dialog and passes the configured connection credential so a newly found vault can be added. This matches the advertised Obsidian integration; the supplied code does not show an external or concealed destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged location is within an explicit user-initiated vault-scan handler. It supplies the configured vault credential to the imported scan dialog and later stores the credential on a selected vault configuration. The surrounding evidence shows localhost-oriented vault discovery and separate user-triggered connection testing, with no evidence here of credential transmission to an unrelated service, hidden execution, or obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L1847" rel="noopener noreferrer">src/ui/settings-ui.js:1847</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Adding the configured Obsidian API token to a request is necessary for the advertised vault connection and is shown next to the host restriction.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged operation creates an Authorization header from the caller-provided API key after host validation. The destination is the configured Obsidian endpoint, and the project purpose explicitly includes Obsidian REST API access. The evidence does not show logging or forwarding of the token elsewhere.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L239" rel="noopener noreferrer">src/vault/obsidian-api.js:239</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Resetting the connection failure counter is done when the user explicitly tests the Obsidian connection, allowing a fresh diagnostic attempt.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The circuit breaker is reset inside the exported connection-test function immediately before the configured Obsidian vault request. This is explicit user-facing retry behavior and does not establish persistence or concealment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L401" rel="noopener noreferrer">src/vault/obsidian-api.js:401</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This pattern is used to read a structured list from saved lore text. It does not by itself send information, run commands, or create a security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression parses indented tag-list lines from YAML-like frontmatter. Its input is document content and the supplied context shows no security-sensitive side effect or attacker-controlled execution path associated with it.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/librarian/librarian-review.js#L85" rel="noopener noreferrer">src/librarian/librarian-review.js:85</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a pattern used to preserve indented text while the extension cleans up prose. It does not access credentials, send data, or execute commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged multiline regular expression is applied to the input text during markdown-oriented compression, replacing contiguous indented lines with temporary markers for later restoration. The pattern is bounded by line structure and indentation, with no attacker-controlled destination or security-sensitive side effect shown. Although regex backtracking risk cannot be fully characterized from the scanner metadata alone, the supplied implementation provides no meaningful denial-of-service path in this context and the use matches the extension&#39;s stated text-processing purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/caveman.js#L72" rel="noopener noreferrer">src/caveman.js:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When the user saves field definitions, the extension sends those definitions to the Obsidian vault configured by the user. This is the feature&#39;s intended storage operation, not a hidden connection.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged call occurs inside the explicit save handler after validation. It uses the configured vault host, port, API key, path, and protocol to invoke the imported Obsidian-writing helper, then updates local state and rebuilds the index. The supplied evidence shows no unrelated destination, concealed execution, or exfiltration behavior at this location.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/rule-builder.js#L366" rel="noopener noreferrer">src/ui/rule-builder.js:366</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged dynamic execution appears in a test that extracts a known helper from project source so its behavior can be tested. The supplied evidence does not show user-controlled code being executed by the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is at a test-only factory used to evaluate extracted, repository-controlled helper source for regression testing. No attacker-controlled input, runtime extension path, persistence, or external destination is shown in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/audit-fix-privacy.test.mjs#L229" rel="noopener noreferrer">test/audit-fix-privacy.test.mjs:229</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When the configured Obsidian server cannot be reached, the extension returns a clear error telling the user what to check.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The plain-HTTP fetch-failure branch returns an unreachable diagnosis containing the configured host and port. It does not send data to a new destination or perform hidden execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L442" rel="noopener noreferrer">src/vault/obsidian-api.js:442</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The network request reads from or writes to the configured Obsidian vault, which is the extension&#39;s core function, and it uses the earlier host restriction.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fetch target is assembled from the selected HTTP or HTTPS protocol, validated host, port, and API path. The surrounding code sends the configured authorization header and request body to that endpoint. This is proportionate to the documented Obsidian integration; no unrelated destination or hidden timing is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L276" rel="noopener noreferrer">src/vault/obsidian-api.js:276</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line removes an accidentally pasted web-protocol prefix and trailing slashes from the Obsidian host before saving it. That is ordinary setup input cleanup, not a connection to an outside service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context shows normalization of a user-entered host string by stripping HTTP or HTTPS schemes and trailing slashes. It performs no network operation, data transmission, execution, or concealment at the flagged location.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L1146" rel="noopener noreferrer">src/ui/setup-wizard.js:1146</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Allowing loopback and private addresses is expected for an extension that connects to a local Obsidian service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code permits localhost, loopback, private IPv4, and selected private IPv6 ranges, matching the documented Obsidian Local REST API integration. This is proportional to the stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L32" rel="noopener noreferrer">src/vault/obsidian-api.js:32</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This is another test using a local proxy address to confirm that changing connection settings changes a cache key. It does not show a connection being made.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited line supplies a loopback endpoint as a value in a test fixture. The surrounding code only builds and compares cache-key strings; network access and data flow are not demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L870" rel="noopener noreferrer">test/regression.test.mjs:870</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a documented local fallback address used when no configured vault is available. It keeps the extension pointed at the computer running Obsidian.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fallback object returned by the primary-vault resolver uses the loopback host and a disabled placeholder configuration. No request or credential transfer occurs at this location.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L526" rel="noopener noreferrer">settings.js:526</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged text is a fixed identifier in a test fixture for pseudonymizing diagnostic data. In the supplied context, it is ordinary test data rather than concealed instructions or a hidden destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is located in a test file and the surrounding test constructs a representative diagnostic trace, then checks that titles and vault names are pseudonymized. The matched literal is a short fixed generation identifier, with no demonstrated decoding, execution, credential access, network transfer, or persistence. The scanner signal alone does not establish harmful obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/diagnostics.test.mjs#L1308" rel="noopener noreferrer">test/diagnostics.test.mjs:1308</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that invalid content types are rejected instead of being written.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The write operation receives a numeric content value and the assertion requires failure. This exercises input validation in a test-only context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L212" rel="noopener noreferrer">test/prompts-api.test.mjs:212</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flagged line is test data containing a local vault address and placeholder key, used to verify that removing a vault does not happen when confirmation fails. It does not show a real connection or data transfer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source context places the signal inside a regression test fixture. The host values are loopback addresses and the key-like values are static placeholders. No network operation, credential collection, or external destination is shown in the candidate context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L5850" rel="noopener noreferrer">test/regression.test.mjs:5850</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This fills in the same local address for older saved vault entries so they continue to work after the extension added remote-vault support.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The migration backfills a missing host field with a loopback address and marks settings for persistence. It does not contact that address, expose credentials, or redirect data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L494" rel="noopener noreferrer">settings.js:494</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line only displays a translated message telling the user which local ports are being scanned. It does not itself send data, execute commands, or expose credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged interpolation constructs popup text from a bounded port range and an optional host value, escaping the resulting HTML before insertion. In context, this is disclosure of an intended localhost vault-discovery operation rather than a suspicious external link or covert network action.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/vault-scan-popup.js#L27" rel="noopener noreferrer">src/ui/vault-scan-popup.js:27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This local proxy setting supports the optional automatic lore suggestion feature described by the project.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged fixed network value is a loopback endpoint under Auto Lorebook Creation settings. It is consistent with the documented AI-assisted feature and does not itself demonstrate harmful network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L97" rel="noopener noreferrer">settings.js:97</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The flagged text appears in a test fixture containing example email, IP, and API-key-like values used to verify diagnostic scrubbing. The supplied evidence does not show a real external connection, data collection, or secret transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is located in a diagnostics unit test whose surrounding assertions verify deep-copy behavior and redaction of sensitive fields. The scanner metadata does not retain the matched literal or demonstrate network access, execution, persistence, or exfiltration. Project documentation describes pseudonymized diagnostics exports, which is consistent with the test context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/diagnostics.test.mjs#L814" rel="noopener noreferrer">test/diagnostics.test.mjs:814</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a normal pattern for finding wiki links in markdown text. It is used for the extension&#39;s lore retrieval feature and does not access credentials, run commands, or contact an outside service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression is a fixed, global regular expression applied to caller-supplied markdown to extract bracketed wiki-link targets. The supplied evidence shows no attacker-controlled construction, sensitive-data source, external sink, or harmful execution path. Although regex backtracking behavior can merit testing with unusually large inputs, this expression is structurally simple and the shown use is bounded by normal document processing.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/core/utils.js#L154" rel="noopener noreferrer">core/utils.js:154</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The supplied evidence points to a test that exercises masking of local addresses and secrets in diagnostic text. It does not show a suspicious link, external destination, execution, or data theft.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-severity static signal attached to a single test line. The available context shows scrubber tests for IPs, tokens, URLs, and related diagnostic redaction, while retaining no matched literal or network-flow evidence. The project description also states that diagnostics are pseudonymized before sharing. This evidence does not establish malicious network behavior or a vulnerability in shipped runtime code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/diagnostics.test.mjs#L590" rel="noopener noreferrer">test/diagnostics.test.mjs:590</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged the button that starts a local vault scan. The supplied code shows it loading the scan interface and passing the user-entered connection details, which matches the extension’s stated purpose.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged statement dynamically imports the vault-scan popup and then supplies the configured host, API key, and port range to that user-triggered workflow. The evidence shows no unrelated destination, concealment, persistence, or unsolicited execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L557" rel="noopener noreferrer">src/ui/setup-wizard.js:557</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The flagged text is a fixed identifier-like value in a test fixture. The supplied evidence does not show that it executes, hides behavior, or sends information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports an encoded-literal signal at a test-data line, but the supplied source context shows an ordinary test object containing descriptive fixture values. No decoding operation, execution sink, external destination, credential access, or persistence is evidenced. The project purpose also involves processing lore and model-provider requests, but this candidate itself is confined to a test fixture based on the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/verdict.test.mjs#L44" rel="noopener noreferrer">test/verdict.test.mjs:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged pattern is used to read a clearly labeled HTTP status from an error message while deciding whether a service outage should trip a circuit breaker. It does not execute code, contact a destination, or handle credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regular expression matches an explicitly labeled three-digit status following terms such as HTTP or status. It is applied to err.message only for local classification, with no dynamic evaluation or externally observable side effect. The surrounding logic intentionally avoids broad numeric matching and excludes rate-limit and authentication failures from breaker trips, consistent with the documented AI-service error-handling purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ai/breaker-pure.js#L54" rel="noopener noreferrer">src/ai/breaker-pure.js:54</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test verifies that an unrecognized prompt name cannot be removed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The deletion API is tested with a non-permitted stem and must return failure. No successful deletion or data transmission is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L202" rel="noopener noreferrer">test/prompts-api.test.mjs:202</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found an encoded-looking literal in a test file, but the supplied evidence does not show that it hides harmful behavior or sends data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-severity, medium-confidence static obfuscation signal at one line in a test file. The provided context shows ordinary test data and assertions, with no retained literal, execution path, destination, or concealment behavior demonstrating a security impact.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/audit-fix-lifecycle.test.mjs#L259" rel="noopener noreferrer">test/audit-fix-lifecycle.test.mjs:259</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The flagged value is part of a regression test fixture for proxy configuration. The available evidence does not show suspicious communication or secret handling.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cited context places a fixed local endpoint in test input used to verify cache invalidation when the endpoint changes. No runtime request, exfiltration, persistence, or concealed execution is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L886" rel="noopener noreferrer">test/regression.test.mjs:886</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. The visible code concerns connection-profile display and user-configured proxy settings, which is consistent with the extension&#39;s purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L787" rel="noopener noreferrer">src/ui/settings-ui.js:787</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. The retained lines show ordinary vault connection configuration, including a user-entered API-key field, without evidence of exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L107" rel="noopener noreferrer">src/ui/settings-ui.js:107</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged field is part of a demo setup button that fills in a local Obsidian address. It does not send information by itself and is consistent with helping users connect the demo vault.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The event handler writes fixed localhost connection values into visible form fields, clears the API-key field, and asks the user to enter the key and test the connection. No network request or secret transmission is shown at this location.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L492" rel="noopener noreferrer">src/ui/setup-wizard.js:492</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This pattern finds IPv4 addresses so diagnostics can replace identifying network details with consistent pseudonyms. It does not send data or execute commands; it supports the stated goal of preparing shareable diagnostic reports.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed expression matches IPv4 addresses and optional ports. Its callback increments a statistic, preserves the first two octets, pseudonymizes the remaining suffix, and returns the transformed value. The supplied evidence shows no attacker-controlled execution or external transmission.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/diagnostics/scrubber.js#L161" rel="noopener noreferrer">src/diagnostics/scrubber.js:161</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This pattern performs the same kind of normal document parsing for keyword lists. It is not evidence of harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression extracts indented key-list lines from YAML-like frontmatter. The supplied code shows ordinary parsing of vault entries, with no demonstrated dangerous destination, execution, persistence, or credential handling.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/librarian/librarian-review.js#L90" rel="noopener noreferrer">src/librarian/librarian-review.js:90</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner flagged a fixed value in a test that checks behavior when a connection is missing an API key. The supplied excerpt does not show a suspicious link or harmful network action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-severity static signal at a test fixture line. The visible code constructs a localhost connection object without an API key and asserts compiled-in fallback behavior; no external destination, credential handling, execution, or obfuscation is shown. The retained scanner metadata does not identify the matched literal, so malicious interpretation is unsupported.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-store.test.mjs#L598" rel="noopener noreferrer">test/prompts-store.test.mjs:598</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged text is an ordinary test value containing letters and numbers. The supplied evidence does not show hidden execution, secret handling, or suspicious data transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate points to a fixed literal in a unit-test assertion validating a field-name format. No encoded payload behavior, decoding followed by execution, persistence, credential access, or external destination is shown in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/fields.test.mjs#L38" rel="noopener noreferrer">test/fields.test.mjs:38</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L995" rel="noopener noreferrer">src/ui/setup-wizard.js:995</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The alternate connection check includes the API key so the extension can distinguish an authentication failure from a certificate or network failure. It is directed at the configured Obsidian endpoint.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The validated alternate-port request places the supplied API key in the Authorization header and only interprets the response status. The evidence shows no unrelated destination, logging, persistence, or exfiltration path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L461" rel="noopener noreferrer">src/vault/obsidian-api.js:461</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a fixed test value used to check that a secret-like URL parameter is removed. It does not show hidden execution, data collection, or transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is in a test asserting privacy behavior for URL sanitization. The flagged literal appears as a redacted secret marker in an input fixture, while the assertion checks that an unrelated placeholder value is absent and that a benign parameter remains. This is consistent with regression coverage for credential masking, not runtime obfuscation or exfiltration. The supplied evidence does not show execution of the test value as code, external communication, persistence, or concealed behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/audit-fix-privacy.test.mjs#L245" rel="noopener noreferrer">test/audit-fix-privacy.test.mjs:245</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner found an encoded-looking value in a unit-test file, but the supplied context shows ordinary tests for lore-entry injection tracking and deduplication. There is no indication that the value hides harmful behavior or sends data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-severity, medium-confidence static encoded-literal signal at a test assertion line. The provided source context is a test fixture containing a short content-hash value and associated deduplication logic; it shows no decoding, execution, persistence, credential access, or external destination. The signal alone is insufficient to establish obfuscation-based malicious behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/unit.mjs#L3550" rel="noopener noreferrer">test/unit.mjs:3550</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line only selects the configured local vault host, defaulting to the local computer when no host is set. This matches the extension’s documented purpose of connecting to an Obsidian vault.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context shows a fixed local-host fallback used while constructing a vault connection object. It does not show a remote destination, hidden execution, credential transmission, or obfuscation. The scanner signal is therefore consistent with ordinary connection setup for the stated local REST API integration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/prompts/prompt-store.js#L109" rel="noopener noreferrer">src/prompts/prompt-store.js:109</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged line uses an API key only to distinguish cached vault configurations. The supplied code shows it being converted into a short hash rather than sent over the network, which fits persistent cache management.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal is on a cache-key construction expression containing vault host, port, protocol, and a hash of the configured API key. In the supplied production context, this value is used to namespace IndexedDB cache entries; no outbound destination or execution behavior is shown for this candidate. The README also describes an Obsidian REST connection, making configuration-based cache separation proportionate to purpose. The retained evidence does not establish exposure of the original key or malicious networking.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/cache.js#L39" rel="noopener noreferrer">src/vault/cache.js:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a deliberately redacted placeholder used in a regression test to confirm that error messages do not expose API keys or bearer tokens. It is not a usable credential.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied test constructs synthetic response bodies containing clearly marked redaction placeholders and asserts that the proxy error path removes complete and partial secret values before truncation. No live credential, outbound exfiltration, or execution behavior is shown in this evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L4991" rel="noopener noreferrer">test/regression.test.mjs:4991</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is in a test utility that reads project files and uses a fixed regular expression to identify statically declared module exports. The expression is anchored to line starts, uses bounded structural tokens and a word-name capture, and is applied to source text during verification. No attacker-controlled runtime path, network destination, credential handling, persistence, or concealed execution is shown. The scanner signal therefore reflects a static pattern-matching heuristic rather than a security-relevant unsafe-regex vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/verify-imports.mjs#L244" rel="noopener noreferrer">test/verify-imports.mjs:244</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that a path-traversal attempt is blocked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The deletion API receives a traversal-style key and the test expects rejection. This is defensive boundary testing, not evidence of traversal succeeding.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L187" rel="noopener noreferrer">test/prompts-api.test.mjs:187</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is part of the same protective blocklist for local proxy targets, not evidence that the extension is contacting them.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The hostname comparison and thrown error prevent the request from proceeding for the listed IPv6-related forms. The evidence shows validation and disclosure in an error message, but no credential handling or exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ai/proxy-api.js#L36" rel="noopener noreferrer">src/ai/proxy-api.js:36</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a default local address for an optional AI search proxy. It is used only when the user chooses proxy-based AI search, and it points to the local computer rather than an unknown external site.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context assigns a default loopback proxy URL when the non-keyword search mode is not profile-based. The value is configuration for a stated retrieval feature; no request, credential transfer, or runtime execution is shown at this location.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L1189" rel="noopener noreferrer">src/ui/setup-wizard.js:1189</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. The supplied code handles user-configured vault hosts and connection tests, expected for this extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L159" rel="noopener noreferrer">src/ui/settings-ui.js:159</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a compatibility test for connection validation with no optional cancellation signal. It checks an invalid empty address and does not expose user information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The context shows the helper called with an empty URL and assertions that validation fails without marking the result as user cancellation. This is a unit/regression test with no meaningful security-impacting flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L4978" rel="noopener noreferrer">test/regression.test.mjs:4978</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another local proxy option for the extension&#39;s configurable key-optimization AI feature.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed loopback address belongs to Optimize Keys connection settings. The supplied context shows an intended optional AI operation and no evidence of credential theft, covert execution, or unrelated network access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L211" rel="noopener noreferrer">settings.js:211</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The retry button repeats the same local vault scan with a wider port range after the user asks for a broader search. It does not show sending the key or vault data to an unrelated service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The retry handler is attached only when the empty-result retry control exists, disables that control, doubles the scan radius, and invokes the same scanner with the selected host, authentication key, local port center, and abort signal. The behavior is disclosed by the UI purpose and is bounded to the documented discovery action.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/vault-scan-popup.js#L128" rel="noopener noreferrer">src/ui/vault-scan-popup.js:128</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This pattern identifies IPv6 addresses and replaces them with pseudonyms in diagnostic text. It is part of masking identifying information before reports are shared, and the evidence does not show any harmful action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed expression matches IPv6-like hexadecimal address strings. Its callback increments an IPv6 statistic and passes the matched value to a pseudonymization function, returning the result. No network destination, persistence, or code execution is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/diagnostics/scrubber.js#L177" rel="noopener noreferrer">src/diagnostics/scrubber.js:177</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Rejecting unrecognized public addresses helps keep the Obsidian connection on the local network.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied validation rejects public DNS names and global IPv6 addresses rather than sending credentials broadly. The scanner label does not establish malicious network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/vault/obsidian-api.js#L50" rel="noopener noreferrer">src/vault/obsidian-api.js:50</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a local proxy configuration for the optional librarian assistant, which is part of the extension&#39;s stated purpose.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed loopback endpoint is associated with Librarian connection configuration. The feature is disclosed, independently configurable, and gated by a disabled-by-default setting; no malicious destination or data flow is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/settings.js#L134" rel="noopener noreferrer">settings.js:134</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that a failed AI request does not leak part of a secret in the displayed error. The secret-looking value is test data, and the assertion requires it to be hidden.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied context constructs a mocked failed response containing a placeholder API-key-like value, invokes the proxy helper through a loopback endpoint, and asserts neither the full value nor a partial prefix is present in the error. This is defensive redaction coverage.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/regression.test.mjs#L5016" rel="noopener noreferrer">test/regression.test.mjs:5016</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line reads the host and port that the user entered for the Obsidian vault connection. This is needed to send the setup wizard&#39;s requested files to that vault.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is on a user-triggered setup action and obtains host, port, API key, and protocol from visible wizard controls before calling the imported vault-writing functions. The supplied evidence shows no hidden destination, automatic execution, obfuscation, or exfiltration beyond the configured Obsidian integration. The scanner signal alone does not indicate malicious network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/setup-wizard.js#L848" rel="noopener noreferrer">src/ui/setup-wizard.js:848</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test confirms that oversized prompt content is rejected before writing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The write API is supplied content exceeding the declared maximum and is expected to return failure. The evidence supports a size-limit test rather than a vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L192" rel="noopener noreferrer">test/prompts-api.test.mjs:192</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that a missing deletion key is rejected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The deletion API receives a null key and the test requires an unsuccessful result. No harmful side effect is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L177" rel="noopener noreferrer">test/prompts-api.test.mjs:177</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another test-only use that evaluates a helper copied from the project&#39;s own source to verify URL-secret removal. It is not evidence that normal users can supply JavaScript for execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dynamic execution occurs in a test factory after reading a repository source block matching the intended helper. The context shows regression tests for stripping URL credentials and token parameters, not production execution or attacker-controlled code flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/audit-fix-privacy.test.mjs#L175" rel="noopener noreferrer">test/audit-fix-privacy.test.mjs:175</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test verifies that an invalid prompt name cannot be retrieved.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fetch API is called with an unknown stem and must fail. The fixed local endpoint is test fixture data, and no successful request or sensitive-data flow is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/test/prompts-api.test.mjs#L197" rel="noopener noreferrer">test/prompts-api.test.mjs:197</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged pattern only checks whether a YAML value is a number. It does not run code, contact a service, or expose information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed regular expression validates numeric scalar syntax before conversion with Number(). It has no attacker-controlled execution, external data flow, persistence, or meaningful denial-of-service exposure in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/fields.js#L274" rel="noopener noreferrer">src/fields.js:274</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a possible link-related pattern, but the supplied context does not show a suspicious destination or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-severity static signal is supplied. The visible link is a user-facing certificate or documentation action consistent with vault setup.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/blob/dc2345afa5e580bc8a4df6a37b5774354f6c90ba/src/ui/settings-ui.js#L91" rel="noopener noreferrer">src/ui/settings-ui.js:91</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>493 files &middot; 42892492 bytes</dd>
+      <dt>Contextual coverage</dt><dd>111 of 111 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>140 files &middot; 4270865 bytes</dd>
+        <dt>Representations</dt><dd>140 raw &middot; 54 decoded &middot; 1 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>140 raw signatures &middot; 140 raw AST &middot; 140 raw OpenGrep &middot; 55 derived signatures &middot; 2 derived AST &middot; 54 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>src/graph/graph-health.js</code> &mdash; derived-ast / parse</li><li><code>src/graph/graph-health.js</code> &mdash; normalize / parse</li><li><code>src/i18n/prompts/en.js</code> &mdash; derived-opengrep / parse</li><li><code>src/i18n/prompts/ja-jp.js</code> &mdash; derived-ast / parse</li><li><code>src/i18n/prompts/ja-jp.js</code> &mdash; normalize / parse</li><li><code>src/i18n/prompts/ja-jp.js</code> &mdash; normalize / unsupported</li><li><code>src/librarian/librarian-review.js</code> &mdash; derived-ast / parse</li><li><code>src/librarian/librarian-review.js</code> &mdash; normalize / unsupported</li><li><code>src/ui/settings-ui.js</code> &mdash; derived-ast / parse</li><li><code>src/ui/settings-ui.js</code> &mdash; normalize / unsupported</li><li><code>test/regression.test.mjs</code> &mdash; derived-ast / parse</li><li><code>test/regression.test.mjs</code> &mdash; normalize / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/pixelnull/sillytavern-DeepLore/commit/dc2345afa5e580bc8a4df6a37b5774354f6c90ba" rel="noopener noreferrer">dc2345afa5e580bc8a4df6a37b5774354f6c90ba</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-09T15:57:43.656Z">Aug 9, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>api.openai.com &middot; gpt-5.6-luna</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v5</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>441046 input &middot; 28420 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>2fc9ba45d367ec673493fa200e28c1a125761d17aad24ee2e50964a46f43ca17</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1160700573/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>

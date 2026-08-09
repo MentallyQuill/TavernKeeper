@@ -1,0 +1,1242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Coneja-Chibi/VectHare at commit 3339e64.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Coneja-Chibi/VectHare</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Coneja-Chibi/VectHare" rel="noopener noreferrer">Coneja-Chibi/VectHare</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Coneja-Chibi/VectHare/commit/3339e64f14e77f0cfb505d53d32de98ca11bc64a" rel="noopener noreferrer">3339e64</a></span>
+        <span>Reviewed <time datetime="2026-08-09T15:55:18.581Z">Aug 9, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">16 material concerns identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>16 material</span>
+        <span>38 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <article class="finding risk-material">
+    <h3>Dependency advisory GHSA-5xrq-8626-4rwp applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a critical advisory, but the supplied evidence does not identify the package, version, or whether users can reach the affected code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5xrq-8626-4rwp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory match is in a production lockfile, but package identity, installed version, advisory condition, runtime reachability, and attacker-controlled input are omitted. A critical scanner label alone cannot establish immediate danger.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the matched package and installed version, then assess whether production runtime reaches the vulnerable code before upgrading or documenting the finding.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5xrq-8626-4rwp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-v6wh-96g9-6wx3 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a medium-severity dependency advisory, but there is not enough detail to tell whether the extension is affected during normal use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6wh-96g9-6wx3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence records an advisory match but removes package details and provides no version, reachability, input-flow, or impact information. The lockfile is production-role, yet the visible root entries are test-only, so dependency placement is also unresolved.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide the matched package and installed version, then verify runtime reachability and upgrade if the advisory affects shipped execution.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6wh-96g9-6wx3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-25h7-pfq9-p65f applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A high-severity dependency warning was reported, but the evidence does not show what component is involved or whether normal users can trigger it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-25h7-pfq9-p65f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only the advisory identifier and scanner classification are supplied. No package/version, vulnerable range, runtime reachability, attacker-controlled input, or concrete harm is available.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the package and installed version and determine whether the vulnerable path is shipped and reachable before applying a targeted upgrade.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-25h7-pfq9-p65f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-4w7w-66w2-5vf9 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A medium-severity advisory was detected, but the supplied report omits the information needed to decide whether users are exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4w7w-66w2-5vf9 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match lacks package identity, installed version, vulnerable behavior, runtime reachability, and attacker-input analysis. The result is therefore a material unresolved dependency issue, not a confirmed exploitable vulnerability.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and version and assess whether it is runtime-reachable in the shipped extension.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4w7w-66w2-5vf9</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-23c5-xmqv-rm74 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A high-severity dependency warning exists, but the evidence does not establish that the extension actually uses the vulnerable behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-23c5-xmqv-rm74 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner output omits package/version and all runtime data-flow details. Severity and confidence describe the advisory match, not exploitability in this project.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version and validate production reachability and exploit conditions before upgrading or documenting an exception.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-23c5-xmqv-rm74</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A high-severity dependency issue was flagged, but the supplied evidence cannot show how a user could encounter it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> There is only an advisory identifier and scanner classification. Package identity, version, vulnerable range, runtime reachability, attacker control, and concrete impact are unavailable.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Provide package/version details and verify whether the advisory affects runtime code included and reachable by the extension.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-28wg-ghj8-5hjv applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A high-severity advisory was reported, but the report lacks enough detail to determine whether it affects real extension use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-28wg-ghj8-5hjv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied evidence does not include package/version, advisory semantics, runtime reachability, attacker-controlled input, or resulting harm. It supports follow-up, not a confirmed immediate exploit.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the dependency and installed version and assess whether the vulnerable code is reachable in production execution.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-28wg-ghj8-5hjv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-7r86-cg39-jmmj applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A high-severity dependency warning was found, but the supplied material does not show whether users are exposed during ordinary operation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7r86-cg39-jmmj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only the advisory identifier and scanner severity are available. The package, installed version, vulnerable behavior, reachability, and attacker-input path are absent.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version and test whether normal production flows reach the vulnerable code.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7r86-cg39-jmmj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in a dependency, but the supplied evidence does not identify the package or show whether the extension uses the affected code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory match is high-confidence scanner evidence, but package identity, installed version, vulnerability mechanism, and runtime reachability were removed. Impact and exploitability therefore cannot be established beyond a conditional dependency risk.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-96hv-2xvq-fx4p applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity dependency issue, but the supplied evidence does not show which package is affected or whether users can reach the vulnerable behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-96hv-2xvq-fx4p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a high-severity advisory for a declared dependency, but package details, version range, reachability, attacker-controlled input, and concrete impact are unavailable.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-96hv-2xvq-fx4p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-3ppc-4f35-3m26 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity dependency issue, but the supplied evidence does not establish whether this affects normal extension operation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3ppc-4f35-3m26 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory match is not enough to determine practical exposure because the affected package, installed version, vulnerable path, and attacker input path are omitted.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3ppc-4f35-3m26</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner reported a high-severity issue in a dependency, but there is not enough information to tell whether it creates a usable attack against this extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Package identity, version, advisory behavior, runtime reachability, and attacker control are unavailable, so this remains a conditional material dependency concern rather than an immediate-danger finding.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-58qx-3vcg-4xpx applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a known dependency issue, but the evidence does not reveal whether the affected functionality is used by the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-58qx-3vcg-4xpx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner match lacks the dependency name, installed version, vulnerability details, and runtime data flow needed for contextual severity assessment.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-58qx-3vcg-4xpx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-c2c7-rcm5-vvqj applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner reported a high-severity dependency problem, but the supplied material cannot show whether it can harm users of this extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2c7-rcm5-vvqj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory severity is not sufficient for an immediate-danger conclusion; affected package, version, reachability, input control, and concrete harm are missing.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2c7-rcm5-vvqj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-2v37-7h3g-55p8 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner found a high-severity issue in a dependency, but the evidence does not identify an exposed feature or attack path.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied record omits the package, installed version, affected code path, runtime use, and attacker-controlled input, preventing a more specific assessment.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2v37-7h3g-55p8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-material">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Material concern</strong> &middot; low confidence</p>
+    <p>A scanner reported a high-severity dependency issue, but the supplied evidence does not show whether normal users can trigger it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is high-confidence at scanner level, while package identity, installed version, vulnerability conditions, runtime reachability, and impact remain unspecified.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Identify the matched package and installed version, confirm runtime reachability, and update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The scanner noticed a possible obfuscated-code pattern, but the supplied material does not show what was matched or indicate harmful behavior. Obfuscation can make future review harder, so the affected code should be explained or simplified.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The only supplied finding is a low-confidence static obfuscation signal. The provided source excerpt shows ordinary module imports and UI-manager documentation, while matched literals were not retained. There is no evidence here of concealed execution, credential theft, unauthorized persistence, or external exfiltration. Because the flagged representation and relevant code path are unavailable, intent and exact behavior cannot be fully assessed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Provide the flagged JavaScript representation or scanner details identifying the matched construct, and document or remove any intentional obfuscation.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/ui-manager.js#L1" rel="noopener noreferrer">ui/ui-manager.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The extension sends provider connection details and, when configured, an API key to the local plugin service so it can test or generate embeddings. That fits its vector-search purpose, but storing the key in extension settings and allowing a user-selected endpoint deserves extra protection.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged code constructs provider-specific request parameters. For the BananaBread provider it selects either a user-configured alternate endpoint or a localhost default and includes the configured provider API key in the request body. The evidence shows intentional provider integration and no evidence of an unrelated destination, concealment, or exfiltration. The use of a configurable endpoint and plaintext HTTP default creates transport and credential-handling concerns, but does not establish malicious behavior from the supplied context alone.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Document the endpoint and credential handling clearly; prefer the host application&#39;s secret storage where available, and use secure transport for configurable remote endpoints.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/diagnostics/production-tests.js#L72" rel="noopener noreferrer">diagnostics/production-tests.js:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The scanner noticed a possible pattern associated with hard-to-read JavaScript, but the supplied evidence does not show what caused it or whether it hides harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is based on a low-confidence obfuscation signal, while the supplied source context contains only the beginning of a production debug-modal file and no retained matched literals or complete data-flow evidence. The visible comments describe diagnostics for a RAG search pipeline, which is consistent with the file&#39;s stated role, but the available evidence cannot assess the remainder of the 74 KB artifact or determine whether any obfuscation is intentional and benign. This is insufficient to establish malicious execution, credential access, exfiltration, or concealed persistence; the incomplete visibility is a review limitation rather than evidence of safety.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Provide the complete file contents or the scanner&#39;s retained matched regions for review, and document any intentional generated or minified sections.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/search-debug.js#L1" rel="noopener noreferrer">ui/search-debug.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6g55-p6wh-862q applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6g55-p6wh-862q to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6g55-p6wh-862q</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-67mh-4wv8-2f99 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-67mh-4wv8-2f99 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-67mh-4wv8-2f99</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rf6f-7fwh-wjgh applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rf6f-7fwh-wjgh to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rf6f-7fwh-wjgh</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3v7f-55p6-f55p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3v7f-55p6-f55p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3v7f-55p6-f55p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mw96-cpmx-2vgc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mw96-cpmx-2vgc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mw96-cpmx-2vgc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f886-m6hf-6m8v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f886-m6hf-6m8v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f886-m6hf-6m8v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-qx2v-qp2m-jg93 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a reported issue in a dependency, but the supplied record does not identify the package, version, or whether production code uses it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-qx2v-qp2m-jg93 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence only establishes an advisory match in the lockfile. Package identity, affected-version range, dependency reachability, attacker-controlled input, and concrete impact are unavailable; the visible root entries indicate test tooling, which may not ship or execute in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the affected package and installed version, confirm runtime reachability, then update or remove it if applicable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-qx2v-qp2m-jg93</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fx2h-pf6j-xcff applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A scanner found a known issue in one dependency, but the supplied evidence does not identify the package or show that the extension uses the vulnerable code. The visible lockfile section lists only testing tools as direct development dependencies.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory match is metadata indicating a declared dependency, but the package identity, installed version, vulnerable component, runtime reachability, attacker-controlled input, and concrete impact are omitted. The shown root manifest contains only development dependencies, so production exposure cannot be established from the supplied context. This warrants remediation and dependency verification, not an immediate-danger classification.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Identify the exact affected package and installed version, determine whether it is production-reachable or only a development/test dependency, then update or replace it if the advisory applies.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fx2h-pf6j-xcff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (26)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found network-related and dynamic-execution patterns somewhere in a large user-interface file, but the supplied excerpt only shows diagnostic dialogs, console capture, report generation, and user-triggered fixes. It does not show downloaded content being executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the omitted portions of the module and its imported diagnostics code to confirm whether any retrieved data reaches an executable sink; separate diagnostic UI rendering from actual execution.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/ui-manager.js#L1017-L3564" rel="noopener noreferrer">ui/ui-manager.js:1017-3564</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The available evidence only reports a low-confidence scanner signal for obfuscation. It does not show hidden behavior, data theft, or harmful execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied production source is text evidence, but the candidate contains no retained matched literals or code-flow details. Imports and the stated database-browser purpose are consistent with an extension managing vector collections; the obfuscation signal alone does not establish concealment or malicious behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/database-browser.js#L1" rel="noopener noreferrer">ui/database-browser.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner flagged a network-related pattern, but the supplied line is only a test mock for a local service address. It does not show an external connection or secret transmission.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate points to a test fixture configuring a local Ollama endpoint. The evidence contains no request execution, attacker-controlled destination, credential flow, or exfiltration behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/tests/backends.test.js#L34" rel="noopener noreferrer">tests/backends.test.js:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged fixed address is a local embedding-service fallback, which fits the extension’s stated vector-backend purpose and does not show data being sent to an unrelated destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The observed value is a localhost URL selected only for the bananabread provider when no alternate endpoint is configured. It is paired with provider-specific API parameters and is not evidence of a concealed external connection.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/backends/standard.js#L75" rel="noopener noreferrer">backends/standard.js:75</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This is a test-only local API address used to imitate the extension&#39;s configured service. The supplied evidence does not show data leaving the user&#39;s machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is a localhost API URL in mocked extension settings. It is test configuration rather than production network behavior, and no external destination or sensitive-data transfer is evidenced.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/tests/backends.test.js#L19" rel="noopener noreferrer">tests/backends.test.js:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line selects a local service address for the configured embedding backend. This matches the extension’s purpose of supporting local model servers and does not show hidden communication.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fixed address is used only as the default API endpoint for the explicitly selected Bananabread provider; an alternate configured endpoint can be used. The supplied evidence shows no concealment, unrelated destination, credential exfiltration, or execution behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/core-vector-api.js#L224" rel="noopener noreferrer">core/core-vector-api.js:224</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The available evidence only says an automated tool noticed a possible obfuscation pattern. It does not show what was hidden or that the extension performs harmful actions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-confidence static obfuscation signal with matched literals withheld. The supplied source context shows a production visualizer module with ordinary imports related to chunk metadata, vector operations, scenes, hashing, and host integration, but it does not establish concealed execution, credential access, exfiltration, persistence, or malicious update behavior. Because the complete file behavior and matched signal are not available, this is not evidence of malicious behavior by itself; targeted review is still appropriate if obfuscation remains present in the artifact.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Provide the scanner-matched literals or a readable, non-transformed representation and review any dynamic execution, network, storage, and credential-handling paths.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/chunk-visualizer.js#L1" rel="noopener noreferrer">ui/chunk-visualizer.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The supplied lines show ordinary temporal-memory calculations, but they do not include the code that caused the scanner signal. There is no evidence here of harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-confidence static obfuscation signal. The available source slice contains imports, comments, and simple mathematical functions consistent with the stated temporal-decay feature, with no visible concealment, external destination, credential handling, persistence, or execution. Because only lines 1–41 are supplied for an 18,358-byte production file, the flagged representation and remaining behavior cannot be fully assessed; this is an assessment of the candidate, not proof of the artifact&#39;s overall safety.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Provide the complete file or a sufficiently broad source slice so the flagged representation and any related data flows can be inspected.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/temporal-decay.js#L1" rel="noopener noreferrer">core/temporal-decay.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged value selects either the configured embedding service or a local default. This is part of sending text for vectorization, which matches the extension’s retrieval purpose; the supplied code does not show a hidden destination or concealed behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code derives the embedding endpoint from a user-configurable setting, otherwise uses a local service address, then posts cleaned input text to an embeddings API. An optional configured API key is placed in the request authorization header. The scanner signal alone does not establish malicious networking, and the visible data flow is consistent with the documented embedding functionality.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/core-vector-api.js#L447" rel="noopener noreferrer">core/core-vector-api.js:447</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When BananaBread is selected, the extension checks the configured server for available models. It may include the API key that the user entered so the server can authenticate the request. This matches the documented model-provider connection purpose.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code constructs a server URL from user-controlled provider settings, defaults to a local BananaBread endpoint, and performs a GET request to its models endpoint. A configured provider API key is placed in an Authorization header for that same configured endpoint. The supplied evidence shows no unrelated destination, concealment, persistence, or exfiltration behavior; the fixed signal is consistent with an endpoint URL used by the provider health check.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/diagnostics/infrastructure.js#L939" rel="noopener noreferrer">diagnostics/infrastructure.js:939</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged code sends chat text and a configured authentication key to a reranking service so the extension can improve search results. That matches the advertised RAG and reranking features. The supplied evidence does not show a hidden third-party destination, although the alternate address and key handling should be made explicit to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The function selects either a user-configured alternate endpoint or a localhost service, then posts the query, retrieved document text, and an API-key field through the host plugin route for reranking. This is proportionate to the documented optional reranking/backend functionality. The evidence does not establish covert exfiltration or malicious behavior, but it does not reveal the key&#39;s source or validate alternate-endpoint restrictions; those are disclosure and hardening concerns rather than demonstrated compromise.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Document the reranking endpoint and API-key handling clearly in the settings and README; ensure the key is sourced from user-configured state and is sent only to the intended local or explicitly configured backend.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/chat-vectorization.js#L349" rel="noopener noreferrer">core/chat-vectorization.js:349</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code prepares connection details for a locally configured model service. The detected link-like value is a local endpoint, and the key is included for the plugin request rather than sent to an unrelated destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged value is an endpoint constructed for the BananaBread provider, defaulting to a local service address or a user-selected alternate endpoint. The same function adds the configured provider key to the request parameters. The supplied context shows provider-specific request preparation consistent with the extension&#39;s stated vector-embedding purpose, with no evidence of a fixed external destination, concealment, or unrelated exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review whether the BananaBread endpoint and API key must be sent in the request body; if required, document this clearly and prefer the host application&#39;s secret-handling facilities where available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/diagnostics/production-tests.js#L74" rel="noopener noreferrer">diagnostics/production-tests.js:74</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The available evidence only says that an automated scanner noticed a possible obfuscation pattern. It does not show what was matched or demonstrate hidden, harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a low-confidence static obfuscation signal with matched literals omitted. The supplied source context contains only imports, comments, and exports, not the flagged representation or an observable suspicious data flow. Obfuscation alone is insufficient to infer malicious behavior or a vulnerability in this extension&#39;s collection-management purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Provide the complete transformed JavaScript or the scanner&#39;s retained match details and surrounding source so the signal can be assessed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/collection-loader.js#L1" rel="noopener noreferrer">core/collection-loader.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The supplied material does not show meaningful code hiding or suspicious execution. The scanner result alone is too weak to establish a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Only a low-confidence obfuscation signal is supplied, without matched content. The available source excerpt is readable, documented provider-selection code, and does not demonstrate concealed behavior, credential theft, or unrelated persistence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/backends/standard.js#L1" rel="noopener noreferrer">backends/standard.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner detected a link-like signal, but the actual matched value was withheld. The visible code displays configured provider or database endpoints in a report and does not show an unexplained connection.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence identifies only a static scanner signal and explicitly omits the matched literal. Nearby supplied logic obtains endpoint values from extension settings for inclusion in a diagnostics report; it does not demonstrate a hidden destination, automatic transmission, credential collection, or execution. Because the literal and complete surrounding code are unavailable, intent and destination cannot be confirmed, but the candidate alone does not support a security finding.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Inspect the omitted literal and surrounding logic to identify the matched link and verify that it is an intentional provider, documentation, or user-configured endpoint rather than an undisclosed destination.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/ui-manager.js#L3232" rel="noopener noreferrer">ui/ui-manager.js:3232</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner found a weak signal that some JavaScript may look unusual, but the supplied evidence does not show hidden behavior, stolen data, or a harmful destination. This file is the extension&#39;s main vectorization and retrieval logic, where complex generated or bundled-looking code can occur.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is based only on a low-confidence obfuscation heuristic. Supplied source context shows ordinary ES module imports for chat retrieval, vector storage, embedding backends, filtering, diagnostics, and request headers, all consistent with the stated RAG purpose. No obfuscated payload, concealed execution, credential exfiltration, persistence mechanism, or external destination is evidenced. The assessment is limited because the candidate metadata does not retain the matched literals or precise behavior, and the provided source excerpt is incomplete relative to the full file supplied by hash and size metadata only for scanner matching.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/chat-vectorization.js#L1" rel="noopener noreferrer">core/chat-vectorization.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged link-like value is a local service address used for a supported provider connection, not a concealed outside destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a fixed loopback HTTP endpoint selected only when the configured provider is BananaBread and no alternate endpoint is enabled. The surrounding code assembles provider parameters for plugin requests; the supplied evidence shows no external destination, credential transmission beyond that provider request, obfuscation, or covert execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/diagnostics/infrastructure.js#L39" rel="noopener noreferrer">diagnostics/infrastructure.js:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The supplied excerpt shows ordinary browser UI and API activity for a database browser, but it does not show downloaded content being executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is based on a broad correlation between network retrieval and a possible execution sink within a large JavaScript representation. The supplied context shows a health check using fetch and extensive UI, import, export, and collection-management logic. It does not identify a specific retrieved response flowing into dynamic evaluation, command execution, or another executable sink. Because the excerpt is truncated before the candidate range ends, the conclusion is limited to the supplied evidence and does not establish malicious or vulnerable behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/database-browser.js#L96-L444" rel="noopener noreferrer">ui/database-browser.js:96-444</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a normal test value used to check how collection identifiers are parsed. It does not perform hidden actions or send data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate points to a fixed identifier string in a backend unit test. The surrounding test verifies parsing of a documented collection-ID format; no execution, decoding, persistence, or external data flow is shown at the flagged location.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/tests/backends.test.js#L680" rel="noopener noreferrer">tests/backends.test.js:680</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The supplied portion is a documented mathematical utility for comparing vectors, which fits the extension’s retrieval purpose. The scanner provided only a low-confidence obfuscation signal and retained no matching values; this evidence does not show hidden behavior, data collection, or secret handling.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The available source excerpt shows ordinary, readable vector-distance implementation with no dynamic execution, networking, persistence, credential access, or encoded payload. The candidate is based only on low-confidence scanner metadata, so it does not substantiate malicious obfuscation or a vulnerability in this production utility file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/utils/vector-distance.js#L1" rel="noopener noreferrer">utils/vector-distance.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The flagged address is another local development endpoint in a test mock. Nothing supplied indicates that the extension contacts it unexpectedly or sends private information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evidence identifies a mocked local vLLM server URL. It has no runtime call site, remote destination, persistence, or credential-exfiltration path in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/tests/backends.test.js#L35" rel="noopener noreferrer">tests/backends.test.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a pattern used to find capitalized names and titles in chat text, which matches the extension&#39;s keyword and entity extraction purpose. The supplied evidence shows no external communication, credential access, persistence, or concealed execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression is a fixed regular expression applied to conversation text during named-entity detection. Its use is synchronous and bounded by the surrounding extraction logic&#39;s header-size handling; no attacker-controlled replacement, dynamic evaluation, or security-sensitive data flow is shown. A scanner signal alone does not establish a denial-of-service vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/keyword-boost.js#L719" rel="noopener noreferrer">core/keyword-boost.js:719</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This scanner match is a local test endpoint, not evidence of a suspicious online destination. The supplied file uses it only to configure mocked settings.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate corresponds to a localhost llama.cpp endpoint within a test-only mock. No network operation, untrusted input, secret use, or production reachability is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/tests/backends.test.js#L33" rel="noopener noreferrer">tests/backends.test.js:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged text is a localhost provider address in a configuration list. It supports connecting to a locally running embedding service and does not show an external or concealed destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source shows a fixed default URL using the loopback host for the BananaBread local provider. This is consistent with the extension&#39;s documented multi-provider embedding purpose; the evidence shows no request, credential transmission, obfuscation, or remote destination at the flagged line.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/core/providers.js#L45" rel="noopener noreferrer">core/providers.js:45</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a small input-format check for message counts, not code that performs an unsafe operation or handles sensitive data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched expression is fixed, anchored, and limited to an optional comparison operator followed by decimal digits. It is applied to a user-configured display value and has linear, bounded matching behavior, with no evidence of catastrophic backtracking, external communication, persistence, or credential handling.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/chunk-visualizer.js#L1624" rel="noopener noreferrer">ui/chunk-visualizer.js:1624</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The supplied excerpt shows a content-vectorizing interface that can fetch user-entered web content, but it does not show downloaded content being executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is based on correlated retrieval and execution-sink signals across a large production-file representation. The supplied source excerpt demonstrates URL fetching UI and user-selected content processing, but does not identify the execution sink, establish data flow from retrieved content into it, or show concealed execution, persistence, credential access, or an attacker-controlled destination.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/blob/3339e64f14e77f0cfb505d53d32de98ca11bc64a/ui/content-vectorizer.js#L66-L1786" rel="noopener noreferrer">ui/content-vectorizer.js:66-1786</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>89 files &middot; 2444824 bytes</dd>
+      <dt>Contextual coverage</dt><dd>54 of 54 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>64 files &middot; 1966073 bytes</dd>
+        <dt>Representations</dt><dd>64 raw &middot; 6 decoded &middot; 1 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>64 raw signatures &middot; 64 raw AST &middot; 64 raw OpenGrep &middot; 7 derived signatures &middot; 1 derived AST &middot; 7 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Coneja-Chibi/VectHare/commit/3339e64f14e77f0cfb505d53d32de98ca11bc64a" rel="noopener noreferrer">3339e64f14e77f0cfb505d53d32de98ca11bc64a</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-09T15:55:18.581Z">Aug 9, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>api.openai.com &middot; gpt-5.6-luna</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v5</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>209791 input &middot; 14663 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>03e6eeabc140311f4a2317f9f953511b7443e73fd879cda6a7cd5e93e728a0a4</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1085333493/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
