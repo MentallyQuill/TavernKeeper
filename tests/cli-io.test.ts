@@ -114,4 +114,19 @@ describe("safe CLI error diagnostics", () => {
       diagnostic: "provider_schema_rejected",
     });
   });
+
+  test("preserves the bounded contextual-contract stage", () => {
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_PROVIDER",
+        scope: "system",
+        diagnostic: "provider_contextual_contract_rejected",
+      }),
+    ).toEqual({
+      code: "MODEL_PROVIDER",
+      domain: "shared",
+      component: "contextual-model",
+      diagnostic: "provider_contextual_contract_rejected",
+    });
+  });
 });

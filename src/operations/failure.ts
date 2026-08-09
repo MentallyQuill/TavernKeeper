@@ -40,6 +40,7 @@ export const SafeFailureDiagnostics = [
   "observation_schema",
   "output_limit",
   "provider_bad_request",
+  "provider_contextual_contract_rejected",
   "provider_http_error",
   "provider_method_not_allowed",
   "provider_model_unavailable",
