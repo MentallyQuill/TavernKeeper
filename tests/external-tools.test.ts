@@ -137,6 +137,7 @@ describe("scanner coordinator", () => {
     expect(source).toContain("pathCoverage");
     expect(source).toContain("bundle_modules");
     expect(source).toContain("decoded");
+    expect(source).toContain("diagnostic: error.message");
   });
 
   test("runs JavaScript analysis after repository OpenGrep and records conditional absence", async () => {

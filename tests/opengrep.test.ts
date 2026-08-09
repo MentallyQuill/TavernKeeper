@@ -468,6 +468,7 @@ describe("OpenGrep adapter", () => {
     ).rejects.toMatchObject({
       code: "MALFORMED_SCANNER_OUTPUT",
       scope: "system",
+      message: expect.stringContaining("report schema mismatch at results"),
     });
   });
 
@@ -512,12 +513,14 @@ describe("OpenGrep adapter", () => {
     {
       name: "missing",
       paths: { scanned: [], skipped: [] },
+      message: "did not account for expected paths",
     },
     {
       name: "duplicate",
       paths: { scanned: ["dist/app.js", "dist/app.js"], skipped: [] },
+      message: "path coverage contains duplicates",
     },
-  ])("rejects $name expected-path accounting", async ({ paths }) => {
+  ])("rejects $name expected-path accounting", async ({ paths, message }) => {
     const report = JSON.parse(resultJson()) as Record<string, unknown>;
     report.results = [];
     report.paths = paths;
@@ -529,7 +532,10 @@ describe("OpenGrep adapter", () => {
         version: "1.26.0",
         expectedPaths: ["dist/app.js"],
       }),
-    ).rejects.toMatchObject({ code: "MALFORMED_SCANNER_OUTPUT" });
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      message: expect.stringContaining(message),
+    });
   });
 
   test("filters non-JavaScript repository paths from expected path coverage", async () => {

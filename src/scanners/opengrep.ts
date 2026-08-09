@@ -127,15 +127,35 @@ function cleanText(value: string, maxLength: number) {
     .slice(0, maxLength);
 }
 
+function schemaIssueLocations(error: z.ZodError) {
+  const locations = [
+    ...new Set(
+      error.issues.map(({ path }) =>
+        path.length === 0 ? "root" : path.slice(0, 4).join("."),
+      ),
+    ),
+  ];
+  return locations.slice(0, 5).join(", ");
+}
+
+function safeReportFailureDetail(error: unknown) {
+  if (error instanceof z.ZodError)
+    return `OpenGrep report schema mismatch at ${schemaIssueLocations(error)}.`;
+  if (error instanceof ScannerError) return error.message;
+  if (error instanceof Error && error.message.startsWith("OpenGrep "))
+    return error.message;
+  return "OpenGrep output violated a bounded adapter invariant.";
+}
+
 function parseReport(
   root: string,
   stdout: string,
   exitCode: number,
   expectedPaths: readonly string[] | undefined,
 ) {
-  let report: z.infer<typeof OpenGrepReportSchema>;
+  let decoded: unknown;
   try {
-    report = OpenGrepReportSchema.parse(JSON.parse(stdout));
+    decoded = JSON.parse(stdout);
   } catch {
     throw new ScannerError(
       "MALFORMED_SCANNER_OUTPUT",
@@ -144,6 +164,15 @@ function parseReport(
       "opengrep",
     );
   }
+  const parsedReport = OpenGrepReportSchema.safeParse(decoded);
+  if (!parsedReport.success)
+    throw new ScannerError(
+      "MALFORMED_SCANNER_OUTPUT",
+      "system",
+      `OpenGrep report schema mismatch at ${schemaIssueLocations(parsedReport.error)}.`,
+      "opengrep",
+    );
+  const report = parsedReport.data;
   const hasOnlyRecognizedDiagnostics = report.errors.every(
     (error) =>
       isToleratedParserWarning(error) ||
@@ -244,11 +273,11 @@ function parseReport(
         ),
       },
     };
-  } catch {
+  } catch (error: unknown) {
     throw new ScannerError(
       "MALFORMED_SCANNER_OUTPUT",
       "system",
-      "OpenGrep returned an invalid finding identity or location.",
+      `OpenGrep returned an invalid finding identity or location. ${safeReportFailureDetail(error)}`,
       "opengrep",
     );
   }

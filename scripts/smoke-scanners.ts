@@ -18,6 +18,7 @@ import { runJavascriptAnalysis } from "../src/scanners/javascript-analysis.js";
 import { selectJavascriptCandidates } from "../src/scanners/javascript-candidates.js";
 import { runMalcontent } from "../src/scanners/malcontent.js";
 import { runOpenGrep } from "../src/scanners/opengrep.js";
+import { ScannerError } from "../src/scanners/types.js";
 import { resolveToolsDirectory } from "./verify-scanners.mjs";
 
 const execFileAsync = promisify(execFile);
@@ -193,7 +194,12 @@ async function main() {
 
 if (process.argv[1] && resolve(process.argv[1]) === scriptPath) {
   main().catch((error: unknown) => {
-    process.stderr.write(`${JSON.stringify(safeCliErrorRecord(error))}\n`);
+    process.stderr.write(
+      `${JSON.stringify({
+        ...safeCliErrorRecord(error),
+        ...(error instanceof ScannerError ? { diagnostic: error.message } : {}),
+      })}\n`,
+    );
     process.exitCode = 1;
   });
 }
