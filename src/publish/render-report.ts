@@ -161,14 +161,36 @@ function contextualObservation(
   </article>`;
 }
 
+function javascriptCoverage(report: ScanReportV5) {
+  const coverage = report.coverage.javascript_analysis;
+  if (coverage === undefined) return "";
+  const unresolved =
+    coverage.unresolved.length === 0
+      ? ""
+      : `<h4>Unresolved JavaScript stages</h4><ul class="limitations">${coverage.unresolved
+          .map(
+            (item) =>
+              `<li><code>${escapeHtml(item.path)}</code> &mdash; ${escapeHtml(item.stage)} / ${escapeHtml(item.reason)}${item.recovered ? " (recovered elsewhere)" : ""}</li>`,
+          )
+          .join("")}</ul>`;
+  return `<h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>${escapeHtml(coverage.status === "complete" ? "Complete" : "Incomplete")}</dd>
+        <dt>Candidates</dt><dd>${escapeHtml(coverage.candidates)} files &middot; ${escapeHtml(coverage.candidate_bytes)} bytes</dd>
+        <dt>Representations</dt><dd>${escapeHtml(coverage.representations.raw)} raw &middot; ${escapeHtml(coverage.representations.decoded)} decoded &middot; ${escapeHtml(coverage.representations.normalized)} normalized &middot; ${escapeHtml(coverage.representations.bundle_modules)} bundle modules</dd>
+        <dt>Stage scans</dt><dd>${escapeHtml(coverage.stages.raw_signatures)} raw signatures &middot; ${escapeHtml(coverage.stages.raw_ast)} raw AST &middot; ${escapeHtml(coverage.stages.raw_opengrep)} raw OpenGrep &middot; ${escapeHtml(coverage.stages.derived_signatures)} derived signatures &middot; ${escapeHtml(coverage.stages.derived_ast)} derived AST &middot; ${escapeHtml(coverage.stages.derived_opengrep)} derived OpenGrep</dd>
+      </dl>
+      ${unresolved}`;
+}
+
 export function renderReportV5Html(input: unknown) {
   const report = sanitizeReportV5(input);
   const commitUrl = `${report.canonical_url}/commit/${report.target_sha}`;
   const historyUrl = `${SITE_ROOT}reports/github/${report.repository_id}/history/`;
-  const advisory = deriveProjectAdvisory([
-    ...report.assessments,
-    ...report.observations,
-  ]);
+  const advisory = deriveProjectAdvisory(
+    [...report.assessments, ...report.observations],
+    report.coverage.javascript_analysis?.status ?? "legacy",
+  );
   const risk = advisory.risk;
   const summary = projectAdvisorySummary(advisory);
   const assessmentByCandidate = new Map(
@@ -284,6 +306,7 @@ export function renderReportV5Html(input: unknown) {
       <dt>Inventory</dt><dd>${escapeHtml(report.coverage.inventory.files)} files &middot; ${escapeHtml(report.coverage.inventory.bytes)} bytes</dd>
       <dt>Contextual coverage</dt><dd>${escapeHtml(report.review_coverage.completed)} of ${escapeHtml(report.review_coverage.required)} candidates assessed</dd>
       </dl>
+      ${javascriptCoverage(report)}
       <h3>Tools</h3>
       <ul class="tools">${report.coverage.tools.map((tool) => `<li>${escapeHtml(tool.name)} ${escapeHtml(tool.version)} &mdash; ${escapeHtml(tool.status)}</li>`).join("")}</ul>
       <h3>Limitations</h3>

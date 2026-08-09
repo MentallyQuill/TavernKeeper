@@ -4,6 +4,8 @@ import type {
 } from "../context/evidence-context.js";
 import {
   buildContextualCountsV5,
+  INCOMPLETE_JAVASCRIPT_LIMITATION,
+  publicJavascriptAnalysisCoverage,
   ScanReportV5Schema,
   type CandidateV5,
   type ScanReportV5,
@@ -37,6 +39,7 @@ const originTool: Record<string, string | undefined> = {
   tavernkeeper: "tavernkeeper-static",
   gitleaks: "gitleaks",
   opengrep: "opengrep",
+  "javascript-analysis": "javascript-analysis",
   "osv-scanner": "osv-scanner",
   zizmor: "zizmor",
   malcontent: "malcontent",
@@ -58,7 +61,17 @@ function reportLimitations(
       (limitation) => coverageLimitationText[limitation],
     ),
   );
-  return [...new Set([...configured, ...scannerLimitations])];
+  const javascriptLimitations =
+    scanPackage.javascript_analysis?.status === "incomplete"
+      ? [INCOMPLETE_JAVASCRIPT_LIMITATION]
+      : [];
+  return [
+    ...new Set([
+      ...configured,
+      ...scannerLimitations,
+      ...javascriptLimitations,
+    ]),
+  ];
 }
 
 function candidateRoles(
@@ -198,6 +211,9 @@ export function buildContextualReport(
         version,
         status: status === "completed-with-limitations" ? "completed" : status,
       })),
+      javascript_analysis: publicJavascriptAnalysisCoverage(
+        scanPackage.javascript_analysis!,
+      ),
       evidence_validation: {
         status: "completed" as const,
         validated_candidates: candidates.length,

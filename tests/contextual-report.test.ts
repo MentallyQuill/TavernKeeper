@@ -1,7 +1,11 @@
 import { describe, expect, test } from "vitest";
 
 import { buildScanPackage } from "../src/contracts/scan-package.js";
-import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
+import {
+  PUBLIC_JAVASCRIPT_UNRESOLVED_MAX,
+  publicJavascriptAnalysisCoverage,
+  ScanReportV5Schema,
+} from "../src/contracts/reports-v5.js";
 import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
 import type { CompletedContextualReview } from "../src/model/contextual-review.js";
 import {
@@ -270,6 +274,153 @@ function reportWithObservation(
 }
 
 describe("contextual V5 reports", () => {
+  test("requires JavaScript coverage on policy-4 reports", () => {
+    const report = validReport();
+    expect(report.coverage).toHaveProperty("javascript_analysis");
+    const withoutCoverage = structuredClone(report);
+    delete (withoutCoverage.coverage as Record<string, unknown>)
+      .javascript_analysis;
+
+    expect(ScanReportV5Schema.safeParse(withoutCoverage).success).toBe(false);
+    expect(
+      ScanReportV5Schema.safeParse({
+        ...withoutCoverage,
+        scanner_policy_version: "3",
+      }).success,
+    ).toBe(true);
+  });
+
+  test("publishes bounded incomplete JavaScript coverage and a fixed warning", () => {
+    const incompletePackage = structuredClone(scanPackage);
+    incompletePackage.javascript_analysis = {
+      ...incompletePackage.javascript_analysis!,
+      status: "incomplete",
+      unresolved: [
+        {
+          path: "src/index.ts",
+          stage: "normalize",
+          reason: "timeout",
+          recovered: false,
+        },
+      ],
+    };
+    incompletePackage.tools.find(
+      ({ name }) => name === "javascript-analysis",
+    )!.status = "completed-with-limitations";
+
+    const report = buildContextualReport(
+      {
+        scanPackage: incompletePackage,
+        review,
+        evidenceGroups: [group],
+      },
+      {
+        targetSha,
+        completedAt: "2026-08-02T12:00:00.000Z",
+        reportVersion: 1,
+        supersedesReportId: null,
+        limitations: [
+          "This advisory review cannot prove the absence of unknown behavior.",
+        ],
+      },
+    );
+
+    expect(report.coverage).toMatchObject({
+      javascript_analysis: {
+        status: "incomplete",
+        unresolved: [
+          {
+            path: "src/index.ts",
+            stage: "normalize",
+            reason: "timeout",
+          },
+        ],
+      },
+    });
+    expect(report.limitations).toEqual(
+      expect.arrayContaining([expect.stringMatching(/no clean conclusion/iu)]),
+    );
+  });
+
+  test("sorts, deduplicates, and caps public unresolved JavaScript stages", () => {
+    const coverage = structuredClone(scanPackage.javascript_analysis!);
+    coverage.status = "incomplete";
+    coverage.unresolved = Array.from(
+      { length: PUBLIC_JAVASCRIPT_UNRESOLVED_MAX + 2 },
+      (_, index) => ({
+        path: `src/file-${String(index).padStart(3, "0")}.js`,
+        stage: "normalize" as const,
+        reason: "timeout" as const,
+        recovered: false,
+      }),
+    ).reverse();
+    coverage.unresolved.push(coverage.unresolved[0]!);
+
+    const published = publicJavascriptAnalysisCoverage(coverage);
+    expect(published.unresolved).toHaveLength(PUBLIC_JAVASCRIPT_UNRESOLVED_MAX);
+    expect(published.unresolved[0]?.path).toBe("src/file-000.js");
+    expect(new Set(published.unresolved.map(({ path }) => path)).size).toBe(
+      PUBLIC_JAVASCRIPT_UNRESOLVED_MAX,
+    );
+  });
+
+  test("publishes JavaScript-analysis candidates with their tool version", () => {
+    const javascriptFinding = normalizeFinding({
+      origin: "javascript-analysis",
+      ruleId: "credential-exfiltration",
+      category: "credential-theft",
+      severity: "high",
+      confidence: "high",
+      path: finding.path,
+      lineStart: finding.line_start,
+      lineEnd: finding.line_end,
+      evidenceSha: finding.evidence_sha,
+      title: "Ignored JavaScript title",
+      explanation: "Ignored JavaScript explanation",
+    });
+    const javascriptPackage = structuredClone(scanPackage);
+    javascriptPackage.findings = [javascriptFinding];
+    const javascriptGroup = structuredClone(group);
+    javascriptGroup.candidates[0] = {
+      ...javascriptGroup.candidates[0]!,
+      candidate_id: javascriptFinding.fingerprint,
+      evidence_id: javascriptFinding.fingerprint,
+      origin: javascriptFinding.origin,
+      rule_id: javascriptFinding.rule_id,
+      category: javascriptFinding.category,
+      scanner_severity: javascriptFinding.severity,
+      scanner_confidence: javascriptFinding.confidence,
+    };
+    const javascriptReview = structuredClone(review);
+    javascriptReview.assessments[0] = {
+      ...javascriptReview.assessments[0]!,
+      candidate_id: javascriptFinding.fingerprint,
+      evidence_ids: [javascriptFinding.fingerprint],
+    };
+
+    const report = buildContextualReport(
+      {
+        scanPackage: javascriptPackage,
+        review: javascriptReview,
+        evidenceGroups: [javascriptGroup],
+      },
+      {
+        targetSha,
+        completedAt: "2026-08-02T12:00:00.000Z",
+        reportVersion: 1,
+        supersedesReportId: null,
+        limitations: [
+          "This advisory review cannot prove the absence of unknown behavior.",
+        ],
+      },
+    );
+
+    expect(report.candidates[0]).toMatchObject({
+      origin: "javascript-analysis",
+      scanner_version: JAVASCRIPT_ANALYSIS_VERSION,
+    });
+  });
+
   test("publishes fixed prose for bounded OpenGrep coverage limitations", () => {
     const limitedPackage = structuredClone(scanPackage);
     const openGrep = limitedPackage.tools.find(

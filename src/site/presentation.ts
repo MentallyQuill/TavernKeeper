@@ -27,6 +27,19 @@ export interface ProjectAdvisory {
 }
 
 type RecommendedRiskCounts = ContextualCountsV5["recommended_risk"];
+type JavascriptAnalysisStatus = "complete" | "incomplete" | "legacy";
+
+function applyJavascriptCoverage(
+  advisory: ProjectAdvisory,
+  status: JavascriptAnalysisStatus,
+): ProjectAdvisory {
+  if (status !== "incomplete" || advisory.risk !== "low") return advisory;
+  return {
+    ...advisory,
+    risk: "material",
+    counts: { ...advisory.counts, material: advisory.counts.material + 1 },
+  };
+}
 
 export const SITE_ROOT = "https://mentallyquill.github.io/TavernKeeper/";
 export const TAVERNARY_URL = "https://tavernary.org/";
@@ -223,6 +236,7 @@ function immediateDangerBasis(item: AdvisoryItem): DangerBasis | null {
 
 export function deriveProjectAdvisory(
   items: readonly AdvisoryItem[],
+  javascriptAnalysisStatus: JavascriptAnalysisStatus = "legacy",
 ): ProjectAdvisory {
   let malicious = false;
   let exploitable = false;
@@ -251,12 +265,19 @@ export function deriveProjectAdvisory(
         : exploitable
           ? "critical_exploitable_vulnerability"
           : null;
-  return {
-    risk:
-      dangerBasis !== null ? "high" : counts.material > 0 ? "material" : "low",
-    dangerBasis,
-    counts,
-  };
+  return applyJavascriptCoverage(
+    {
+      risk:
+        dangerBasis !== null
+          ? "high"
+          : counts.material > 0
+            ? "material"
+            : "low",
+      dangerBasis,
+      counts,
+    },
+    javascriptAnalysisStatus,
+  );
 }
 
 export function deriveIndexedProjectAdvisory(
@@ -264,15 +285,18 @@ export function deriveIndexedProjectAdvisory(
 ): ProjectAdvisory {
   const published = entry.counts.recommended_risk;
   if (entry.contextual_review_policy_version !== "2")
-    return {
-      risk: published.high + published.material > 0 ? "material" : "low",
-      dangerBasis: null,
-      counts: {
-        high: 0,
-        material: published.high + published.material,
-        low: published.low,
+    return applyJavascriptCoverage(
+      {
+        risk: published.high + published.material > 0 ? "material" : "low",
+        dangerBasis: null,
+        counts: {
+          high: 0,
+          material: published.high + published.material,
+          low: published.low,
+        },
       },
-    };
+      entry.coverage.javascript_analysis_status,
+    );
   const malicious = entry.counts.disposition.credible_malicious_behavior;
   const dangerBasis: DangerBasis | null =
     published.high === 0
@@ -282,16 +306,19 @@ export function deriveIndexedProjectAdvisory(
         : published.high > malicious
           ? "mixed"
           : "malicious_or_compromised";
-  return {
-    risk:
-      dangerBasis !== null
-        ? "high"
-        : published.material > 0
-          ? "material"
-          : "low",
-    dangerBasis,
-    counts: { ...published },
-  };
+  return applyJavascriptCoverage(
+    {
+      risk:
+        dangerBasis !== null
+          ? "high"
+          : published.material > 0
+            ? "material"
+            : "low",
+      dangerBasis,
+      counts: { ...published },
+    },
+    entry.coverage.javascript_analysis_status,
+  );
 }
 
 export function dangerBasisLabel(basis: DangerBasis | null) {

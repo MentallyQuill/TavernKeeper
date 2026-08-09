@@ -91,6 +91,7 @@ function indexedReport(
       evidence_validated: 0,
       review_required: 0,
       review_completed: 0,
+      javascript_analysis_status: "legacy" as const,
     },
     report_url:
       "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
