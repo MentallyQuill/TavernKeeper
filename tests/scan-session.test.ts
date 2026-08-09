@@ -22,7 +22,9 @@ import {
   loadScannerPolicy,
   ScannerPolicyV4Schema,
 } from "../src/config/policy.js";
+import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
 import {
+  buildBoundedEvidenceContext,
   finalizePreparedSession,
   evidenceContextIdentity,
   PreparedSessionSchema,
@@ -298,6 +300,90 @@ async function completeReview(root: string) {
 }
 
 describe("three-phase contextual scan session", () => {
+  test("shrinks contextual windows until a large prepared handoff fits its artifact ceiling", async () => {
+    const { root, prepared } = await preparedSession();
+    const stored = JSON.parse(
+      await readFile(join(root, "evidence-context.json"), "utf8"),
+    ) as {
+      groups: EvidenceContextGroup[];
+    };
+    const baseline = stored.groups[0]!;
+    const ceilings: number[] = [];
+    const maximumArtifactBytes = 70_000;
+    const manifestReserveBytes = 1_000;
+
+    const bundle = await buildBoundedEvidenceContext({
+      prepared,
+      maxEvidenceCharacters: 24_000,
+      maximumArtifactBytes,
+      manifestReserveBytes,
+      buildGroups: async (maximumCharacters) => {
+        ceilings.push(maximumCharacters);
+        return [
+          {
+            ...baseline,
+            context: {
+              ...baseline.context,
+              imports: "i".repeat(maximumCharacters),
+              source: "s".repeat(maximumCharacters),
+              expansions: [
+                "a".repeat(maximumCharacters),
+                "b".repeat(maximumCharacters),
+              ],
+              project_purpose: "p".repeat(maximumCharacters),
+            },
+          },
+        ];
+      },
+    });
+
+    const preparedBytes = Buffer.byteLength(
+      `${JSON.stringify(prepared, null, 2)}\n`,
+    );
+    const evidenceBytes = Buffer.byteLength(
+      `${JSON.stringify(bundle, null, 2)}\n`,
+    );
+    expect(
+      preparedBytes + evidenceBytes + manifestReserveBytes,
+    ).toBeLessThanOrEqual(maximumArtifactBytes);
+    expect(ceilings[0]).toBe(24_000);
+    expect(ceilings.at(-1)).toBeLessThan(24_000);
+    expect(bundle.groups[0]!.candidates).toEqual(baseline.candidates);
+
+    await writeFile(
+      join(root, "evidence-context.json"),
+      `${JSON.stringify(bundle, null, 2)}\n`,
+    );
+    const artifactRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-prepared-"),
+    );
+    roots.push(artifactRoot);
+    await expect(
+      createPreparedEvidenceArtifact({
+        request: {
+          source_id: prepared.target.source_id,
+          provider: prepared.target.provider,
+          repository_id: prepared.target.repository_id,
+          repository: prepared.target.repository,
+          target_sha: prepared.target.target_sha,
+          canonical_url: prepared.target.canonical_url,
+          project_kinds: prepared.project_kinds,
+          catalog_priority: {
+            top_30: false,
+            first_cataloged_at: "2026-08-02T15:00:00.000Z",
+          },
+          reason: "new",
+          report_version: prepared.report_version,
+          supersedes_report_id: prepared.supersedes_report_id,
+          previous_report_shas: [],
+        },
+        sessionRoot: root,
+        artifactRoot,
+        maximumBytes: maximumArtifactBytes,
+      }),
+    ).resolves.toMatchObject({ status: "prepared" });
+  });
+
   test("prepare verifies the target and removes its checkout before review", async () => {
     const base = await mkdtemp(
       join(tmpdir(), "tavernkeeper-prepare-boundary-"),

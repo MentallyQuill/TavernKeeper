@@ -130,7 +130,7 @@ jobs:
       contents: read
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 1
       matrix:
         request: ${{ fromJSON(inputs.requests_json) }}
     steps:
@@ -236,7 +236,7 @@ jobs:
         id: review
         if: ${{ steps.restore.outcome == 'success' && steps.restore.outputs.prepared == 'true' }}
         continue-on-error: true
-        timeout-minutes: 62
+        timeout-minutes: 65
         env:
           TAVERNKEEPER_API_ENDPOINT: ${{ secrets.TAVERNKEEPER_API_ENDPOINT }}
           TAVERNKEEPER_API_KEY: ${{ secrets.TAVERNKEEPER_API_KEY }}
@@ -257,10 +257,13 @@ jobs:
             return 1
           }
           retryable_review_failure() {
-            jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
+            jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_QUOTA" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
           }
           provider_review_failure() {
             jq -e '.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
+          }
+          quota_review_failure() {
+            jq -e '.code == "MODEL_QUOTA" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
           }
           provider_no_progress_retries="0"
           for pass in 1 2 3; do
@@ -273,8 +276,13 @@ jobs:
               exit 1
             fi
             if [[ "$progress_after" -gt "$progress_before" ]]; then
-              rm -f phase-error.json
-              sleep "$((pass * 5))"
+              if quota_review_failure; then
+                rm -f phase-error.json
+                sleep "$((pass * 60))"
+              else
+                rm -f phase-error.json
+                sleep "$((pass * 5))"
+              fi
               continue
             fi
             if provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]; then

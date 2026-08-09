@@ -143,10 +143,13 @@ run_review() {
   return 1
 }
 retryable_review_failure() {
-  jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
+  jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_QUOTA" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
 }
 provider_review_failure() {
   jq -e '.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
+}
+quota_review_failure() {
+  jq -e '.code == "MODEL_QUOTA" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
 }
 provider_no_progress_retries="0"
 for pass in 1 2 3; do
@@ -159,8 +162,13 @@ for pass in 1 2 3; do
     exit 1
   fi
   if [[ "$progress_after" -gt "$progress_before" ]]; then
-    rm -f phase-error.json
-    sleep "$((pass * 5))"
+    if quota_review_failure; then
+      rm -f phase-error.json
+      sleep "$((pass * 60))"
+    else
+      rm -f phase-error.json
+      sleep "$((pass * 5))"
+    fi
     continue
   fi
   if provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]; then
@@ -560,7 +568,7 @@ function checkContextualRuntime(file, workflow) {
     if (
       prepareIndex < 0 ||
       finalizeIndex !== reviewIndex + 1 ||
-      reviewSteps[reviewIndex]?.["timeout-minutes"] !== 62
+      reviewSteps[reviewIndex]?.["timeout-minutes"] !== 65
     )
       fail(
         file,
@@ -706,8 +714,8 @@ function checkEncryptedHandoff(file, workflow) {
     )
   )
     fail(file, "scan must atomically replace the bootstrap failure outcome");
-  if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 2)
-    fail(file, "scan matrix must retain max-parallel: 2");
+  if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 1)
+    fail(file, "scan matrix must retain max-parallel: 1");
   if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== false)
     fail(file, "scan matrix must finish every selected repository");
   if (workflow.jobs?.prepare?.strategy?.["max-parallel"] !== 2)
