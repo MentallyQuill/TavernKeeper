@@ -43,7 +43,7 @@ export interface Inventory {
   totalBytes: number;
 }
 
-const ignoredDirectories = new Set([".git", "node_modules"]);
+const ignoredDirectories = new Set([".git"]);
 
 function portablePath(root: string, path: string) {
   return relative(root, path).split(sep).join("/");

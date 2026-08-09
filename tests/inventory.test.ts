@@ -145,6 +145,29 @@ describe("safe inventory", () => {
     expect(result.value.totals).toEqual({ files: 2, bytes: 3 });
   });
 
+  test("inventories committed node_modules content", async () => {
+    const temporary = await mkdtemp(join(tmpdir(), "tavernkeeper-vendored-"));
+    const root = join(temporary, "repository");
+    await mkdir(join(root, "node_modules", "vendored"), { recursive: true });
+    await writeFile(
+      join(root, "node_modules", "vendored", "index.min.js"),
+      "fetch(endpoint)",
+    );
+
+    const result = await inventoryRepository({
+      root,
+      maxFiles: 10,
+      maxTotalBytes: 1024,
+      maxFileBytes: 512,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.files.map(({ path }) => path)).toEqual([
+      "node_modules/vendored/index.min.js",
+    ]);
+  });
+
   test("classifies invalid UTF-8 source as binary", async () => {
     const temporary = await mkdtemp(join(tmpdir(), "tavernkeeper-utf8-"));
     const root = join(temporary, "repository");
