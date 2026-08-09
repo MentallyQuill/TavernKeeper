@@ -130,6 +130,23 @@ export const CompletedContextualReviewSchema = z
         path: ["coverage"],
         message: "Review method coverage must account for every assessment.",
       });
+    if (
+      (review.coverage.deterministic_fallback ?? 0) >
+      review.assessments.filter(
+        (assessment) =>
+          assessment.disposition === "material_vulnerability" &&
+          assessment.impact === "medium" &&
+          assessment.exploitability === "plausible" &&
+          assessment.confidence === "low" &&
+          assessment.recommended_risk === "material",
+      ).length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["coverage", "deterministic_fallback"],
+        message:
+          "Deterministic fallback coverage must remain conservatively material.",
+      });
     if (new Set(review.completion_ids).size !== review.completion_ids.length)
       context.addIssue({
         code: "custom",

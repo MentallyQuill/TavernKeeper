@@ -374,6 +374,23 @@ export const ScanReportV5Schema = z
         message:
           "Deterministic review fallback requires its fixed public limitation.",
       });
+    if (
+      (deterministicFallback ?? 0) >
+      report.assessments.filter(
+        (assessment) =>
+          assessment.disposition === "material_vulnerability" &&
+          assessment.impact === "medium" &&
+          assessment.exploitability === "plausible" &&
+          assessment.confidence === "low" &&
+          assessment.recommended_risk === "material",
+      ).length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["review_coverage", "deterministic_fallback"],
+        message:
+          "Deterministic fallback coverage must remain conservatively material.",
+      });
     const metadataOnlyEvidence =
       report.coverage.evidence_validation.status ===
       "completed-with-limitations";

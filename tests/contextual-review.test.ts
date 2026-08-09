@@ -210,6 +210,23 @@ describe("contextual evidence review", () => {
     expect(
       result.assessments.every((item) => item.recommended_risk === "material"),
     ).toBe(true);
+    expect(
+      CompletedContextualReviewSchema.safeParse({
+        ...result,
+        assessments: result.assessments.map((item, index) =>
+          index === 0
+            ? {
+                ...item,
+                disposition: "expected_behavior",
+                impact: "none",
+                exploitability: "unlikely",
+                confidence: "high",
+                recommended_risk: "low",
+              }
+            : item,
+        ),
+      }).success,
+    ).toBe(false);
   });
 
   test("reviews every file group and covers every candidate exactly once", async () => {
