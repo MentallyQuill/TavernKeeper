@@ -925,9 +925,9 @@ for (const file of names) {
   checkDelayedWake(file, workflow);
 }
 
-const policyFile = "config/scanner-policy.v3.json";
+const policyFile = "config/scanner-policy.v4.json";
 const policy = JSON.parse(await readFile(join(root, policyFile), "utf8"));
-if (policy.version !== "3") fail(policyFile, "policy version must remain 3");
+if (policy.version !== "4") fail(policyFile, "policy version must remain 4");
 if (policy.queue?.batchSize !== 5)
   fail(policyFile, "queue batchSize must remain exactly 5");
 if (policy.queue?.maxParallel !== 2)

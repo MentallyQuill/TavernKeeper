@@ -11,7 +11,7 @@ import { basename, resolve, sep } from "node:path";
 
 import { z } from "zod";
 
-import type { ScannerPins, ScannerPolicyV3 } from "../config/policy.js";
+import type { ScannerPins, ScannerPolicyV4 } from "../config/policy.js";
 import {
   buildScanPackage,
   RequiredScanPackageTools,
@@ -105,7 +105,7 @@ const PreparedSessionObjectSchema = z.strictObject({
   project_kinds: z.array(z.enum(["extension", "frontend", "preset"])).min(1),
   prepared_at: z.iso.datetime(),
   scanner_version: VersionSchema,
-  scanner_policy_version: z.literal("3"),
+  scanner_policy_version: z.literal("4"),
   rule_catalog_version: z.literal("1"),
   report_version: z.number().int().positive(),
   supersedes_report_id: DigestSchema.nullable(),
@@ -358,7 +358,7 @@ export async function prepareTargetSession({
   ruleCatalogVersion: string;
   reportVersion: number;
   supersedesReportId: string | null;
-  policy: ScannerPolicyV3;
+  policy: ScannerPolicyV4;
   pins: ScannerPins;
   rulesRoot: string;
   runner: CommandRunner;
@@ -368,7 +368,7 @@ export async function prepareTargetSession({
   const target = TargetSchema.parse(targetInput);
   if (
     scannerPolicyVersion !== policy.version ||
-    policy.version !== "3" ||
+    policy.version !== "4" ||
     ruleCatalogVersion !== "1" ||
     projectKinds.length === 0
   )
@@ -478,7 +478,7 @@ export async function prepareTargetSession({
       project_kinds: [...projectKinds].sort(),
       prepared_at: preparedAt,
       scanner_version: scannerVersion,
-      scanner_policy_version: "3" as const,
+      scanner_policy_version: "4" as const,
       rule_catalog_version: "1" as const,
       report_version: reportVersion,
       supersedes_report_id: supersedesReportId,

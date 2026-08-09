@@ -3,7 +3,7 @@ import { join } from "node:path";
 import {
   loadScannerPins,
   loadScannerPolicy,
-  ScannerPolicyV3Schema,
+  ScannerPolicyV4Schema,
 } from "../config/policy.js";
 import { prepareTargetSession } from "../orchestrator/session.js";
 import { ProcessCommandRunner } from "../process/command-runner.js";
@@ -15,9 +15,9 @@ async function main() {
     JSON.parse(requiredEnvironment(process.env, "TAVERNKEEPER_SCAN_REQUEST")),
   );
   const repositoryRoot = process.cwd();
-  const policy = ScannerPolicyV3Schema.parse(
+  const policy = ScannerPolicyV4Schema.parse(
     await loadScannerPolicy(
-      join(repositoryRoot, "config", "scanner-policy.v3.json"),
+      join(repositoryRoot, "config", "scanner-policy.v4.json"),
     ),
   );
   const pins = await loadScannerPins(

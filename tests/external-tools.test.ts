@@ -55,7 +55,7 @@ const baseSpec = {
   structuralFiles: [],
   runner,
   policy: {
-    version: "3" as const,
+    version: "4" as const,
     queue: { batchSize: 5 as const, maxParallel: 2 as const },
     history: { maxCommits: 20 as const },
     inventory: {
@@ -69,6 +69,22 @@ const baseSpec = {
     commands: {
       timeoutMs: 2_700_000 as const,
       maxOutputBytes: 104_857_600 as const,
+    },
+    javascriptAnalysis: {
+      maxCandidates: 10_000 as const,
+      maxCandidateBytes: 536_870_912 as const,
+      maxTransformInputBytes: 16_777_216 as const,
+      transformTimeoutMs: 30_000 as const,
+      maxWorkerOldGenerationMb: 512 as const,
+      maxDerivativeBytes: 16_777_216 as const,
+      maxDerivativeBytesPerCandidate: 67_108_864 as const,
+      maxTotalDerivativeBytes: 268_435_456 as const,
+      maxDerivativesPerCandidate: 64 as const,
+      maxRecursionDepth: 3 as const,
+      maxDecodedLiteralsPerRepresentation: 256 as const,
+      maxEvidenceCharactersPerFinding: 24_000 as const,
+      maxPreparedEvidenceBytes: 20_000_000 as const,
+      analysisTimeoutMs: 1_200_000 as const,
     },
     retry: {
       modelReplyMinutesFromInitialFailure: [5, 10, 15] as [5, 10, 15],

@@ -138,7 +138,7 @@ export function buildContextualReport(
       "Report target SHA must match the Scan Package target SHA.",
     );
   if (
-    scanPackage.scanner_policy_version !== "3" ||
+    scanPackage.scanner_policy_version !== "4" ||
     scanPackage.rule_catalog_version !== RULE_CATALOG_VERSION
   )
     throw new Error("Contextual report policy versions are unsupported.");

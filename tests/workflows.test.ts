@@ -82,9 +82,9 @@ async function expectPolicyFailure(
       ),
     );
     await writeFile(
-      join(root, "config", "scanner-policy.v3.json"),
+      join(root, "config", "scanner-policy.v4.json"),
       await readFile(
-        new URL("../config/scanner-policy.v3.json", import.meta.url),
+        new URL("../config/scanner-policy.v4.json", import.meta.url),
         "utf8",
       ),
     );

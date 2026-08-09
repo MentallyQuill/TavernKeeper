@@ -8,8 +8,8 @@ import { afterEach, describe, expect, test } from "vitest";
 import {
   loadScannerPins,
   loadScannerPolicy,
-  ScannerPolicyV3Schema,
-  type ScannerPolicyV3,
+  ScannerPolicyV4Schema,
+  type ScannerPolicyV4,
 } from "../../src/config/policy.js";
 import type { Finding } from "../../src/contracts/reports.js";
 import { classifyInventory } from "../../src/inventory/classify.js";
@@ -73,7 +73,7 @@ function scannerRuns(
   return [
     {
       name: "tavernkeeper-static",
-      version: "3",
+      version: "4",
       status: "completed",
       findings,
     },
@@ -110,16 +110,16 @@ function scannerRuns(
   ];
 }
 
-async function v3Policy() {
-  return ScannerPolicyV3Schema.parse(
+async function v4Policy() {
+  return ScannerPolicyV4Schema.parse(
     await loadScannerPolicy(
-      join(repositoryRoot, "config", "scanner-policy.v3.json"),
+      join(repositoryRoot, "config", "scanner-policy.v4.json"),
     ),
   );
 }
 
-async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV3) {
-  const policy = policyInput ?? (await v3Policy());
+async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV4) {
+  const policy = policyInput ?? (await v4Policy());
   const pins = await loadScannerPins(
     join(repositoryRoot, "config", "scanners.v1.json"),
   );
@@ -166,7 +166,7 @@ async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV3) {
     root,
     previousReportShas: [],
     scannerVersion: "1.0.0",
-    scannerPolicyVersion: "3",
+    scannerPolicyVersion: "4",
     ruleCatalogVersion: "1",
     policy,
     pins,
@@ -256,11 +256,11 @@ describe("in-process hostile-data safety and deterministic publication gate", ()
   });
 
   test("returns no candidate when the repository exceeds policy", async () => {
-    const policy = await v3Policy();
+    const policy = await v4Policy();
     const constrained = {
       ...policy,
       inventory: { ...policy.inventory, maxTotalBytes: 8 },
-    } as unknown as ScannerPolicyV3;
+    } as unknown as ScannerPolicyV4;
     const { result } = await fixtureScan("oversized-policy", constrained);
     expect(result, JSON.stringify(result)).toMatchObject({
       ok: false,
