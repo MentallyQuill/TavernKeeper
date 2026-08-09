@@ -186,6 +186,7 @@ export function migrateOperationsState(
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: legacy.active_scans,
     policy_campaigns: legacy.policy_campaigns,
+    coverage_campaigns: [],
     catalog_observation: {
       initialized_at: input.at,
       repositories: manifest.repositories.map(

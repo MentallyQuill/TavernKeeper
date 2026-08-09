@@ -4,6 +4,10 @@ import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
 import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
 import { failureFingerprint } from "../src/operations/failure.js";
 import { migrateOperationsState } from "../src/operations/migrate-state.js";
+import {
+  COVERAGE_CAMPAIGN_ID,
+  parseOperationsState,
+} from "../src/operations/state.js";
 
 const at = "2026-08-04T12:00:00.000Z";
 const initialFailedAt = "2026-08-01T00:00:00.000Z";
@@ -164,6 +168,146 @@ function v2State(
 }
 
 describe("automatic operations-state migration", () => {
+  test("defaults an older schema-3 document to no coverage campaigns", () => {
+    const parsed = parseOperationsState({
+      schema_version: 3,
+      updated_at: at,
+      coverage_started_at: null,
+      emergency_stop: null,
+      automatic_holds: [],
+      catalog_observation: null,
+      scan_queue: { next_ticket: 1, entries: [] },
+      active_scans: [],
+      policy_campaigns: [],
+    });
+
+    expect(parsed.coverage_campaigns).toEqual([]);
+  });
+
+  test("accepts one bounded coverage campaign with an exact union", () => {
+    const parsed = parseOperationsState({
+      schema_version: 3,
+      updated_at: at,
+      coverage_started_at: null,
+      emergency_stop: null,
+      automatic_holds: [],
+      catalog_observation: null,
+      scan_queue: { next_ticket: 1, entries: [] },
+      active_scans: [],
+      policy_campaigns: [],
+      coverage_campaigns: [
+        {
+          id: COVERAGE_CAMPAIGN_ID,
+          scanner_policy_version: "3",
+          created_at: at,
+          status: "active",
+          popular_repository_ids: [1, 3],
+          latest_release_repository_ids: [2, 3],
+          repository_ids: [1, 2, 3],
+          remaining_repository_ids: [2, 3],
+        },
+      ],
+    });
+
+    expect(parsed.coverage_campaigns[0]).toMatchObject({
+      repository_ids: [1, 2, 3],
+      remaining_repository_ids: [2, 3],
+    });
+  });
+
+  test.each([
+    {
+      name: "oversized popular selection",
+      popular: Array.from({ length: 21 }, (_, index) => index + 1),
+      latest: [],
+      selected: Array.from({ length: 21 }, (_, index) => index + 1),
+      remaining: Array.from({ length: 21 }, (_, index) => index + 1),
+      status: "active",
+    },
+    {
+      name: "duplicate component ID",
+      popular: [1, 1],
+      latest: [],
+      selected: [1],
+      remaining: [1],
+      status: "active",
+    },
+    {
+      name: "unsorted component IDs",
+      popular: [2, 1],
+      latest: [],
+      selected: [1, 2],
+      remaining: [1, 2],
+      status: "active",
+    },
+    {
+      name: "inexact union",
+      popular: [1],
+      latest: [2],
+      selected: [1],
+      remaining: [1],
+      status: "active",
+    },
+    {
+      name: "remaining ID outside selection",
+      popular: [1],
+      latest: [],
+      selected: [1],
+      remaining: [1, 2],
+      status: "active",
+    },
+    {
+      name: "unsorted remaining IDs",
+      popular: [1, 2],
+      latest: [],
+      selected: [1, 2],
+      remaining: [2, 1],
+      status: "active",
+    },
+    {
+      name: "active status with no remaining members",
+      popular: [1],
+      latest: [],
+      selected: [1],
+      remaining: [],
+      status: "active",
+    },
+    {
+      name: "completed status with a remaining member",
+      popular: [1],
+      latest: [],
+      selected: [1],
+      remaining: [1],
+      status: "completed",
+    },
+  ])("rejects a coverage campaign with $name", (fixture) => {
+    expect(() =>
+      parseOperationsState({
+        schema_version: 3,
+        updated_at: at,
+        coverage_started_at: null,
+        emergency_stop: null,
+        automatic_holds: [],
+        catalog_observation: null,
+        scan_queue: { next_ticket: 1, entries: [] },
+        active_scans: [],
+        policy_campaigns: [],
+        coverage_campaigns: [
+          {
+            id: COVERAGE_CAMPAIGN_ID,
+            scanner_policy_version: "3",
+            created_at: at,
+            status: fixture.status,
+            popular_repository_ids: fixture.popular,
+            latest_release_repository_ids: fixture.latest,
+            repository_ids: fixture.selected,
+            remaining_repository_ids: fixture.remaining,
+          },
+        ],
+      }),
+    ).toThrow();
+  });
+
   test("baselines ordinary catalog entries while restoring legacy retries", () => {
     const failed = target(41, 1);
     const healthy = target(42, 2);

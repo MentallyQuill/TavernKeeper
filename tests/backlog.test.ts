@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
 import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
 import {
+  COVERAGE_CAMPAIGN_ID,
   initialOperationsState,
   pauseSystem,
 } from "../src/operations/state.js";
@@ -57,7 +58,145 @@ function queued(...targets: TargetV3[]) {
   return state;
 }
 
+function withCoverageCampaign(
+  state: ReturnType<typeof initialOperationsState>,
+  repositoryIds: number[],
+) {
+  return {
+    ...state,
+    coverage_campaigns: [
+      {
+        id: COVERAGE_CAMPAIGN_ID,
+        scanner_policy_version: "3",
+        created_at: now,
+        status: "active" as const,
+        popular_repository_ids: [...repositoryIds],
+        latest_release_repository_ids: [] as number[],
+        repository_ids: [...repositoryIds],
+        remaining_repository_ids: [...repositoryIds],
+      },
+    ],
+  };
+}
+
 describe("durable backlog planning", () => {
+  test("keeps coverage work behind its 48-hour rescan deadline", () => {
+    const selected = target(41, 1);
+    const base = withCoverageCampaign(queued(selected), [41]);
+    const state = {
+      ...base,
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) => ({
+          ...entry,
+          rescan_not_before: "2026-08-04T13:00:00.000Z",
+        })),
+      },
+    };
+
+    expect(
+      planBatch(manifest(selected), emptyIndex, state, now, "3"),
+    ).toMatchObject({
+      targets: [],
+      delayedEntries: 1,
+      nextWakeAt: "2026-08-04T13:00:00.000Z",
+    });
+    expect(
+      planBatch(
+        manifest(selected),
+        emptyIndex,
+        state,
+        "2026-08-04T13:00:00.000Z",
+        "3",
+      ).targets.map(({ reason }) => reason),
+    ).toEqual(["coverage"]);
+  });
+
+  test("uses retry, staff, policy, then coverage reason precedence", () => {
+    const retry = target(41, 1);
+    const staff = target(42, 2);
+    const policy = target(43, 3);
+    const coverage = target(44, 4);
+    const base = withCoverageCampaign(
+      queued(retry, staff, policy, coverage),
+      [41, 42, 43, 44],
+    );
+    const state = {
+      ...base,
+      policy_campaigns: [
+        {
+          id: "policy-3-regression",
+          scanner_policy_version: "3",
+          repository_ids: [43],
+          created_at: now,
+          status: "active" as const,
+        },
+      ],
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) => {
+          if (entry.repository_id === 41)
+            return {
+              ...entry,
+              consecutive_failures: 1,
+              total_failures: 1,
+              last_failure: {
+                code: "SCANNER_FAILED",
+                domain: "target" as const,
+                component: "opengrep" as const,
+              },
+              last_failed_at: now,
+            };
+          if (entry.repository_id === 42)
+            return { ...entry, staff_requested: true as const };
+          return entry;
+        }),
+      },
+    };
+
+    expect(
+      planBatch(
+        manifest(retry, staff, policy, coverage),
+        emptyIndex,
+        state,
+        now,
+        "3",
+      ).targets.map(({ target: value, reason }) => [
+        value.repository_id,
+        reason,
+      ]),
+    ).toEqual([
+      [42, "staff"],
+      [43, "policy"],
+      [44, "coverage"],
+      [41, "retry"],
+    ]);
+  });
+
+  test("does not grant coverage work queue priority", () => {
+    const first = target(41, 1);
+    const second = target(42, 2);
+    const selected = target(43, 3);
+    const state = withCoverageCampaign(queued(first, second, selected), [43]);
+
+    expect(
+      planBatch(
+        manifest(first, second, selected),
+        emptyIndex,
+        state,
+        now,
+        "3",
+      ).targets.map(({ target: value, reason }) => [
+        value.repository_id,
+        reason,
+      ]),
+    ).toEqual([
+      [41, "new"],
+      [42, "new"],
+      [43, "coverage"],
+    ]);
+  });
+
   test("delays a changed-SHA automatic rescan until its exact deadline", () => {
     const value = target(41, 1);
     const base = queued(value);

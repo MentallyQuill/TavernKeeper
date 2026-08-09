@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
 import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
 import {
+  COVERAGE_CAMPAIGN_ID,
   initialOperationsState,
   serializeOperationsState,
 } from "../src/operations/state.js";
@@ -135,6 +136,23 @@ function stateObserving(...targets: TargetV3[]) {
   };
 }
 
+function coverageCampaign(
+  repositoryIds: number[],
+  createdAt = now,
+  remainingRepositoryIds = repositoryIds,
+) {
+  return {
+    id: COVERAGE_CAMPAIGN_ID,
+    scanner_policy_version: "3",
+    created_at: createdAt,
+    status: "active" as const,
+    popular_repository_ids: [...repositoryIds],
+    latest_release_repository_ids: [] as number[],
+    repository_ids: [...repositoryIds],
+    remaining_repository_ids: [...remainingRepositoryIds],
+  };
+}
+
 function indexWithRepositoryReport(
   repositoryId: number,
   shaDigit: string,
@@ -160,6 +178,196 @@ function indexWithRepositoryReport(
 }
 
 describe("scan queue synchronization", () => {
+  test("queues only the current targets selected by a coverage campaign", () => {
+    const first = target(41, 1, "a");
+    const ordinary = target(42, 2, "b");
+    const second = target(43, 3, "c");
+    const state = {
+      ...stateObserving(first, ordinary, second),
+      coverage_campaigns: [coverageCampaign([41, 43])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(first, ordinary, second),
+      index: emptyIndex,
+      state,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(
+      synchronized.state.scan_queue.entries.map((entry) => ({
+        repository_id: entry.repository_id,
+        target_sha: entry.target_sha,
+        staff_requested: entry.staff_requested,
+        catalog_change: entry.catalog_change,
+        rescan_not_before: entry.rescan_not_before,
+      })),
+    ).toEqual([
+      {
+        repository_id: 41,
+        target_sha: first.target_sha,
+        staff_requested: undefined,
+        catalog_change: undefined,
+        rescan_not_before: undefined,
+      },
+      {
+        repository_id: 43,
+        target_sha: second.target_sha,
+        staff_requested: undefined,
+        catalog_change: undefined,
+        rescan_not_before: undefined,
+      },
+    ]);
+  });
+
+  test("delays a selected same-SHA target for 48 hours after its pre-campaign report", () => {
+    const selected = target(41, 1, "a");
+    const reportAt = "2026-08-04T08:00:00.000Z";
+    const state = {
+      ...stateObserving(selected),
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: indexWithRepositoryReport(41, "a", reportAt),
+      state,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.coverage_campaigns[0]).toMatchObject({
+      status: "active",
+      remaining_repository_ids: [41],
+    });
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        rescan_not_before: "2026-08-06T08:00:00.000Z",
+      }),
+    ]);
+  });
+
+  test("retains a selected target's existing failure deadline and state", () => {
+    const selected = target(41, 1, "a");
+    const failed = rotateFailedTarget(
+      appendQueuedTarget(stateObserving(selected), selected),
+      {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: now,
+      },
+    ).state;
+    const original = failed.scan_queue.entries[0]!;
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state: {
+        ...failed,
+        coverage_campaigns: [coverageCampaign([41])],
+      },
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        ticket: original.ticket,
+        consecutive_failures: 1,
+        total_failures: 1,
+        not_before: original.not_before,
+        last_failure: original.last_failure,
+      }),
+    ]);
+    expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
+      "staff_requested",
+    );
+    expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
+      "catalog_change",
+    );
+  });
+
+  test("advances only completed or removed coverage members and preserves the selection", () => {
+    const completed = target(41, 1, "a");
+    const pending = target(42, 2, "b");
+    const removed = target(43, 3, "c");
+    const state = {
+      ...stateObserving(completed, pending, removed),
+      coverage_campaigns: [coverageCampaign([41, 42, 43])],
+    };
+    const postCampaignReport = indexWithRepositoryReport(
+      41,
+      "a",
+      "2026-08-04T12:01:00.000Z",
+    );
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(completed, pending),
+      index: postCampaignReport,
+      state,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.coverage_campaigns).toEqual([
+      {
+        ...coverageCampaign([41, 42, 43]),
+        remaining_repository_ids: [42],
+      },
+    ]);
+    expect(
+      synchronized.state.scan_queue.entries.map(
+        ({ repository_id }) => repository_id,
+      ),
+    ).toEqual([42]);
+  });
+
+  test("permanently completes a coverage campaign when no member remains", () => {
+    const selected = target(41, 1, "a");
+    const state = {
+      ...stateObserving(selected),
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+    const postCampaignReport = indexWithRepositoryReport(
+      41,
+      "a",
+      "2026-08-04T12:01:00.000Z",
+    );
+    const completed = syncScanQueue({
+      manifest: manifest(selected),
+      index: postCampaignReport,
+      state,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    }).state;
+
+    expect(completed.coverage_campaigns).toEqual([
+      {
+        ...coverageCampaign([41]),
+        remaining_repository_ids: [],
+        status: "completed",
+      },
+    ]);
+
+    const stable = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state: completed,
+      now: "2026-08-04T12:03:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+    expect(stable.changed).toBe(false);
+    expect(stable.state.coverage_campaigns[0]?.status).toBe("completed");
+    expect(stable.state.scan_queue.entries).toEqual([]);
+  });
+
   test("initializes an incremental baseline without scanning legacy entries", () => {
     const legacy = manifest(target(41, 1), target(42, 2));
     const preBaseline = {

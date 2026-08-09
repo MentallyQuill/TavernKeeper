@@ -265,6 +265,74 @@ export const PolicyCampaignSchema = z.strictObject({
   status: z.enum(["active", "completed"]),
 });
 
+export const COVERAGE_CAMPAIGN_ID =
+  "one-time-top20-popular-latest-release-v1" as const;
+
+const SortedRepositoryIdsSchema = z
+  .array(SafePositiveIntegerSchema)
+  .superRefine((repositoryIds, context) => {
+    if (
+      repositoryIds.some(
+        (repositoryId, index) =>
+          index > 0 && repositoryIds[index - 1]! >= repositoryId,
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Repository IDs must be unique and sorted.",
+      });
+  });
+
+const CoverageComponentIdsSchema = SortedRepositoryIdsSchema.max(20);
+
+export const CoverageCampaignSchema = z
+  .strictObject({
+    id: z.literal(COVERAGE_CAMPAIGN_ID),
+    scanner_policy_version: z
+      .string()
+      .regex(/^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$/u),
+    created_at: z.iso.datetime(),
+    status: z.enum(["active", "completed"]),
+    popular_repository_ids: CoverageComponentIdsSchema,
+    latest_release_repository_ids: CoverageComponentIdsSchema,
+    repository_ids: SortedRepositoryIdsSchema,
+    remaining_repository_ids: SortedRepositoryIdsSchema,
+  })
+  .superRefine((campaign, context) => {
+    const exactUnion = [
+      ...new Set([
+        ...campaign.popular_repository_ids,
+        ...campaign.latest_release_repository_ids,
+      ]),
+    ].sort((left, right) => left - right);
+    if (JSON.stringify(campaign.repository_ids) !== JSON.stringify(exactUnion))
+      context.addIssue({
+        code: "custom",
+        path: ["repository_ids"],
+        message: "Coverage repository IDs must be the exact component union.",
+      });
+    const selected = new Set(campaign.repository_ids);
+    if (
+      campaign.remaining_repository_ids.some(
+        (repositoryId) => !selected.has(repositoryId),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["remaining_repository_ids"],
+        message: "Remaining coverage IDs must belong to the selection.",
+      });
+    if (
+      (campaign.status === "active") !==
+      campaign.remaining_repository_ids.length > 0
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["status"],
+        message: "Coverage status must match whether members remain.",
+      });
+  });
+
 export const OperationsStateSchema = z
   .strictObject({
     schema_version: z.literal(3),
@@ -276,6 +344,7 @@ export const OperationsStateSchema = z
     scan_queue: ScanQueueSchema,
     active_scans: z.array(ActiveScanSchema),
     policy_campaigns: z.array(PolicyCampaignSchema),
+    coverage_campaigns: z.array(CoverageCampaignSchema).default([]),
   })
   .superRefine((state, context) => {
     const holdFingerprints = state.automatic_holds.map(
@@ -310,6 +379,13 @@ export const OperationsStateSchema = z
           path: ["policy_campaigns"],
           message: "Campaign repository IDs must be unique and sorted.",
         });
+    const coverageCampaignIds = state.coverage_campaigns.map(({ id }) => id);
+    if (new Set(coverageCampaignIds).size !== coverageCampaignIds.length)
+      context.addIssue({
+        code: "custom",
+        path: ["coverage_campaigns"],
+        message: "Coverage campaign IDs must be unique.",
+      });
   });
 
 export type ScanQueueEntry = z.infer<typeof ScanQueueEntrySchema>;
@@ -317,6 +393,7 @@ export type ScanQueue = z.infer<typeof ScanQueueSchema>;
 export type AutomaticRecoveryHold = z.infer<typeof AutomaticRecoveryHoldSchema>;
 export type CatalogChange = z.infer<typeof CatalogChangeSchema>;
 export type CatalogObservation = z.infer<typeof CatalogObservationSchema>;
+export type CoverageCampaign = z.infer<typeof CoverageCampaignSchema>;
 export type OperationsState = z.infer<typeof OperationsStateSchema>;
 
 export function initialOperationsState(now: string): OperationsState {
@@ -330,6 +407,7 @@ export function initialOperationsState(now: string): OperationsState {
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: [],
     policy_campaigns: [],
+    coverage_campaigns: [],
   });
 }
 
@@ -358,6 +436,9 @@ export function serializeOperationsState(state: OperationsState) {
         ),
     ),
     policy_campaigns: [...parsed.policy_campaigns].sort((left, right) =>
+      left.id.localeCompare(right.id),
+    ),
+    coverage_campaigns: [...parsed.coverage_campaigns].sort((left, right) =>
       left.id.localeCompare(right.id),
     ),
   });
