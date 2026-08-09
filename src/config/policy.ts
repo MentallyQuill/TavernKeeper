@@ -119,9 +119,9 @@ export const ScannerPinsSchema = z.strictObject({
 export type ScannerPins = z.infer<typeof ScannerPinsSchema>;
 
 export const ContextualReviewPolicySchema = z.strictObject({
-  version: z.literal("2"),
-  promptVersion: z.literal("contextual-review-v5"),
-  schemaVersion: z.literal("contextual-assessment-v1"),
+  version: z.literal("3"),
+  promptVersion: z.literal("contextual-review-v6"),
+  schemaVersion: z.literal("contextual-assessment-v2"),
   maxImmediateAttempts: z.literal(3),
   maxOutputTokens: z.literal(32_768),
   maxResponseBytes: z.literal(5_000_000),

@@ -149,8 +149,43 @@ export const ExploitabilitySchema = z.enum([
 ]);
 export const AssessmentConfidenceSchema = z.enum(["low", "medium", "high"]);
 export const ItemRiskSchema = z.enum(["low", "material", "high"]);
+export const RiskExposureSchema = z.enum(["not_demonstrated", "demonstrated"]);
 
-function riskContradictsDisposition(assessment: {
+function currentRecommendedRisk(assessment: {
+  disposition: z.infer<typeof DispositionSchema>;
+  impact: z.infer<typeof ImpactSchema>;
+  exploitability: z.infer<typeof ExploitabilitySchema>;
+  confidence: z.infer<typeof AssessmentConfidenceSchema>;
+  risk_exposure: z.infer<typeof RiskExposureSchema>;
+}) {
+  if (
+    assessment.disposition === "expected_behavior" ||
+    assessment.disposition === "minor_weakness"
+  )
+    return "low";
+  if (assessment.disposition === "credible_malicious_behavior") return "high";
+
+  const impactIsMaterial = ["medium", "high", "critical"].includes(
+    assessment.impact,
+  );
+  const exploitabilityIsMaterial = [
+    "plausible",
+    "readily_exploitable",
+  ].includes(assessment.exploitability);
+  if (
+    assessment.risk_exposure !== "demonstrated" ||
+    assessment.confidence !== "high" ||
+    !impactIsMaterial ||
+    !exploitabilityIsMaterial
+  )
+    return "low";
+  const immediateMaterialDanger =
+    assessment.impact === "critical" &&
+    assessment.exploitability === "readily_exploitable";
+  return immediateMaterialDanger ? "high" : "material";
+}
+
+function policy2RiskContradictsDisposition(assessment: {
   disposition: z.infer<typeof DispositionSchema>;
   impact: z.infer<typeof ImpactSchema>;
   exploitability: z.infer<typeof ExploitabilitySchema>;
@@ -198,11 +233,15 @@ const AssessmentFields = {
   impact: ImpactSchema,
   exploitability: ExploitabilitySchema,
   confidence: AssessmentConfidenceSchema,
+  risk_exposure: RiskExposureSchema,
   recommended_risk: ItemRiskSchema,
   technical_explanation: SafeTextSchema(1_200),
   layman_explanation: SafeTextSchema(600),
   developer_action: SafeTextSchema(600),
 };
+
+const { risk_exposure: _assessmentRiskExposure, ...LegacyAssessmentFields } =
+  AssessmentFields;
 
 function validateAssessment(
   assessment: {
@@ -210,6 +249,7 @@ function validateAssessment(
     impact: z.infer<typeof ImpactSchema>;
     exploitability: z.infer<typeof ExploitabilitySchema>;
     confidence: z.infer<typeof AssessmentConfidenceSchema>;
+    risk_exposure: z.infer<typeof RiskExposureSchema>;
     recommended_risk: z.infer<typeof ItemRiskSchema>;
   },
   context: z.core.$RefinementCtx,
@@ -223,7 +263,16 @@ function validateAssessment(
       path: ["confidence"],
       message: "Credible malicious behavior requires high confidence.",
     });
-  if (riskContradictsDisposition(assessment))
+  if (
+    assessment.disposition === "credible_malicious_behavior" &&
+    assessment.risk_exposure !== "demonstrated"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["risk_exposure"],
+      message: "Credible malicious behavior requires demonstrated exposure.",
+    });
+  if (assessment.recommended_risk !== currentRecommendedRisk(assessment))
     context.addIssue({
       code: "custom",
       path: ["recommended_risk"],
@@ -244,9 +293,32 @@ export const ContextualAssessmentSchema = z
     validateAssessment(assessment, context);
   });
 
-export const PublishedContextualAssessmentSchema = z
+export const ContextualAssessmentV2Schema = z
   .strictObject({
-    ...AssessmentFields,
+    ...LegacyAssessmentFields,
+    locations: z.array(LocationSchema).min(1).max(16),
+  })
+  .superRefine((assessment, context) => {
+    if (
+      assessment.disposition === "credible_malicious_behavior" &&
+      assessment.confidence !== "high"
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["confidence"],
+        message: "Credible malicious behavior requires high confidence.",
+      });
+    if (policy2RiskContradictsDisposition(assessment))
+      context.addIssue({
+        code: "custom",
+        path: ["recommended_risk"],
+        message: "Recommended risk contradicts the assessment disposition.",
+      });
+  });
+
+const LegacyPublishedContextualAssessmentSchema = z
+  .strictObject({
+    ...LegacyAssessmentFields,
     locations: z.array(LocationSchema).min(1).max(16),
   })
   .superRefine((assessment, context) => {
@@ -258,6 +330,11 @@ export const PublishedContextualAssessmentSchema = z
       });
   });
 
+export const PublishedContextualAssessmentSchema = z.union([
+  ContextualAssessmentSchema,
+  LegacyPublishedContextualAssessmentSchema,
+]);
+
 const ObservationFields = {
   related_candidate_ids: z.array(IdentifierSchema).min(1).max(16),
   evidence_ids: z.array(IdentifierSchema).min(1).max(16),
@@ -265,6 +342,7 @@ const ObservationFields = {
   impact: ImpactSchema,
   exploitability: ExploitabilitySchema,
   confidence: AssessmentConfidenceSchema,
+  risk_exposure: RiskExposureSchema,
   recommended_risk: ItemRiskSchema,
   title: SafeTextSchema(200),
   technical_explanation: SafeTextSchema(1_200),
@@ -272,6 +350,8 @@ const ObservationFields = {
   developer_action: SafeTextSchema(600),
   locations: z.array(LocationSchema).min(1).max(16),
 };
+const { risk_exposure: _observationRiskExposure, ...LegacyObservationFields } =
+  ObservationFields;
 
 function validateObservation(
   observation: {
@@ -281,6 +361,7 @@ function validateObservation(
     impact: z.infer<typeof ImpactSchema>;
     exploitability: z.infer<typeof ExploitabilitySchema>;
     confidence: z.infer<typeof AssessmentConfidenceSchema>;
+    risk_exposure: z.infer<typeof RiskExposureSchema>;
     recommended_risk: z.infer<typeof ItemRiskSchema>;
   },
   context: z.core.$RefinementCtx,
@@ -294,7 +375,16 @@ function validateObservation(
       path: ["confidence"],
       message: "Credible malicious behavior requires high confidence.",
     });
-  if (riskContradictsDisposition(observation))
+  if (
+    observation.disposition === "credible_malicious_behavior" &&
+    observation.risk_exposure !== "demonstrated"
+  )
+    context.addIssue({
+      code: "custom",
+      path: ["risk_exposure"],
+      message: "Credible malicious behavior requires demonstrated exposure.",
+    });
+  if (observation.recommended_risk !== currentRecommendedRisk(observation))
     context.addIssue({
       code: "custom",
       path: ["recommended_risk"],
@@ -337,8 +427,43 @@ export const ContextualObservationSchema = z
   .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
   .superRefine(validateObservation);
 
-export const PublishedContextualObservationSchema = z
-  .strictObject({ observation_id: IdentifierSchema, ...ObservationFields })
+export const ContextualObservationV2Schema = z
+  .strictObject({
+    observation_id: IdentifierSchema,
+    ...LegacyObservationFields,
+  })
+  .superRefine((observation, context) => {
+    if (
+      observation.disposition === "credible_malicious_behavior" &&
+      observation.confidence !== "high"
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["confidence"],
+        message: "Credible malicious behavior requires high confidence.",
+      });
+    if (policy2RiskContradictsDisposition(observation))
+      context.addIssue({
+        code: "custom",
+        path: ["recommended_risk"],
+        message: "Recommended risk contradicts the assessment disposition.",
+      });
+    if (
+      new Set(observation.related_candidate_ids).size !==
+        observation.related_candidate_ids.length ||
+      new Set(observation.evidence_ids).size !== observation.evidence_ids.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Observation identifiers must be unique.",
+      });
+  });
+
+const LegacyPublishedContextualObservationSchema = z
+  .strictObject({
+    observation_id: IdentifierSchema,
+    ...LegacyObservationFields,
+  })
   .superRefine((observation, context) => {
     if (legacyRiskContradictsDisposition(observation))
       context.addIssue({
@@ -356,6 +481,11 @@ export const PublishedContextualObservationSchema = z
         message: "Observation identifiers must be unique.",
       });
   });
+
+export const PublishedContextualObservationSchema = z.union([
+  ContextualObservationSchema,
+  LegacyPublishedContextualObservationSchema,
+]);
 
 const CompleteReviewResponseSchema = z
   .strictObject({

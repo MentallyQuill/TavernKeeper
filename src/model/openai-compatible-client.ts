@@ -61,6 +61,7 @@ export type ModelResponseDiagnostic =
   | "assessment_layman_explanation"
   | "assessment_locations"
   | "assessment_recommended_risk"
+  | "assessment_risk_exposure"
   | "assessment_schema"
   | "assessment_technical_explanation"
   | "observation_evidence_ids"

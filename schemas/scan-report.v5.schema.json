@@ -653,188 +653,421 @@
     "assessments": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "candidate_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-          "evidence_ids": {
-            "minItems": 1,
-            "maxItems": 16,
-            "type": "array",
-            "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
-          },
-          "disposition": {
-            "type": "string",
-            "enum": [
-              "expected_behavior",
-              "minor_weakness",
-              "material_vulnerability",
-              "credible_malicious_behavior"
-            ]
-          },
-          "impact": {
-            "type": "string",
-            "enum": ["none", "low", "medium", "high", "critical"]
-          },
-          "exploitability": {
-            "type": "string",
-            "enum": ["unlikely", "plausible", "readily_exploitable"]
-          },
-          "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
-          "recommended_risk": {
-            "type": "string",
-            "enum": ["low", "material", "high"]
-          },
-          "technical_explanation": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1200
-          },
-          "layman_explanation": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 600
-          },
-          "developer_action": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 600
-          },
-          "locations": {
-            "minItems": 1,
-            "maxItems": 16,
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "path": { "type": "string", "minLength": 1, "maxLength": 500 },
-                "line_start": {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "line_end": {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
-                  "maximum": 9007199254740991
-                }
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "candidate_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "evidence_ids": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
               },
-              "required": ["path", "line_start", "line_end"],
-              "additionalProperties": false
-            }
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "expected_behavior",
+                  "minor_weakness",
+                  "material_vulnerability",
+                  "credible_malicious_behavior"
+                ]
+              },
+              "impact": {
+                "type": "string",
+                "enum": ["none", "low", "medium", "high", "critical"]
+              },
+              "exploitability": {
+                "type": "string",
+                "enum": ["unlikely", "plausible", "readily_exploitable"]
+              },
+              "confidence": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              },
+              "risk_exposure": {
+                "type": "string",
+                "enum": ["not_demonstrated", "demonstrated"]
+              },
+              "recommended_risk": {
+                "type": "string",
+                "enum": ["low", "material", "high"]
+              },
+              "technical_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1200
+              },
+              "layman_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "developer_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "locations": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "line_start": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "line_end": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["path", "line_start", "line_end"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "candidate_id",
+              "evidence_ids",
+              "disposition",
+              "impact",
+              "exploitability",
+              "confidence",
+              "risk_exposure",
+              "recommended_risk",
+              "technical_explanation",
+              "layman_explanation",
+              "developer_action",
+              "locations"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "candidate_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "evidence_ids": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              },
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "expected_behavior",
+                  "minor_weakness",
+                  "material_vulnerability",
+                  "credible_malicious_behavior"
+                ]
+              },
+              "impact": {
+                "type": "string",
+                "enum": ["none", "low", "medium", "high", "critical"]
+              },
+              "exploitability": {
+                "type": "string",
+                "enum": ["unlikely", "plausible", "readily_exploitable"]
+              },
+              "confidence": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              },
+              "recommended_risk": {
+                "type": "string",
+                "enum": ["low", "material", "high"]
+              },
+              "technical_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1200
+              },
+              "layman_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "developer_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "locations": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "line_start": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "line_end": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["path", "line_start", "line_end"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "candidate_id",
+              "evidence_ids",
+              "disposition",
+              "impact",
+              "exploitability",
+              "confidence",
+              "recommended_risk",
+              "technical_explanation",
+              "layman_explanation",
+              "developer_action",
+              "locations"
+            ],
+            "additionalProperties": false
           }
-        },
-        "required": [
-          "candidate_id",
-          "evidence_ids",
-          "disposition",
-          "impact",
-          "exploitability",
-          "confidence",
-          "recommended_risk",
-          "technical_explanation",
-          "layman_explanation",
-          "developer_action",
-          "locations"
-        ],
-        "additionalProperties": false
+        ]
       }
     },
     "observations": {
       "type": "array",
       "items": {
-        "type": "object",
-        "properties": {
-          "observation_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
-          "related_candidate_ids": {
-            "minItems": 1,
-            "maxItems": 16,
-            "type": "array",
-            "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
-          },
-          "evidence_ids": {
-            "minItems": 1,
-            "maxItems": 16,
-            "type": "array",
-            "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
-          },
-          "disposition": {
-            "type": "string",
-            "enum": [
-              "expected_behavior",
-              "minor_weakness",
-              "material_vulnerability",
-              "credible_malicious_behavior"
-            ]
-          },
-          "impact": {
-            "type": "string",
-            "enum": ["none", "low", "medium", "high", "critical"]
-          },
-          "exploitability": {
-            "type": "string",
-            "enum": ["unlikely", "plausible", "readily_exploitable"]
-          },
-          "confidence": { "type": "string", "enum": ["low", "medium", "high"] },
-          "recommended_risk": {
-            "type": "string",
-            "enum": ["low", "material", "high"]
-          },
-          "title": { "type": "string", "minLength": 1, "maxLength": 200 },
-          "technical_explanation": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 1200
-          },
-          "layman_explanation": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 600
-          },
-          "developer_action": {
-            "type": "string",
-            "minLength": 1,
-            "maxLength": 600
-          },
-          "locations": {
-            "minItems": 1,
-            "maxItems": 16,
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "path": { "type": "string", "minLength": 1, "maxLength": 500 },
-                "line_start": {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
-                  "maximum": 9007199254740991
-                },
-                "line_end": {
-                  "type": "integer",
-                  "exclusiveMinimum": 0,
-                  "maximum": 9007199254740991
-                }
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "observation_id": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
               },
-              "required": ["path", "line_start", "line_end"],
-              "additionalProperties": false
-            }
+              "related_candidate_ids": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              },
+              "evidence_ids": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              },
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "expected_behavior",
+                  "minor_weakness",
+                  "material_vulnerability",
+                  "credible_malicious_behavior"
+                ]
+              },
+              "impact": {
+                "type": "string",
+                "enum": ["none", "low", "medium", "high", "critical"]
+              },
+              "exploitability": {
+                "type": "string",
+                "enum": ["unlikely", "plausible", "readily_exploitable"]
+              },
+              "confidence": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              },
+              "risk_exposure": {
+                "type": "string",
+                "enum": ["not_demonstrated", "demonstrated"]
+              },
+              "recommended_risk": {
+                "type": "string",
+                "enum": ["low", "material", "high"]
+              },
+              "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "technical_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1200
+              },
+              "layman_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "developer_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "locations": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "line_start": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "line_end": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["path", "line_start", "line_end"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "observation_id",
+              "related_candidate_ids",
+              "evidence_ids",
+              "disposition",
+              "impact",
+              "exploitability",
+              "confidence",
+              "risk_exposure",
+              "recommended_risk",
+              "title",
+              "technical_explanation",
+              "layman_explanation",
+              "developer_action",
+              "locations"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "observation_id": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "related_candidate_ids": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              },
+              "evidence_ids": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              },
+              "disposition": {
+                "type": "string",
+                "enum": [
+                  "expected_behavior",
+                  "minor_weakness",
+                  "material_vulnerability",
+                  "credible_malicious_behavior"
+                ]
+              },
+              "impact": {
+                "type": "string",
+                "enum": ["none", "low", "medium", "high", "critical"]
+              },
+              "exploitability": {
+                "type": "string",
+                "enum": ["unlikely", "plausible", "readily_exploitable"]
+              },
+              "confidence": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              },
+              "recommended_risk": {
+                "type": "string",
+                "enum": ["low", "material", "high"]
+              },
+              "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+              "technical_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1200
+              },
+              "layman_explanation": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "developer_action": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 600
+              },
+              "locations": {
+                "minItems": 1,
+                "maxItems": 16,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "path": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "line_start": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "line_end": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["path", "line_start", "line_end"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "observation_id",
+              "related_candidate_ids",
+              "evidence_ids",
+              "disposition",
+              "impact",
+              "exploitability",
+              "confidence",
+              "recommended_risk",
+              "title",
+              "technical_explanation",
+              "layman_explanation",
+              "developer_action",
+              "locations"
+            ],
+            "additionalProperties": false
           }
-        },
-        "required": [
-          "observation_id",
-          "related_candidate_ids",
-          "evidence_ids",
-          "disposition",
-          "impact",
-          "exploitability",
-          "confidence",
-          "recommended_risk",
-          "title",
-          "technical_explanation",
-          "layman_explanation",
-          "developer_action",
-          "locations"
-        ],
-        "additionalProperties": false
+        ]
       }
     },
     "counts": {

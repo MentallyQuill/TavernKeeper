@@ -14,9 +14,9 @@ import {
 
 const ids = ["a", "b", "c"].map((character) => character.repeat(64));
 const policy = {
-  version: "2",
-  promptVersion: "contextual-review-v5",
-  schemaVersion: "contextual-assessment-v1",
+  version: "3",
+  promptVersion: "contextual-review-v6",
+  schemaVersion: "contextual-assessment-v2",
   maxImmediateAttempts: 3,
   maxOutputTokens: 8_192,
   maxResponseBytes: 5_000_000,
@@ -84,6 +84,7 @@ function assessment(candidateId: string, _path: string, _line: number) {
     impact: "none",
     exploitability: "unlikely",
     confidence: "high",
+    risk_exposure: "not_demonstrated",
     recommended_risk: "low",
     technical_explanation: "The request matches the documented model helper.",
     layman_explanation: "This request appears to be expected.",
@@ -417,6 +418,51 @@ describe("contextual evidence review", () => {
     });
   });
 
+  test("repairs an omitted exposure field with precise guidance", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {
+      const complete = assessment(ids[0]!, current.path, 2);
+      const { risk_exposure: _riskExposure, ...missingExposure } = complete;
+      return {
+        completionId: `completion-exposure-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [
+            requestCompletion.mock.calls.length === 1
+              ? missingExposure
+              : complete,
+          ],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "assessment_risk_exposure",
+    );
+  });
+
   test("uses every configured attempt when corrective feedback repeats", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async () => ({
@@ -487,6 +533,7 @@ describe("contextual evidence review", () => {
               impact: "low",
               exploitability: "unlikely",
               confidence: "medium",
+              risk_exposure: "not_demonstrated",
               recommended_risk: "low",
               title: "Destination validation",
               technical_explanation:
@@ -637,9 +684,9 @@ describe("contextual evidence review", () => {
   test("rejects progress that is not the exact completed group prefix", async () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const invalidProgress: ContextualReviewProgress = {
-      policy_version: "2",
-      prompt_version: "contextual-review-v5",
-      schema_version: "contextual-assessment-v1",
+      policy_version: "3",
+      prompt_version: "contextual-review-v6",
+      schema_version: "contextual-assessment-v2",
       model: "configured/model:thinking",
       provider: "provider.example",
       endpoint_origin: "https://provider.example",
@@ -958,6 +1005,7 @@ describe("contextual evidence review", () => {
               impact: "low",
               exploitability: "unlikely",
               confidence: "medium",
+              risk_exposure: "not_demonstrated",
               recommended_risk: "low",
               title: "Invented location",
               technical_explanation: "The location was not supplied.",
@@ -1270,6 +1318,7 @@ describe("contextual evidence review", () => {
             impact: "low",
             exploitability: "unlikely",
             confidence: "medium",
+            risk_exposure: "not_demonstrated",
             recommended_risk: "low",
             title: "Endpoint validation could be clearer",
             technical_explanation:

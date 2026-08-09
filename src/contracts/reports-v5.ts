@@ -2,7 +2,9 @@ import { z } from "zod";
 
 import {
   ContextualAssessmentSchema,
+  ContextualAssessmentV2Schema,
   ContextualObservationSchema,
+  ContextualObservationV2Schema,
   PublishedContextualAssessmentSchema,
   PublishedContextualObservationSchema,
 } from "../model/contextual-review-contract.js";
@@ -359,18 +361,34 @@ export const ScanReportV5Schema = z
       });
     if (report.contextual_review_policy_version === "2") {
       for (const [index, assessment] of report.assessments.entries())
-        if (!ContextualAssessmentSchema.safeParse(assessment).success)
+        if (!ContextualAssessmentV2Schema.safeParse(assessment).success)
           context.addIssue({
             code: "custom",
             path: ["assessments", index],
             message: "Policy 2 assessment violates immediate-danger rules.",
           });
       for (const [index, observation] of report.observations.entries())
-        if (!ContextualObservationSchema.safeParse(observation).success)
+        if (!ContextualObservationV2Schema.safeParse(observation).success)
           context.addIssue({
             code: "custom",
             path: ["observations", index],
             message: "Policy 2 observation violates immediate-danger rules.",
+          });
+    }
+    if (report.contextual_review_policy_version === "3") {
+      for (const [index, assessment] of report.assessments.entries())
+        if (!ContextualAssessmentSchema.safeParse(assessment).success)
+          context.addIssue({
+            code: "custom",
+            path: ["assessments", index],
+            message: "Policy 3 assessment violates demonstrated-risk rules.",
+          });
+      for (const [index, observation] of report.observations.entries())
+        if (!ContextualObservationSchema.safeParse(observation).success)
+          context.addIssue({
+            code: "custom",
+            path: ["observations", index],
+            message: "Policy 3 observation violates demonstrated-risk rules.",
           });
     }
     if (report.report_id !== report.report_digest)

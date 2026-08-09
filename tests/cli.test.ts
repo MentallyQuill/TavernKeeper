@@ -716,9 +716,9 @@ describe("JSON-only orchestration CLIs", () => {
       },
       {
         loadPolicy: async () => ({
-          version: "2",
-          promptVersion: "contextual-review-v5",
-          schemaVersion: "contextual-assessment-v1",
+          version: "3",
+          promptVersion: "contextual-review-v6",
+          schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
           maxResponseBytes: 5_000_000,
@@ -738,5 +738,7 @@ describe("JSON-only orchestration CLIs", () => {
       "utf8",
     );
     expect(source).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
+    expect(source).toContain("contextual-review.v3.json");
+    expect(source).not.toContain("contextual-review.v2.json");
   });
 });

@@ -150,9 +150,9 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "2",
-  prompt_version: "contextual-review-v5",
-  schema_version: "contextual-assessment-v1",
+  policy_version: "3",
+  prompt_version: "contextual-review-v6",
+  schema_version: "contextual-assessment-v2",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
   endpoint_origin: "https://nano-gpt.com",
@@ -165,6 +165,7 @@ const review: CompletedContextualReview = {
       impact: "none",
       exploitability: "unlikely",
       confidence: "high",
+      risk_exposure: "not_demonstrated",
       recommended_risk: "low",
       technical_explanation:
         "The request matches the documented model-helper purpose.",
@@ -198,6 +199,33 @@ function validReport() {
   );
 }
 
+test("parses immutable policy-2 reports while requiring exposure in policy 3", () => {
+  const current = validReport();
+  const legacy = structuredClone(current) as unknown as {
+    contextual_review_policy_version: string;
+    prompt_version: string;
+    assessment_schema_version: string;
+    assessments: Array<{ risk_exposure?: string }>;
+    observations: Array<{ risk_exposure?: string }>;
+  };
+  legacy.contextual_review_policy_version = "2";
+  legacy.prompt_version = "contextual-review-v5";
+  legacy.assessment_schema_version = "contextual-assessment-v1";
+  for (const assessment of legacy.assessments) delete assessment.risk_exposure;
+  for (const observation of legacy.observations)
+    delete observation.risk_exposure;
+
+  expect(ScanReportV5Schema.safeParse(legacy).success).toBe(true);
+  expect(
+    ScanReportV5Schema.safeParse({
+      ...legacy,
+      contextual_review_policy_version: "3",
+      prompt_version: "contextual-review-v6",
+      assessment_schema_version: "contextual-assessment-v2",
+    }).success,
+  ).toBe(false);
+});
+
 function reportWithObservation(
   risk: "low" | "material" | "high" = "low",
   candidateRisk: "material" | "high" | null = null,
@@ -223,6 +251,7 @@ function reportWithObservation(
             candidateRisk === "high"
               ? ("readily_exploitable" as const)
               : ("plausible" as const),
+          risk_exposure: "demonstrated" as const,
           recommended_risk: candidateRisk,
           technical_explanation: "The candidate requires attention.",
           layman_explanation: "This scanner match requires attention.",
@@ -249,7 +278,8 @@ function reportWithObservation(
                 : risk === "material"
                   ? "plausible"
                   : "unlikely",
-            confidence: risk === "high" ? "high" : "medium",
+            confidence: risk === "low" ? "medium" : "high",
+            risk_exposure: risk === "low" ? "not_demonstrated" : "demonstrated",
             recommended_risk: risk,
             title: "Related request handling",
             technical_explanation:

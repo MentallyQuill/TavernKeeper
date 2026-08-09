@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   ContextualAssessmentSchema,
   ContextualCompletedReviewResponseJsonSchema,
+  PublishedContextualAssessmentSchema,
   ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
 } from "../src/model/contextual-review-contract.js";
@@ -16,6 +17,7 @@ const materialAssessment = {
   impact: "critical" as const,
   exploitability: "readily_exploitable" as const,
   confidence: "high" as const,
+  risk_exposure: "demonstrated" as const,
   recommended_risk: "high" as const,
   technical_explanation:
     "The shipped path exposes a critical vulnerability to attacker-controlled input.",
@@ -44,6 +46,9 @@ describe("contextual review contract", () => {
     expect(ContextualCompletedReviewResponseJsonSchema).not.toHaveProperty(
       "$schema",
     );
+    expect(JSON.stringify(ContextualReviewResponseJsonSchema)).toContain(
+      '"risk_exposure"',
+    );
   });
 
   test("accepts a complete expected-behavior assessment", () => {
@@ -55,6 +60,7 @@ describe("contextual review contract", () => {
         impact: "none",
         exploitability: "unlikely",
         confidence: "high",
+        risk_exposure: "not_demonstrated",
         recommended_risk: "low",
         technical_explanation:
           "The request sends selected lore text to the configured model endpoint.",
@@ -78,6 +84,7 @@ describe("contextual review contract", () => {
         impact: "none",
         exploitability: "unlikely",
         confidence: "high",
+        risk_exposure: "not_demonstrated",
         recommended_risk: "high",
         technical_explanation: "The behavior is expected for this extension.",
         layman_explanation: "This is normal extension behavior.",
@@ -107,6 +114,66 @@ describe("contextual review contract", () => {
     }
   });
 
+  test("accepts material risk only for demonstrated high-confidence exploitable harm", () => {
+    const yellowAssessment = {
+      ...materialAssessment,
+      impact: "medium" as const,
+      exploitability: "plausible" as const,
+      recommended_risk: "material" as const,
+    };
+
+    expect(ContextualAssessmentSchema.parse(yellowAssessment)).toMatchObject({
+      risk_exposure: "demonstrated",
+      confidence: "high",
+      recommended_risk: "material",
+    });
+
+    for (const invalid of [
+      { ...yellowAssessment, risk_exposure: "not_demonstrated" as const },
+      { ...yellowAssessment, confidence: "medium" as const },
+      { ...yellowAssessment, impact: "low" as const },
+      { ...yellowAssessment, exploitability: "unlikely" as const },
+    ]) {
+      expect(() => ContextualAssessmentSchema.parse(invalid)).toThrow(
+        /risk.*assessment|demonstrated/iu,
+      );
+    }
+  });
+
+  test("accepts unresolved evidence only as non-demonstrated low risk", () => {
+    const uncertainAssessment = {
+      ...materialAssessment,
+      disposition: "minor_weakness" as const,
+      impact: "medium" as const,
+      exploitability: "plausible" as const,
+      confidence: "low" as const,
+      risk_exposure: "not_demonstrated" as const,
+      recommended_risk: "low" as const,
+    };
+
+    expect(ContextualAssessmentSchema.parse(uncertainAssessment)).toMatchObject(
+      {
+        risk_exposure: "not_demonstrated",
+        recommended_risk: "low",
+      },
+    );
+    expect(() =>
+      ContextualAssessmentSchema.parse({
+        ...uncertainAssessment,
+        recommended_risk: "material",
+      }),
+    ).toThrow(/risk.*assessment|demonstrated/iu);
+  });
+
+  test("retains backward-compatible parsing for published legacy assessments", () => {
+    const { risk_exposure: _riskExposure, ...legacyAssessment } =
+      materialAssessment;
+
+    expect(PublishedContextualAssessmentSchema.parse(legacyAssessment)).toEqual(
+      legacyAssessment,
+    );
+  });
+
   test("requires high confidence before credible malicious behavior can be reported", () => {
     const maliciousAssessment = {
       ...materialAssessment,
@@ -134,6 +201,12 @@ describe("contextual review contract", () => {
         confidence: "medium",
       }),
     ).toThrow(/high confidence/iu);
+    expect(() =>
+      ContextualAssessmentSchema.parse({
+        ...maliciousAssessment,
+        risk_exposure: "not_demonstrated",
+      }),
+    ).toThrow(/demonstrated/iu);
   });
 
   test("requires unique candidate assessments in a completed response", () => {
@@ -144,6 +217,7 @@ describe("contextual review contract", () => {
       impact: "none",
       exploitability: "unlikely",
       confidence: "high",
+      risk_exposure: "not_demonstrated",
       recommended_risk: "low",
       technical_explanation: "The behavior matches the stated project purpose.",
       layman_explanation: "This behavior appears expected.",
@@ -171,6 +245,7 @@ describe("contextual review contract", () => {
             impact: "none",
             exploitability: "unlikely",
             confidence: "high",
+            risk_exposure: "not_demonstrated",
             recommended_risk: "low",
             technical_explanation: "The behavior is expected.",
             layman_explanation: "This appears normal.",
@@ -185,6 +260,7 @@ describe("contextual review contract", () => {
             impact: "none",
             exploitability: "unlikely",
             confidence: "high",
+            risk_exposure: "not_demonstrated",
             recommended_risk: "high",
             title: "Expected request",
             technical_explanation: "The behavior is expected.",
@@ -211,6 +287,7 @@ describe("contextual review contract", () => {
             impact: "none",
             exploitability: "unlikely",
             confidence: "high",
+            risk_exposure: "not_demonstrated",
             recommended_risk: "low",
             technical_explanation: "The behavior is expected.",
             layman_explanation: "This appears normal.",
@@ -225,6 +302,7 @@ describe("contextual review contract", () => {
             impact: "critical",
             exploitability: "plausible",
             confidence: "high",
+            risk_exposure: "demonstrated",
             recommended_risk: "high",
             title: "Dependency advisory",
             technical_explanation:
