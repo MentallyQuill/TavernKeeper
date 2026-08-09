@@ -141,6 +141,53 @@ describe("contextual evidence review", () => {
     });
 
     expect(requestCompletion).toHaveBeenCalledTimes(2);
+    const firstSchema = requestCompletion.mock.calls[0]?.[0].responseJsonSchema
+      ?.schema as {
+      properties?: {
+        review?: {
+          anyOf?: Array<{
+            properties?: {
+              assessments?: {
+                minItems?: number;
+                maxItems?: number;
+                items?: {
+                  properties?: {
+                    candidate_id?: { enum?: string[] };
+                    evidence_ids?: { items?: { enum?: string[] } };
+                  };
+                };
+              };
+              observations?: {
+                items?: {
+                  properties?: {
+                    locations?: {
+                      items?: { properties?: { path?: { const?: string } } };
+                    };
+                  };
+                };
+              };
+            };
+          }>;
+        };
+      };
+    };
+    const firstCompleted = firstSchema.properties?.review?.anyOf?.[0];
+    expect(firstCompleted?.properties?.assessments).toMatchObject({
+      minItems: 2,
+      maxItems: 2,
+    });
+    expect(
+      firstCompleted?.properties?.assessments?.items?.properties?.candidate_id
+        ?.enum,
+    ).toEqual(ids.slice(0, 2));
+    expect(
+      firstCompleted?.properties?.assessments?.items?.properties?.evidence_ids
+        ?.items?.enum,
+    ).toEqual(ids.slice(0, 2));
+    expect(
+      firstCompleted?.properties?.observations?.items?.properties?.locations
+        ?.items?.properties?.path?.const,
+    ).toBe("src/a.ts");
     expect(result.coverage).toEqual({ required: 3, completed: 3 });
     expect(result.assessments.map((item) => item.candidate_id)).toEqual(ids);
     expect(result.assessments.map((item) => item.locations)).toEqual([
@@ -769,22 +816,24 @@ describe("contextual evidence review", () => {
 
   test("refuses a response that omits a supplied candidate", async () => {
     const current = group("src/a.ts", ids.slice(0, 2));
-    const requestCompletion = vi.fn(async () => ({
-      completionId: "completion-incomplete",
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-      content: reviewContent({
-        status: "complete",
-        assessments: [assessment(ids[0]!, current.path, 2)],
-        observations: [],
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: "completion-incomplete",
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [assessment(ids[0]!, current.path, 2)],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
       }),
-      usage: {
-        inputTokens: 100,
-        outputTokens: 40,
-        cacheReadTokens: 0,
-        reasoningTokens: 10,
-      },
-    }));
+    );
 
     await expect(
       reviewEvidenceGroups({
@@ -802,6 +851,51 @@ describe("contextual evidence review", () => {
       scope: "repository",
     });
     expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "assessment_candidate_id",
+    );
+  });
+
+  test("repairs duplicate assessment candidate IDs with precise guidance", async () => {
+    const current = group("src/a.ts", ids.slice(0, 2));
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: "completion-duplicate-candidate",
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [
+            assessment(ids[0]!, current.path, 2),
+            assessment(ids[0]!, current.path, 2),
+          ],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      }),
+    );
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_INVALID_RESPONSE" });
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "assessment_candidate_id",
+    );
   });
 
   test("refuses invented evidence", async () => {
@@ -810,22 +904,24 @@ describe("contextual evidence review", () => {
       ...assessment(ids[0]!, current.path, 2),
       evidence_ids: ["f".repeat(64)],
     };
-    const requestCompletion = vi.fn(async () => ({
-      completionId: "completion-invented",
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-      content: reviewContent({
-        status: "complete",
-        assessments: [invented],
-        observations: [],
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: "completion-invented",
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [invented],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
       }),
-      usage: {
-        inputTokens: 100,
-        outputTokens: 40,
-        cacheReadTokens: 0,
-        reasoningTokens: 10,
-      },
-    }));
+    );
 
     await expect(
       reviewEvidenceGroups({
@@ -839,41 +935,46 @@ describe("contextual evidence review", () => {
         policy,
       }),
     ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "assessment_evidence_ids",
+    );
   });
 
   test("refuses invented observation locations", async () => {
     const current = group("src/a.ts", [ids[0]!]);
-    const requestCompletion = vi.fn(async () => ({
-      completionId: "completion-invented-observation",
-      endpointOrigin: "https://provider.example",
-      provider: "provider.example",
-      content: reviewContent({
-        status: "complete",
-        assessments: [assessment(ids[0]!, current.path, 2)],
-        observations: [
-          {
-            related_candidate_ids: [ids[0]!],
-            evidence_ids: [ids[0]!],
-            disposition: "minor_weakness",
-            impact: "low",
-            exploitability: "unlikely",
-            confidence: "medium",
-            recommended_risk: "low",
-            title: "Invented location",
-            technical_explanation: "The location was not supplied.",
-            layman_explanation: "This location cannot be trusted.",
-            developer_action: "none",
-            locations: [{ path: current.path, line_start: 99, line_end: 99 }],
-          },
-        ],
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: "completion-invented-observation",
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [assessment(ids[0]!, current.path, 2)],
+          observations: [
+            {
+              related_candidate_ids: [ids[0]!],
+              evidence_ids: [ids[0]!],
+              disposition: "minor_weakness",
+              impact: "low",
+              exploitability: "unlikely",
+              confidence: "medium",
+              recommended_risk: "low",
+              title: "Invented location",
+              technical_explanation: "The location was not supplied.",
+              layman_explanation: "This location cannot be trusted.",
+              developer_action: "none",
+              locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+            },
+          ],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
       }),
-      usage: {
-        inputTokens: 100,
-        outputTokens: 40,
-        cacheReadTokens: 0,
-        reasoningTokens: 10,
-      },
-    }));
+    );
 
     await expect(
       reviewEvidenceGroups({
@@ -884,9 +985,15 @@ describe("contextual evidence review", () => {
           model: "configured/model:thinking",
           requestCompletion,
         },
-        policy: { ...policy, maxImmediateAttempts: 1 },
+        policy: { ...policy, maxImmediateAttempts: 2 },
       }),
-    ).rejects.toMatchObject({ code: "MODEL_EVIDENCE_INVALID" });
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      diagnostic: "observation_locations",
+    });
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "observation_locations",
+    );
   });
 
   test("refuses secret-shaped text in otherwise valid model output", async () => {

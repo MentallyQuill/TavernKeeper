@@ -37,6 +37,8 @@ export const SafeFailureDiagnostics = [
   "assessment_recommended_risk",
   "assessment_schema",
   "assessment_technical_explanation",
+  "observation_evidence_ids",
+  "observation_locations",
   "observation_schema",
   "output_limit",
   "provider_bad_request",
