@@ -151,7 +151,6 @@ function looksLikeJavascriptSource(source: string) {
     /\bexport\s+(?:default\s+)?(?:async\s+)?(?:class|const|function|let|var)\b/u.test(
       value,
     ) ||
-    /\b[A-Za-z_$][\w$]*(?:\?\.|\.)[A-Za-z_$][\w$]*/u.test(value) ||
     /\b[A-Za-z_$][\w$]*(?:\?\.)?\(/u.test(value) ||
     /\b[A-Za-z_$][\w$]*\s*\[[^\]\r\n]{1,128}\]/u.test(value) ||
     /(?:\[[^\]\r\n]{0,256}\]|\{[^}\r\n]{0,256}\}|\([^\)\r\n]{1,256}\)|"(?:\\.|[^"\\\r\n]){0,256}"|'(?:\\.|[^'\\\r\n]){0,256}'|\b\d+(?:\.\d+)?)\s*\[\s*(?:"(?:\\.|[^"\\\r\n]){1,128}"|'(?:\\.|[^'\\\r\n]){1,128}'|\d+)\s*\]/u.test(
