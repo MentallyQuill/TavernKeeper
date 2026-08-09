@@ -22,6 +22,10 @@ import {
   ScanPackageToolLimitationSchema,
   ScanPackageToolStatusSchema,
 } from "../contracts/scan-package.js";
+import {
+  MAX_PREPARED_EVIDENCE_BYTES,
+  MAX_PREPARED_MANIFEST_BYTES,
+} from "../contracts/prepared-evidence-limits.js";
 import { FindingSchema } from "../contracts/reports.js";
 import { ScanReportV5Schema } from "../contracts/reports-v5.js";
 import { FullShaSchema, TargetSchema } from "../contracts/targets.js";
@@ -337,6 +341,76 @@ export function evidenceContextIdentity(input: {
     .digest("hex");
 }
 
+function serializedJsonBytes(value: unknown) {
+  return Buffer.byteLength(`${JSON.stringify(value, null, 2)}\n`);
+}
+
+export async function buildBoundedEvidenceContext({
+  prepared: preparedInput,
+  maxEvidenceCharacters,
+  buildGroups,
+  maximumArtifactBytes = MAX_PREPARED_EVIDENCE_BYTES,
+  manifestReserveBytes = MAX_PREPARED_MANIFEST_BYTES,
+}: {
+  prepared: unknown;
+  maxEvidenceCharacters: number;
+  buildGroups: (
+    maximumCharacters: number,
+  ) => Promise<readonly EvidenceContextGroup[]>;
+  maximumArtifactBytes?: number;
+  manifestReserveBytes?: number;
+}) {
+  const prepared = PreparedSessionSchema.parse(preparedInput);
+  if (
+    !Number.isSafeInteger(maxEvidenceCharacters) ||
+    maxEvidenceCharacters < 1 ||
+    !Number.isSafeInteger(maximumArtifactBytes) ||
+    maximumArtifactBytes < 1 ||
+    !Number.isSafeInteger(manifestReserveBytes) ||
+    manifestReserveBytes < 0
+  )
+    throw new Error("Prepared evidence artifact budget is invalid.");
+  const evidenceBudget =
+    maximumArtifactBytes - manifestReserveBytes - serializedJsonBytes(prepared);
+  if (evidenceBudget < 1)
+    throw new Error("Prepared session metadata exceeds its artifact budget.");
+
+  let maximumCharacters = maxEvidenceCharacters;
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    const groups = EvidenceContextGroupsSchema.parse(
+      await buildGroups(maximumCharacters),
+    );
+    const bundle = EvidenceContextBundleSchema.parse({
+      schema_version: 1,
+      session_id: prepared.session_id,
+      evidence_digest: evidenceContextIdentity({
+        session_id: prepared.session_id,
+        groups,
+      }),
+      groups,
+    });
+    const evidenceBytes = serializedJsonBytes(bundle);
+    if (evidenceBytes <= evidenceBudget) return bundle;
+    if (maximumCharacters === 1)
+      throw new Error(
+        "Prepared evidence metadata exceeds its artifact budget.",
+      );
+    maximumCharacters =
+      attempt === 4
+        ? 1
+        : Math.max(
+            1,
+            Math.min(
+              maximumCharacters - 1,
+              Math.floor(
+                maximumCharacters * (evidenceBudget / evidenceBytes) * 0.9,
+              ),
+            ),
+          );
+  }
+  throw new Error("Prepared evidence metadata exceeds its artifact budget.");
+}
+
 async function pathExists(path: string) {
   try {
     await access(path);
@@ -586,27 +660,23 @@ export async function prepareTargetSession(
       runner,
       maxFileBytes: policy.inventory.maxFileBytes,
     });
-    const groups = await dependencies.buildEvidence({
-      checkoutRoot,
-      target,
-      projectKinds,
-      findings,
-      inventory,
-      historicalSources,
-      javascriptEvidenceHints: orderedRuns.flatMap(
-        ({ evidenceHints }) => evidenceHints ?? [],
-      ),
-      maxEvidenceCharactersPerFinding:
+    const evidenceBundle = await buildBoundedEvidenceContext({
+      prepared,
+      maxEvidenceCharacters:
         policy.javascriptAnalysis.maxEvidenceCharactersPerFinding,
-    });
-    const evidenceBundle = EvidenceContextBundleSchema.parse({
-      schema_version: 1,
-      session_id: prepared.session_id,
-      evidence_digest: evidenceContextIdentity({
-        session_id: prepared.session_id,
-        groups,
-      }),
-      groups,
+      buildGroups: (maxEvidenceCharactersPerFinding) =>
+        dependencies.buildEvidence({
+          checkoutRoot,
+          target,
+          projectKinds,
+          findings,
+          inventory,
+          historicalSources,
+          javascriptEvidenceHints: orderedRuns.flatMap(
+            ({ evidenceHints }) => evidenceHints ?? [],
+          ),
+          maxEvidenceCharactersPerFinding,
+        }),
     });
     const verifiedHead = await dependencies.verifyHead(
       checkoutRoot,

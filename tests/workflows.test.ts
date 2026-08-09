@@ -405,7 +405,7 @@ describe("GitHub workflow security policy", () => {
       ),
     ) as { timeoutMs: number };
 
-    expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
+    expect(value.jobs.scan.strategy["max-parallel"]).toBe(1);
     expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
     expect(prepareIndex).toBeGreaterThan(-1);
     expect(finalizeIndex).toBe(reviewIndex + 1);
@@ -417,6 +417,7 @@ describe("GitHub workflow security policy", () => {
     );
     expect(steps[reviewIndex]?.run).toContain("npm run --silent review-target");
     expect(steps[reviewIndex]?.run).toContain('code == "MODEL_PROVIDER"');
+    expect(steps[reviewIndex]?.run).toContain('code == "MODEL_QUOTA"');
     expect(steps[reviewIndex]?.run).toContain('code:"MODEL_REVIEW_TIMEOUT"');
     expect(steps[reviewIndex]?.run).toContain(
       "timeout --signal=TERM --kill-after=5s 20m",
@@ -442,8 +443,9 @@ describe("GitHub workflow security policy", () => {
       'if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then',
     );
     expect(steps[reviewIndex]?.run).toContain('sleep "$((pass * 5))"');
+    expect(steps[reviewIndex]?.run).toContain('sleep "$((pass * 60))"');
     expect(steps[reviewIndex]?.run).toContain("rm -f phase-error.json");
-    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(62);
+    expect(steps[reviewIndex]?.["timeout-minutes"]).toBe(65);
     expect(reviewConfig.timeoutMs).toBe(300_000);
     expect(steps[reviewIndex]?.env).toMatchObject({
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
@@ -849,7 +851,7 @@ describe("GitHub workflow security policy", () => {
 
   test("workflow policy rejects an unbounded contextual review step", async () => {
     await expectPolicyFailure(
-      (text) => text.replace("        timeout-minutes: 62\n", ""),
+      (text) => text.replace("        timeout-minutes: 65\n", ""),
       /contextual review must remain bounded between preparation and V5 finalization/u,
     );
   });

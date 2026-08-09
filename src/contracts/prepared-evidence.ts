@@ -18,6 +18,16 @@ import {
 } from "../orchestrator/session.js";
 import { FailureDescriptorSchema } from "../operations/failure.js";
 import { ScanRequestSchema, type ScanRequest } from "../cli/staff-request.js";
+import {
+  assertPreparedEvidenceArtifactSize,
+  MAX_PREPARED_EVIDENCE_BYTES,
+  MAX_PREPARED_MANIFEST_BYTES,
+} from "./prepared-evidence-limits.js";
+
+export {
+  assertPreparedEvidenceArtifactSize,
+  MAX_PREPARED_EVIDENCE_BYTES,
+} from "./prepared-evidence-limits.js";
 
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
 const ByteCountSchema = z.number().int().nonnegative();
@@ -49,9 +59,6 @@ export const PreparedEvidenceArtifactManifestSchema = z.discriminatedUnion(
   "status",
   [PreparedArtifactManifestSchema, FailedArtifactManifestSchema],
 );
-
-export const MAX_PREPARED_EVIDENCE_BYTES = 20_000_000;
-const MAX_MANIFEST_BYTES = 100_000;
 
 function digest(value: string | Buffer) {
   return createHash("sha256").update(value).digest("hex");
@@ -93,14 +100,6 @@ function requestTarget(request: ScanRequest) {
     target_sha: request.target_sha,
     canonical_url: request.canonical_url,
   };
-}
-
-export function assertPreparedEvidenceArtifactSize(
-  bytes: number,
-  maximumBytes = MAX_PREPARED_EVIDENCE_BYTES,
-) {
-  if (!Number.isSafeInteger(bytes) || bytes < 0 || bytes > maximumBytes)
-    throw new Error("Prepared evidence artifact exceeded its size ceiling.");
 }
 
 async function requireEmptyArtifactRoot(artifactRootInput: string) {
@@ -226,7 +225,7 @@ export async function restorePreparedEvidenceArtifact({
   const expectedRequest = ScanRequestSchema.parse(expectedRequestInput);
   const manifestBytes = await readBounded(
     join(artifactRoot, "manifest.json"),
-    Math.min(MAX_MANIFEST_BYTES, maximumBytes),
+    Math.min(MAX_PREPARED_MANIFEST_BYTES, maximumBytes),
   );
   const manifest = PreparedEvidenceArtifactManifestSchema.parse(
     JSON.parse(manifestBytes.toString("utf8")),
