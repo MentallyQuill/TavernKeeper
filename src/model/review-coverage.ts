@@ -167,6 +167,14 @@ export function validateCompletedGroupReview(
   for (const assessment of review.assessments) {
     const candidate = candidates.get(assessment.candidate_id)!;
     if (
+      group.source_kind === "metadata-only" &&
+      assessment.risk_exposure === "demonstrated"
+    )
+      evidenceError(
+        "Metadata-only evidence cannot demonstrate assessment exposure.",
+        "assessment_risk_exposure",
+      );
+    if (
       !assessment.evidence_ids.includes(candidate.evidence_id) ||
       assessment.evidence_ids.some((evidenceId) => !evidenceIds.has(evidenceId))
     )
@@ -176,6 +184,14 @@ export function validateCompletedGroupReview(
       );
   }
   for (const observation of review.observations) {
+    if (
+      group.source_kind === "metadata-only" &&
+      observation.risk_exposure === "demonstrated"
+    )
+      evidenceError(
+        "Metadata-only evidence cannot demonstrate observation exposure.",
+        "observation_risk_exposure",
+      );
     if (
       observation.related_candidate_ids.some(
         (candidateId) => !candidates.has(candidateId),
@@ -213,6 +229,7 @@ export function validateCompletedGroupReview(
               observation.impact,
               observation.exploitability,
               observation.confidence,
+              observation.risk_exposure,
               observation.recommended_risk,
               observation.title,
               observation.technical_explanation,

@@ -66,6 +66,7 @@ export type ModelResponseDiagnostic =
   | "assessment_technical_explanation"
   | "observation_evidence_ids"
   | "observation_locations"
+  | "observation_risk_exposure"
   | "observation_schema"
   | "output_limit"
   | "response_content"

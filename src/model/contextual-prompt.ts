@@ -51,6 +51,8 @@ function repairGuidance(diagnostic: ModelResponseDiagnostic) {
       return "Every observation related_candidate_ids and evidence_ids value must cite only identifiers supplied in this evidence group. Use an empty observations array when no fully supported observation exists.";
     case "observation_locations":
       return "Every observation location path and line must be copied exactly from the supplied source context for this evidence group. Use an empty observations array when no fully supplied location supports the observation.";
+    case "observation_risk_exposure":
+      return "Every observation risk_exposure must be not_demonstrated when source_kind is metadata-only. Metadata alone cannot establish executable behavior, activation, a trigger, or a data flow.";
     case "response_json":
       return "Return one complete JSON object only, with no prose, markdown fence, second object, or truncated suffix.";
     case "response_content":

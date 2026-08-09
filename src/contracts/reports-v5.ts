@@ -376,6 +376,18 @@ export const ScanReportV5Schema = z
           });
     }
     if (report.contextual_review_policy_version === "3") {
+      if (report.prompt_version !== "contextual-review-v6")
+        context.addIssue({
+          code: "custom",
+          path: ["prompt_version"],
+          message: "Policy 3 requires contextual prompt version 6.",
+        });
+      if (report.assessment_schema_version !== "contextual-assessment-v2")
+        context.addIssue({
+          code: "custom",
+          path: ["assessment_schema_version"],
+          message: "Policy 3 requires contextual assessment schema 2.",
+        });
       for (const [index, assessment] of report.assessments.entries())
         if (!ContextualAssessmentSchema.safeParse(assessment).success)
           context.addIssue({

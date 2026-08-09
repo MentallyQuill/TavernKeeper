@@ -463,6 +463,119 @@ describe("contextual evidence review", () => {
     );
   });
 
+  test("repairs demonstrated assessment exposure for metadata-only evidence", async () => {
+    const current = {
+      ...group("dist/bundle.js", [ids[0]!]),
+      source_kind: "metadata-only" as const,
+    };
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: `completion-metadata-assessment-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [
+            {
+              ...assessment(ids[0]!, current.path, 2),
+              risk_exposure:
+                requestCompletion.mock.calls.length === 1
+                  ? "demonstrated"
+                  : "not_demonstrated",
+            },
+          ],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      }),
+    );
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "assessment_risk_exposure",
+    );
+  });
+
+  test("repairs demonstrated observation exposure for metadata-only evidence", async () => {
+    const current = {
+      ...group("dist/bundle.js", [ids[0]!]),
+      source_kind: "metadata-only" as const,
+    };
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: `completion-metadata-observation-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [assessment(ids[0]!, current.path, 2)],
+          observations: [
+            {
+              related_candidate_ids: [ids[0]!],
+              evidence_ids: [ids[0]!],
+              disposition: "minor_weakness",
+              impact: "low",
+              exploitability: "unlikely",
+              confidence: "medium",
+              risk_exposure:
+                requestCompletion.mock.calls.length === 1
+                  ? "demonstrated"
+                  : "not_demonstrated",
+              recommended_risk: "low",
+              title: "Metadata-only observation",
+              technical_explanation:
+                "The metadata cannot establish a concrete activation path.",
+              layman_explanation:
+                "The available metadata does not show this behavior running.",
+              developer_action: "Inspect the executable artifact contents.",
+              locations: [{ path: current.path, line_start: 2, line_end: 2 }],
+            },
+          ],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      }),
+    );
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+      }),
+    ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
+      "observation_risk_exposure",
+    );
+  });
+
   test("uses every configured attempt when corrective feedback repeats", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async () => ({
@@ -1354,5 +1467,67 @@ describe("contextual evidence review", () => {
         observation_id: expect.stringMatching(/^[a-f0-9]{64}$/u),
       }),
     ]);
+  });
+
+  test("binds observation identity to risk exposure", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const reviewWithExposure = async (
+      riskExposure: "not_demonstrated" | "demonstrated",
+    ) =>
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion: async () => ({
+            completionId: `completion-observation-${riskExposure}`,
+            endpointOrigin: "https://provider.example",
+            provider: "provider.example",
+            content: reviewContent({
+              status: "complete",
+              assessments: [assessment(ids[0]!, current.path, 2)],
+              observations: [
+                {
+                  related_candidate_ids: [ids[0]!],
+                  evidence_ids: [ids[0]!],
+                  disposition: "minor_weakness",
+                  impact: "low",
+                  exploitability: "unlikely",
+                  confidence: "medium",
+                  risk_exposure: riskExposure,
+                  recommended_risk: "low",
+                  title: "Endpoint validation could be clearer",
+                  technical_explanation:
+                    "The configured endpoint is used without a visible allowlist.",
+                  layman_explanation:
+                    "A mistaken endpoint could send a request to the wrong service.",
+                  developer_action:
+                    "Document and validate the configured endpoint.",
+                  locations: [
+                    { path: current.path, line_start: 2, line_end: 2 },
+                  ],
+                },
+              ],
+            }),
+            usage: {
+              inputTokens: 100,
+              outputTokens: 40,
+              cacheReadTokens: 0,
+              reasoningTokens: 10,
+            },
+          }),
+        },
+        policy,
+      });
+
+    const [notDemonstrated, demonstrated] = await Promise.all([
+      reviewWithExposure("not_demonstrated"),
+      reviewWithExposure("demonstrated"),
+    ]);
+
+    expect(notDemonstrated.observations[0]?.observation_id).not.toBe(
+      demonstrated.observations[0]?.observation_id,
+    );
   });
 });

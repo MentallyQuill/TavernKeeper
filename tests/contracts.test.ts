@@ -180,4 +180,66 @@ describe("public TavernKeeper contracts", () => {
       expect(validate(value), JSON.stringify(validate.errors)).toBe(true);
     }
   });
+
+  test("generated report schema rejects policy-3 items without exposure", async () => {
+    const report = await fixture("report.v5.valid.json");
+    report.contextual_review_policy_version = "3";
+    report.prompt_version = "contextual-review-v6";
+    report.assessment_schema_version = "contextual-assessment-v2";
+    report.assessments = [
+      {
+        candidate_id: "d".repeat(64),
+        evidence_ids: ["d".repeat(64)],
+        disposition: "expected_behavior",
+        impact: "none",
+        exploitability: "unlikely",
+        confidence: "high",
+        recommended_risk: "low",
+        technical_explanation: "The behavior matches the project purpose.",
+        layman_explanation: "This behavior is expected.",
+        developer_action: "none",
+        locations: [{ path: "src/index.ts", line_start: 1, line_end: 1 }],
+      },
+    ];
+    const document = buildContractSchemas().find(
+      ({ file }) => file === "scan-report.v5.schema.json",
+    )!.document;
+    const validate = new Ajv({ allErrors: true, strict: false }).compile(
+      document,
+    );
+
+    expect(validate(report)).toBe(false);
+    expect(validate.errors).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          keyword: "required",
+          params: { missingProperty: "risk_exposure" },
+        }),
+      ]),
+    );
+  });
+
+  test.each([
+    ["prompt_version", "contextual-review-v5"],
+    ["assessment_schema_version", "contextual-assessment-v1"],
+  ] as const)(
+    "binds policy 3 reports to their %s",
+    async (field, staleVersion) => {
+      const report = await fixture("report.v5.valid.json");
+      const policy3 = {
+        ...report,
+        contextual_review_policy_version: "3",
+        prompt_version: "contextual-review-v6",
+        assessment_schema_version: "contextual-assessment-v2",
+      };
+
+      expect(ScanReportV5Schema.safeParse(policy3).success).toBe(true);
+      expect(
+        ScanReportV5Schema.safeParse({
+          ...policy3,
+          [field]: staleVersion,
+        }).success,
+      ).toBe(false);
+    },
+  );
 });

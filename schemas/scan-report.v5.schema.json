@@ -1277,5 +1277,21 @@
     "counts",
     "limitations"
   ],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "contextual_review_policy_version": { "const": "3" } },
+        "required": ["contextual_review_policy_version"]
+      },
+      "then": {
+        "properties": {
+          "prompt_version": { "const": "contextual-review-v6" },
+          "assessment_schema_version": { "const": "contextual-assessment-v2" },
+          "assessments": { "items": { "required": ["risk_exposure"] } },
+          "observations": { "items": { "required": ["risk_exposure"] } }
+        }
+      }
+    }
+  ]
 }
