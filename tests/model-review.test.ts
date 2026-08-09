@@ -114,6 +114,93 @@ describe("OpenAI-compatible contextual-review transport", () => {
   });
 
   test.each([
+    [400, "response_format", "invalid_json_schema", "provider_schema_rejected"],
+    [404, "model", "model_not_found", "provider_model_unavailable"],
+    [
+      400,
+      "reasoning_effort",
+      "unsupported_parameter",
+      "provider_parameter_rejected",
+    ],
+  ] as const)(
+    "derives a safe %s provider failure category",
+    async (status, param, code, diagnostic) => {
+      const providerMessage = "secret-bearing provider detail";
+      const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            error: {
+              message: providerMessage,
+              type: "invalid_request_error",
+              param,
+              code,
+            },
+          }),
+          { status },
+        ),
+      );
+
+      let caught: unknown;
+      try {
+        await requestTextCompletion({
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model",
+          maxOutputTokens: 100,
+          systemContent: "System",
+          userContent: "User",
+          responseJsonSchema: {
+            name: "contextual_review",
+            schema: { type: "object" },
+          },
+          fetchImpl,
+          resolveAddresses: async () => ["93.184.216.34"],
+        });
+      } catch (error) {
+        caught = error;
+      }
+
+      expect(caught).toMatchObject({
+        code: "MODEL_PROVIDER",
+        httpStatus: status,
+        diagnostic,
+      });
+      expect(JSON.stringify(caught)).not.toContain(providerMessage);
+    },
+  );
+
+  test("reduces arbitrary provider errors to a bounded status category", async () => {
+    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            message: "must not escape",
+            param: "attacker-controlled-param",
+            code: "attacker-controlled-code",
+          },
+        }),
+        { status: 400 },
+      ),
+    );
+
+    await expect(
+      requestTextCompletion({
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model",
+        maxOutputTokens: 100,
+        systemContent: "System",
+        userContent: "User",
+        fetchImpl,
+        resolveAddresses: async () => ["93.184.216.34"],
+      }),
+    ).rejects.toMatchObject({
+      diagnostic: "provider_bad_request",
+      httpStatus: 400,
+    });
+  });
+
+  test.each([
     [401, "MODEL_AUTHENTICATION"],
     [429, "MODEL_QUOTA"],
     [500, "MODEL_PROVIDER"],
