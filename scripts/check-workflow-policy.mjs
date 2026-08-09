@@ -46,6 +46,30 @@ const canonicalStaffPublisherPushLines = [
   "done",
   'test "$push_succeeded" = "true"',
 ];
+const canonicalCoverageCampaignPushLines = [
+  'push_succeeded="false"',
+  "if ! commit_campaign; then",
+  '  push_succeeded="true"',
+  "else",
+  "  for attempt in 1 2 3; do",
+  "    if git push origin HEAD:main; then",
+  '      push_succeeded="true"',
+  "      break",
+  "    fi",
+  '    if [[ "$attempt" -lt 3 ]]; then',
+  '      sleep "$((attempt * 15))"',
+  '      env -u GH_TOKEN GITHUB_TOKEN="$SELECTION_TOKEN" git fetch origin main',
+  "      git reset --hard origin/main",
+  "      run_operation",
+  "      if ! commit_campaign; then",
+  '        push_succeeded="true"',
+  "        break",
+  "      fi",
+  "    fi",
+  "  done",
+  "fi",
+  'test "$push_succeeded" = "true"',
+];
 const canonicalProviderProbePushLines = [
   'push_succeeded="false"',
   "for attempt in 1 2 3; do",
@@ -88,6 +112,24 @@ const canonicalStaffPublisherRun =
     'git config user.name "TavernKeeper"',
     'git config user.email "tavernkeeper@users.noreply.github.com"',
     ...canonicalStaffPublisherPushLines,
+  ].join("\n") + "\n";
+const canonicalCoverageCampaignPublisherRun =
+  [
+    "run_operation() {",
+    '  env -u GH_TOKEN GITHUB_TOKEN="$SELECTION_TOKEN" npm run --silent coverage-campaign',
+    "}",
+    "commit_campaign() {",
+    "  if git diff --quiet -- operations/state.json; then",
+    "    return 1",
+    "  fi",
+    "  git add operations/state.json",
+    '  git commit -m "chore(scans): schedule one-time coverage"',
+    "}",
+    "",
+    "gh auth setup-git",
+    'git config user.name "TavernKeeper"',
+    'git config user.email "tavernkeeper@users.noreply.github.com"',
+    ...canonicalCoverageCampaignPushLines,
   ].join("\n") + "\n";
 const canonicalContextualReviewRun = String.raw`progress_count() {
   node scripts/contextual-review-progress-count.mjs "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
@@ -144,6 +186,7 @@ const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
+  "coverage-campaign.yml": ["workflow_dispatch"],
   "delayed-wake.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "pages-reconcile.yml": ["schedule", "workflow_dispatch"],
@@ -166,6 +209,10 @@ const permissionProfiles = {
   "ci.yml": {
     workflow: { contents: "read" },
     jobs: { check: undefined, "scanner-toolchain": undefined },
+  },
+  "coverage-campaign.yml": {
+    workflow: { contents: "read", actions: "write" },
+    jobs: { create: { contents: "read", actions: "write" } },
   },
   "delayed-wake.yml": {
     workflow: { contents: "read", actions: "write" },
@@ -246,12 +293,16 @@ const permissionProfiles = {
 };
 
 const protectedManual = new Set([
+  "coverage-campaign.yml",
   "policy-rescan.yml",
   "provider-check.yml",
   "release-holds.yml",
   "staff-operations.yml",
 ]);
 const mutationJobs = {
+  "coverage-campaign.yml": [
+    { job: "create", environment: "tavernkeeper-staff" },
+  ],
   "policy-rescan.yml": [{ job: "schedule", environment: "tavernkeeper-staff" }],
   "reconcile.yml": [
     { job: "sync", environment: "tavernkeeper-scanner" },
@@ -845,12 +896,22 @@ function checkPublisherBoundary(file, workflow) {
       pushRun !== canonicalStaffPublisherRun
     )
       fail(file, "staff operation and Publisher token boundary changed");
+    if (
+      file === "coverage-campaign.yml" &&
+      pushRun !== canonicalCoverageCampaignPublisherRun
+    )
+      fail(
+        file,
+        "coverage campaign workflow changed from the reviewed contract",
+      );
     const expectedPushLines =
       file === "reconcile.yml" && mutation.job === "probe-provider"
         ? canonicalProviderProbePushLines
-        : file === "staff-operations.yml"
-          ? canonicalStaffPublisherPushLines
-          : canonicalPublisherPushLines;
+        : file === "coverage-campaign.yml"
+          ? canonicalCoverageCampaignPushLines
+          : file === "staff-operations.yml"
+            ? canonicalStaffPublisherPushLines
+            : canonicalPublisherPushLines;
     if (!containsOnlyCanonicalPublisherPush(pushRun, expectedPushLines))
       fail(
         file,
@@ -867,6 +928,61 @@ function checkPublisherBoundary(file, workflow) {
     )
       fail(file, "mutation checkout must disable persisted credentials");
   }
+}
+
+function checkCoverageCampaign(file, workflow) {
+  if (file !== "coverage-campaign.yml") return;
+  const job = workflow.jobs?.create;
+  const steps = job?.steps ?? [];
+  const names = steps.map((step) => step?.name);
+  const selector = steps.find(
+    (step) => step?.name === "Select fixed one-time coverage campaign",
+  );
+  const publisher = steps.find(
+    (step) => step?.name === "Create TavernKeeper Publisher token",
+  );
+  const commit = steps.find(
+    (step) => step?.name === "Commit fixed coverage campaign",
+  );
+  const dispatch = steps.find(
+    (step) => step?.name === "Dispatch backlog reconciliation",
+  );
+  if (
+    !same(workflow.on, { workflow_dispatch: null }) ||
+    !same(workflow.concurrency, {
+      group: "tavernkeeper-global-scan",
+      "cancel-in-progress": false,
+    }) ||
+    !same(Object.keys(workflow.jobs ?? {}), ["create"]) ||
+    !same(names, [
+      "Check out trusted TavernKeeper main",
+      "Set up Node",
+      "Install dependencies",
+      "Select fixed one-time coverage campaign",
+      "Create TavernKeeper Publisher token",
+      "Commit fixed coverage campaign",
+      "Dispatch backlog reconciliation",
+    ]) ||
+    !same(selector, {
+      name: "Select fixed one-time coverage campaign",
+      env: { GITHUB_TOKEN: "${{ github.token }}" },
+      run: "npm run --silent coverage-campaign",
+    }) ||
+    !same(commit?.env, {
+      GH_TOKEN: publisherToken,
+      SELECTION_TOKEN: "${{ github.token }}",
+    }) ||
+    commit?.run !== canonicalCoverageCampaignPublisherRun ||
+    steps.indexOf(selector) >= steps.indexOf(publisher) ||
+    steps.indexOf(publisher) >= steps.indexOf(commit) ||
+    steps.indexOf(commit) >= steps.indexOf(dispatch) ||
+    !same(dispatch, {
+      name: "Dispatch backlog reconciliation",
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: 'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    })
+  )
+    fail(file, "coverage campaign workflow changed from the reviewed contract");
 }
 
 function checkTargetedAuthority(file, workflow) {
@@ -969,6 +1085,7 @@ for (const file of names) {
   checkContextualRuntime(file, workflow);
   checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
+  checkCoverageCampaign(file, workflow);
   checkTargetedAuthority(file, workflow);
   checkScannerToolchain(file, workflow);
   checkDelayedWake(file, workflow);

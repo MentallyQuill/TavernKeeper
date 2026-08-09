@@ -141,6 +141,17 @@ failure. The sole scheduling stop is an explicit protected staff emergency
 stop. Manifest V2 remains a temporary compatibility input and uses the earlier
 Top-30/new/old order when seeding.
 
+Schema V3 also stores a bounded, immutable coverage campaign selected by the
+protected `coverage-campaign.yml` workflow. One atomic V3-manifest snapshot
+fixes the current top 20 popularity IDs and the 20 IDs with the newest
+qualifying GitHub releases, then stores their sorted deduplicated union and a
+shrinking remaining set. Overlap can produce fewer than 40 members. The
+workflow has no schedule or inputs: rerunning its fixed campaign ID is a no-op,
+not a fresh selection or a catalog rescan. Reconciliation gives those members
+ordinary queue eligibility and removes them only after a qualifying
+post-campaign current-SHA report; retry ordering, scanner-policy authority, and
+the 48-hour rescan deadline remain unchanged.
+
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Prepare matrix jobs
 first use one-day secret-free GitHub artifacts; review matrix jobs then encrypt

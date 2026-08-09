@@ -99,6 +99,21 @@ queued SHA without moving that deadline. The cooldown does not apply to initial
 scans, staff-targeted scans, retry entries with a failure streak, or active
 policy-campaign scans.
 
+### One-time top and latest-release coverage
+
+`coverage-campaign.yml` is a protected, input-free, one-time operation. It takes
+one atomic manifest snapshot, selects the repositories currently ranked 1
+through 20 by Tavernary popularity plus the 20 repositories with the newest
+qualifying GitHub releases, and commits their deduplicated current repository
+IDs as a fixed campaign. Overlap between those lists can make the cohort smaller
+than 40. The fixed campaign ID makes a repeated workflow dispatch an idempotent
+no-op rather than a second campaign.
+
+This operation is not a recurring schedule and does not rescan the catalog. It
+only makes the selected current targets eligible for the ordinary durable queue.
+Every member retains normal exact-SHA, retry, concurrency, and 48-hour rescan
+rules; selection never grants staff or policy-campaign cooldown authority.
+
 Ticket allocation is the fairness guarantee among new, updated, retry, and
 explicit staff work; the legacy catalog is not automatically ticketed. Any
 failure removes that target from its old position and assigns it the next tail
@@ -231,6 +246,8 @@ reset gate.
   reconciliation. Staff begin this flow through Tavernary's exact-GitHub-URL
   Action.
 - `policy-rescan.yml` schedules a campaign under the current reviewed policy.
+- `coverage-campaign.yml` creates the fixed one-time top-20 and latest-release
+  cohort, commits it once, and dispatches ordinary reconciliation.
 - `staff-operations.yml` sets or clears the explicit emergency stop, makes one
   target immediately due, or performs a protected legacy-to-V3 state migration.
 - `deploy-pages.yml` deploys only an exact commit proven to be on `main`;
