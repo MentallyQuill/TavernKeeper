@@ -69,6 +69,12 @@ const externalOrigins = {
     remediation:
       "Review the matched code path and remove or constrain the flagged behavior when it is not required.",
   },
+  "javascript-analysis": {
+    label: "JavaScript analysis",
+    noun: "static JavaScript security signal",
+    remediation:
+      "Review the correlated source behavior and remove unsafe execution, credential access, persistence, or network activity that is not required.",
+  },
   "osv-scanner": {
     label: "OSV-Scanner",
     noun: "dependency advisory",

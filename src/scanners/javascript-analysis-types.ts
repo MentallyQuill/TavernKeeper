@@ -144,6 +144,15 @@ export interface JavascriptPrimitiveResult {
   evidenceHints: JavaScriptEvidenceHint[];
 }
 
+export interface JavascriptDerivativeAncestry {
+  original_path: string;
+  stage: z.infer<typeof JavascriptRepresentationStageSchema>;
+  representation_sha256: string;
+  parent_sha256: string | null;
+  transform: z.infer<typeof JavascriptTransformSchema>;
+  transform_depth: number;
+}
+
 export type JavascriptRepresentation = z.infer<
   typeof JavascriptRepresentationSchema
 >;

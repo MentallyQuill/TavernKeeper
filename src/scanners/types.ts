@@ -6,6 +6,11 @@ import {
   type Finding,
   type Severity,
 } from "../contracts/reports.js";
+import type {
+  JavaScriptEvidenceHint,
+  JavascriptAnalysisCoverage,
+  JavascriptDerivativeAncestry,
+} from "./javascript-analysis-types.js";
 
 export interface ScannerRun {
   name: string;
@@ -14,6 +19,9 @@ export interface ScannerRun {
   limitations?: ScannerDiagnostic[] | undefined;
   findings: Finding[];
   pathCoverage?: ScannerPathCoverage | undefined;
+  javascriptAnalysis?: JavascriptAnalysisCoverage | undefined;
+  evidenceHints?: JavaScriptEvidenceHint[] | undefined;
+  derivativeAncestry?: JavascriptDerivativeAncestry[] | undefined;
 }
 
 export type ScannerPathSkipReason =
@@ -34,6 +42,7 @@ export type ScannerErrorCode =
 export const ScannerComponents = [
   "gitleaks",
   "opengrep",
+  "javascript-analysis",
   "osv-scanner",
   "zizmor",
   "malcontent",
@@ -128,6 +137,7 @@ export function scannerExecutionError(
   const displayName: Record<ScannerComponent, string> = {
     gitleaks: "Gitleaks",
     opengrep: "OpenGrep",
+    "javascript-analysis": "JavaScript analysis",
     "osv-scanner": "OSV-Scanner",
     zizmor: "zizmor",
     malcontent: "malcontent",

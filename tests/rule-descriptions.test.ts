@@ -55,6 +55,20 @@ describe("deterministic finding policy", () => {
       remediation:
         "Review the advisory and update or replace the affected dependency when a fixed version is available.",
     });
+    expect(
+      describeFinding({
+        ...finding,
+        origin: "javascript-analysis",
+        rule_id: "javascript.xray.unsafe-stmt",
+        category: "code-execution",
+      }),
+    ).toEqual({
+      title: "JavaScript analysis reported javascript.xray.unsafe-stmt",
+      explanation:
+        "JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.",
+      remediation:
+        "Review the correlated source behavior and remove unsafe execution, credential access, persistence, or network activity that is not required.",
+    });
   });
 
   test("rejects unsupported origins and unsafe dynamic identifiers", () => {

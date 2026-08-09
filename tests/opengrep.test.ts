@@ -563,6 +563,27 @@ describe("OpenGrep adapter", () => {
     ).rejects.toMatchObject({ code: "MALFORMED_SCANNER_OUTPUT" });
   });
 
+  test("accounts for binary JavaScript as an unsupported target", async () => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = {
+      scanned: [],
+      skipped: [{ path: "vendor/opaque.js", reason: "binary file" }],
+    };
+    const run = await runOpenGrep({
+      root: "C:/scan/repository",
+      rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+      runner: new OpenGrepRunner(JSON.stringify(report)),
+      version: "1.26.0",
+      expectedPaths: ["vendor/opaque.js"],
+    });
+
+    expect(run.pathCoverage).toEqual({
+      scanned: [],
+      skipped: [{ path: "vendor/opaque.js", reason: "unsupported" }],
+    });
+  });
+
   test("rejects an absolute scanner path outside the repository root", async () => {
     const root = resolve("fixture", "repository");
     const runner = new OpenGrepRunner(

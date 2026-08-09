@@ -63,7 +63,7 @@ function skippedReason(value: string) {
     return "parse" as const;
   if (/timeout/iu.test(normalized)) return "timeout" as const;
   if (
-    /unsupported|wrong_language|irrelevant_rule|minified|too_many_matches/iu.test(
+    /unsupported|wrong_language|irrelevant_rule|minified|too_many_matches|binary/iu.test(
       normalized,
     )
   )

@@ -1,0 +1,187 @@
+import { createHash } from "node:crypto";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
+
+import { describe, expect, test } from "vitest";
+
+import {
+  loadScannerPolicy,
+  type ScannerPolicyV4,
+} from "../src/config/policy.js";
+import type { InventoryFile } from "../src/inventory/inventory-handler.js";
+import type { CommandRunner } from "../src/process/command-runner.js";
+import {
+  JAVASCRIPT_ANALYSIS_VERSION,
+  runJavascriptAnalysis,
+  type JavascriptAnalysisDependencies,
+} from "../src/scanners/javascript-analysis.js";
+import type { ScannerRun } from "../src/scanners/types.js";
+
+async function policy() {
+  const loaded = await loadScannerPolicy(
+    resolve("config/scanner-policy.v4.json"),
+  );
+  if (loaded.version !== "4") throw new Error("Expected scanner policy 4.");
+  return loaded;
+}
+
+const openGrep: JavascriptAnalysisDependencies["openGrep"] = async ({
+  expectedPaths = [],
+}): Promise<ScannerRun> => ({
+  name: "opengrep",
+  version: "test",
+  status: "completed",
+  findings: [],
+  pathCoverage: { scanned: [...expectedPaths], skipped: [] },
+});
+
+async function analyzeFixture(
+  source: string,
+  policyOverride?: ScannerPolicyV4,
+  dependencyOverrides: Partial<JavascriptAnalysisDependencies> = {},
+) {
+  const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-analysis-"));
+  const path = "dist/application.min.js";
+  await mkdir(join(root, "dist"), { recursive: true });
+  await writeFile(join(root, path), source);
+  const file: InventoryFile = {
+    path,
+    bytes: Buffer.byteLength(source),
+    sha256: createHash("sha256").update(source).digest("hex"),
+    kind: "text",
+    likelyMinified: true,
+  };
+  return runJavascriptAnalysis(
+    {
+      root,
+      inventoryFiles: [file],
+      rawOpenGrepCoverage: { scanned: [path], skipped: [] },
+      runner: {} as CommandRunner,
+      rulesRoot: resolve("config/opengrep"),
+      policy: policyOverride ?? (await policy()),
+      temporaryRoot: root,
+      opengrepVersion: "test",
+    },
+    { openGrep, ...dependencyOverrides },
+  );
+}
+
+function nestedEncoding(depth: number) {
+  let source =
+    "const credential=process.env.API_TOKEN;fetch(endpoint,{body:credential})";
+  for (let index = 0; index < depth; index += 1)
+    source = `atob("${Buffer.from(source).toString("base64")}")`;
+  return source;
+}
+
+describe("integrated JavaScript derivative analysis", () => {
+  test("finds a signal revealed only after literal decoding", async () => {
+    const encoded = Buffer.from(
+      "const t=process.env.API_TOKEN;fetch(endpoint,{body:t})",
+    ).toString("base64");
+    const run = await analyzeFixture(`eval(atob("${encoded}"))`);
+
+    expect(run.name).toBe("javascript-analysis");
+    expect(run.version).toBe(JAVASCRIPT_ANALYSIS_VERSION);
+    expect(run.findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          rule_id: "javascript.credential-to-network",
+        }),
+      ]),
+    );
+    expect(run.javascriptAnalysis?.representations.decoded).toBeGreaterThan(0);
+    expect(run.evidenceHints).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          stage: "decoded",
+          source: expect.any(String),
+        }),
+      ]),
+    );
+  });
+
+  test("marks exhausted recursion incomplete instead of clean", async () => {
+    const run = await analyzeFixture(nestedEncoding(4));
+    expect(run.javascriptAnalysis).toMatchObject({
+      status: "incomplete",
+      unresolved: expect.arrayContaining([
+        expect.objectContaining({
+          stage: "literal-decode",
+          reason: "recursion-limit",
+          recovered: false,
+        }),
+      ]),
+    });
+    expect(run.status).toBe("completed-with-limitations");
+  });
+
+  test("maps AST warning locations and never retains warning values", async () => {
+    const run = await analyzeFixture("eval(payload)");
+    const finding = run.findings.find(({ rule_id }) =>
+      rule_id.startsWith("javascript.xray."),
+    );
+    expect(finding).toMatchObject({
+      origin: "javascript-analysis",
+      path: "dist/application.min.js",
+      line_start: 1,
+    });
+    expect(JSON.stringify(finding)).not.toContain("payload");
+  });
+
+  test("sends every derived representation to OpenGrep even without a finding", async () => {
+    const expectedManifests: string[][] = [];
+    const run = await analyzeFixture("const ordinary=1", undefined, {
+      normalize: async (source) => ({
+        derivatives: [
+          {
+            id: "normalized",
+            content: source.endsWith(";") ? source : `${source};`,
+            transform: "webcrack-normalized",
+          },
+        ],
+      }),
+      openGrep: async ({ expectedPaths = [] }) => {
+        expectedManifests.push([...expectedPaths]);
+        return {
+          name: "opengrep",
+          version: "test",
+          status: "completed",
+          findings: [],
+          pathCoverage: { scanned: [...expectedPaths], skipped: [] },
+        };
+      },
+    });
+
+    expect(expectedManifests).toEqual([["derived/000000.js"]]);
+    expect(run.javascriptAnalysis?.stages.derived_opengrep).toBe(1);
+  });
+
+  test("fails closed when inventory content changes after hashing", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-digest-"));
+    await writeFile(join(root, "app.js"), "const changed=true");
+    await expect(
+      runJavascriptAnalysis(
+        {
+          root,
+          inventoryFiles: [
+            {
+              path: "app.js",
+              bytes: 1,
+              sha256: "0".repeat(64),
+              kind: "text",
+            },
+          ],
+          rawOpenGrepCoverage: { scanned: ["app.js"], skipped: [] },
+          runner: {} as CommandRunner,
+          rulesRoot: resolve("config/opengrep"),
+          policy: await policy(),
+          temporaryRoot: root,
+          opengrepVersion: "test",
+        },
+        { openGrep },
+      ),
+    ).rejects.toMatchObject({ code: "SCANNER_FAILED", scope: "system" });
+  });
+});
