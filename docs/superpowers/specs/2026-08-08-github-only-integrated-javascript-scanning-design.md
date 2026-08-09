@@ -155,6 +155,16 @@ that an applicable path can never disappear. Text candidates proceed to
 analysis. A JavaScript path inventoried as binary, unsafe, or beyond the raw
 file ceiling produces a typed unresolved record.
 
+Stage applicability is explicit. Raw signatures, literal decoding, and raw
+OpenGrep accounting apply to every text JavaScript/TypeScript candidate.
+JS-X-Ray, webcrack normalization, and bundle extraction are required for
+JavaScript-family extensions (`.js`, `.cjs`, `.mjs`, and `.jsx`). They are
+opportunistic, not coverage requirements, for TypeScript-family extensions
+because unsupported TypeScript syntax must not make an otherwise completely
+scanned source repository permanently inconclusive. A TypeScript file marked
+minified or containing a supported encoded-literal execution signal is still
+decoded and its JavaScript-like derivatives receive the full derived stages.
+
 Each selected candidate is bound to:
 
 - normalized repository-relative path;
@@ -396,7 +406,9 @@ Evidence construction is representation-aware and character-bounded.
   not an unbounded line-one fallback.
 - Multiple representations for one candidate are labeled with fixed stage,
   transform depth, and digest prefix and combined only up to the group ceiling.
-- Existing secret and prompt-injection redaction runs before serialization.
+- Existing secret redaction runs before serialization, and the existing unique
+  untrusted-repository-data boundary remains around all source supplied to the
+  model.
 - Expansion tiers are computed in the prepare job, redacted, character-bounded,
   and stored in the prepared artifact. The model job never reopens the target
   checkout.
@@ -500,9 +512,10 @@ coverage changes do not introduce automatic delisting.
    - benign minified library;
    - malformed, oversized, timeout, derivative-limit, and recursion-limit
      inputs.
-5. Commit and push the feature branch, allow ordinary pull-request checks to
-   validate it, then merge into `main` through the repository's existing branch
-   integration process.
+5. Commit and push the feature branch, run the repository's ordinary branch
+   checks, then merge the verified branch into `main` through the authorized
+   existing integration process. A new pull request is not required by this
+   design.
 6. Dispatch the existing reconciliation/policy-rescan workflow. Do not create a
    separate scanner deployment workflow.
 7. Prove live behavior at exact deployed `main` SHA with at least one benign
