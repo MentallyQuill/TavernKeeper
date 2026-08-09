@@ -1,4 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
+import { readFile } from "node:fs/promises";
 
 import type { InventoryClassification } from "../src/inventory/classify.js";
 import { runApplicableScanners } from "../src/scanners/run-scanners.js";
@@ -17,6 +18,30 @@ const notApplicable = (name: string): ScannerRun => ({
   version: "1.0.0",
   status: "not-applicable",
   findings: [],
+});
+const completedOpenGrep = (): ScannerRun => ({
+  ...completed("opengrep"),
+  pathCoverage: { scanned: [], skipped: [] },
+});
+const completedJavascriptAnalysis = (): ScannerRun => ({
+  ...completed("javascript-analysis"),
+  javascriptAnalysis: {
+    status: "complete",
+    candidates: 0,
+    candidate_bytes: 0,
+    representations: { raw: 0, decoded: 0, normalized: 0, bundle_modules: 0 },
+    stages: {
+      raw_signatures: 0,
+      raw_ast: 0,
+      raw_opengrep: 0,
+      derived_signatures: 0,
+      derived_ast: 0,
+      derived_opengrep: 0,
+    },
+    unresolved: [],
+  },
+  evidenceHints: [],
+  derivativeAncestry: [],
 });
 
 function classification(
@@ -52,10 +77,11 @@ const baseSpec = {
     zizmor: false,
     malcontent: false,
   }),
+  inventoryFiles: [],
   structuralFiles: [],
   runner,
   policy: {
-    version: "3" as const,
+    version: "4" as const,
     queue: { batchSize: 5 as const, maxParallel: 2 as const },
     history: { maxCommits: 20 as const },
     inventory: {
@@ -69,6 +95,22 @@ const baseSpec = {
     commands: {
       timeoutMs: 2_700_000 as const,
       maxOutputBytes: 104_857_600 as const,
+    },
+    javascriptAnalysis: {
+      maxCandidates: 10_000 as const,
+      maxCandidateBytes: 536_870_912 as const,
+      maxTransformInputBytes: 16_777_216 as const,
+      transformTimeoutMs: 30_000 as const,
+      maxWorkerOldGenerationMb: 512 as const,
+      maxDerivativeBytes: 16_777_216 as const,
+      maxDerivativeBytesPerCandidate: 67_108_864 as const,
+      maxTotalDerivativeBytes: 268_435_456 as const,
+      maxDerivativesPerCandidate: 64 as const,
+      maxRecursionDepth: 3 as const,
+      maxDecodedLiteralsPerRepresentation: 256 as const,
+      maxEvidenceCharactersPerFinding: 24_000 as const,
+      maxPreparedEvidenceBytes: 20_000_000 as const,
+      analysisTimeoutMs: 1_200_000 as const,
     },
     retry: {
       modelReplyMinutesFromInitialFailure: [5, 10, 15] as [5, 10, 15],
@@ -86,11 +128,24 @@ const baseSpec = {
 };
 
 describe("scanner coordinator", () => {
-  test("always runs structural, Gitleaks, and OpenGrep and records conditional absence", async () => {
+  test("production smoke covers OpenGrep path closure and JavaScript derivatives", async () => {
+    const source = await readFile(
+      new URL("../scripts/smoke-scanners.ts", import.meta.url),
+      "utf8",
+    );
+    expect(source).toContain("runJavascriptAnalysis");
+    expect(source).toContain("pathCoverage");
+    expect(source).toContain("bundle_modules");
+    expect(source).toContain("decoded");
+    expect(source).toContain("diagnostic: error.message");
+  });
+
+  test("runs JavaScript analysis after repository OpenGrep and records conditional absence", async () => {
     const adapters = {
       staticScan: vi.fn(() => []),
       gitleaks: vi.fn(async () => completed("gitleaks")),
-      opengrep: vi.fn(async () => completed("opengrep")),
+      opengrep: vi.fn(async () => completedOpenGrep()),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => notApplicable("zizmor")),
       malcontent: vi.fn(async () => notApplicable("malcontent")),
@@ -102,6 +157,7 @@ describe("scanner coordinator", () => {
       ["tavernkeeper-static", "completed"],
       ["gitleaks", "completed"],
       ["opengrep", "completed"],
+      ["javascript-analysis", "completed"],
       ["osv-scanner", "not-applicable"],
       ["zizmor", "not-applicable"],
       ["malcontent", "not-applicable"],
@@ -109,6 +165,7 @@ describe("scanner coordinator", () => {
     expect(adapters.staticScan).toHaveBeenCalledOnce();
     expect(adapters.gitleaks).toHaveBeenCalledOnce();
     expect(adapters.opengrep).toHaveBeenCalledOnce();
+    expect(adapters.javascriptAnalysis).toHaveBeenCalledOnce();
   });
 
   test("propagates required scanner failures instead of returning partial coverage", async () => {
@@ -122,6 +179,7 @@ describe("scanner coordinator", () => {
           "OpenGrep could not be started.",
         );
       }),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => notApplicable("zizmor")),
       malcontent: vi.fn(async () => notApplicable("malcontent")),
@@ -145,6 +203,7 @@ describe("scanner coordinator", () => {
       opengrep: vi.fn(async () => {
         throw new Error("spawn exploded with an internal path");
       }),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => notApplicable("zizmor")),
       malcontent: vi.fn(async () => notApplicable("malcontent")),
@@ -167,7 +226,8 @@ describe("scanner coordinator", () => {
       gitleaks: vi.fn(async () => {
         throw new Error("raw Gitleaks failure");
       }),
-      opengrep: vi.fn(async () => completed("opengrep")),
+      opengrep: vi.fn(async () => completedOpenGrep()),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => notApplicable("zizmor")),
       malcontent: vi.fn(async () => notApplicable("malcontent")),
@@ -187,7 +247,8 @@ describe("scanner coordinator", () => {
     const adapters = {
       staticScan: vi.fn(() => []),
       gitleaks: vi.fn(async () => completed("gitleaks")),
-      opengrep: vi.fn(async () => completed("opengrep")),
+      opengrep: vi.fn(async () => completedOpenGrep()),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => {
         throw new Error("raw OSV failure");
       }),
@@ -209,7 +270,8 @@ describe("scanner coordinator", () => {
     const adapters = {
       staticScan: vi.fn(() => []),
       gitleaks: vi.fn(async () => completed("gitleaks")),
-      opengrep: vi.fn(async () => completed("opengrep")),
+      opengrep: vi.fn(async () => completedOpenGrep()),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => {
         throw new Error("raw zizmor failure");
@@ -231,7 +293,8 @@ describe("scanner coordinator", () => {
     const adapters = {
       staticScan: vi.fn(() => []),
       gitleaks: vi.fn(async () => completed("gitleaks")),
-      opengrep: vi.fn(async () => completed("opengrep")),
+      opengrep: vi.fn(async () => completedOpenGrep()),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => notApplicable("zizmor")),
       malcontent: vi.fn(async () => {
@@ -268,7 +331,8 @@ describe("scanner coordinator", () => {
         throw new Error("Source-retaining path must not run.");
       }),
       gitleaks: vi.fn(async () => completed("gitleaks")),
-      opengrep: vi.fn(async () => completed("opengrep")),
+      opengrep: vi.fn(async () => completedOpenGrep()),
+      javascriptAnalysis: vi.fn(async () => completedJavascriptAnalysis()),
       osv: vi.fn(async () => notApplicable("osv-scanner")),
       zizmor: vi.fn(async () => notApplicable("zizmor")),
       malcontent: vi.fn(async () => notApplicable("malcontent")),

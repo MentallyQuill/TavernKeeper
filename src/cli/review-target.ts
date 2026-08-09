@@ -1,41 +1,32 @@
 import { join } from "node:path";
 
 import { loadContextualReviewPolicy } from "../config/policy.js";
-import {
-  expandEvidenceContextGroup,
-  loadEvidenceSourceFromCheckout,
-} from "../context/evidence-context.js";
+import { expandEvidenceContextGroup } from "../context/evidence-context.js";
 import { reviewPreparedSession } from "../orchestrator/session.js";
-import { ProcessCommandRunner } from "../process/command-runner.js";
 import { isDirectExecution, requiredEnvironment, runJsonCli } from "./io.js";
 
-export async function reviewConfiguredTarget(environment: NodeJS.ProcessEnv) {
+const defaultDependencies = {
+  loadPolicy: loadContextualReviewPolicy,
+  review: reviewPreparedSession,
+};
+
+export async function reviewConfiguredTarget(
+  environment: NodeJS.ProcessEnv,
+  dependencies: typeof defaultDependencies = defaultDependencies,
+) {
   const repositoryRoot = process.cwd();
-  const checkoutRoot = requiredEnvironment(
-    environment,
-    "TAVERNKEEPER_CHECKOUT_ROOT",
-  );
-  const runner = new ProcessCommandRunner();
-  const result = await reviewPreparedSession({
+  const result = await dependencies.review({
     sessionRoot: requiredEnvironment(environment, "TAVERNKEEPER_SESSION_ROOT"),
     provider: {
       endpoint: requiredEnvironment(environment, "TAVERNKEEPER_API_ENDPOINT"),
       apiKey: requiredEnvironment(environment, "TAVERNKEEPER_API_KEY"),
       model: requiredEnvironment(environment, "TAVERNKEEPER_MODEL"),
     },
-    policy: await loadContextualReviewPolicy(
+    policy: await dependencies.loadPolicy(
       join(repositoryRoot, "config", "contextual-review.v2.json"),
     ),
     expandContext: async (group, _request, attempt) =>
-      expandEvidenceContextGroup(
-        group,
-        await loadEvidenceSourceFromCheckout({
-          checkoutRoot,
-          group,
-          runner,
-        }),
-        attempt,
-      ),
+      expandEvidenceContextGroup(group, attempt),
   });
   return { status: result.status };
 }

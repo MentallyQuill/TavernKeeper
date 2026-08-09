@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { ScannerPolicyV3 } from "../src/config/policy.js";
+import type { ScannerPolicyV4 } from "../src/config/policy.js";
 import { ScanPackageV1Schema } from "../src/contracts/scan-package.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
 import {
@@ -14,6 +14,7 @@ import {
   ScannerError,
   type ScannerRun,
 } from "../src/scanners/types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
 
 const targetSha = "a".repeat(40);
 const sourceFile = {
@@ -28,8 +29,8 @@ const inventory: Inventory = {
   totals: { files: 1, bytes: 6 },
   totalBytes: 6,
 };
-const policy: ScannerPolicyV3 = {
-  version: "3",
+const policy: ScannerPolicyV4 = {
+  version: "4",
   queue: { batchSize: 5, maxParallel: 2 },
   history: { maxCommits: 20 },
   inventory: {
@@ -41,6 +42,22 @@ const policy: ScannerPolicyV3 = {
     maxCompressionRatio: 200,
   },
   commands: { timeoutMs: 2_700_000, maxOutputBytes: 104_857_600 },
+  javascriptAnalysis: {
+    maxCandidates: 10_000,
+    maxCandidateBytes: 536_870_912,
+    maxTransformInputBytes: 16_777_216,
+    transformTimeoutMs: 30_000,
+    maxWorkerOldGenerationMb: 512,
+    maxDerivativeBytes: 16_777_216,
+    maxDerivativeBytesPerCandidate: 67_108_864,
+    maxTotalDerivativeBytes: 268_435_456,
+    maxDerivativesPerCandidate: 64,
+    maxRecursionDepth: 3,
+    maxDecodedLiteralsPerRepresentation: 256,
+    maxEvidenceCharactersPerFinding: 24_000,
+    maxPreparedEvidenceBytes: 20_000_000,
+    analysisTimeoutMs: 1_200_000,
+  },
   retry: {
     modelReplyMinutesFromInitialFailure: [5, 10, 15],
     hoursFromInitialFailure: [1, 2, 3],
@@ -71,9 +88,10 @@ function finding() {
 function scannerRuns(withFinding = false): ScannerRun[] {
   return (
     [
-      ["tavernkeeper-static", "3"],
+      ["tavernkeeper-static", "4"],
       ["gitleaks", "8.30.1"],
       ["opengrep", "1.26.0"],
+      ["javascript-analysis", JAVASCRIPT_ANALYSIS_VERSION],
       ["osv-scanner", "2.4.0"],
       ["zizmor", "1.28.0"],
       ["malcontent", "1.25.7"],
@@ -85,6 +103,30 @@ function scannerRuns(withFinding = false): ScannerRun[] {
       ? "not-applicable"
       : "completed",
     findings: withFinding && name === "tavernkeeper-static" ? [finding()] : [],
+    ...(name === "javascript-analysis"
+      ? {
+          javascriptAnalysis: {
+            status: "complete" as const,
+            candidates: 0,
+            candidate_bytes: 0,
+            representations: {
+              raw: 0,
+              decoded: 0,
+              normalized: 0,
+              bundle_modules: 0,
+            },
+            stages: {
+              raw_signatures: 0,
+              raw_ast: 0,
+              raw_opengrep: 0,
+              derived_signatures: 0,
+              derived_ast: 0,
+              derived_opengrep: 0,
+            },
+            unresolved: [],
+          },
+        }
+      : {}),
   }));
 }
 
@@ -102,7 +144,7 @@ function spec(): ScanRepositorySpec {
     root: inventory.root,
     previousReportShas: [],
     scannerVersion: "1.0.0",
-    scannerPolicyVersion: "3",
+    scannerPolicyVersion: "4",
     ruleCatalogVersion: "1",
     policy,
     pins: {
@@ -190,6 +232,7 @@ describe("atomic deterministic repository evidence", () => {
       "tavernkeeper-static",
       "gitleaks",
       "opengrep",
+      "javascript-analysis",
       "osv-scanner",
       "zizmor",
       "malcontent",

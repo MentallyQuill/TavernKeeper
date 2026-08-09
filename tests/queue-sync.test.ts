@@ -76,6 +76,7 @@ const indexWithPreviousRepositoryReport: ReportIndexV5 = {
         evidence_validated: 0,
         review_required: 0,
         review_completed: 0,
+        javascript_analysis_status: "legacy",
       },
       report_url:
         "https://mentallyquill.github.io/TavernKeeper/reports/github/41/" +

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { lstat, readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { ScannerPolicyV3 } from "../config/policy.js";
+import type { ScannerPolicyV4 } from "../config/policy.js";
 import {
   buildScanPackage,
   type ScanPackageV1,
@@ -22,6 +22,11 @@ import {
   type InventorySpec,
 } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
+import {
+  JavascriptAnalysisCoverageSchema,
+  type JavascriptAnalysisCoverage,
+} from "../scanners/javascript-analysis-types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../scanners/javascript-analysis.js";
 import {
   runApplicableScanners,
   type ApplicableScannerSpec,
@@ -47,7 +52,7 @@ export interface ScanRepositorySpec {
   scannerVersion: string;
   scannerPolicyVersion: string;
   ruleCatalogVersion: string;
-  policy: ScannerPolicyV3;
+  policy: ScannerPolicyV4;
   pins: ScannerVersionPins;
   rulesRoot: string;
   runner: CommandRunner;
@@ -128,6 +133,7 @@ const scannerOrder = [
   "tavernkeeper-static",
   "gitleaks",
   "opengrep",
+  "javascript-analysis",
   "osv-scanner",
   "zizmor",
   "malcontent",
@@ -182,7 +188,32 @@ export function validateScannerRuns(
       "Required scanner coverage set is incomplete.",
     );
   for (const run of runs) {
-    const expectedStatus = expectedScannerStatus(run.name, classification);
+    let javascriptCoverage: JavascriptAnalysisCoverage | undefined;
+    if (run.name === "javascript-analysis") {
+      const parsed = JavascriptAnalysisCoverageSchema.safeParse(
+        run.javascriptAnalysis,
+      );
+      if (!parsed.success)
+        throw new ScannerError(
+          "SCANNER_FAILED",
+          "system",
+          "JavaScript analysis coverage is invalid.",
+          "javascript-analysis",
+        );
+      javascriptCoverage = parsed.data;
+    } else if (run.javascriptAnalysis !== undefined) {
+      throw new ScannerError(
+        "SCANNER_FAILED",
+        "system",
+        `Unexpected JavaScript coverage on ${run.name}.`,
+      );
+    }
+    const expectedStatus =
+      javascriptCoverage === undefined
+        ? expectedScannerStatus(run.name, classification)
+        : javascriptCoverage.status === "complete"
+          ? "completed"
+          : "completed-with-limitations";
     const limitedOpenGrep =
       run.name === "opengrep" &&
       expectedStatus === "completed" &&
@@ -209,6 +240,13 @@ export function validateScannerRuns(
         "SCANNER_FAILED",
         "system",
         `Unexpected scanner coverage limitations for ${run.name}.`,
+      );
+    if (run.name === "javascript-analysis" && run.limitations !== undefined)
+      throw new ScannerError(
+        "SCANNER_FAILED",
+        "system",
+        "JavaScript limitations must use typed coverage records.",
+        "javascript-analysis",
       );
     for (const finding of run.findings) FindingSchema.parse(finding);
   }
@@ -240,6 +278,7 @@ function scannerVersions(spec: ScanRepositorySpec) {
     "tavernkeeper-static": spec.policy.version,
     gitleaks: spec.pins.gitleaks.version,
     opengrep: spec.pins.opengrep.version,
+    "javascript-analysis": JAVASCRIPT_ANALYSIS_VERSION,
     "osv-scanner": spec.pins.osvScanner.version,
     zizmor: spec.pins.zizmor.version,
     malcontent: spec.pins.malcontent.version,
@@ -327,7 +366,7 @@ export async function scanRepository(
       !target.success ||
       spec.projectKinds.length === 0 ||
       spec.scannerPolicyVersion !== spec.policy.version ||
-      spec.policy.version !== "3" ||
+      spec.policy.version !== "4" ||
       spec.ruleCatalogVersion !== "1"
     )
       return failure(
@@ -386,6 +425,7 @@ export async function scanRepository(
         commits: history.value.historyCommits,
       },
       classification,
+      inventoryFiles: inventory.files,
       structuralFiles: [],
       structuralFindings,
       runner: spec.runner,
@@ -432,6 +472,9 @@ export async function scanRepository(
         },
         ...orderedRuns,
       ],
+      javascriptAnalysis: orderedRuns.find(
+        ({ name }) => name === "javascript-analysis",
+      )!.javascriptAnalysis!,
       findings: orderedRuns.flatMap(({ findings }) => findings),
     });
     return {

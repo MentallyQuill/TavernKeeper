@@ -31,4 +31,59 @@ describe("V5 technical report HTML", () => {
     expect(html).not.toMatch(/https:\/\/(?:fonts|cdn)\./iu);
     expect(html).not.toMatch(/\b(?:teal|orange|red)\b/iu);
   });
+
+  test("renders bounded unresolved paths and the first-filter warning", async () => {
+    const legacy = await fixtureReportV5();
+    const report = await fixtureReportV5({
+      scanner_policy_version: "4",
+      coverage: {
+        ...legacy.coverage,
+        tools: [
+          ...legacy.coverage.tools,
+          {
+            name: "javascript-analysis",
+            version: "test-version",
+            status: "completed",
+          },
+        ],
+        javascript_analysis: {
+          status: "incomplete",
+          candidates: 1,
+          candidate_bytes: 123,
+          representations: {
+            raw: 1,
+            decoded: 1,
+            normalized: 1,
+            bundle_modules: 0,
+          },
+          stages: {
+            raw_signatures: 1,
+            raw_ast: 1,
+            raw_opengrep: 1,
+            derived_signatures: 2,
+            derived_ast: 2,
+            derived_opengrep: 2,
+          },
+          unresolved: [
+            {
+              path: "dist/app.min.js",
+              stage: "normalize",
+              reason: "timeout",
+              recovered: false,
+            },
+          ],
+        },
+      },
+      limitations: [
+        ...legacy.limitations,
+        "JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.",
+      ],
+    });
+    const html = renderReportV5Html(report);
+
+    expect(html).toMatch(/JavaScript coverage.*Incomplete/isu);
+    expect(html).toMatch(/no clean conclusion/iu);
+    expect(html).toContain("dist/app.min.js");
+    expect(html).not.toContain("derived/000001-");
+  });
 });

@@ -12,6 +12,11 @@ import {
   ToolCoverageSchema,
 } from "./reports.js";
 import { FullShaSchema } from "./targets.js";
+import {
+  JavascriptAnalysisCoverageSchema,
+  JavascriptUnresolvedSchema,
+  type JavascriptAnalysisCoverage,
+} from "../scanners/javascript-analysis-types.js";
 
 const CountSchema = z.number().int().nonnegative();
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
@@ -68,6 +73,51 @@ const InventoryCoverageV5Schema = z.strictObject({
   first_party_text_bytes: CountSchema,
   excluded: ExcludedCountsSchema,
 });
+
+export const PUBLIC_JAVASCRIPT_UNRESOLVED_MAX = 100;
+export const INCOMPLETE_JAVASCRIPT_LIMITATION =
+  "JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.";
+
+function unresolvedIdentity(value: z.infer<typeof JavascriptUnresolvedSchema>) {
+  return `${value.path}\u0000${value.stage}\u0000${value.reason}\u0000${value.recovered}`;
+}
+
+export const PublicJavascriptAnalysisCoverageSchema =
+  JavascriptAnalysisCoverageSchema.safeExtend({
+    unresolved: z
+      .array(JavascriptUnresolvedSchema)
+      .max(PUBLIC_JAVASCRIPT_UNRESOLVED_MAX),
+  }).superRefine((coverage, context) => {
+    const identities = coverage.unresolved.map(unresolvedIdentity);
+    if (
+      identities.some(
+        (identity, index) => index > 0 && identities[index - 1]! >= identity,
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["unresolved"],
+        message:
+          "Public unresolved JavaScript coverage must be unique and sorted.",
+      });
+  });
+
+export function publicJavascriptAnalysisCoverage(
+  input: JavascriptAnalysisCoverage,
+) {
+  const unresolved = [
+    ...new Map(
+      input.unresolved.map((value) => [unresolvedIdentity(value), value]),
+    ).entries(),
+  ]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .slice(0, PUBLIC_JAVASCRIPT_UNRESOLVED_MAX)
+    .map(([, value]) => value);
+  return PublicJavascriptAnalysisCoverageSchema.parse({
+    ...input,
+    unresolved,
+  });
+}
 
 export const FileRoleSchema = z.enum([
   "production",
@@ -234,6 +284,7 @@ export const ScanReportV5Schema = z
     coverage: z.strictObject({
       inventory: InventoryCoverageV5Schema,
       tools: z.array(ToolCoverageSchema).min(1),
+      javascript_analysis: PublicJavascriptAnalysisCoverageSchema.optional(),
       evidence_validation: z.strictObject({
         status: z.literal("completed"),
         validated_candidates: CountSchema,
@@ -250,6 +301,27 @@ export const ScanReportV5Schema = z
     limitations: z.array(SafeTextSchema(600)).min(1).max(20),
   })
   .superRefine((report, context) => {
+    if (
+      report.scanner_policy_version === "4" &&
+      report.coverage.javascript_analysis === undefined
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["coverage", "javascript_analysis"],
+        message: "JavaScript coverage is required for scanner policy 4.",
+      });
+    const incompleteJavascript =
+      report.coverage.javascript_analysis?.status === "incomplete";
+    if (
+      incompleteJavascript !==
+      report.limitations.includes(INCOMPLETE_JAVASCRIPT_LIMITATION)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["limitations"],
+        message:
+          "Incomplete JavaScript coverage requires its fixed public limitation.",
+      });
     if (report.contextual_review_policy_version === "2") {
       for (const [index, assessment] of report.assessments.entries())
         if (!ContextualAssessmentSchema.safeParse(assessment).success)
@@ -385,10 +457,20 @@ export const ScanReportV5Schema = z
     const completedTools = new Map(
       report.coverage.tools.map((tool) => [tool.name, tool.status]),
     );
+    if (
+      report.scanner_policy_version === "4" &&
+      completedTools.get("javascript-analysis") !== "completed"
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["coverage", "tools"],
+        message: "Policy-4 reports require completed JavaScript analysis.",
+      });
     const toolByOrigin: Record<string, string | undefined> = {
       tavernkeeper: "tavernkeeper-static",
       gitleaks: "gitleaks",
       opengrep: "opengrep",
+      "javascript-analysis": "javascript-analysis",
       "osv-scanner": "osv-scanner",
       zizmor: "zizmor",
       malcontent: "malcontent",
@@ -422,6 +504,9 @@ export const ReportIndexEntryV5Schema = z
       evidence_validated: CountSchema,
       review_required: CountSchema,
       review_completed: CountSchema,
+      javascript_analysis_status: z
+        .enum(["complete", "incomplete", "legacy"])
+        .default("legacy"),
     }),
     report_url: z
       .url()
@@ -465,6 +550,15 @@ export const ReportIndexEntryV5Schema = z
         code: "custom",
         path: ["coverage"],
         message: "Index review coverage must be complete.",
+      });
+    if (
+      entry.scanner_policy_version === "4" &&
+      entry.coverage.javascript_analysis_status === "legacy"
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["coverage", "javascript_analysis_status"],
+        message: "Policy-4 index entries require JavaScript coverage status.",
       });
   });
 

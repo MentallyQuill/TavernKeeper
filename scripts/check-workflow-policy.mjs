@@ -225,6 +225,7 @@ const permissionProfiles = {
       actions: "write",
     },
     jobs: {
+      prepare: { contents: "read" },
       scan: { contents: "read" },
       publish: { contents: "read", issues: "write" },
       deploy: undefined,
@@ -488,27 +489,27 @@ function checkContextualRuntime(file, workflow) {
   if (forbiddenRuntimePattern.test(JSON.stringify(workflow)))
     fail(file, "removed legacy scan runtime resurfaced");
   if (file === "scan-and-publish.yml") {
-    const steps = workflow.jobs?.scan?.steps ?? [];
-    const prepareIndex = steps.findIndex(
+    const prepareSteps = workflow.jobs?.prepare?.steps ?? [];
+    const reviewSteps = workflow.jobs?.scan?.steps ?? [];
+    const prepareIndex = prepareSteps.findIndex(
       (step) =>
         step?.name === "Prepare exact target and scanner evidence" &&
         step?.run === "npm run --silent prepare-target",
     );
-    const reviewIndex = steps.findIndex(
+    const reviewIndex = reviewSteps.findIndex(
       (step) =>
         step?.name === "Contextually assess scanner evidence" &&
         step?.run === canonicalContextualReviewRun,
     );
-    const finalizeIndex = steps.findIndex(
+    const finalizeIndex = reviewSteps.findIndex(
       (step) =>
         step?.name === "Finalize contextual V5 report" &&
         step?.run === "npm run --silent finalize-target -- candidate.json",
     );
     if (
       prepareIndex < 0 ||
-      reviewIndex !== prepareIndex + 1 ||
       finalizeIndex !== reviewIndex + 1 ||
-      steps[reviewIndex]?.["timeout-minutes"] !== 62
+      reviewSteps[reviewIndex]?.["timeout-minutes"] !== 62
     )
       fail(
         file,
@@ -561,6 +562,7 @@ function checkContextualRuntime(file, workflow) {
 function checkEncryptedHandoff(file, workflow) {
   if (file !== "scan-and-publish.yml") return;
   const steps = workflow.jobs?.scan?.steps ?? [];
+  const prepareSteps = workflow.jobs?.prepare?.steps ?? [];
   const bootstrap = steps[0];
   if (
     bootstrap?.name !== "Initialize encrypted bootstrap failure" ||
@@ -589,6 +591,37 @@ function checkEncryptedHandoff(file, workflow) {
       file,
       "scan artifact upload must always retain only outcome.enc for one day",
     );
+  const preparedUploads = prepareSteps.filter(
+    (step) =>
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/upload-artifact@"),
+  );
+  if (
+    preparedUploads.length !== 1 ||
+    preparedUploads[0]?.uses !== uploadArtifactAction ||
+    preparedUploads[0]?.if !== "always()" ||
+    preparedUploads[0]?.with?.name !==
+      "prepared-${{ matrix.request.repository_id }}" ||
+    preparedUploads[0]?.with?.path !==
+      "${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}" ||
+    preparedUploads[0]?.with?.["retention-days"] !== 1
+  )
+    fail(
+      file,
+      "prepare must upload one bounded per-repository artifact for one day",
+    );
+  const preparedDownloads = steps.filter(
+    (step) =>
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/download-artifact@"),
+  );
+  if (
+    preparedDownloads.length !== 1 ||
+    preparedDownloads[0]?.uses !== downloadArtifactAction ||
+    preparedDownloads[0]?.with?.name !==
+      "prepared-${{ matrix.request.repository_id }}"
+  )
+    fail(file, "review must download only its bounded prepared artifact");
   const downloads = (workflow.jobs?.publish?.steps ?? []).filter(
     (step) =>
       typeof step?.uses === "string" &&
@@ -626,16 +659,32 @@ function checkEncryptedHandoff(file, workflow) {
     fail(file, "scan matrix must retain max-parallel: 2");
   if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== false)
     fail(file, "scan matrix must finish every selected repository");
-  const dependencies = steps.find(
+  if (workflow.jobs?.prepare?.strategy?.["max-parallel"] !== 2)
+    fail(file, "prepare matrix must retain max-parallel: 2");
+  if (workflow.jobs?.prepare?.strategy?.["fail-fast"] !== false)
+    fail(file, "prepare matrix must finish every selected repository");
+  if (workflow.jobs?.scan?.needs !== "prepare")
+    fail(file, "review matrix must wait for preparation");
+  if (
+    JSON.stringify(workflow.jobs?.prepare).match(
+      /secrets\.|TAVERNKEEPER_API_|TAVERNKEEPER_MODEL|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
+    )
+  )
+    fail(file, "prepare matrix must remain credential-free");
+  if (
+    JSON.stringify(workflow.jobs?.scan).includes("TAVERNKEEPER_CHECKOUT_ROOT")
+  )
+    fail(file, "review matrix must not receive a target checkout path");
+  const dependencies = prepareSteps.find(
     (step) => step?.name === "Install dependencies",
   );
-  const toolchain = steps.find(
+  const toolchain = prepareSteps.find(
     (step) => step?.name === "Install and verify pinned scanners",
   );
-  const toolchainFailure = steps.find(
+  const toolchainFailure = prepareSteps.find(
     (step) => step?.name === "Record shared scanner toolchain failure",
   );
-  const prepare = steps.find(
+  const prepare = prepareSteps.find(
     (step) => step?.name === "Prepare exact target and scanner evidence",
   );
   if (
@@ -925,9 +974,9 @@ for (const file of names) {
   checkDelayedWake(file, workflow);
 }
 
-const policyFile = "config/scanner-policy.v3.json";
+const policyFile = "config/scanner-policy.v4.json";
 const policy = JSON.parse(await readFile(join(root, policyFile), "utf8"));
-if (policy.version !== "3") fail(policyFile, "policy version must remain 3");
+if (policy.version !== "4") fail(policyFile, "policy version must remain 4");
 if (policy.queue?.batchSize !== 5)
   fail(policyFile, "queue batchSize must remain exactly 5");
 if (policy.queue?.maxParallel !== 2)

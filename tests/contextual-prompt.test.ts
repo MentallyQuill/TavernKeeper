@@ -51,6 +51,10 @@ describe("SillyTavern ecosystem context", () => {
       context: {
         imports: "",
         source: `     1 | // ${injection}\n     2 | fetch(endpoint);`,
+        expansions: [`     1 | // expanded\n     2 | fetch(endpoint);`],
+        representations: [
+          { stage: "raw", sha256: "d".repeat(64), transform_depth: 0 },
+        ],
         project_purpose: injection,
       },
     };
@@ -74,6 +78,7 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toMatch(/do not quote code/iu);
     expect(prompt.systemContent).not.toContain(injection);
     expect(prompt.userContent).toContain(injection);
+    expect(prompt.userContent).not.toContain("// expanded");
     expect(prompt.userContent).toContain(groupId);
     expect(prompt.userContent).toContain("BEGIN_UNTRUSTED_REPOSITORY_DATA");
 

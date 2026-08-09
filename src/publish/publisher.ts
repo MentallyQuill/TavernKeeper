@@ -115,6 +115,8 @@ export function projectReportToIndexV5(
         report.coverage.evidence_validation.validated_candidates,
       review_required: report.review_coverage.required,
       review_completed: report.review_coverage.completed,
+      javascript_analysis_status:
+        report.coverage.javascript_analysis?.status ?? "legacy",
     },
     report_url: reportUrl(report),
     history_url: historyUrl(report),

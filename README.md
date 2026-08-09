@@ -27,11 +27,16 @@ Target repositories are hostile data:
   paths.
 - It runs TavernKeeper-owned rules plus digest-pinned Gitleaks, Opengrep,
   OSV-Scanner, zizmor, and Malcontent adapters when applicable.
+- Policy 4 inventories every committed JavaScript/TypeScript candidate,
+  including minified distributions and vendored packages, then safely decodes,
+  normalizes, unpacks, and rescans bounded derivative representations without
+  executing target code.
 - Scanner output locates review candidates; a keyword or scanner severity is
   not treated as a security conclusion.
-- Every candidate receives one schema-validated contextual assessment bound to
-  immutable evidence and locations. Missing review or scanner coverage produces
-  no report.
+- Every finding candidate receives one schema-validated contextual assessment
+  bound to immutable evidence and locations. Hard scan failures produce no
+  report; bounded incomplete JavaScript coverage is published explicitly and
+  prevents an otherwise-low advisory from appearing low.
 - Published JSON and HTML exclude raw source excerpts, raw tool or model
   payloads, credentials, hidden reasoning, and runner-local paths.
 
@@ -81,8 +86,9 @@ Initial V3 catalog coverage follows Tavernary's complete popularity rank.
 TavernKeeper temporarily accepts V2 manifests with the legacy Top-30/new/old
 fallback during rollout. Durable tickets preserve that initial order: a failed
 project receives a new tail ticket, and projects discovered later receive still
-higher tickets, so neither can starve the other. See [operations](docs/operations.md),
-[architecture](docs/architecture.md), and [rule documentation](docs/rules.md).
+higher tickets, so neither can starve the other. See
+[operations](docs/operations.md), [architecture](docs/architecture.md),
+[scanning policy](docs/SCANNING.md), and [rule documentation](docs/rules.md).
 
 Every complete report remains public regardless of risk. An immediate-danger
 report is an awareness signal, never an automatic hide, quarantine, ranking,

@@ -8,8 +8,8 @@ import { afterEach, describe, expect, test } from "vitest";
 import {
   loadScannerPins,
   loadScannerPolicy,
-  ScannerPolicyV3Schema,
-  type ScannerPolicyV3,
+  ScannerPolicyV4Schema,
+  type ScannerPolicyV4,
 } from "../../src/config/policy.js";
 import type { Finding } from "../../src/contracts/reports.js";
 import { classifyInventory } from "../../src/inventory/classify.js";
@@ -26,6 +26,12 @@ import { publishCandidates } from "../../src/publish/publisher.js";
 import { reportPath } from "../../src/publish/report-path.js";
 import { buildSite } from "../../src/site/build-site.js";
 import type { ScannerRun } from "../../src/scanners/types.js";
+import {
+  runJavascriptAnalysis,
+  type JavascriptAnalysisDependencies,
+} from "../../src/scanners/javascript-analysis.js";
+import { selectJavascriptCandidates } from "../../src/scanners/javascript-candidates.js";
+import type { InventoryFile } from "../../src/inventory/inventory-handler.js";
 import { fixtureReportV5 } from "../helpers/v5-report.js";
 
 const repositoryRoot = dirname(
@@ -66,14 +72,47 @@ async function doesNotExist(path: string) {
   }
 }
 
-function scannerRuns(
+const inertOpenGrep: JavascriptAnalysisDependencies["openGrep"] = async ({
+  expectedPaths = [],
+}) => ({
+  name: "opengrep",
+  version: "test",
+  status: "completed",
+  findings: [],
+  pathCoverage: { scanned: [...expectedPaths], skipped: [] },
+});
+
+async function scannerRuns(
   applicability: { osv: boolean; zizmor: boolean; malcontent: boolean },
   findings: Finding[],
-): ScannerRun[] {
+  inventoryFiles: readonly InventoryFile[],
+  root: string,
+  policy: ScannerPolicyV4,
+): Promise<ScannerRun[]> {
+  const javascriptCandidates = selectJavascriptCandidates(inventoryFiles);
+  const rawCoverage = {
+    scanned: javascriptCandidates.map(({ path }) => path),
+    skipped: [],
+  };
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "tavernkeeper-js-e2e-"));
+  temporaryRoots.push(temporaryRoot);
+  const javascriptAnalysis = await runJavascriptAnalysis(
+    {
+      root,
+      inventoryFiles,
+      rawOpenGrepCoverage: rawCoverage,
+      runner,
+      rulesRoot: join(repositoryRoot, "rules", "opengrep"),
+      policy,
+      temporaryRoot,
+      opengrepVersion: "test",
+    },
+    { openGrep: inertOpenGrep },
+  );
   return [
     {
       name: "tavernkeeper-static",
-      version: "3",
+      version: "4",
       status: "completed",
       findings,
     },
@@ -88,7 +127,9 @@ function scannerRuns(
       version: "1.26.0",
       status: "completed",
       findings: [],
+      pathCoverage: rawCoverage,
     },
+    javascriptAnalysis,
     {
       name: "osv-scanner",
       version: "2.4.0",
@@ -110,16 +151,16 @@ function scannerRuns(
   ];
 }
 
-async function v3Policy() {
-  return ScannerPolicyV3Schema.parse(
+async function v4Policy() {
+  return ScannerPolicyV4Schema.parse(
     await loadScannerPolicy(
-      join(repositoryRoot, "config", "scanner-policy.v3.json"),
+      join(repositoryRoot, "config", "scanner-policy.v4.json"),
     ),
   );
 }
 
-async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV3) {
-  const policy = policyInput ?? (await v3Policy());
+async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV4) {
+  const policy = policyInput ?? (await v4Policy());
   const pins = await loadScannerPins(
     join(repositoryRoot, "config", "scanners.v1.json"),
   );
@@ -149,8 +190,14 @@ async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV3) {
           };
     },
     structuralScan: scanStructuralFiles,
-    scanners: async ({ classification, structuralFindings }) =>
-      scannerRuns(classification.applicability, structuralFindings ?? []),
+    scanners: async ({ classification, structuralFindings, inventoryFiles }) =>
+      scannerRuns(
+        classification.applicability,
+        structuralFindings ?? [],
+        inventoryFiles,
+        root,
+        policy,
+      ),
     verifyHead: async () => ({ ok: true, value: targetSha }),
   };
   const spec: ScanRepositorySpec = {
@@ -159,14 +206,14 @@ async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV3) {
       source_id: "github-42",
       provider: "github",
       repository_id: 42,
-      repository: `fixture/${fixture}`,
+      repository: `fixture/${fixture.split("/").at(-1)}`,
       target_sha: targetSha,
-      canonical_url: `https://github.com/fixture/${fixture}`,
+      canonical_url: `https://github.com/fixture/${fixture.split("/").at(-1)}`,
     },
     root,
     previousReportShas: [],
     scannerVersion: "1.0.0",
-    scannerPolicyVersion: "3",
+    scannerPolicyVersion: "4",
     ruleCatalogVersion: "1",
     policy,
     pins,
@@ -177,6 +224,75 @@ async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV3) {
 }
 
 describe("in-process hostile-data safety and deterministic publication gate", () => {
+  test.each([
+    ["readable-trojan", "raw"],
+    ["minified-trojan", "normalized"],
+    ["encoded-trojan", "decoded"],
+    ["bundled-trojan", "bundle_modules"],
+  ] as const)(
+    "detects %s with %s representations",
+    async (fixture, representationKey) => {
+      const { result } = await fixtureScan(`javascript-analysis/${fixture}`);
+      expect(result, JSON.stringify(result)).toMatchObject({ ok: true });
+      if (!result.ok) return;
+      expect(result.value.scanPackage.findings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ category: "credential-theft" }),
+        ]),
+      );
+      expect(result.value.scanPackage.javascript_analysis?.status).toBe(
+        "complete",
+      );
+      expect(
+        result.value.scanPackage.javascript_analysis?.representations[
+          representationKey
+        ],
+      ).toBeGreaterThan(0);
+    },
+  );
+
+  test("recursively reveals nested encoded JavaScript", async () => {
+    const { result } = await fixtureScan(
+      "javascript-analysis/nested-encoded-trojan",
+    );
+    expect(result, JSON.stringify(result)).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(
+      result.value.scanPackage.javascript_analysis?.representations.decoded,
+    ).toBeGreaterThan(1);
+    expect(result.value.scanPackage.findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ category: "credential-theft" }),
+      ]),
+    );
+  });
+
+  test("keeps a benign minified library complete without material findings", async () => {
+    const { result } = await fixtureScan("javascript-analysis/benign-minified");
+    expect(result, JSON.stringify(result)).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.value.scanPackage.javascript_analysis?.status).toBe(
+      "complete",
+    );
+    expect(
+      result.value.scanPackage.findings.filter(
+        ({ severity }) => severity === "high",
+      ),
+    ).toEqual([]);
+  });
+
+  test("reports malformed minified JavaScript as incomplete", async () => {
+    const { result } = await fixtureScan("javascript-analysis/malformed");
+    expect(result, JSON.stringify(result)).toMatchObject({ ok: true });
+    if (!result.ok) return;
+    expect(result.value.scanPackage.javascript_analysis).toMatchObject({
+      status: "incomplete",
+      unresolved: expect.arrayContaining([
+        expect.objectContaining({ path: "dist/broken.min.js" }),
+      ]),
+    });
+  });
+
   test("completes a benign repository with complete deterministic evidence", async () => {
     const { result } = await fixtureScan("benign-small");
     expect(result, JSON.stringify(result)).toMatchObject({
@@ -188,7 +304,7 @@ describe("in-process hostile-data safety and deterministic publication gate", ()
         },
       },
     });
-    expect(result.ok && result.value.scanPackage.tools).toHaveLength(7);
+    expect(result.ok && result.value.scanPackage.tools).toHaveLength(8);
   });
 
   test("preserves credential exfiltration candidates for contextual review", async () => {
@@ -256,11 +372,11 @@ describe("in-process hostile-data safety and deterministic publication gate", ()
   });
 
   test("returns no candidate when the repository exceeds policy", async () => {
-    const policy = await v3Policy();
+    const policy = await v4Policy();
     const constrained = {
       ...policy,
       inventory: { ...policy.inventory, maxTotalBytes: 8 },
-    } as unknown as ScannerPolicyV3;
+    } as unknown as ScannerPolicyV4;
     const { result } = await fixtureScan("oversized-policy", constrained);
     expect(result, JSON.stringify(result)).toMatchObject({
       ok: false,

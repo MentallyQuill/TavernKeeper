@@ -55,6 +55,9 @@ describe("atomic V5 publisher", () => {
       ],
     });
     expect(published.index.reports[0]).not.toHaveProperty("result");
+    expect(published.index.reports[0]?.coverage).toMatchObject({
+      javascript_analysis_status: "legacy",
+    });
     expect(ReportIndexV5Schema.parse(published.index)).toEqual(published.index);
     await expect(
       access(join(output, ...historyPath(report).split("/"), "history.json")),

@@ -1,18 +1,39 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  mkdir,
+  mkdtemp,
+  readFile,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { afterEach, describe, expect, test } from "vitest";
 
 import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
 import {
+  assertPreparedEvidenceArtifactSize,
+  createPreparedEvidenceArtifact,
+  restorePreparedEvidenceArtifact,
+} from "../src/contracts/prepared-evidence.js";
+import {
+  loadScannerPins,
+  loadScannerPolicy,
+  ScannerPolicyV4Schema,
+} from "../src/config/policy.js";
+import {
   finalizePreparedSession,
   evidenceContextIdentity,
   PreparedSessionSchema,
   preparedSessionIdentity,
+  prepareTargetSession,
   reviewPreparedSession,
+  type PrepareTargetSessionDependencies,
 } from "../src/orchestrator/session.js";
+import type { CommandRunner } from "../src/process/command-runner.js";
 import { findingFingerprint } from "../src/scanners/types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
 
 const roots: string[] = [];
 const targetSha = "a".repeat(40);
@@ -40,6 +61,11 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     { name: "gitleaks", version: "8.30.1", status: "completed" as const },
     { name: "opengrep", version: "1.26.0", status: "completed" as const },
     {
+      name: "javascript-analysis",
+      version: JAVASCRIPT_ANALYSIS_VERSION,
+      status: "completed" as const,
+    },
+    {
       name: "osv-scanner",
       version: "2.4.0",
       status: "not-applicable" as const,
@@ -64,7 +90,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     project_kinds: ["extension"] as const,
     prepared_at: "2026-08-02T15:00:00.000Z",
     scanner_version: "1.0.0",
-    scanner_policy_version: "3",
+    scanner_policy_version: "4",
     rule_catalog_version: "1",
     report_version: 1,
     supersedes_report_id: null,
@@ -99,6 +125,26 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
       },
     },
     tools: options.omitTool ? tools.slice(0, -1) : tools,
+    javascript_analysis: {
+      status: "complete" as const,
+      candidates: 1,
+      candidate_bytes: 12,
+      representations: {
+        raw: 1,
+        decoded: 0,
+        normalized: 0,
+        bundle_modules: 0,
+      },
+      stages: {
+        raw_signatures: 1,
+        raw_ast: 1,
+        raw_opengrep: 1,
+        derived_signatures: 0,
+        derived_ast: 0,
+        derived_opengrep: 0,
+      },
+      unresolved: [],
+    },
     findings: [
       {
         origin: "tavernkeeper",
@@ -155,6 +201,16 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
       context: {
         imports: "",
         source: "     1 | sendCredential();",
+        expansions: [
+          "     1 | sendCredential();\n     2 | const destination = configured;",
+        ],
+        representations: [
+          {
+            stage: "raw" as const,
+            sha256: "b".repeat(64),
+            transform_depth: 0,
+          },
+        ],
         project_purpose: "An extension fixture.",
       },
     },
@@ -240,6 +296,165 @@ async function completeReview(root: string) {
 }
 
 describe("three-phase contextual scan session", () => {
+  test("prepare verifies the target and removes its checkout before review", async () => {
+    const base = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-prepare-boundary-"),
+    );
+    roots.push(base);
+    const checkoutRoot = join(base, "tavernkeeper-checkout-42");
+    const sessionRoot = join(base, "tavernkeeper-session-42");
+    const policy = ScannerPolicyV4Schema.parse(
+      await loadScannerPolicy(resolve("config/scanner-policy.v4.json")),
+    );
+    const pins = await loadScannerPins(resolve("config/scanners.v1.json"));
+    let verified = false;
+    const dependencies: PrepareTargetSessionDependencies = {
+      checkout: async ({ destination }) => {
+        await mkdir(destination, { recursive: true });
+        return {
+          ok: true,
+          value: {
+            directory: destination,
+            headSha: targetSha,
+            historyCommits: 1,
+          },
+        };
+      },
+      inventory: async ({ root }) => ({
+        ok: true,
+        value: {
+          root,
+          files: [],
+          totals: { files: 0, bytes: 0 },
+          totalBytes: 0,
+        },
+      }),
+      classify: () => ({
+        firstPartyText: [],
+        applicability: { osv: false, zizmor: false, malcontent: false },
+        scannerInputs: { osv: [], zizmor: [], malcontent: [] },
+        excluded: {
+          dependency_lockfiles: { files: 0, bytes: 0 },
+          vendored_dependencies: { files: 0, bytes: 0 },
+          generated_bundles: { files: 0, bytes: 0 },
+          minified_files: { files: 0, bytes: 0 },
+          binaries: { files: 0, bytes: 0 },
+          archives: { files: 0, bytes: 0 },
+          oversized_files: { files: 0, bytes: 0 },
+          unsafe_entries: { files: 0, bytes: 0 },
+        },
+      }),
+      history: async () => ({
+        ok: true,
+        value: { baseSha: null, historyCommits: 1, changedPaths: [] },
+      }),
+      structuralScan: async () => [],
+      scanners: async () => [
+        {
+          name: "tavernkeeper-static",
+          version: "4",
+          status: "completed",
+          findings: [],
+        },
+        {
+          name: "gitleaks",
+          version: "8.30.1",
+          status: "completed",
+          findings: [],
+        },
+        {
+          name: "opengrep",
+          version: "1.26.0",
+          status: "completed",
+          findings: [],
+          pathCoverage: { scanned: [], skipped: [] },
+        },
+        {
+          name: "javascript-analysis",
+          version: JAVASCRIPT_ANALYSIS_VERSION,
+          status: "completed",
+          findings: [],
+          javascriptAnalysis: {
+            status: "complete",
+            candidates: 0,
+            candidate_bytes: 0,
+            representations: {
+              raw: 0,
+              decoded: 0,
+              normalized: 0,
+              bundle_modules: 0,
+            },
+            stages: {
+              raw_signatures: 0,
+              raw_ast: 0,
+              raw_opengrep: 0,
+              derived_signatures: 0,
+              derived_ast: 0,
+              derived_opengrep: 0,
+            },
+            unresolved: [],
+          },
+          evidenceHints: [],
+          derivativeAncestry: [],
+        },
+        ...[
+          ["osv-scanner", "2.4.0"],
+          ["zizmor", "1.28.0"],
+          ["malcontent", "1.25.7"],
+        ].map(([name, version]) => ({
+          name: name!,
+          version: version!,
+          status: "not-applicable" as const,
+          findings: [],
+        })),
+      ],
+      extractHistorical: async () => [],
+      buildEvidence: async () => [],
+      verifyHead: async (_root, expectedSha) => {
+        verified = true;
+        return { ok: true, value: expectedSha };
+      },
+    };
+
+    const result = await prepareTargetSession(
+      {
+        target: {
+          source_id: "github-42",
+          provider: "github",
+          repository_id: 42,
+          repository: "owner/repo",
+          target_sha: targetSha,
+          canonical_url: "https://github.com/owner/repo",
+        },
+        projectKinds: ["extension"],
+        checkoutRoot,
+        sessionRoot,
+        previousReportShas: [],
+        preparedAt: "2026-08-02T15:00:00.000Z",
+        scannerVersion: "1.0.0",
+        scannerPolicyVersion: "4",
+        ruleCatalogVersion: "1",
+        reportVersion: 1,
+        supersedesReportId: null,
+        policy,
+        pins,
+        rulesRoot: resolve("rules/opengrep"),
+        runner: {} as CommandRunner,
+        temporaryRoot: base,
+      },
+      dependencies,
+    );
+
+    expect(verified).toBe(true);
+    expect(result).not.toHaveProperty("checkoutRoot");
+    await expect(access(checkoutRoot)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+    await expect(
+      access(join(sessionRoot, "prepared.json")),
+    ).resolves.toBeUndefined();
+  });
+
   test("requires validated review before producing one V5 candidate", async () => {
     const { root, prepared } = await preparedSession();
     await completeReview(root);
@@ -249,7 +464,6 @@ describe("three-phase contextual scan session", () => {
       sessionRoot: root,
       output,
       completedAt: "2026-08-02T16:00:00.000Z",
-      verifyHead: async () => ({ ok: true, value: targetSha }),
     });
 
     expect(finalized).toMatchObject({
@@ -489,7 +703,6 @@ describe("three-phase contextual scan session", () => {
       sessionRoot: root,
       output,
       completedAt: "2026-08-02T16:00:00.000Z",
-      verifyHead: async () => ({ ok: true, value: targetSha }),
     });
     expect(finalized).toMatchObject({
       status: "completed",
@@ -497,12 +710,8 @@ describe("three-phase contextual scan session", () => {
     });
   });
 
-  test.each([
-    ["head mismatch", false],
-    ["missing required tool", true],
-  ])("writes no candidate after %s", async (kind, omitTool) => {
-    const { root } = await preparedSession({ omitTool });
-    if (!omitTool) await completeReview(root);
+  test("writes no candidate after a missing required tool", async () => {
+    const { root } = await preparedSession({ omitTool: true });
     const output = join(tmpdir(), `rejected-candidate-${Date.now()}.json`);
     roots.push(output);
     await expect(
@@ -510,10 +719,6 @@ describe("three-phase contextual scan session", () => {
         sessionRoot: root,
         output,
         completedAt: "2026-08-02T16:00:00.000Z",
-        verifyHead: async () =>
-          kind === "head mismatch"
-            ? { ok: false as const, error: { code: "HEAD_MISMATCH" } }
-            : { ok: true as const, value: targetSha },
       }),
     ).rejects.toThrow();
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
@@ -528,7 +733,6 @@ describe("three-phase contextual scan session", () => {
         sessionRoot: root,
         output,
         completedAt: "2026-08-02T16:00:00.000Z",
-        verifyHead: async () => ({ ok: true, value: targetSha }),
       }),
     ).rejects.toThrow();
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
@@ -551,7 +755,6 @@ describe("three-phase contextual scan session", () => {
         sessionRoot: root,
         output,
         completedAt: "2026-08-02T16:00:00.000Z",
-        verifyHead: async () => ({ ok: true, value: targetSha }),
       }),
     ).rejects.toThrow(/fingerprint/iu);
     await expect(readFile(output)).rejects.toMatchObject({ code: "ENOENT" });
@@ -600,7 +803,6 @@ describe("three-phase contextual scan session", () => {
         sessionRoot: root,
         output,
         completedAt: "2026-08-02T16:00:00.000Z",
-        verifyHead: async () => ({ ok: true, value: targetSha }),
       }),
     ).rejects.toMatchObject({
       code: "REPORT_FINALIZATION_FAILED",
@@ -621,5 +823,58 @@ describe("three-phase contextual scan session", () => {
         contextual_review: {},
       }).success,
     ).toBe(false);
+  });
+
+  test("rejects a prepared artifact whose evidence digest changed", async () => {
+    const { root, prepared } = await preparedSession();
+    const artifactRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-prepared-artifact-"),
+    );
+    const restoredRoot = join(
+      tmpdir(),
+      `tavernkeeper-session-restored-${Date.now()}`,
+    );
+    roots.push(artifactRoot, restoredRoot);
+    const request = {
+      ...prepared.target,
+      project_kinds: [...prepared.project_kinds],
+      catalog_priority: {
+        top_30: false,
+        first_cataloged_at: "2026-08-01T00:00:00.000Z",
+      },
+      reason: "new" as const,
+      report_version: prepared.report_version,
+      supersedes_report_id: prepared.supersedes_report_id,
+      previous_report_shas: [],
+    };
+    await createPreparedEvidenceArtifact({
+      request,
+      sessionRoot: root,
+      artifactRoot,
+    });
+    const evidencePath = join(artifactRoot, "evidence-context.json");
+    const evidence = await readFile(evidencePath, "utf8");
+    await writeFile(
+      evidencePath,
+      evidence.replace("sendCredential();", "sendCredentials();"),
+    );
+
+    await expect(
+      restorePreparedEvidenceArtifact({
+        artifactRoot,
+        sessionRoot: restoredRoot,
+        expectedRequest: request,
+      }),
+    ).rejects.toThrow(/digest/iu);
+    await expect(access(restoredRoot)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  test("caps a prepared artifact before upload", () => {
+    expect(() => assertPreparedEvidenceArtifactSize(20_000_001)).toThrow(
+      /size ceiling/iu,
+    );
+    expect(() => assertPreparedEvidenceArtifactSize(20_000_000)).not.toThrow();
   });
 });

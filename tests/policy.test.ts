@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import * as policyModule from "../src/config/policy.js";
 import {
   ContextualReviewPolicySchema,
   loadContextualReviewPolicy,
@@ -10,6 +11,32 @@ import {
 } from "../src/config/policy.js";
 
 describe("deterministic scanner policy", () => {
+  test("loads exact policy 4 JavaScript limits", async () => {
+    expect(
+      (policyModule as Record<string, unknown>).ScannerPolicyV4Schema,
+    ).toBeDefined();
+    const policy = await loadScannerPolicy("config/scanner-policy.v4.json");
+    expect(policy).toMatchObject({
+      version: "4",
+      javascriptAnalysis: {
+        maxCandidates: 10_000,
+        maxCandidateBytes: 536_870_912,
+        maxTransformInputBytes: 16_777_216,
+        transformTimeoutMs: 30_000,
+        maxWorkerOldGenerationMb: 512,
+        maxDerivativeBytes: 16_777_216,
+        maxDerivativeBytesPerCandidate: 67_108_864,
+        maxTotalDerivativeBytes: 268_435_456,
+        maxDerivativesPerCandidate: 64,
+        maxRecursionDepth: 3,
+        maxDecodedLiteralsPerRepresentation: 256,
+        maxEvidenceCharactersPerFinding: 24_000,
+        maxPreparedEvidenceBytes: 20_000_000,
+        analysisTimeoutMs: 1_200_000,
+      },
+    });
+  });
+
   test("loads the versioned contextual review policy without a token budget", async () => {
     const policy = await loadContextualReviewPolicy(
       "config/contextual-review.v2.json",

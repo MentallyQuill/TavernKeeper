@@ -21,6 +21,7 @@ class OpenGrepRunner implements CommandRunner {
   constructor(
     private readonly stdout: string,
     private readonly exitCode = 0,
+    private readonly stderr = "",
   ) {}
 
   async run(
@@ -31,7 +32,11 @@ class OpenGrepRunner implements CommandRunner {
     this.calls.push({ command, args, options });
     return {
       ok: true,
-      value: { exitCode: this.exitCode, stdout: this.stdout, stderr: "" },
+      value: {
+        exitCode: this.exitCode,
+        stdout: this.stdout,
+        stderr: this.stderr,
+      },
     };
   }
 }
@@ -173,12 +178,14 @@ describe("OpenGrep adapter", () => {
     expect(runner.calls[0]?.args).toEqual([
       "scan",
       "--json",
+      "--verbose",
       "--disable-version-check",
       "--disable-nosem",
       "--no-git-ignore",
       "--x-ignore-semgrepignore-files",
       "--no-rewrite-rule-ids",
       "--exclude=.git",
+      "--max-target-bytes=268435456",
       "--config",
       "C:/trusted/TavernKeeper/rules/opengrep",
       "C:/scan/repository",
@@ -206,6 +213,68 @@ describe("OpenGrep adapter", () => {
       run.findings.every((finding) => FindingSchema.safeParse(finding).success),
     ).toBe(true);
     expect(JSON.stringify(run.findings)).not.toContain(seedSecret);
+  });
+
+  test("extracts one bounded JSON report from trusted scanner console noise", async () => {
+    const runner = new OpenGrepRunner(
+      [
+        "OpenGrep emitted a progress message instead of JSON.",
+        resultJson(),
+        "OpenGrep finished.",
+      ].join("\n"),
+    );
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).resolves.toMatchObject({
+      name: "opengrep",
+      findings: [expect.objectContaining({ category: "credential-theft" })],
+    });
+  });
+
+  test("rejects ambiguous console output containing multiple scanner reports", async () => {
+    const runner = new OpenGrepRunner([resultJson(), resultJson()].join("\n"));
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      message: expect.stringContaining(
+        "OpenGrep returned multiple JSON reports.",
+      ),
+    });
+  });
+
+  test("reports only process shape when OpenGrep returns no JSON", async () => {
+    const runner = new OpenGrepRunner(
+      "",
+      2,
+      "opengrep: unknown option '--max-target-bytes'",
+    );
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      message: expect.stringContaining(
+        "stderr class option-error; option mentions --max-target-bytes",
+      ),
+    });
   });
 
   test.each([
@@ -465,6 +534,7 @@ describe("OpenGrep adapter", () => {
     ).rejects.toMatchObject({
       code: "MALFORMED_SCANNER_OUTPUT",
       scope: "system",
+      message: expect.stringContaining("report schema mismatch at results"),
     });
   });
 
@@ -482,6 +552,117 @@ describe("OpenGrep adapter", () => {
     });
 
     expect(run.findings[0]?.path).toBe("src/index.ts");
+  });
+
+  test("accounts for each expected minified path exactly once", async () => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = {
+      scanned: ["dist/app.min.js", "dist/large.js", "src/harmless.txt"],
+      skipped: [{ path: "dist/large.js", reason: "Too_big" }],
+    };
+    const run = await runOpenGrep({
+      root: "C:/scan/repository",
+      rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+      runner: new OpenGrepRunner(JSON.stringify(report)),
+      version: "1.26.0",
+      expectedPaths: ["dist/app.min.js", "dist/large.js"],
+    });
+
+    expect(run.pathCoverage).toEqual({
+      scanned: ["dist/app.min.js"],
+      skipped: [{ path: "dist/large.js", reason: "target-limit" }],
+    });
+  });
+
+  test.each([
+    {
+      name: "missing",
+      paths: { scanned: [], skipped: [] },
+      message: "did not account for expected paths",
+    },
+    {
+      name: "duplicate",
+      paths: { scanned: ["dist/app.js", "dist/app.js"], skipped: [] },
+      message: "path coverage contains duplicates",
+    },
+  ])("rejects $name expected-path accounting", async ({ paths, message }) => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = paths;
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner: new OpenGrepRunner(JSON.stringify(report)),
+        version: "1.26.0",
+        expectedPaths: ["dist/app.js"],
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      message: expect.stringContaining(message),
+    });
+  });
+
+  test("filters non-JavaScript repository paths from expected path coverage", async () => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = {
+      scanned: ["dist/app.js", "src/harmless.txt"],
+      skipped: [],
+    };
+
+    const run = await runOpenGrep({
+      root: "C:/scan/repository",
+      rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+      runner: new OpenGrepRunner(JSON.stringify(report)),
+      version: "1.26.0",
+      expectedPaths: ["dist/app.js"],
+    });
+
+    expect(run.pathCoverage).toEqual({
+      scanned: ["dist/app.js"],
+      skipped: [],
+    });
+  });
+
+  test("rejects an unknown skipped-target reason", async () => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = {
+      scanned: [],
+      skipped: [{ path: "dist/app.js", reason: "mystery" }],
+    };
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner: new OpenGrepRunner(JSON.stringify(report)),
+        version: "1.26.0",
+        expectedPaths: ["dist/app.js"],
+      }),
+    ).rejects.toMatchObject({ code: "MALFORMED_SCANNER_OUTPUT" });
+  });
+
+  test("accounts for binary JavaScript as an unsupported target", async () => {
+    const report = JSON.parse(resultJson()) as Record<string, unknown>;
+    report.results = [];
+    report.paths = {
+      scanned: [],
+      skipped: [{ path: "vendor/opaque.js", reason: "binary file" }],
+    };
+    const run = await runOpenGrep({
+      root: "C:/scan/repository",
+      rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+      runner: new OpenGrepRunner(JSON.stringify(report)),
+      version: "1.26.0",
+      expectedPaths: ["vendor/opaque.js"],
+    });
+
+    expect(run.pathCoverage).toEqual({
+      scanned: [],
+      skipped: [{ path: "vendor/opaque.js", reason: "unsupported" }],
+    });
   });
 
   test("rejects an absolute scanner path outside the repository root", async () => {

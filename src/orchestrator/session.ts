@@ -11,7 +11,7 @@ import { basename, resolve, sep } from "node:path";
 
 import { z } from "zod";
 
-import type { ScannerPins, ScannerPolicyV3 } from "../config/policy.js";
+import type { ScannerPins, ScannerPolicyV4 } from "../config/policy.js";
 import {
   buildScanPackage,
   RequiredScanPackageTools,
@@ -27,11 +27,13 @@ import {
   extractHistoricalEvidenceSources,
   type EvidenceContextGroup,
 } from "../context/evidence-context.js";
-import { checkoutExactTarget } from "../git/checkout.js";
+import { checkoutExactTarget, verifyExactHead } from "../git/checkout.js";
 import { planHistory } from "../git/history.js";
 import { classifyInventory } from "../inventory/classify.js";
 import { inventoryRepository } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
+import { JavascriptAnalysisCoverageSchema } from "../scanners/javascript-analysis-types.js";
+import { JAVASCRIPT_ANALYSIS_VERSION } from "../scanners/javascript-analysis.js";
 import {
   CompletedContextualReviewSchema,
   ContextualReviewProgressError,
@@ -105,7 +107,7 @@ const PreparedSessionObjectSchema = z.strictObject({
   project_kinds: z.array(z.enum(["extension", "frontend", "preset"])).min(1),
   prepared_at: z.iso.datetime(),
   scanner_version: VersionSchema,
-  scanner_policy_version: z.literal("3"),
+  scanner_policy_version: z.literal("4"),
   rule_catalog_version: z.literal("1"),
   report_version: z.number().int().positive(),
   supersedes_report_id: DigestSchema.nullable(),
@@ -144,12 +146,13 @@ const PreparedSessionObjectSchema = z.strictObject({
         .optional(),
     }),
   ),
+  javascript_analysis: JavascriptAnalysisCoverageSchema,
   findings: z.array(FindingSchema),
 });
 
 type PreparedSession = z.infer<typeof PreparedSessionObjectSchema>;
 
-const EvidenceContextBundleObjectSchema = z.strictObject({
+export const EvidenceContextBundleSchema = z.strictObject({
   schema_version: z.literal(1),
   session_id: DigestSchema,
   evidence_digest: DigestSchema,
@@ -232,6 +235,7 @@ function scanPackageFor(prepared: PreparedSession) {
     inventory,
     classification,
     tools: prepared.tools,
+    javascriptAnalysis: prepared.javascript_analysis,
     findings: prepared.findings,
   });
 }
@@ -273,6 +277,30 @@ export class ScanPhaseError extends Error {
     this.name = "ScanPhaseError";
   }
 }
+
+export interface PrepareTargetSessionDependencies {
+  checkout: typeof checkoutExactTarget;
+  inventory: typeof inventoryRepository;
+  classify: typeof classifyInventory;
+  history: typeof planHistory;
+  structuralScan: typeof scanStructuralFiles;
+  scanners: typeof runApplicableScanners;
+  extractHistorical: typeof extractHistoricalEvidenceSources;
+  buildEvidence: typeof buildEvidenceContextGroups;
+  verifyHead: typeof verifyExactHead;
+}
+
+const defaultPrepareDependencies: PrepareTargetSessionDependencies = {
+  checkout: checkoutExactTarget,
+  inventory: inventoryRepository,
+  classify: classifyInventory,
+  history: planHistory,
+  structuralScan: scanStructuralFiles,
+  scanners: runApplicableScanners,
+  extractHistorical: extractHistoricalEvidenceSources,
+  buildEvidence: buildEvidenceContextGroups,
+  verifyHead: verifyExactHead,
+};
 
 function canonicalValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(canonicalValue);
@@ -328,47 +356,50 @@ function requireEphemeralPath(path: string, prefix: string) {
   return resolved;
 }
 
-export async function prepareTargetSession({
-  target: targetInput,
-  projectKinds,
-  checkoutRoot: checkoutRootInput,
-  sessionRoot: sessionRootInput,
-  previousReportShas,
-  preparedAt,
-  scannerVersion,
-  scannerPolicyVersion,
-  ruleCatalogVersion,
-  reportVersion,
-  supersedesReportId,
-  policy,
-  pins,
-  rulesRoot,
-  runner,
-  executables,
-  temporaryRoot,
-}: {
-  target: unknown;
-  projectKinds: readonly ("extension" | "frontend" | "preset")[];
-  checkoutRoot: string;
-  sessionRoot: string;
-  previousReportShas: string[];
-  preparedAt: string;
-  scannerVersion: string;
-  scannerPolicyVersion: string;
-  ruleCatalogVersion: string;
-  reportVersion: number;
-  supersedesReportId: string | null;
-  policy: ScannerPolicyV3;
-  pins: ScannerPins;
-  rulesRoot: string;
-  runner: CommandRunner;
-  executables?: Partial<ScannerExecutables>;
-  temporaryRoot?: string;
-}) {
+export async function prepareTargetSession(
+  {
+    target: targetInput,
+    projectKinds,
+    checkoutRoot: checkoutRootInput,
+    sessionRoot: sessionRootInput,
+    previousReportShas,
+    preparedAt,
+    scannerVersion,
+    scannerPolicyVersion,
+    ruleCatalogVersion,
+    reportVersion,
+    supersedesReportId,
+    policy,
+    pins,
+    rulesRoot,
+    runner,
+    executables,
+    temporaryRoot,
+  }: {
+    target: unknown;
+    projectKinds: readonly ("extension" | "frontend" | "preset")[];
+    checkoutRoot: string;
+    sessionRoot: string;
+    previousReportShas: string[];
+    preparedAt: string;
+    scannerVersion: string;
+    scannerPolicyVersion: string;
+    ruleCatalogVersion: string;
+    reportVersion: number;
+    supersedesReportId: string | null;
+    policy: ScannerPolicyV4;
+    pins: ScannerPins;
+    rulesRoot: string;
+    runner: CommandRunner;
+    executables?: Partial<ScannerExecutables>;
+    temporaryRoot?: string;
+  },
+  dependencies: PrepareTargetSessionDependencies = defaultPrepareDependencies,
+) {
   const target = TargetSchema.parse(targetInput);
   if (
     scannerPolicyVersion !== policy.version ||
-    policy.version !== "3" ||
+    policy.version !== "4" ||
     ruleCatalogVersion !== "1" ||
     projectKinds.length === 0
   )
@@ -395,7 +426,7 @@ export async function prepareTargetSession({
   let sessionCreated = false;
   try {
     checkoutCreated = true;
-    const checkout = await checkoutExactTarget({
+    const checkout = await dependencies.checkout({
       target,
       destination: checkoutRoot,
       runner,
@@ -406,7 +437,7 @@ export async function prepareTargetSession({
         "repository",
         "Exact target checkout failed.",
       );
-    const inventoryResult = await inventoryRepository({
+    const inventoryResult = await dependencies.inventory({
       root: checkoutRoot,
       maxFiles: policy.inventory.maxFiles,
       maxTotalBytes: policy.inventory.maxTotalBytes,
@@ -425,25 +456,29 @@ export async function prepareTargetSession({
         "system",
         "Repository inventory totals are inconsistent.",
       );
-    const classification = classifyInventory(inventory);
+    const classification = dependencies.classify(inventory);
     if (!classificationIsConsistent(inventory, classification))
       throw new ScanPhaseError(
         "CLASSIFICATION_INVALID",
         "system",
         "Repository classification is incomplete.",
       );
-    const history = await planHistory(checkoutRoot, previousReportShas, runner);
+    const history = await dependencies.history(
+      checkoutRoot,
+      previousReportShas,
+      runner,
+    );
     if (!history.ok)
       throw new ScanPhaseError(
         history.error.code,
         "repository",
         "Repository history failed.",
       );
-    const structuralFindings = await scanStructuralFiles(
+    const structuralFindings = await dependencies.structuralScan(
       checkoutRoot,
       classification.firstPartyText,
     );
-    const scannerRuns = await runApplicableScanners({
+    const scannerRuns = await dependencies.scanners({
       root: checkoutRoot,
       history: {
         baseSha: history.value.baseSha,
@@ -451,6 +486,7 @@ export async function prepareTargetSession({
         commits: history.value.historyCommits,
       },
       classification,
+      inventoryFiles: inventory.files,
       structuralFiles: [],
       structuralFindings,
       runner,
@@ -464,6 +500,7 @@ export async function prepareTargetSession({
       "tavernkeeper-static": policy.version,
       gitleaks: pins.gitleaks.version,
       opengrep: pins.opengrep.version,
+      "javascript-analysis": JAVASCRIPT_ANALYSIS_VERSION,
       "osv-scanner": pins.osvScanner.version,
       zizmor: pins.zizmor.version,
       malcontent: pins.malcontent.version,
@@ -478,7 +515,7 @@ export async function prepareTargetSession({
       project_kinds: [...projectKinds].sort(),
       prepared_at: preparedAt,
       scanner_version: scannerVersion,
-      scanner_policy_version: "3" as const,
+      scanner_policy_version: "4" as const,
       rule_catalog_version: "1" as const,
       report_version: reportVersion,
       supersedes_report_id: supersedesReportId,
@@ -529,28 +566,36 @@ export async function prepareTargetSession({
           ...(limitations === undefined ? {} : { limitations }),
         })),
       ],
+      javascript_analysis: orderedRuns.find(
+        ({ name }) => name === "javascript-analysis",
+      )!.javascriptAnalysis!,
       findings,
     };
     const prepared = PreparedSessionSchema.parse({
       ...withoutIdentity,
       session_id: preparedSessionIdentity(withoutIdentity),
     });
-    const historicalSources = await extractHistoricalEvidenceSources({
+    const historicalSources = await dependencies.extractHistorical({
       checkoutRoot,
       targetSha: target.target_sha,
       findings,
       runner,
       maxFileBytes: policy.inventory.maxFileBytes,
     });
-    const groups = await buildEvidenceContextGroups({
+    const groups = await dependencies.buildEvidence({
       checkoutRoot,
       target,
       projectKinds,
       findings,
       inventory,
       historicalSources,
+      javascriptEvidenceHints: orderedRuns.flatMap(
+        ({ evidenceHints }) => evidenceHints ?? [],
+      ),
+      maxEvidenceCharactersPerFinding:
+        policy.javascriptAnalysis.maxEvidenceCharactersPerFinding,
     });
-    const evidenceBundle = EvidenceContextBundleObjectSchema.parse({
+    const evidenceBundle = EvidenceContextBundleSchema.parse({
       schema_version: 1,
       session_id: prepared.session_id,
       evidence_digest: evidenceContextIdentity({
@@ -559,6 +604,17 @@ export async function prepareTargetSession({
       }),
       groups,
     });
+    const verifiedHead = await dependencies.verifyHead(
+      checkoutRoot,
+      target.target_sha,
+      runner,
+    );
+    if (!verifiedHead.ok)
+      throw new ScanPhaseError(
+        verifiedHead.error.code,
+        "repository",
+        "Repository head changed before evidence persistence.",
+      );
     await mkdir(sessionRoot, { recursive: true });
     sessionCreated = true;
     await writeFile(
@@ -571,7 +627,9 @@ export async function prepareTargetSession({
       `${JSON.stringify(evidenceBundle, null, 2)}\n`,
       { flag: "wx" },
     );
-    return { prepared, checkoutRoot, sessionRoot };
+    await rm(checkoutRoot, { recursive: true, force: true });
+    checkoutCreated = false;
+    return { prepared, sessionRoot };
   } catch (error) {
     if (sessionCreated) await rm(sessionRoot, { recursive: true, force: true });
     if (checkoutCreated)
@@ -580,24 +638,14 @@ export async function prepareTargetSession({
   }
 }
 
-async function loadPrepared(sessionRoot: string) {
-  const prepared = PreparedSessionSchema.parse(
-    JSON.parse(await readFile(resolve(sessionRoot, "prepared.json"), "utf8")),
-  );
+export function validatePreparedSessionEvidence(
+  preparedInput: unknown,
+  evidenceInput: unknown,
+) {
+  const prepared = PreparedSessionSchema.parse(preparedInput);
   if (prepared.session_id !== preparedSessionIdentity(prepared))
     throw new Error("Prepared session identity does not match its contents.");
-  return prepared;
-}
-
-async function loadEvidenceContext(
-  sessionRoot: string,
-  prepared: PreparedSession,
-) {
-  const bundle = EvidenceContextBundleObjectSchema.parse(
-    JSON.parse(
-      await readFile(resolve(sessionRoot, "evidence-context.json"), "utf8"),
-    ),
-  );
+  const bundle = EvidenceContextBundleSchema.parse(evidenceInput);
   if (
     bundle.session_id !== prepared.session_id ||
     bundle.evidence_digest !==
@@ -618,7 +666,26 @@ async function loadEvidenceContext(
     )
   )
     throw new Error("Evidence context does not cover prepared findings.");
-  return bundle;
+  return { prepared, evidence: bundle };
+}
+
+async function loadPrepared(sessionRoot: string) {
+  const prepared = PreparedSessionSchema.parse(
+    JSON.parse(await readFile(resolve(sessionRoot, "prepared.json"), "utf8")),
+  );
+  if (prepared.session_id !== preparedSessionIdentity(prepared))
+    throw new Error("Prepared session identity does not match its contents.");
+  return prepared;
+}
+
+async function loadEvidenceContext(
+  sessionRoot: string,
+  prepared: PreparedSession,
+) {
+  const evidence = JSON.parse(
+    await readFile(resolve(sessionRoot, "evidence-context.json"), "utf8"),
+  );
+  return validatePreparedSessionEvidence(prepared, evidence).evidence;
 }
 
 function safeSessionRoot(sessionRoot: string) {
@@ -749,17 +816,10 @@ export async function finalizePreparedSession({
   sessionRoot: sessionRootInput,
   output,
   completedAt,
-  verifyHead,
 }: {
   sessionRoot: string;
   output: string;
   completedAt: string;
-  verifyHead: (
-    expectedSha: string,
-  ) => Promise<
-    | { ok: true; value: string }
-    | { ok: false; error: { code?: string; message?: string } }
-  >;
 }): Promise<{
   status: "completed";
   candidate: { report: z.infer<typeof ScanReportV5Schema> };
@@ -785,15 +845,6 @@ export async function finalizePreparedSession({
         "CONTEXTUAL_REVIEW_INVALID",
         "system",
         "Contextual review does not match prepared evidence.",
-      );
-    const verified = await verifyHead(prepared.target.target_sha);
-    if (!verified.ok || verified.value !== prepared.target.target_sha)
-      throw new ScanPhaseError(
-        verified.ok
-          ? "HEAD_MISMATCH"
-          : (verified.error.code ?? "HEAD_MISMATCH"),
-        "repository",
-        "Checked-out commit changed before deterministic finalization.",
       );
     let scanPackage: ReturnType<typeof scanPackageFor>;
     try {

@@ -71,6 +71,22 @@ const toolRuns = [
   },
 ];
 
+const javascriptCoverage = {
+  status: "complete" as const,
+  candidates: 1,
+  candidate_bytes: sourceFile.bytes,
+  representations: { raw: 1, decoded: 0, normalized: 0, bundle_modules: 0 },
+  stages: {
+    raw_signatures: 1,
+    raw_ast: 1,
+    raw_opengrep: 1,
+    derived_signatures: 0,
+    derived_ast: 0,
+    derived_opengrep: 0,
+  },
+  unresolved: [],
+};
+
 function input(reverse = false) {
   const files = reverse
     ? [manifestFile, sourceFile]
@@ -109,7 +125,42 @@ function input(reverse = false) {
   };
 }
 
+function policy4Input() {
+  const legacy = input();
+  const tools = [...legacy.tools];
+  tools.splice(4, 0, {
+    name: "javascript-analysis",
+    version: "webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1",
+    status: "completed" as const,
+  });
+  return {
+    ...legacy,
+    scannerPolicyVersion: "4",
+    tools,
+    javascriptAnalysis: javascriptCoverage,
+  };
+}
+
 describe("Scan Package V1", () => {
+  test("requires coherent JavaScript coverage for policy 4", () => {
+    const valid = buildScanPackage(policy4Input());
+    expect(valid.javascript_analysis).toEqual(javascriptCoverage);
+
+    const missing = structuredClone(valid) as Record<string, unknown>;
+    delete missing.javascript_analysis;
+    expect(() => validateScanPackageEvidence(missing)).toThrow(
+      /JavaScript coverage/iu,
+    );
+
+    const mismatched = structuredClone(valid);
+    mismatched.tools.find(
+      ({ name }) => name === "javascript-analysis",
+    )!.status = "completed-with-limitations";
+    expect(() => validateScanPackageEvidence(mismatched)).toThrow(
+      /JavaScript coverage/iu,
+    );
+  });
+
   test("canonicalizes inventory, tools, and findings before stable hashing", () => {
     const left = buildScanPackage(input());
     const right = buildScanPackage(input(true));

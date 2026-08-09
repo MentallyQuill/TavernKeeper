@@ -41,6 +41,32 @@ export const ScannerPolicyV3Schema = z.strictObject({
 
 export type ScannerPolicyV3 = z.infer<typeof ScannerPolicyV3Schema>;
 
+export const JavascriptAnalysisPolicySchema = z.strictObject({
+  maxCandidates: z.literal(10_000),
+  maxCandidateBytes: z.literal(536_870_912),
+  maxTransformInputBytes: z.literal(16_777_216),
+  transformTimeoutMs: z.literal(30_000),
+  maxWorkerOldGenerationMb: z.literal(512),
+  maxDerivativeBytes: z.literal(16_777_216),
+  maxDerivativeBytesPerCandidate: z.literal(67_108_864),
+  maxTotalDerivativeBytes: z.literal(268_435_456),
+  maxDerivativesPerCandidate: z.literal(64),
+  maxRecursionDepth: z.literal(3),
+  maxDecodedLiteralsPerRepresentation: z.literal(256),
+  maxEvidenceCharactersPerFinding: z.literal(24_000),
+  maxPreparedEvidenceBytes: z.literal(20_000_000),
+  analysisTimeoutMs: z.literal(1_200_000),
+});
+
+export const ScannerPolicyV4Schema = z.strictObject({
+  version: z.literal("4"),
+  ...scannerPolicyShape,
+  javascriptAnalysis: JavascriptAnalysisPolicySchema,
+});
+
+export type ScannerPolicyV4 = z.infer<typeof ScannerPolicyV4Schema>;
+export type ScannerPolicy = ScannerPolicyV3 | ScannerPolicyV4;
+
 export const ScannerPinsSchema = z.strictObject({
   gitleaks: z.strictObject({
     version: z.literal("8.30.1"),
@@ -102,10 +128,10 @@ export type ContextualReviewPolicy = z.infer<
   typeof ContextualReviewPolicySchema
 >;
 
-export async function loadScannerPolicy(
-  path: string,
-): Promise<ScannerPolicyV3> {
-  return ScannerPolicyV3Schema.parse(JSON.parse(await readFile(path, "utf8")));
+export async function loadScannerPolicy(path: string): Promise<ScannerPolicy> {
+  return z
+    .union([ScannerPolicyV4Schema, ScannerPolicyV3Schema])
+    .parse(JSON.parse(await readFile(path, "utf8")));
 }
 
 export async function loadScannerPins(path: string): Promise<ScannerPins> {

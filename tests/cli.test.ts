@@ -6,6 +6,7 @@ import { buildReconcileMatrix } from "../src/cli/reconcile.js";
 import { probeFailureProvesSharedRecovery } from "../src/cli/probe-outcome.js";
 import { applyRetryOperation } from "../src/cli/retry.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
+import { reviewConfiguredTarget } from "../src/cli/review-target.js";
 import {
   buildTargetedMatrix,
   buildTargetedQueueUpdate,
@@ -90,6 +91,7 @@ function indexedReport(
       evidence_validated: 0,
       review_required: 0,
       review_completed: 0,
+      javascript_analysis_status: "legacy" as const,
     },
     report_url:
       "https://mentallyquill.github.io/TavernKeeper/reports/github/" +
@@ -623,5 +625,40 @@ describe("JSON-only orchestration CLIs", () => {
     expect(texts.join("\n")).not.toMatch(
       /TAVERNKEEPER_API_ENDPOINT|TAVERNKEEPER_API_KEY|TAVERNKEEPER_MODEL/u,
     );
+  });
+
+  test("reviews a prepared target without a checkout path", async () => {
+    const result = await reviewConfiguredTarget(
+      {
+        TAVERNKEEPER_SESSION_ROOT: "C:/runner/tavernkeeper-session-42",
+        TAVERNKEEPER_API_ENDPOINT:
+          "https://provider.example/v1/chat/completions",
+        TAVERNKEEPER_API_KEY: "test-key",
+        TAVERNKEEPER_MODEL: "configured/model",
+      },
+      {
+        loadPolicy: async () => ({
+          version: "2",
+          promptVersion: "contextual-review-v4",
+          schemaVersion: "contextual-assessment-v1",
+          maxImmediateAttempts: 3,
+          maxOutputTokens: 32_768,
+          maxResponseBytes: 5_000_000,
+          timeoutMs: 300_000,
+        }),
+        review: async (spec) => {
+          expect(spec.sessionRoot).toBe("C:/runner/tavernkeeper-session-42");
+          expect(spec.expandContext).toBeTypeOf("function");
+          return { status: "reviewed", review: {} as never };
+        },
+      },
+    );
+
+    expect(result).toEqual({ status: "reviewed" });
+    const source = await readFile(
+      new URL("../src/cli/review-target.ts", import.meta.url),
+      "utf8",
+    );
+    expect(source).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
   });
 });

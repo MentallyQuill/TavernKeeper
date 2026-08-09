@@ -4,6 +4,7 @@ import {
   assessmentSummary,
   dangerBasisLabel,
   deriveProjectAdvisory,
+  deriveIndexedProjectAdvisory,
   escapeHtml,
   formatPublicDate,
   highestRisk,
@@ -81,6 +82,20 @@ describe("public site presentation", () => {
     expect(dangerBasisLabel(advisory.dangerBasis)).toMatch(
       /malicious.*critical/iu,
     );
+  });
+
+  test("presents incomplete JavaScript coverage as material, not low", () => {
+    const advisory = deriveIndexedProjectAdvisory({
+      contextual_review_policy_version: "2",
+      counts: {
+        recommended_risk: { high: 0, material: 0, low: 2 },
+        disposition: { credible_malicious_behavior: 0 },
+      },
+      coverage: { javascript_analysis_status: "incomplete" },
+    } as never);
+
+    expect(advisory.risk).toBe("material");
+    expect(advisory.dangerBasis).toBeNull();
   });
 
   test("formats public identity without losing exact machine values", () => {
