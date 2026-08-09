@@ -71,6 +71,14 @@ describe("model provider contextual compatibility check", () => {
     });
     const unionBody = JSON.parse(String(unionRequest[1]?.body));
     const finalBody = JSON.parse(String(finalRequest[1]?.body));
+    expect(unionBody).toMatchObject({
+      max_completion_tokens: 8_192,
+      reasoning_effort: "low",
+      store: false,
+    });
+    expect(unionBody).not.toHaveProperty("temperature");
+    expect(unionBody).not.toHaveProperty("max_tokens");
+    expect(unionBody.messages[0]).toMatchObject({ role: "developer" });
     expect(unionBody.response_format).toMatchObject({
       type: "json_schema",
       json_schema: {
@@ -94,33 +102,10 @@ describe("model provider contextual compatibility check", () => {
       expect(unionBody.messages[1].content).toContain(candidateId);
   });
 
-  test("covers JSON object fallback for both contextual response shapes", async () => {
-    const candidateIds = ["c", "d", "e", "f"].map((value) => value.repeat(64));
-    const content = JSON.stringify({
-      review: {
-        status: "complete",
-        assessments: candidateIds.map((candidateId) => ({
-          candidate_id: candidateId,
-          evidence_ids: [candidateId],
-          disposition: "expected_behavior",
-          impact: "none",
-          exploitability: "unlikely",
-          confidence: "high",
-          recommended_risk: "low",
-          technical_explanation:
-            "The keyword appears only in explanatory documentation.",
-          layman_explanation: "This is documentation, not active behavior.",
-          developer_action: "none",
-        })),
-        observations: [],
-      },
-    });
+  test("does not downgrade the compatibility probe from strict JSON Schema", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(new Response(null, { status: 400 }))
-      .mockResolvedValueOnce(compatibleResponse(content))
-      .mockResolvedValueOnce(new Response(null, { status: 422 }))
-      .mockResolvedValueOnce(compatibleResponse(content));
+      .mockResolvedValue(new Response(null, { status: 400 }));
 
     await expect(
       checkModelProviderCompatibility({
@@ -130,30 +115,11 @@ describe("model provider contextual compatibility check", () => {
         fetchImpl,
         resolveAddresses: async () => ["93.184.216.34"],
       }),
-    ).resolves.toMatchObject({ contextualReview: "passed" });
+    ).rejects.toMatchObject({ code: "MODEL_PROVIDER", httpStatus: 400 });
 
-    expect(fetchImpl).toHaveBeenCalledTimes(4);
-    const bodies = fetchImpl.mock.calls.map((call) =>
-      JSON.parse(String(call[1]?.body)),
-    );
-    expect(bodies.map((body) => body.response_format.type)).toEqual([
-      "json_schema",
-      "json_object",
-      "json_schema",
-      "json_object",
-    ]);
-    expect(JSON.stringify(bodies[0]?.response_format)).toContain(
-      "needs_more_context",
-    );
-    expect(JSON.stringify(bodies[2]?.response_format)).not.toContain(
-      "needs_more_context",
-    );
-    expect(bodies[1]?.messages[0]?.content).not.toContain(
-      "needs_more_context is not permitted",
-    );
-    expect(bodies[3]?.messages[0]?.content).toContain(
-      "needs_more_context is not permitted",
-    );
+    expect(fetchImpl).toHaveBeenCalledOnce();
+    const body = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
+    expect(body.response_format.type).toBe("json_schema");
   });
 
   test("rejects an incomplete local assessment schema without returning model text", async () => {
