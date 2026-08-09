@@ -55,13 +55,64 @@ describe("JavaScript candidate selection", () => {
     ]);
   });
 
-  test("requires normalization only for JavaScript-family source", () => {
+  test("requires normalization only for minified or bundle-like JavaScript", () => {
     expect(
-      selectJavascriptCandidates([inventoryFile("src/a.js")])[0],
-    ).toMatchObject({ language: "javascript", requiresNormalization: true });
-    expect(
-      selectJavascriptCandidates([inventoryFile("src/a.ts")])[0],
-    ).toMatchObject({ language: "typescript", requiresNormalization: false });
+      selectJavascriptCandidates([
+        inventoryFile("src/a.js"),
+        inventoryFile("dist/app.min.js"),
+        inventoryFile("dist/app.bundle.js"),
+        inventoryFile("dist/generated.js", { likelyMinified: true }),
+        inventoryFile("src/bundle.js"),
+        inventoryFile("bundle/index.js"),
+        inventoryFile("production/index.js"),
+        inventoryFile("src/a.ts", { likelyMinified: true }),
+      ]).map(({ path, language, requiresNormalization }) => ({
+        path,
+        language,
+        requiresNormalization,
+      })),
+    ).toEqual([
+      {
+        path: "bundle/index.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+      {
+        path: "dist/app.bundle.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+      {
+        path: "dist/app.min.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+      {
+        path: "dist/generated.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+      {
+        path: "production/index.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+      {
+        path: "src/a.js",
+        language: "javascript",
+        requiresNormalization: false,
+      },
+      {
+        path: "src/a.ts",
+        language: "typescript",
+        requiresNormalization: false,
+      },
+      {
+        path: "src/bundle.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+    ]);
   });
 });
 

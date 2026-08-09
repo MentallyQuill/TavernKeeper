@@ -13,6 +13,12 @@ function extension(path: string) {
   return match?.[1]?.toLowerCase() ?? "";
 }
 
+function bundleLikePath(path: string) {
+  return /(?:^|[/._-])(?:bundle|min|packed|prod|production)(?:[/._-]|$)/iu.test(
+    path,
+  );
+}
+
 export function selectJavascriptCandidates(
   files: readonly InventoryFile[],
 ): JavascriptCandidate[] {
@@ -28,7 +34,9 @@ export function selectJavascriptCandidates(
     candidates.push({
       ...file,
       language,
-      requiresNormalization: language === "javascript",
+      requiresNormalization:
+        language === "javascript" &&
+        (file.likelyMinified === true || bundleLikePath(file.path)),
     });
   }
   return candidates.sort((left, right) => left.path.localeCompare(right.path));

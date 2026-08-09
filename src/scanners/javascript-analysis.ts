@@ -135,6 +135,34 @@ function warningCategory(kind: string) {
   return "supply-chain-risk";
 }
 
+function looksLikeJavascriptSource(source: string) {
+  const value = source.trim();
+  if (value.length === 0) return false;
+  return (
+    /(?:=>|\+\+|--|&&|\|\|)/u.test(value) ||
+    /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*/u.test(value) ||
+    /\b(?:async\s+)?function(?:\s+[A-Za-z_$][\w$]*)?\s*\(/u.test(value) ||
+    /\b(?:catch|for|if|switch|while|with)\s*\(/u.test(value) ||
+    /\b(?:do|else|finally|try)\s*\{/u.test(value) ||
+    /\bclass\s+[A-Za-z_$][\w$]*(?:\s+extends\s+[A-Za-z_$][\w$]*)?\s*\{/u.test(
+      value,
+    ) ||
+    /\bimport\s+.+\s+from\s+["']/u.test(value) ||
+    /\bexport\s+(?:default\s+)?(?:async\s+)?(?:class|const|function|let|var)\b/u.test(
+      value,
+    ) ||
+    /\b[A-Za-z_$][\w$]*(?:\?\.|\.)[A-Za-z_$][\w$]*/u.test(value) ||
+    /\b[A-Za-z_$][\w$]*(?:\?\.)?\(/u.test(value) ||
+    /\b[A-Za-z_$][\w$]*\s*\[[^\]\r\n]{1,128}\]/u.test(value) ||
+    /(?:\[[^\]\r\n]{0,256}\]|\{[^}\r\n]{0,256}\}|\([^\)\r\n]{1,256}\)|"(?:\\.|[^"\\\r\n]){0,256}"|'(?:\\.|[^'\\\r\n]){0,256}'|\b\d+(?:\.\d+)?)\s*\[\s*(?:"(?:\\.|[^"\\\r\n]){1,128}"|'(?:\\.|[^'\\\r\n]){1,128}'|\d+)\s*\]/u.test(
+      value,
+    ) ||
+    /\b[A-Za-z_$][\w$]*\s*(?:=|\+=|-=|\*=|\/=|%=|\*\*=|&&=|\|\|=|\?\?=)/u.test(
+      value,
+    )
+  );
+}
+
 function safeWarningRule(kind: string) {
   const suffix = kind
     .toLowerCase()
@@ -464,27 +492,32 @@ export async function runJavascriptAnalysis(
     if (raw) stageCounts.raw_signatures += 1;
     else stageCounts.derived_signatures += 1;
 
-    try {
-      const ast = scanAst(current, dependencies);
-      for (const finding of ast.findings) addUniqueFinding(findings, finding);
-      for (const hint of ast.evidenceHints) addUniqueHint(evidenceHints, hint);
-      if (ast.parseFailed) {
+    const astApplicable =
+      current.representation.stage !== "decoded" ||
+      looksLikeJavascriptSource(current.content);
+    if (astApplicable)
+      try {
+        const ast = scanAst(current, dependencies);
+        for (const finding of ast.findings) addUniqueFinding(findings, finding);
+        for (const hint of ast.evidenceHints)
+          addUniqueHint(evidenceHints, hint);
+        if (ast.parseFailed) {
+          addUnresolved({
+            path: current.candidate.path,
+            stage: raw ? "raw-ast" : "derived-ast",
+            reason: "parse",
+            recovered: false,
+          });
+        } else if (raw) stageCounts.raw_ast += 1;
+        else stageCounts.derived_ast += 1;
+      } catch {
         addUnresolved({
           path: current.candidate.path,
           stage: raw ? "raw-ast" : "derived-ast",
           reason: "parse",
           recovered: false,
         });
-      } else if (raw) stageCounts.raw_ast += 1;
-      else stageCounts.derived_ast += 1;
-    } catch {
-      addUnresolved({
-        path: current.candidate.path,
-        stage: raw ? "raw-ast" : "derived-ast",
-        reason: "parse",
-        recovered: false,
-      });
-    }
+      }
 
     const decoded = decodeJavascriptLiterals({
       source: current.content,
@@ -510,7 +543,10 @@ export async function runJavascriptAnalysis(
         );
     }
 
-    const shouldNormalize = current.candidate.requiresNormalization || !raw;
+    const shouldNormalize = raw
+      ? current.candidate.requiresNormalization
+      : current.representation.stage === "decoded" &&
+        looksLikeJavascriptSource(current.content);
     if (!shouldNormalize) continue;
     if (
       Buffer.byteLength(current.content, "utf8") > limits.maxTransformInputBytes

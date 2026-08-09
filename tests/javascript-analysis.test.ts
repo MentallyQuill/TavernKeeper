@@ -158,6 +158,81 @@ describe("integrated JavaScript derivative analysis", () => {
     expect(run.javascriptAnalysis?.stages.derived_opengrep).toBe(1);
   });
 
+  test("does not treat decoded display text or repeated normalization as a coverage gap", async () => {
+    const normalizationInputs: string[] = [];
+    const source = String.raw`const label="\uD83D\uDC41\uFE0F Manually run continuity state extraction";`;
+    const run = await analyzeFixture(source, undefined, {
+      normalize: async (input) => {
+        normalizationInputs.push(input);
+        return {
+          derivatives: [
+            {
+              id: "normalized",
+              content: `${input}\n`,
+              transform: "webcrack-normalized",
+            },
+          ],
+        };
+      },
+    });
+
+    expect(normalizationInputs).toEqual([source]);
+    expect(run.javascriptAnalysis).toMatchObject({
+      status: "complete",
+      unresolved: [],
+      representations: { raw: 1, decoded: 1, normalized: 1 },
+    });
+  });
+
+  test.each([
+    String.raw`const label="\x52un now (recommended)!";`,
+    String.raw`const label="\x53tatus: [ready];";`,
+    String.raw`const label="\x43ontinue if safe";`,
+  ])("does not parse punctuation-heavy decoded UI text", async (source) => {
+    const astInputs: string[] = [];
+    const run = await analyzeFixture(source, undefined, {
+      analyzeAst: (input) => {
+        astInputs.push(input);
+        return { warnings: [] };
+      },
+      normalize: async () => ({ derivatives: [] }),
+    });
+
+    expect(astInputs).toEqual([source]);
+    expect(run.javascriptAnalysis).toMatchObject({
+      status: "complete",
+      unresolved: [],
+      representations: { raw: 1, decoded: 1, normalized: 0 },
+    });
+  });
+
+  test("parses and normalizes decoded computed-member execution chains", async () => {
+    const decoded = String.raw`[]["filter"]["constructor"]("return 1")()`;
+    const source = `atob("${Buffer.from(decoded).toString("base64")}")`;
+    const astInputs: string[] = [];
+    const normalizationInputs: string[] = [];
+    const run = await analyzeFixture(source, undefined, {
+      analyzeAst: (input) => {
+        astInputs.push(input);
+        return { warnings: [] };
+      },
+      normalize: async (input) => {
+        normalizationInputs.push(input);
+        return { derivatives: [] };
+      },
+    });
+
+    expect(astInputs).toEqual(expect.arrayContaining([source, decoded]));
+    expect(normalizationInputs).toEqual(
+      expect.arrayContaining([source, decoded]),
+    );
+    expect(run.javascriptAnalysis).toMatchObject({
+      status: "complete",
+      unresolved: [],
+      representations: { raw: 1, decoded: 1, normalized: 0 },
+    });
+  });
+
   test("fails closed when inventory content changes after hashing", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-digest-"));
     await writeFile(join(root, "app.js"), "const changed=true");
