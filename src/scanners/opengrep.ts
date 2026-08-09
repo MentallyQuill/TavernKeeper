@@ -398,12 +398,24 @@ export async function runOpenGrep({
       `OpenGrep exited with code ${result.value.exitCode}.`,
       "opengrep",
     );
-  const parsed = parseReport(
-    root,
-    result.value.stdout,
-    result.value.exitCode,
-    expectedPaths,
-  );
+  let parsed: ReturnType<typeof parseReport>;
+  try {
+    parsed = parseReport(
+      root,
+      result.value.stdout,
+      result.value.exitCode,
+      expectedPaths,
+    );
+  } catch (error: unknown) {
+    if (!(error instanceof ScannerError)) throw error;
+    throw new ScannerError(
+      error.code,
+      error.scope,
+      `${error.message} Process shape: exit ${result.value.exitCode}; stdout ${Buffer.byteLength(result.value.stdout, "utf8")} bytes; stderr ${Buffer.byteLength(result.value.stderr, "utf8")} bytes.`,
+      error.component,
+      error.diagnostic,
+    );
+  }
   return {
     name: "opengrep",
     version,

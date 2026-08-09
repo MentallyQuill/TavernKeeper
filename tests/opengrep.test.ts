@@ -21,6 +21,7 @@ class OpenGrepRunner implements CommandRunner {
   constructor(
     private readonly stdout: string,
     private readonly exitCode = 0,
+    private readonly stderr = "",
   ) {}
 
   async run(
@@ -31,7 +32,11 @@ class OpenGrepRunner implements CommandRunner {
     this.calls.push({ command, args, options });
     return {
       ok: true,
-      value: { exitCode: this.exitCode, stdout: this.stdout, stderr: "" },
+      value: {
+        exitCode: this.exitCode,
+        stdout: this.stdout,
+        stderr: this.stderr,
+      },
     };
   }
 }
@@ -245,7 +250,27 @@ describe("OpenGrep adapter", () => {
       }),
     ).rejects.toMatchObject({
       code: "MALFORMED_SCANNER_OUTPUT",
-      message: "OpenGrep returned multiple JSON reports.",
+      message: expect.stringContaining(
+        "OpenGrep returned multiple JSON reports.",
+      ),
+    });
+  });
+
+  test("reports only process shape when OpenGrep returns no JSON", async () => {
+    const runner = new OpenGrepRunner("", 2, "unsupported invocation");
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      message: expect.stringContaining(
+        "exit 2; stdout 0 bytes; stderr 22 bytes",
+      ),
     });
   });
 
