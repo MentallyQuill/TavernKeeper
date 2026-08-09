@@ -45,8 +45,9 @@ published release, which excludes drafts and prereleases. Repositories with
 no qualifying release do not enter this half. Results sort by `created_at`
 descending, then repository ID ascending, and the first 20 are selected.
 
-The two repository-ID lists and their sorted union are committed in the
-campaign state. Overlap reduces the final count below 40. Selection is atomic:
+The two repository-ID lists, their sorted union, and a mutable sorted
+`remaining_repository_ids` subset are committed in the campaign state.
+Overlap reduces the final count below 40. Selection is atomic:
 a `404` means that repository has no qualifying release, while authentication,
 rate-limit, transport, malformed-response, or other GitHub API failures abort
 without changing state. Release lookups use bounded concurrency.
@@ -55,9 +56,10 @@ without changing state. Release lookups use bounded concurrency.
 
 Schema-3 state gains an optional/default-empty `coverage_campaigns` array. A
 campaign contains its fixed ID, scanner policy version, creation timestamp,
-status, the sorted popular IDs, the sorted latest-release IDs, and their sorted
-union. Schema validation proves the component lists are unique, contain no
-more than 20 entries each, and exactly produce the union.
+status, the sorted popular IDs, the sorted latest-release IDs, their sorted
+union, and the remaining subset. Schema validation proves the component lists
+are unique, contain no more than 20 entries each, exactly produce the union,
+and contain every remaining ID.
 
 An active campaign makes only its selected current manifest targets eligible.
 Reconciliation adds ordinary queue tickets without `staff_requested` or
@@ -69,9 +71,11 @@ backoff remains authoritative through the existing retry path.
 A selected repository is complete when the preferred index contains a report
 for its current manifest SHA and campaign scanner policy version whose
 `completed_at` is at or after the campaign `created_at`. Reconciliation removes
-completed or no-longer-manifest members. The campaign becomes `completed` when
-no selected repository remains. A completed campaign never becomes active
-again and the fixed identifier prevents a second campaign from being created.
+completed or no-longer-manifest members from `remaining_repository_ids` while
+preserving the original selection lists for audit. The campaign becomes
+`completed` when no selected repository remains. A completed campaign never
+becomes active again and the fixed identifier prevents a second campaign from
+being created.
 
 Batch planning reports campaign targets with reason `coverage`. Coverage work
 does not receive staff priority and does not bypass either rescan or failure
