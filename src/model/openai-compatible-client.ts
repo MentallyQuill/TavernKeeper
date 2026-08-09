@@ -434,8 +434,8 @@ export async function requestTextCompletion(
       "Configured response JSON Schema is invalid.",
     );
 
-  const responseFormat = (useJsonSchema: boolean) =>
-    useJsonSchema && responseJsonSchema !== undefined
+  const responseFormat = () =>
+    responseJsonSchema !== undefined
       ? {
           type: "json_schema",
           json_schema: {
@@ -445,7 +445,7 @@ export async function requestTextCompletion(
           },
         }
       : { type: "json_object" };
-  const send = async (useJsonSchema: boolean) => {
+  const send = async () => {
     try {
       return await (request.fetchImpl ?? fetch)(request.endpoint, {
         method: "POST",
@@ -458,13 +458,14 @@ export async function requestTextCompletion(
         body: JSON.stringify({
           model,
           messages: [
-            { role: "system", content: request.systemContent },
+            { role: "developer", content: request.systemContent },
             { role: "user", content: request.userContent },
           ],
           stream: false,
-          temperature: 0,
-          max_tokens: request.maxOutputTokens,
-          response_format: responseFormat(useJsonSchema),
+          max_completion_tokens: request.maxOutputTokens,
+          reasoning_effort: "low",
+          store: false,
+          response_format: responseFormat(),
         }),
       });
     } catch {
@@ -476,14 +477,7 @@ export async function requestTextCompletion(
     }
   };
 
-  let response = await send(responseJsonSchema !== undefined);
-  if (
-    responseJsonSchema !== undefined &&
-    (response.status === 400 || response.status === 422)
-  ) {
-    await response.body?.cancel();
-    response = await send(false);
-  }
+  const response = await send();
   if (!response.ok) classifyHttpError(response);
   if (response.url !== "") {
     let responseOrigin: string;

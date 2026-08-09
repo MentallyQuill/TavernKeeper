@@ -3,7 +3,7 @@ import { describe, expect, test, vi } from "vitest";
 import { requestTextCompletion } from "../src/model/openai-compatible-client.js";
 
 describe("OpenAI-compatible contextual-review transport", () => {
-  test("uses Bearer auth at the exact endpoint and ignores hidden thinking", async () => {
+  test("uses the strict modern Chat Completions contract", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () =>
       Promise.resolve(
         new Response(
@@ -66,12 +66,13 @@ describe("OpenAI-compatible contextual-review transport", () => {
     expect(JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body))).toEqual({
       model: "deepseek/deepseek-v4-flash-0731:thinking",
       messages: [
-        { role: "system", content: "Trusted review policy." },
+        { role: "developer", content: "Trusted review policy." },
         { role: "user", content: "Delimited untrusted evidence." },
       ],
       stream: false,
-      temperature: 0,
-      max_tokens: 8_192,
+      max_completion_tokens: 8_192,
+      reasoning_effort: "low",
+      store: false,
       response_format: {
         type: "json_schema",
         json_schema: { ...responseJsonSchema, strict: true },
@@ -84,26 +85,10 @@ describe("OpenAI-compatible contextual-review transport", () => {
     expect(JSON.stringify(result)).not.toContain("private chain of thought");
   });
 
-  test("falls back once to JSON object mode when a provider rejects JSON Schema", async () => {
+  test("does not downgrade strict JSON Schema after rejection", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(new Response(null, { status: 400 }))
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            id: "chatcmpl-json-fallback",
-            model: "configured/model",
-            choices: [
-              {
-                message: { content: '{"status":"complete"}' },
-                finish_reason: "stop",
-              },
-            ],
-            usage: { input_tokens: 1, output_tokens: 1 },
-          }),
-          { status: 200 },
-        ),
-      );
+      .mockResolvedValue(new Response(null, { status: 400 }));
 
     await expect(
       requestTextCompletion({
@@ -120,15 +105,12 @@ describe("OpenAI-compatible contextual-review transport", () => {
         fetchImpl,
         resolveAddresses: async () => ["93.184.216.34"],
       }),
-    ).resolves.toMatchObject({ content: '{"status":"complete"}' });
+    ).rejects.toMatchObject({ code: "MODEL_PROVIDER", httpStatus: 400 });
 
-    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    expect(fetchImpl).toHaveBeenCalledOnce();
     expect(
       JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body)).response_format,
     ).toMatchObject({ type: "json_schema" });
-    expect(
-      JSON.parse(String(fetchImpl.mock.calls[1]?.[1]?.body)).response_format,
-    ).toEqual({ type: "json_object" });
   });
 
   test.each([
