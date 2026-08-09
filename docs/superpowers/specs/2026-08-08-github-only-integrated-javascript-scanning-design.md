@@ -1,7 +1,7 @@
 # GitHub-Only Integrated JavaScript Scanning Design
 
-**Status:** Approved for implementation on 2026-08-08  
-**Decision owner:** TavernKeeper operator  
+**Status:** Approved for implementation on 2026-08-08
+**Decision owner:** TavernKeeper operator
 **Scope:** Policy-v4 JavaScript analysis inside TavernKeeper's existing exact-SHA scanning, contextual review, reporting, publishing, and reconciliation stack
 
 ## Decision

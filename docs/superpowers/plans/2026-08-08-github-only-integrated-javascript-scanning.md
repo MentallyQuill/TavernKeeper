@@ -128,7 +128,7 @@ test("rejects policy 3 for a newly prepared target", async () => {
 
 - [ ] **Step 2: Run the focused tests and verify RED**
 
-Run: `npm test -- tests/policy.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts tests/workflows.test.ts tests/e2e/scan-fixtures.test.ts`  
+Run: `npm test -- tests/policy.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts tests/workflows.test.ts tests/e2e/scan-fixtures.test.ts`
 Expected: FAIL because `scanner-policy.v4.json`, `ScannerPolicyV4Schema`, and policy-4 runtime support do not exist.
 
 - [ ] **Step 3: Add the exact policy schema and version migration**
@@ -168,7 +168,7 @@ Create `config/scanner-policy.v4.json`, update new-scan hardcoded literals and w
 
 - [ ] **Step 4: Run focused tests and make GREEN**
 
-Run: `npm test -- tests/policy.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts tests/workflows.test.ts tests/e2e/scan-fixtures.test.ts`  
+Run: `npm test -- tests/policy.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts tests/workflows.test.ts tests/e2e/scan-fixtures.test.ts`
 Expected: PASS with all newly prepared fixtures using policy 4.
 
 - [ ] **Step 5: Commit the policy boundary**
@@ -230,7 +230,7 @@ test.each([
 
 - [ ] **Step 2: Run the adapter tests and verify RED**
 
-Run: `npm test -- tests/opengrep.test.ts tests/external-tools.test.ts`  
+Run: `npm test -- tests/opengrep.test.ts tests/external-tools.test.ts`
 Expected: FAIL because OpenGrep does not parse `paths`, accept expected paths, or expose coverage.
 
 - [ ] **Step 3: Implement strict path closure and explicit flags**
@@ -246,7 +246,7 @@ Normalize every scanned/skipped path through the existing root-boundary check. R
 
 - [ ] **Step 4: Run the adapter tests and make GREEN**
 
-Run: `npm test -- tests/opengrep.test.ts tests/external-tools.test.ts`  
+Run: `npm test -- tests/opengrep.test.ts tests/external-tools.test.ts`
 Expected: PASS, including exact command argument assertions.
 
 - [ ] **Step 5: Commit OpenGrep closure**
@@ -340,7 +340,7 @@ test.each([
 
 - [ ] **Step 2: Run primitive tests and verify RED**
 
-Run: `npm test -- tests/javascript-analysis-primitives.test.ts`  
+Run: `npm test -- tests/javascript-analysis-primitives.test.ts`
 Expected: FAIL because the primitive modules do not exist.
 
 - [ ] **Step 3: Implement conservative non-executing primitives**
@@ -376,7 +376,7 @@ export interface DecodedLiteral {
 
 - [ ] **Step 4: Run primitive tests and make GREEN**
 
-Run: `npm test -- tests/javascript-analysis-primitives.test.ts`  
+Run: `npm test -- tests/javascript-analysis-primitives.test.ts`
 Expected: PASS with no target code executed.
 
 - [ ] **Step 5: Commit the primitives**
@@ -410,7 +410,7 @@ feat(scanner): add safe JavaScript primitives
 
 - [ ] **Step 1: Install exact analyzer dependencies**
 
-Run: `npm install --save-exact webcrack@2.16.0 @nodesecure/js-x-ray@16.0.0`  
+Run: `npm install --save-exact webcrack@2.16.0 @nodesecure/js-x-ray@16.0.0`
 Expected: `package.json` contains exact versions and the lockfile records their resolved integrity.
 
 - [ ] **Step 2: Write failing real-normalizer and adapter tests**
@@ -475,7 +475,7 @@ test("marks exhausted recursion incomplete instead of clean", async () => {
 
 - [ ] **Step 3: Run focused tests and verify RED**
 
-Run: `npm test -- tests/javascript-normalizer.test.ts tests/javascript-analysis.test.ts tests/rule-descriptions.test.ts`  
+Run: `npm test -- tests/javascript-normalizer.test.ts tests/javascript-analysis.test.ts tests/rule-descriptions.test.ts`
 Expected: FAIL because the normalizer/adapter and JavaScript rule descriptions do not exist.
 
 - [ ] **Step 4: Implement the worker and derivative queue**
@@ -494,7 +494,7 @@ Create the worker with `resourceLimits.maxOldGenerationSizeMb` from policy. The 
 
 - [ ] **Step 5: Run focused tests and make GREEN**
 
-Run: `npm test -- tests/javascript-normalizer.test.ts tests/javascript-analysis.test.ts tests/rule-descriptions.test.ts`  
+Run: `npm test -- tests/javascript-normalizer.test.ts tests/javascript-analysis.test.ts tests/rule-descriptions.test.ts`
 Expected: PASS, including the real bundle fixture and nested encoding fixture.
 
 - [ ] **Step 6: Commit the derivative engine**
@@ -570,7 +570,7 @@ test("rejects complete status when unresolved JavaScript stages exist", () => {
 
 - [ ] **Step 2: Run integration tests and verify RED**
 
-Run: `npm test -- tests/conditional-scanners.test.ts tests/scan-package.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts`  
+Run: `npm test -- tests/conditional-scanners.test.ts tests/scan-package.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts`
 Expected: FAIL because the required scanner set and package do not include JavaScript analysis.
 
 - [ ] **Step 3: Add the adapter to the authoritative orchestration**
@@ -586,7 +586,7 @@ export const JAVASCRIPT_ANALYSIS_VERSION =
 
 - [ ] **Step 4: Run integration tests and make GREEN**
 
-Run: `npm test -- tests/conditional-scanners.test.ts tests/scan-package.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts`  
+Run: `npm test -- tests/conditional-scanners.test.ts tests/scan-package.test.ts tests/scan-atomicity.test.ts tests/scan-session.test.ts`
 Expected: PASS with exact required-tool and coverage validation.
 
 - [ ] **Step 5: Commit stack integration**
@@ -653,7 +653,7 @@ test("prepare removes the target checkout after verified evidence is written", a
 
 - [ ] **Step 2: Run evidence/session tests and verify RED**
 
-Run: `npm test -- tests/evidence-context.test.ts tests/contextual-review.test.ts tests/scan-session.test.ts tests/cli.test.ts`  
+Run: `npm test -- tests/evidence-context.test.ts tests/contextual-review.test.ts tests/scan-session.test.ts tests/cli.test.ts`
 Expected: FAIL because evidence windows can include whole long lines, expansions read the checkout, and prepare retains it.
 
 - [ ] **Step 3: Implement bounded windows and offline expansion tiers**
@@ -672,7 +672,7 @@ After scanners and context construction, call exact-head verification, write the
 
 - [ ] **Step 4: Run evidence/session tests and make GREEN**
 
-Run: `npm test -- tests/evidence-context.test.ts tests/contextual-review.test.ts tests/scan-session.test.ts tests/cli.test.ts`  
+Run: `npm test -- tests/evidence-context.test.ts tests/contextual-review.test.ts tests/scan-session.test.ts tests/cli.test.ts`
 Expected: PASS with no checkout requirement in the model phase.
 
 - [ ] **Step 5: Commit the evidence boundary**
@@ -733,7 +733,7 @@ test("keeps model secrets out of the prepare job", () => {
 
 - [ ] **Step 2: Run workflow/handoff tests and verify RED**
 
-Run: `npm test -- tests/prepared-evidence.test.ts tests/workflows.test.ts tests/scan-session.test.ts`  
+Run: `npm test -- tests/prepared-evidence.test.ts tests/workflows.test.ts tests/scan-session.test.ts`
 Expected: FAIL because the envelope and prepare job do not exist.
 
 - [ ] **Step 3: Implement the prepared artifact contract and workflow split**
@@ -749,7 +749,7 @@ The review job uploads the same encrypted `scan-${repository_id}` outcome expect
 
 - [ ] **Step 4: Run workflow/handoff tests and make GREEN**
 
-Run: `npm test -- tests/prepared-evidence.test.ts tests/workflows.test.ts tests/scan-session.test.ts`  
+Run: `npm test -- tests/prepared-evidence.test.ts tests/workflows.test.ts tests/scan-session.test.ts`
 Expected: PASS with one prepared and one encrypted outcome per matrix request.
 
 - [ ] **Step 5: Commit the GitHub job boundary**
@@ -820,7 +820,7 @@ test("renders bounded unresolved paths and the first-filter warning", () => {
 
 - [ ] **Step 2: Run report/presentation tests and verify RED**
 
-Run: `npm test -- tests/contextual-report.test.ts tests/report-render.test.ts tests/publisher.test.ts tests/site-presentation.test.ts`  
+Run: `npm test -- tests/contextual-report.test.ts tests/report-render.test.ts tests/publisher.test.ts tests/site-presentation.test.ts`
 Expected: FAIL because reports and cards do not carry JavaScript coverage.
 
 - [ ] **Step 3: Add backward-compatible report coverage and rendering**
@@ -835,7 +835,7 @@ npm run contracts:generate
 
 - [ ] **Step 4: Run report/presentation tests and make GREEN**
 
-Run: `npm test -- tests/contextual-report.test.ts tests/report-render.test.ts tests/publisher.test.ts tests/site-presentation.test.ts`  
+Run: `npm test -- tests/contextual-report.test.ts tests/report-render.test.ts tests/publisher.test.ts tests/site-presentation.test.ts`
 Expected: PASS for both policy-3 historical and policy-4 reports.
 
 - [ ] **Step 5: Commit report coverage**
@@ -914,7 +914,7 @@ test("keeps a benign minified library complete without material findings", async
 
 - [ ] **Step 2: Run E2E and smoke tests and verify RED**
 
-Run: `npm test -- tests/e2e/scan-fixtures.test.ts tests/external-tools.test.ts`  
+Run: `npm test -- tests/e2e/scan-fixtures.test.ts tests/external-tools.test.ts`
 Expected: FAIL until every controlled representation is detected and documented smoke output is implemented.
 
 - [ ] **Step 3: Complete inert fixtures, smoke output, and documentation**
