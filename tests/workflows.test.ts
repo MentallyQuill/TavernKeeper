@@ -997,7 +997,15 @@ describe("GitHub workflow security policy", () => {
     expect(scanning).toMatch(/minified.*encoded.*bundle/isu);
     expect(scanning).toMatch(/never.*(?:execute|run).*target/isu);
     expect(scanning).toMatch(/first filter/iu);
-    expect(scanning).toMatch(/incomplete.*material/isu);
+    expect(scanning).toMatch(
+      /The public color describes demonstrated risk, not scan completeness:[\s\S]*?\*\*Teal \/ low\*\* means the review found no demonstrated caution-level risk\./u,
+    );
+    expect(scanning).toMatch(
+      /Coverage gaps\s+never change the advisory color or concern counts\./u,
+    );
+    expect(combined).not.toMatch(
+      /\bincomplete coverage\b[^.]*\bcannot appear low\b/iu,
+    );
     expect(combined).toMatch(/prepared-\$\{repository_id\}/u);
     expect(combined).toMatch(/GitHub-hosted Actions/iu);
     expect(combined).not.toMatch(/external scan server/iu);

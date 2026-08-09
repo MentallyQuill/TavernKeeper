@@ -183,8 +183,8 @@ Provider exhaustion, context insufficiency, invalid model output, and missing
 review coverage are failures, never permission to skip finding candidates,
 reduce the policy, switch models automatically, or infer a low result. A
 bounded deterministic JavaScript parser or transform limitation is different:
-it is published as explicit incomplete coverage and cannot appear low. See
-[`SCANNING.md`](SCANNING.md).
+it is published as explicit incomplete coverage and remains visible without
+changing advisory color or concern counts. See [`SCANNING.md`](SCANNING.md).
 
 Each contextual-review attempt has a 20-minute process timeout in addition to
 the model client's request policy, and the retrying review job is bounded at 62
