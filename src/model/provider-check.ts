@@ -78,6 +78,20 @@ export async function checkModelProviderCompatibility(
         .split("\n")
         .map((line, index) => `${String(index + 1).padStart(6)} | ${line}`)
         .join("\n"),
+      expansions: [
+        source
+          .trimEnd()
+          .split("\n")
+          .map((line, index) => `${String(index + 1).padStart(6)} | ${line}`)
+          .join("\n"),
+      ],
+      representations: [
+        {
+          stage: "raw",
+          sha256: createHash("sha256").update(source).digest("hex"),
+          transform_depth: 0,
+        },
+      ],
       project_purpose:
         "A benign compatibility fixture for TavernKeeper contextual review.",
     },

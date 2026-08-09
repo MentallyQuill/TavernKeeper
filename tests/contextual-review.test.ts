@@ -59,6 +59,17 @@ function group(
         "     2 | fetch(endpoint);",
         "     3 | fetch(secondEndpoint);",
       ].join("\n"),
+      expansions: [
+        [
+          '     1 | import { fetch } from "client";',
+          "     2 | fetch(endpoint);",
+          "     3 | fetch(secondEndpoint);",
+          "     4 | const endpoint = configuredEndpoint;",
+        ].join("\n"),
+      ],
+      representations: [
+        { stage: "raw", sha256: "e".repeat(64), transform_depth: 0 },
+      ],
       project_purpose: "A model helper.",
     },
   };

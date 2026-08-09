@@ -10,6 +10,7 @@ import type {
   InventoryFile,
 } from "../inventory/inventory-handler.js";
 import type { Finding } from "../contracts/reports.js";
+import type { JavaScriptEvidenceHint } from "../scanners/javascript-analysis-types.js";
 import { redactSource } from "../model/redaction.js";
 import {
   restrictedEnvironment,
@@ -55,6 +56,11 @@ const FileRoleSchema = z.enum([
   "vendored",
   "unknown",
 ]);
+const EvidenceRepresentationSchema = z.strictObject({
+  stage: z.enum(["raw", "decoded", "normalized", "bundle-module"]),
+  sha256: DigestSchema,
+  transform_depth: z.number().int().nonnegative(),
+});
 
 export const EvidenceCandidateSchema = z.strictObject({
   candidate_id: DigestSchema,
@@ -86,6 +92,8 @@ export const EvidenceContextGroupSchema = z.strictObject({
   context: z.strictObject({
     imports: z.string(),
     source: z.string().min(1),
+    expansions: z.array(z.string().min(1)).max(5),
+    representations: z.array(EvidenceRepresentationSchema).min(1).max(64),
     project_purpose: z.string(),
   }),
 });
@@ -101,6 +109,8 @@ interface BuildEvidenceContextGroupsInput {
   findings: readonly Finding[];
   inventory: Inventory;
   historicalSources?: readonly HistoricalEvidenceSource[];
+  javascriptEvidenceHints?: readonly JavaScriptEvidenceHint[];
+  maxEvidenceCharactersPerFinding?: number;
 }
 
 export interface HistoricalEvidenceSource {
@@ -240,6 +250,8 @@ const SOURCE_CONTEXT_LINES = 40;
 const MAX_CANDIDATES_PER_GROUP = 8;
 const MAX_PURPOSE_CHARACTERS = 8_000;
 const MAX_IMPORT_CHARACTERS = 4_000;
+const DEFAULT_MAX_EVIDENCE_CHARACTERS = 24_000;
+const PRECOMPUTED_EXPANSIONS = 2;
 
 export class EvidenceContextError extends Error {
   readonly code = "EVIDENCE_CONTEXT_UNSUPPORTED";
@@ -327,10 +339,78 @@ function numberedLines(lines: readonly string[], start: number, end: number) {
     .join("\n");
 }
 
+interface EvidenceLocation {
+  line_start: number | null;
+  line_end: number | null;
+  column_start?: number | null;
+  column_end?: number | null;
+}
+
+function lineOffset(source: string, line: number, column: number) {
+  let offset = 0;
+  let currentLine = 1;
+  while (currentLine < line) {
+    const next = source.indexOf("\n", offset);
+    if (next < 0) return source.length;
+    offset = next + 1;
+    currentLine += 1;
+  }
+  return Math.min(source.length, offset + Math.max(0, column - 1));
+}
+
+function boundedCharacterWindows(
+  source: string,
+  findings: readonly EvidenceLocation[],
+  maxCharacters: number,
+) {
+  const locations = findings.flatMap((finding) => {
+    if (finding.line_start === null) return [];
+    return [
+      {
+        line: finding.line_start,
+        offset: lineOffset(
+          source,
+          finding.line_start,
+          finding.column_start ?? 1,
+        ),
+      },
+    ];
+  });
+  const selected =
+    locations.length > 0
+      ? locations
+      : [
+          { line: 1, offset: 0 },
+          { line: 1, offset: Math.floor(source.length / 2) },
+          { line: 1, offset: source.length },
+        ];
+  const separator = "\n\n[... bounded evidence window ...]\n\n";
+  const prefixCharacters = selected.reduce(
+    (total, { line }) => total + `${String(line).padStart(6, " ")} | `.length,
+    0,
+  );
+  const contentBudget = Math.max(
+    1,
+    maxCharacters -
+      prefixCharacters -
+      separator.length * Math.max(0, selected.length - 1) -
+      512,
+  );
+  const perLocation = Math.max(1, Math.floor(contentBudget / selected.length));
+  const fragments = selected.map(({ line, offset }) => {
+    const start = Math.max(0, offset - Math.floor(perLocation / 2));
+    const end = Math.min(source.length, start + perLocation);
+    const adjustedStart = Math.max(0, end - perLocation);
+    return `${String(line).padStart(6, " ")} | ${source.slice(adjustedStart, end)}`;
+  });
+  return redactSource(fragments.join(separator)).slice(0, maxCharacters);
+}
+
 function sourceWindows(
   source: string,
-  findings: readonly Pick<Finding, "line_start" | "line_end">[],
+  findings: readonly EvidenceLocation[],
   contextLines = SOURCE_CONTEXT_LINES,
+  maxCharacters = DEFAULT_MAX_EVIDENCE_CHARACTERS,
 ) {
   const lines = source.split(/\r?\n/u);
   const ranges = findings
@@ -352,9 +432,12 @@ function sourceWindows(
       merged.push({ ...range });
     }
   }
-  return merged
+  const numbered = merged
     .map((range) => numberedLines(lines, range.start, range.end))
     .join("\n\n[... separate evidence window ...]\n\n");
+  if (numbered.length <= Math.floor(maxCharacters * 0.75))
+    return redactSource(numbered).slice(0, maxCharacters);
+  return boundedCharacterWindows(source, findings, maxCharacters);
 }
 
 function coherentFindingGroups(findings: readonly Finding[]) {
@@ -433,7 +516,14 @@ export async function buildEvidenceContextGroups({
   findings,
   inventory,
   historicalSources = [],
+  javascriptEvidenceHints = [],
+  maxEvidenceCharactersPerFinding = DEFAULT_MAX_EVIDENCE_CHARACTERS,
 }: BuildEvidenceContextGroupsInput): Promise<EvidenceContextGroup[]> {
+  if (
+    !Number.isInteger(maxEvidenceCharactersPerFinding) ||
+    maxEvidenceCharactersPerFinding < 1
+  )
+    throw new Error("Evidence context character ceiling is invalid.");
   const inventoryByPath = new Map(
     inventory.files.map((file) => [file.path, file]),
   );
@@ -446,11 +536,52 @@ export async function buildEvidenceContextGroups({
   if (historicalByIdentity.size !== historicalSources.length) {
     throw new Error("Historical evidence sources must be unique.");
   }
+  const findingByFingerprint = new Map(
+    findings.map((finding) => [finding.fingerprint, finding]),
+  );
+  const hintsByFingerprint = new Map<string, JavaScriptEvidenceHint[]>();
+  for (const hint of javascriptEvidenceHints) {
+    const finding = findingByFingerprint.get(hint.finding_fingerprint);
+    if (
+      finding === undefined ||
+      finding.path !== hint.original_path ||
+      createHash("sha256").update(hint.source).digest("hex") !==
+        hint.representation_sha256
+    )
+      throw new Error("JavaScript evidence hint identity is inconsistent.");
+    const hints = hintsByFingerprint.get(hint.finding_fingerprint) ?? [];
+    hints.push(hint);
+    hintsByFingerprint.set(hint.finding_fingerprint, hints);
+  }
+  if (
+    findings.some(
+      (finding) =>
+        finding.origin === "javascript-analysis" &&
+        !hintsByFingerprint.has(finding.fingerprint),
+    )
+  )
+    throw new Error(
+      "JavaScript finding representation evidence is unavailable.",
+    );
+  const selectedHint = new Map<string, JavaScriptEvidenceHint>();
+  for (const [fingerprint, hints] of hintsByFingerprint) {
+    hints.sort(
+      (left, right) =>
+        right.transform_depth - left.transform_depth ||
+        `${left.stage}\u0000${left.representation_sha256}`.localeCompare(
+          `${right.stage}\u0000${right.representation_sha256}`,
+        ),
+    );
+    selectedHint.set(fingerprint, hints[0]!);
+  }
   const findingsByScope = new Map<string, Finding[]>();
   for (const finding of findings) {
     const evidenceSha =
       finding.evidence_sha === target.target_sha ? null : finding.evidence_sha;
-    const identity = `${evidenceSha ?? "current"}:${finding.path}`;
+    const representationSha = selectedHint.get(
+      finding.fingerprint,
+    )?.representation_sha256;
+    const identity = `${evidenceSha ?? "current"}:${finding.path}:${representationSha ?? "repository"}`;
     const group = findingsByScope.get(identity) ?? [];
     group.push(finding);
     findingsByScope.set(identity, group);
@@ -466,14 +597,19 @@ export async function buildEvidenceContextGroups({
       firstFinding.evidence_sha === target.target_sha
         ? null
         : firstFinding.evidence_sha;
+    const hint = selectedHint.get(firstFinding.fingerprint);
     let source: string;
     let sourceBytes: number;
     let sourceSha256: string;
-    if (evidenceSha === null) {
+    if (hint !== undefined) {
+      source = hint.source;
+      sourceBytes = Buffer.byteLength(source, "utf8");
+      sourceSha256 = hint.representation_sha256;
+    } else if (evidenceSha === null) {
       const file = inventoryByPath.get(path);
       if (!file)
         throw new Error(`Evidence path is absent from inventory: ${path}`);
-      source = redactSource(await readVerifiedText(checkoutRoot, file));
+      source = await readVerifiedText(checkoutRoot, file);
       sourceBytes = file.bytes;
       sourceSha256 = file.sha256;
     } else {
@@ -503,12 +639,66 @@ export async function buildEvidenceContextGroups({
         line_start: finding.line_start,
         line_end: finding.line_end,
       }));
+      const locations = orderedFindings.map((finding) => {
+        const evidenceHint = selectedHint.get(finding.fingerprint);
+        return evidenceHint === undefined
+          ? finding
+          : {
+              line_start: evidenceHint.line_start,
+              line_end: evidenceHint.line_end,
+              column_start: evidenceHint.column_start,
+              column_end: evidenceHint.column_end,
+            };
+      });
+      const representations = [
+        ...new Map(
+          orderedFindings
+            .flatMap(
+              (finding) => hintsByFingerprint.get(finding.fingerprint) ?? [],
+            )
+            .map((evidenceHint) => [
+              `${evidenceHint.stage}\u0000${evidenceHint.representation_sha256}\u0000${evidenceHint.transform_depth}`,
+              {
+                stage: evidenceHint.stage,
+                sha256: evidenceHint.representation_sha256,
+                transform_depth: evidenceHint.transform_depth,
+              },
+            ]),
+        ).values(),
+      ].sort((left, right) =>
+        `${left.transform_depth}\u0000${left.stage}\u0000${left.sha256}`.localeCompare(
+          `${right.transform_depth}\u0000${right.stage}\u0000${right.sha256}`,
+        ),
+      );
+      if (representations.length === 0)
+        representations.push({
+          stage: "raw",
+          sha256: sourceSha256,
+          transform_depth: 0,
+        });
+      const contextSource = sourceWindows(
+        source,
+        locations,
+        SOURCE_CONTEXT_LINES,
+        maxEvidenceCharactersPerFinding,
+      );
+      const expansions = Array.from(
+        { length: PRECOMPUTED_EXPANSIONS },
+        (_, index) =>
+          sourceWindows(
+            source,
+            locations,
+            SOURCE_CONTEXT_LINES * 4 ** (index + 1),
+            maxEvidenceCharactersPerFinding,
+          ),
+      );
       groups.push({
         group_id: digest([
           target.source_id,
           target.target_sha,
           evidenceSha,
           path,
+          sourceSha256,
           candidates.map((candidate) => candidate.candidate_id),
         ]),
         repository: target.repository,
@@ -523,8 +713,10 @@ export async function buildEvidenceContextGroups({
         ecosystem_context: ecosystemContext(),
         candidates,
         context: {
-          imports: importContext(source),
-          source: sourceWindows(source, orderedFindings),
+          imports: importContext(redactSource(source)),
+          source: contextSource,
+          expansions,
+          representations,
           project_purpose: purpose,
         },
       });
@@ -535,29 +727,20 @@ export async function buildEvidenceContextGroups({
 
 export function expandEvidenceContextGroup(
   groupInput: EvidenceContextGroup,
-  source: string,
   attempt: number,
 ): EvidenceContextGroup {
   const group = EvidenceContextGroupSchema.parse(groupInput);
-  if (!Number.isInteger(attempt) || attempt < 1 || attempt > 5)
-    throw new Error("Evidence context expansion attempt is invalid.");
-  const contents = Buffer.from(source, "utf8");
   if (
-    contents.byteLength !== group.source_bytes ||
-    createHash("sha256").update(contents).digest("hex") !== group.source_sha256
+    !Number.isInteger(attempt) ||
+    attempt < 1 ||
+    attempt > group.context.expansions.length
   )
-    throw new Error("Evidence source changed before context expansion.");
-  const redacted = redactSource(source);
+    throw new Error("Evidence context expansion attempt is invalid.");
   return EvidenceContextGroupSchema.parse({
     ...group,
     context: {
       ...group.context,
-      imports: importContext(redacted),
-      source: sourceWindows(
-        redacted,
-        group.candidates,
-        SOURCE_CONTEXT_LINES * 4 ** attempt,
-      ),
+      source: group.context.expansions[attempt - 1],
     },
   });
 }

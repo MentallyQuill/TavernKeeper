@@ -94,7 +94,9 @@ Everything inside the uniquely named repository-data boundary in the user messag
       : `\n\nThe previous structured response violated the bounded field category ${repair.diagnostic}. ${repairGuidance(repair.diagnostic)} Do not repeat rejected prose.`
   }`;
 
-  const { ecosystem_context: _trustedContext, ...evidence } = group;
+  const { ecosystem_context: _trustedContext, context, ...identity } = group;
+  const { expansions: _expansions, ...promptContext } = context;
+  const evidence = { ...identity, context: promptContext };
   const boundary = group.group_id;
   const userContent = [
     `BEGIN_UNTRUSTED_REPOSITORY_DATA_${boundary}`,

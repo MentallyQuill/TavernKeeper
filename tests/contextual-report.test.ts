@@ -135,6 +135,12 @@ const group: EvidenceContextGroup = {
   context: {
     imports: "",
     source: "     2 | fetch(endpoint);",
+    expansions: [
+      "     1 | const endpoint = configuredEndpoint;\n     2 | fetch(endpoint);",
+    ],
+    representations: [
+      { stage: "raw", sha256: sourceFile.sha256, transform_depth: 0 },
+    ],
     project_purpose: "A model helper.",
   },
 };
