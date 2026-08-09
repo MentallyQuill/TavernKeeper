@@ -155,7 +155,6 @@ const OPEN_GREP_OPTIONS = [
   "--x-ignore-semgrepignore-files",
   "--no-rewrite-rule-ids",
   "--exclude",
-  "--no-exclude-minified-files",
   "--max-target-bytes",
   "--config",
 ] as const;
@@ -402,7 +401,6 @@ export async function runOpenGrep({
       "--x-ignore-semgrepignore-files",
       "--no-rewrite-rule-ids",
       "--exclude=.git",
-      "--no-exclude-minified-files",
       `--max-target-bytes=${maxTargetBytes}`,
       "--config",
       rulesRoot,

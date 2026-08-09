@@ -235,14 +235,13 @@ Expected: FAIL because OpenGrep does not parse `paths`, accept expected paths, o
 
 - [ ] **Step 3: Implement strict path closure and explicit flags**
 
-Add these command arguments before `--config`:
+Add this bounded command argument before `--config`:
 
 ```ts
-"--no-exclude-minified-files",
 `--max-target-bytes=${maxTargetBytes}`,
 ```
 
-Normalize every scanned/skipped path through the existing root-boundary check. Reject duplicates, overlap between scanned/skipped sets, unexpected paths when `expectedPaths` is present, missing expected paths, unknown skip reasons, or absent `paths` metadata for a manifest-bound scan. Preserve ordinary repository-wide use without `expectedPaths`.
+The pinned Python-compatible OpenGrep release scans minified files by default and does not accept the native CLI's `--no-exclude-minified-files` option. Normalize every scanned/skipped path through the existing root-boundary check. OpenGrep reports all attempted paths under `scanned` and may also report a failed path under `skipped`; project that native overlap into disjoint JavaScript coverage, ignore non-JavaScript repository paths for the coverage projection, and reject duplicates, missing expected paths, unknown skip reasons, or absent `paths` metadata for a manifest-bound scan. Preserve ordinary repository-wide findings outside `expectedPaths`.
 
 - [ ] **Step 4: Run the adapter tests and make GREEN**
 

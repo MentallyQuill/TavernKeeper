@@ -185,7 +185,6 @@ describe("OpenGrep adapter", () => {
       "--x-ignore-semgrepignore-files",
       "--no-rewrite-rule-ids",
       "--exclude=.git",
-      "--no-exclude-minified-files",
       "--max-target-bytes=268435456",
       "--config",
       "C:/trusted/TavernKeeper/rules/opengrep",
@@ -260,7 +259,7 @@ describe("OpenGrep adapter", () => {
     const runner = new OpenGrepRunner(
       "",
       2,
-      "opengrep: unknown option '--no-exclude-minified-files'",
+      "opengrep: unknown option '--max-target-bytes'",
     );
 
     await expect(
@@ -273,7 +272,7 @@ describe("OpenGrep adapter", () => {
     ).rejects.toMatchObject({
       code: "MALFORMED_SCANNER_OUTPUT",
       message: expect.stringContaining(
-        "stderr class option-error; option mentions --no-exclude-minified-files",
+        "stderr class option-error; option mentions --max-target-bytes",
       ),
     });
   });
