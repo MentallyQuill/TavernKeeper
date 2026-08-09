@@ -1,4 +1,4 @@
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 
 import { parse } from "yaml";
@@ -19,9 +19,8 @@ class OpenGrepRunner implements CommandRunner {
     [];
 
   constructor(
-    private readonly report: string,
+    private readonly stdout: string,
     private readonly exitCode = 0,
-    private readonly stdout = report,
   ) {}
 
   async run(
@@ -30,12 +29,6 @@ class OpenGrepRunner implements CommandRunner {
     options: CommandOptions,
   ): Promise<CommandExecutionResult> {
     this.calls.push({ command, args, options });
-    const outputIndex = args.indexOf("--output");
-    if (outputIndex >= 0) {
-      const outputPath = args[outputIndex + 1];
-      if (outputPath === undefined) throw new Error("Missing OpenGrep output.");
-      await writeFile(outputPath, this.report);
-    }
     return {
       ok: true,
       value: { exitCode: this.exitCode, stdout: this.stdout, stderr: "" },
@@ -180,8 +173,6 @@ describe("OpenGrep adapter", () => {
     expect(runner.calls[0]?.args).toEqual([
       "scan",
       "--json",
-      "--output",
-      expect.stringMatching(/[\\/]opengrep-[^\\/]+[\\/]report\.json$/u),
       "--verbose",
       "--disable-version-check",
       "--disable-nosem",
@@ -220,11 +211,13 @@ describe("OpenGrep adapter", () => {
     expect(JSON.stringify(run.findings)).not.toContain(seedSecret);
   });
 
-  test("reads JSON from a dedicated report file instead of scanner stdout", async () => {
+  test("extracts one bounded JSON report from trusted scanner console noise", async () => {
     const runner = new OpenGrepRunner(
-      resultJson(),
-      0,
-      "OpenGrep emitted a progress message instead of JSON on stdout.",
+      [
+        "OpenGrep emitted a progress message instead of JSON.",
+        resultJson(),
+        "OpenGrep finished.",
+      ].join("\n"),
     );
 
     await expect(
@@ -237,6 +230,22 @@ describe("OpenGrep adapter", () => {
     ).resolves.toMatchObject({
       name: "opengrep",
       findings: [expect.objectContaining({ category: "credential-theft" })],
+    });
+  });
+
+  test("rejects ambiguous console output containing multiple scanner reports", async () => {
+    const runner = new OpenGrepRunner([resultJson(), resultJson()].join("\n"));
+
+    await expect(
+      runOpenGrep({
+        root: "C:/scan/repository",
+        rulesRoot: "C:/trusted/TavernKeeper/rules/opengrep",
+        runner,
+        version: "1.26.0",
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      message: "OpenGrep returned multiple JSON reports.",
     });
   });
 

@@ -600,7 +600,6 @@ export async function runJavascriptAnalysis(
           version: spec.opengrepVersion,
           expectedPaths: paths,
           maxTargetBytes: limits.maxDerivativeBytes,
-          temporaryRoot: spec.temporaryRoot,
           ...(spec.opengrepExecutable === undefined
             ? {}
             : { executable: spec.opengrepExecutable }),
