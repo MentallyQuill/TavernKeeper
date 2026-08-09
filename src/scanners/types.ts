@@ -13,6 +13,15 @@ export interface ScannerRun {
   status: "completed" | "completed-with-limitations" | "not-applicable";
   limitations?: ScannerDiagnostic[] | undefined;
   findings: Finding[];
+  pathCoverage?: ScannerPathCoverage | undefined;
+}
+
+export type ScannerPathSkipReason =
+  "parse" | "timeout" | "target-limit" | "unsupported";
+
+export interface ScannerPathCoverage {
+  scanned: string[];
+  skipped: Array<{ path: string; reason: ScannerPathSkipReason }>;
 }
 
 export type ScannerErrorCode =

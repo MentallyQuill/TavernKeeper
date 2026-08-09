@@ -40,7 +40,36 @@ const OpenGrepDiagnosticSchema = z.looseObject({
 const OpenGrepReportSchema = z.looseObject({
   results: z.array(OpenGrepFindingSchema).max(100_000),
   errors: z.array(z.unknown()).max(10_000),
+  paths: z
+    .looseObject({
+      scanned: z.array(z.string()).max(500_000).default([]),
+      skipped: z.array(z.unknown()).max(500_000).default([]),
+    })
+    .optional(),
 });
+const OpenGrepSkippedPathSchema = z.looseObject({
+  path: z.string().min(1).max(2_000),
+  reason: z.string().min(1).max(500),
+});
+
+function skippedReason(value: string) {
+  const normalized = value.toLowerCase().replace(/[^a-z0-9]+/gu, "_");
+  if (
+    ["too_big", "exceeded_size_limit"].includes(normalized) ||
+    /size|too_large|max_target/iu.test(normalized)
+  )
+    return "target-limit" as const;
+  if (/parse|syntax|analysis_failed/iu.test(normalized))
+    return "parse" as const;
+  if (/timeout/iu.test(normalized)) return "timeout" as const;
+  if (
+    /unsupported|wrong_language|irrelevant_rule|minified|too_many_matches/iu.test(
+      normalized,
+    )
+  )
+    return "unsupported" as const;
+  throw new Error("OpenGrep returned an unknown skipped-path reason.");
+}
 
 function isToleratedParserWarning(value: unknown) {
   const parsed = OpenGrepDiagnosticSchema.safeParse(value);
@@ -98,7 +127,12 @@ function cleanText(value: string, maxLength: number) {
     .slice(0, maxLength);
 }
 
-function parseReport(root: string, stdout: string, exitCode: number) {
+function parseReport(
+  root: string,
+  stdout: string,
+  exitCode: number,
+  expectedPaths: readonly string[] | undefined,
+) {
   let report: z.infer<typeof OpenGrepReportSchema>;
   try {
     report = OpenGrepReportSchema.parse(JSON.parse(stdout));
@@ -154,7 +188,50 @@ function parseReport(root: string, stdout: string, exitCode: number) {
         }),
       ),
     ].sort();
-    return { findings, limitations };
+    if (expectedPaths !== undefined && report.paths === undefined)
+      throw new Error("OpenGrep omitted expected path coverage.");
+    const scanned = (report.paths?.scanned ?? []).map((path) =>
+      normalizePath(root, path),
+    );
+    const skipped = (report.paths?.skipped ?? []).map((value) => {
+      const parsed = OpenGrepSkippedPathSchema.parse(value);
+      return {
+        path: normalizePath(root, parsed.path),
+        reason: skippedReason(parsed.reason),
+      };
+    });
+    const skippedPaths = skipped.map(({ path }) => path);
+    if (
+      new Set(scanned).size !== scanned.length ||
+      new Set(skippedPaths).size !== skippedPaths.length ||
+      scanned.some((path) => skippedPaths.includes(path))
+    )
+      throw new Error("OpenGrep path coverage is contradictory.");
+    if (expectedPaths !== undefined) {
+      const expected = expectedPaths.map((path) => normalizePath(root, path));
+      if (new Set(expected).size !== expected.length)
+        throw new Error("OpenGrep expected paths must be unique.");
+      const accounted = [...scanned, ...skippedPaths];
+      const expectedSet = new Set(expected);
+      if (
+        accounted.length !== expected.length ||
+        accounted.some((path) => !expectedSet.has(path)) ||
+        expected.some((path) => !accounted.includes(path))
+      )
+        throw new Error("OpenGrep did not account for expected paths.");
+    }
+    return {
+      findings,
+      limitations,
+      pathCoverage: {
+        scanned: [...scanned].sort(),
+        skipped: [...skipped].sort((left, right) =>
+          `${left.path}\0${left.reason}`.localeCompare(
+            `${right.path}\0${right.reason}`,
+          ),
+        ),
+      },
+    };
   } catch {
     throw new ScannerError(
       "MALFORMED_SCANNER_OUTPUT",
@@ -171,12 +248,16 @@ export async function runOpenGrep({
   runner,
   executable = "opengrep",
   version,
+  expectedPaths,
+  maxTargetBytes = 268_435_456,
 }: {
   root: string;
   rulesRoot: string;
   runner: CommandRunner;
   executable?: string;
   version: string;
+  expectedPaths?: readonly string[];
+  maxTargetBytes?: number;
 }): Promise<ScannerRun> {
   const result = await runner.run(
     executable,
@@ -189,6 +270,8 @@ export async function runOpenGrep({
       "--x-ignore-semgrepignore-files",
       "--no-rewrite-rule-ids",
       "--exclude=.git",
+      "--no-exclude-minified-files",
+      `--max-target-bytes=${maxTargetBytes}`,
       "--config",
       rulesRoot,
       root,
@@ -216,7 +299,12 @@ export async function runOpenGrep({
       `OpenGrep exited with code ${result.value.exitCode}.`,
       "opengrep",
     );
-  const parsed = parseReport(root, result.value.stdout, result.value.exitCode);
+  const parsed = parseReport(
+    root,
+    result.value.stdout,
+    result.value.exitCode,
+    expectedPaths,
+  );
   return {
     name: "opengrep",
     version,
@@ -228,5 +316,6 @@ export async function runOpenGrep({
       ? {}
       : { limitations: parsed.limitations }),
     findings: parsed.findings,
+    pathCoverage: parsed.pathCoverage,
   };
 }
