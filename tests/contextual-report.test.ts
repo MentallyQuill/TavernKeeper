@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { buildScanPackage } from "../src/contracts/scan-package.js";
 import {
+  buildContextualCountsV5,
   PUBLIC_JAVASCRIPT_UNRESOLVED_MAX,
   publicJavascriptAnalysisCoverage,
   ScanReportV5Schema,
@@ -199,6 +200,48 @@ function validReport() {
   );
 }
 
+function legacyImportedTemplateReport() {
+  const report = structuredClone(validReport());
+  report.contextual_review_policy_version = "2";
+  report.prompt_version = "contextual-review-v5";
+  report.assessment_schema_version = "contextual-assessment-v1";
+  Object.assign(report.candidates[0]!, {
+    origin: "opengrep",
+    rule_id: "tavernkeeper.dynamic-execution.javascript-eval",
+    category: "dynamic-execution",
+    file_role: "production",
+    title: "Imported preset template executes JavaScript",
+  });
+  Object.assign(report.assessments[0]!, {
+    disposition: "material_vulnerability",
+    impact: "high",
+    exploitability: "plausible",
+    confidence: "high",
+    recommended_risk: "material",
+    technical_explanation:
+      "A user-imported preset supplies JavaScript that is passed directly to new Function and executes with the extension's privileges.",
+    layman_explanation:
+      "Importing a hostile preset can run its code in the extension.",
+    developer_action: "Require confirmation before template use.",
+  });
+  const assessment = report.assessments[0]!;
+  if (!("risk_exposure" in assessment))
+    throw new Error("Expected a current assessment fixture.");
+  const { risk_exposure: _riskExposure, ...legacyAssessment } = assessment;
+  report.assessments = [legacyAssessment];
+  report.counts = buildContextualCountsV5(
+    report.candidates.length,
+    report.assessments,
+    report.observations,
+  );
+  const identity = reportIdentity(report);
+  return ScanReportV5Schema.parse({
+    ...report,
+    report_id: identity,
+    report_digest: identity,
+  });
+}
+
 test("parses immutable policy-2 reports while requiring exposure in policy 3", () => {
   const current = validReport();
   const legacy = structuredClone(current) as unknown as {
@@ -371,6 +414,11 @@ describe("contextual V5 reports", () => {
     expect(report.limitations).toEqual(
       expect.arrayContaining([expect.stringMatching(/no clean conclusion/iu)]),
     );
+    const html = renderReportV5Html(report);
+    expect(html).toContain(
+      'class="assessment-summary surface risk-mark risk-low"',
+    );
+    expect(html).toContain("JavaScript analysis was incomplete");
   });
 
   test("publishes metadata-only evidence as incomplete contextual coverage", () => {
@@ -415,6 +463,11 @@ describe("contextual V5 reports", () => {
         expect.stringMatching(/non-text artifacts.*raw contents/iu),
       ]),
     );
+    const html = renderReportV5Html(report);
+    expect(html).toContain(
+      'class="assessment-summary surface risk-mark risk-low"',
+    );
+    expect(html).toContain("non-text artifacts");
   });
 
   test("sorts, deduplicates, and caps public unresolved JavaScript stages", () => {
@@ -653,6 +706,31 @@ describe("contextual V5 reports", () => {
     expect(html).toContain("default-src &#39;none&#39;");
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/safety certification/iu);
+  });
+
+  test("renders a legacy shipped imported-template vulnerability as material", () => {
+    const html = renderReportV5Html(legacyImportedTemplateReport());
+
+    expect(html).toContain("1 material concern identified.");
+    expect(html).toContain("<strong>Material concern</strong>");
+    expect(html).not.toContain(
+      "<p>No material or immediate-danger item was identified.</p>",
+    );
+  });
+
+  test("keeps a downgraded legacy non-production finding visible as a minor caution", () => {
+    const report = structuredClone(legacyImportedTemplateReport());
+    report.candidates[0]!.file_role = "fixture";
+    const identity = reportIdentity(report);
+    const html = renderReportV5Html({
+      ...report,
+      report_id: identity,
+      report_digest: identity,
+    });
+
+    expect(html).toContain("No material or immediate-danger concern");
+    expect(html).toContain("Imported preset template executes JavaScript");
+    expect(html).toContain("<strong>Minor caution</strong>");
   });
 
   test.each(["material", "high"] as const)(

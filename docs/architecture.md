@@ -97,9 +97,8 @@ candidate must receive exactly one valid contextual assessment. Bounded
 policy-4 JavaScript limitations publish as explicit `incomplete` coverage.
 Findings on non-text artifacts publish verified scanner metadata as
 `completed-with-limitations` contextual evidence without sending raw binary to
-the model. Either limitation raises an otherwise-low advisory to material; it
-never invents immediate danger. Hard scanner or integrity failures still
-produce no report.
+the model. Both limitations remain visible without altering advisory color or
+concern counts. Hard scanner or integrity failures still produce no report.
 TavernKeeper attaches each
 assessment's location from validated deterministic candidate evidence instead
 of asking the model to reproduce it. Model-authored observation locations must

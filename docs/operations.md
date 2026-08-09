@@ -248,7 +248,7 @@ No production candidate waits for review, dismissal, or recoloring. Context,
 model, schema, evidence, sanitizer, tool-integrity, or hard scanner failure
 publishes nothing and enters the classified retry path. Bounded policy-4
 JavaScript and metadata-only contextual coverage limitations publish visibly
-and raise an otherwise-low advisory to material.
+without changing advisory color or concern counts.
 Complete high/immediate-danger reports are published through the same path as
 all other results. They remain visible in TavernKeeper and Tavernary and never
 automatically hide, quarantine, downrank, or delist a project.
