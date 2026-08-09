@@ -23,8 +23,8 @@ import {
   ScanPackageToolStatusSchema,
 } from "../contracts/scan-package.js";
 import {
-  MAX_PREPARED_EVIDENCE_BYTES,
   MAX_PREPARED_MANIFEST_BYTES,
+  MAX_PREPARED_PAYLOAD_BYTES,
 } from "../contracts/prepared-evidence-limits.js";
 import { FindingSchema } from "../contracts/reports.js";
 import { ScanReportV5Schema } from "../contracts/reports-v5.js";
@@ -349,7 +349,7 @@ export async function buildBoundedEvidenceContext({
   prepared: preparedInput,
   maxEvidenceCharacters,
   buildGroups,
-  maximumArtifactBytes = MAX_PREPARED_EVIDENCE_BYTES,
+  maximumArtifactBytes = MAX_PREPARED_PAYLOAD_BYTES,
   manifestReserveBytes = MAX_PREPARED_MANIFEST_BYTES,
 }: {
   prepared: unknown;
@@ -390,7 +390,10 @@ export async function buildBoundedEvidenceContext({
       groups,
     });
     const evidenceBytes = serializedJsonBytes(bundle);
-    if (evidenceBytes <= evidenceBudget) return bundle;
+    if (evidenceBytes <= evidenceBudget) {
+      validatePreparedSessionEvidence(prepared, bundle);
+      return bundle;
+    }
     if (maximumCharacters === 1)
       throw new Error(
         "Prepared evidence metadata exceeds its artifact budget.",

@@ -15,6 +15,8 @@ import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
 import {
   assertPreparedEvidenceArtifactSize,
   createPreparedEvidenceArtifact,
+  MAX_PREPARED_EVIDENCE_BYTES,
+  MAX_PREPARED_PAYLOAD_BYTES,
   restorePreparedEvidenceArtifact,
 } from "../src/contracts/prepared-evidence.js";
 import {
@@ -962,6 +964,10 @@ describe("three-phase contextual scan session", () => {
   });
 
   test("caps a prepared artifact before upload", () => {
+    expect(MAX_PREPARED_PAYLOAD_BYTES).toBe(18_000_000);
+    expect(MAX_PREPARED_EVIDENCE_BYTES - MAX_PREPARED_PAYLOAD_BYTES).toBe(
+      2_000_000,
+    );
     expect(() => assertPreparedEvidenceArtifactSize(20_000_001)).toThrow(
       /size ceiling/iu,
     );

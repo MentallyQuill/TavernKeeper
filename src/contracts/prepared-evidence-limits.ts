@@ -1,4 +1,5 @@
 export const MAX_PREPARED_EVIDENCE_BYTES = 20_000_000;
+export const MAX_PREPARED_PAYLOAD_BYTES = 18_000_000;
 export const MAX_PREPARED_MANIFEST_BYTES = 100_000;
 
 export function assertPreparedEvidenceArtifactSize(

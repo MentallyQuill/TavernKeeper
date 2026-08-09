@@ -94,14 +94,25 @@ jobs:
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         run: npm run --silent prepare-target
       - name: Package bounded prepared evidence
+        id: pack
         if: steps.prepare.outcome == 'success'
+        continue-on-error: true
         env:
           TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
           TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
           TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
-        run: npm run --silent prepared-evidence -- pack "$TAVERNKEEPER_SESSION_ROOT" "$TAVERNKEEPER_PREPARED_ARTIFACT"
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        shell: bash
+        run: |
+          prepared_bytes="$(stat -c '%s' "$TAVERNKEEPER_SESSION_ROOT/prepared.json")"
+          evidence_bytes="$(stat -c '%s' "$TAVERNKEEPER_SESSION_ROOT/evidence-context.json")"
+          jq -nc \
+            --argjson prepared_bytes "$prepared_bytes" \
+            --argjson evidence_bytes "$evidence_bytes" \
+            '{prepared_bytes:$prepared_bytes,evidence_bytes:$evidence_bytes,payload_bytes:($prepared_bytes + $evidence_bytes)}'
+          npm run --silent prepared-evidence -- pack "$TAVERNKEEPER_SESSION_ROOT" "$TAVERNKEEPER_PREPARED_ARTIFACT"
       - name: Package sanitized preparation failure
-        if: ${{ always() && steps.dependencies.outcome == 'success' && steps.prepare.outcome != 'success' }}
+        if: ${{ always() && steps.dependencies.outcome == 'success' && (steps.prepare.outcome != 'success' || steps.pack.outcome != 'success') }}
         env:
           TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
           TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
@@ -118,7 +129,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
       - name: Mark failed preparation after preserving the handoff
-        if: ${{ always() && steps.prepare.outcome != 'success' }}
+        if: ${{ always() && (steps.prepare.outcome != 'success' || steps.pack.outcome != 'success') }}
         run: exit 1
 
   scan:
