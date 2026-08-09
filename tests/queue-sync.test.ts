@@ -249,6 +249,33 @@ describe("scan queue synchronization", () => {
     ]);
   });
 
+  test("treats a selected prior-SHA report as cooldown evidence without catalog authority", () => {
+    const selected = target(41, 1, "b");
+    const state = {
+      ...stateObserving(selected),
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: indexWithRepositoryReport(41, "a", "2026-08-04T08:00:00.000Z"),
+      state,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        target_sha: selected.target_sha,
+        rescan_not_before: "2026-08-06T08:00:00.000Z",
+      }),
+    ]);
+    expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
+      "catalog_change",
+    );
+  });
+
   test("retains a selected target's existing failure deadline and state", () => {
     const selected = target(41, 1, "a");
     const failed = rotateFailedTarget(
