@@ -75,6 +75,11 @@ jobs:
         run: npm ci
       - name: Build allowlisted Pages artifact
         run: npm run --silent site:build -- .site
+      - name: Stamp exact source commit
+        shell: bash
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
+        run: printf '%s\n' "$SOURCE_SHA" > .site/deployment-source.txt
       - name: Configure Pages
         uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d
       - name: Upload Pages artifact
@@ -86,15 +91,22 @@ jobs:
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
       - name: Verify exact public report index
         shell: bash
+        env:
+          SOURCE_SHA: ${{ inputs.source_sha }}
         run: |
-          expected="$(sha256sum reports/index.json | cut -d' ' -f1)"
+          expected="$(sha256sum .site/reports/index.json | cut -d' ' -f1)"
           for attempt in $(seq 1 30); do
-            curl --fail --silent --show-error --location --max-redirs 0 \
-              --output "$RUNNER_TEMP/live-index.json" \
-              "https://mentallyquill.github.io/TavernKeeper/reports/index.json"
-            actual="$(sha256sum "$RUNNER_TEMP/live-index.json" | cut -d' ' -f1)"
-            if [[ "$actual" = "$expected" ]]; then
-              exit 0
+            if curl --fail --silent --show-error --location --max-redirs 0 \
+                --output "$RUNNER_TEMP/live-index.json" \
+                "https://mentallyquill.github.io/TavernKeeper/reports/index.json" && \
+              curl --fail --silent --show-error --location --max-redirs 0 \
+                --output "$RUNNER_TEMP/deployment-source.txt" \
+                "https://mentallyquill.github.io/TavernKeeper/deployment-source.txt"; then
+              actual="$(sha256sum "$RUNNER_TEMP/live-index.json" | cut -d' ' -f1)"
+              deployed_source="$(tr -d '\r\n' < "$RUNNER_TEMP/deployment-source.txt")"
+              if [[ "$actual" = "$expected" && "$deployed_source" = "$SOURCE_SHA" ]]; then
+                exit 0
+              fi
             fi
             sleep 10
           done
