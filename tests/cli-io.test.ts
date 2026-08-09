@@ -97,4 +97,21 @@ describe("safe CLI error diagnostics", () => {
       component: "contextual-model",
     });
   });
+
+  test("preserves a locally derived provider category without raw details", () => {
+    expect(
+      safeCliErrorRecord({
+        code: "MODEL_PROVIDER",
+        scope: "system",
+        diagnostic: "provider_schema_rejected",
+        httpStatus: 400,
+        message: "provider response text must not be logged",
+      }),
+    ).toEqual({
+      code: "MODEL_PROVIDER",
+      domain: "shared",
+      component: "contextual-model",
+      diagnostic: "provider_schema_rejected",
+    });
+  });
 });

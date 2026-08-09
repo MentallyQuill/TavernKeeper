@@ -68,6 +68,16 @@ export type ModelResponseDiagnostic =
   | "response_content"
   | "response_envelope"
   | "response_json"
+  | "provider_bad_request"
+  | "provider_http_error"
+  | "provider_method_not_allowed"
+  | "provider_model_unavailable"
+  | "provider_not_found"
+  | "provider_parameter_rejected"
+  | "provider_payload_too_large"
+  | "provider_schema_rejected"
+  | "provider_server_error"
+  | "provider_unprocessable"
   | "review_schema"
   | "response_size"
   | "response_usage";
@@ -323,7 +333,69 @@ function validateConfiguration(request: ProviderConnectivityRequest) {
   return { apiKey, model };
 }
 
-function classifyHttpError(response: Response): never {
+function providerStatusDiagnostic(status: number): ModelResponseDiagnostic {
+  if (status === 400) return "provider_bad_request";
+  if (status === 404) return "provider_not_found";
+  if (status === 405) return "provider_method_not_allowed";
+  if (status === 413) return "provider_payload_too_large";
+  if (status === 422) return "provider_unprocessable";
+  if (status >= 500) return "provider_server_error";
+  return "provider_http_error";
+}
+
+async function providerHttpDiagnostic(response: Response) {
+  const fallback = providerStatusDiagnostic(response.status);
+  if (!response.body) return fallback;
+  const maximumBytes = 16_384;
+  const declared = Number(response.headers.get("content-length") ?? "0");
+  if (Number.isFinite(declared) && declared > maximumBytes) {
+    await response.body.cancel();
+    return fallback;
+  }
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let bytes = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > maximumBytes) {
+        await reader.cancel();
+        return fallback;
+      }
+      chunks.push(value);
+    }
+  } catch {
+    return fallback;
+  }
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+  } catch {
+    return fallback;
+  }
+  if (decoded === null || typeof decoded !== "object") return fallback;
+  const error = "error" in decoded ? decoded.error : undefined;
+  if (error === null || typeof error !== "object") return fallback;
+  const code = "code" in error ? error.code : undefined;
+  const param = "param" in error ? error.param : undefined;
+  if (code === "model_not_found" || param === "model")
+    return "provider_model_unavailable";
+  if (code === "invalid_json_schema" || param === "response_format")
+    return "provider_schema_rejected";
+  if (
+    code === "unsupported_parameter" ||
+    code === "invalid_parameter" ||
+    ["max_completion_tokens", "reasoning_effort", "store"].includes(
+      String(param),
+    )
+  )
+    return "provider_parameter_rejected";
+  return fallback;
+}
+
+async function classifyHttpError(response: Response): Promise<never> {
   if (response.status >= 300 && response.status < 400) {
     throw new ModelRequestError(
       "MODEL_PROVIDER",
@@ -349,7 +421,7 @@ function classifyHttpError(response: Response): never {
     "MODEL_PROVIDER",
     "system",
     `Configured model returned HTTP ${response.status}.`,
-    undefined,
+    await providerHttpDiagnostic(response),
     response.status,
   );
 }
@@ -404,7 +476,7 @@ export async function checkModelProviderConnectivity(
       );
     }
   }
-  if (!response.ok) classifyHttpError(response);
+  if (!response.ok) await classifyHttpError(response);
   return { status: "passed" as const, authMode: "bearer" as const };
 }
 
@@ -478,7 +550,7 @@ export async function requestTextCompletion(
   };
 
   const response = await send();
-  if (!response.ok) classifyHttpError(response);
+  if (!response.ok) await classifyHttpError(response);
   if (response.url !== "") {
     let responseOrigin: string;
     try {
