@@ -264,6 +264,49 @@ describe("conditional scanner adapters", () => {
     expect(JSON.stringify(run.findings)).not.toContain("github.com");
   });
 
+  test("OSV bounds git finding titles at maximum identity lengths", async () => {
+    const commit = "a".repeat(64);
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "osv-scanner.json", type: "lockfile" },
+            packages: [
+              {
+                package: {
+                  name: "https://github.com/example/repository",
+                  version: `v${"1".repeat(159)}`,
+                  ecosystem: "GIT",
+                  commit,
+                },
+                vulnerabilities: [{ id: "OSV-2023-72" }],
+              },
+            ],
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    const run = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("osv-scanner.json")],
+      runner,
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(run.findings).toEqual([
+      expect.objectContaining({
+        title: `Known vulnerable git dependency: ${commit}`,
+      }),
+    ]);
+    expect(run.findings[0]!.title.length).toBeLessThanOrEqual(200);
+  });
+
   test("OSV preserves package-specific findings deterministically", async () => {
     const packages: Array<{
       name: string;

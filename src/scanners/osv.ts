@@ -114,6 +114,13 @@ function severity(value: string | undefined): Severity {
   }
 }
 
+function boundedFindingTitle(...alternatives: string[]) {
+  return (
+    alternatives.find((alternative) => alternative.length <= 200) ??
+    "Known vulnerable dependency"
+  );
+}
+
 function findingTitle({
   commit,
   ecosystem,
@@ -122,12 +129,21 @@ function findingTitle({
 }: z.infer<typeof PackageIdentitySchema>) {
   if (commit !== undefined)
     return version.length === 0
-      ? `Known vulnerable commit dependency: ${commit}`
-      : `Known vulnerable git dependency: ${version}@${commit}`;
+      ? boundedFindingTitle(
+          `Known vulnerable commit dependency: ${commit}`,
+          "Known vulnerable commit dependency",
+        )
+      : boundedFindingTitle(
+          `Known vulnerable git dependency: ${version}@${commit}`,
+          `Known vulnerable git dependency: ${commit}`,
+          "Known vulnerable git dependency",
+        );
   const detailed = `Known vulnerable ${ecosystem} dependency: ${name}@${version}`;
-  return detailed.length <= 200
-    ? detailed
-    : `Known vulnerable dependency: ${name}`;
+  return boundedFindingTitle(
+    detailed,
+    `Known vulnerable dependency: ${name}`,
+    "Known vulnerable dependency",
+  );
 }
 
 function findingExplanation({
