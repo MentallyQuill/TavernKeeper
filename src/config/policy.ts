@@ -2,6 +2,10 @@ import { readFile } from "node:fs/promises";
 
 import { z } from "zod";
 
+export const CURRENT_SCANNER_POLICY_VERSION = "4" as const;
+export const CURRENT_SCANNER_POLICY_PATH =
+  "config/scanner-policy.v4.json" as const;
+
 const scannerPolicyShape = {
   queue: z.strictObject({
     batchSize: z.literal(5),

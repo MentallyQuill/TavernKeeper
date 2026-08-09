@@ -11,6 +11,7 @@ import {
 import { planBatch } from "../src/queue/backlog.js";
 import {
   appendQueuedTarget,
+  removeSuccessfulTarget,
   rotateFailedTarget,
 } from "../src/queue/durable-queue.js";
 import { syncScanQueue } from "../src/queue/sync.js";
@@ -354,6 +355,49 @@ describe("scan queue synchronization", () => {
 
     expect(synchronized.state.scan_queue.entries).toEqual([]);
     expect(synchronized.summary.removed).toBe(1);
+  });
+
+  test("completes policy campaign progress instead of reseeding successful targets", () => {
+    const covered = target(41, 1, "a");
+    const campaignState = {
+      ...appendQueuedTarget(initialOperationsState(now), covered),
+      policy_campaigns: [
+        {
+          id: "policy-3-regression",
+          scanner_policy_version: "3",
+          repository_ids: [41],
+          created_at: now,
+          status: "active" as const,
+        },
+      ],
+    };
+    const publishedState = removeSuccessfulTarget(campaignState, covered, now);
+
+    const completed = syncScanQueue({
+      manifest: manifest(covered),
+      index: indexWithPreviousRepositoryReport,
+      state: publishedState,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+    expect(completed.state.scan_queue.entries).toEqual([]);
+    expect(completed.state.policy_campaigns).toEqual([
+      expect.objectContaining({
+        id: "policy-3-regression",
+        repository_ids: [],
+        status: "completed",
+      }),
+    ]);
+
+    const stable = syncScanQueue({
+      manifest: manifest(covered),
+      index: indexWithPreviousRepositoryReport,
+      state: completed.state,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+    expect(stable.changed).toBe(false);
+    expect(stable.state.scan_queue.entries).toEqual([]);
   });
 
   test("is byte-stable when inputs do not change", () => {

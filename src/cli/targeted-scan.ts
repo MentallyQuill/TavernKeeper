@@ -1,4 +1,5 @@
 import { parseReportIndexV5 } from "../contracts/reports-v5.js";
+import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   parseTargetManifest,
   requireTargetManifestV2,
@@ -26,14 +27,14 @@ export function buildTargetedMatrix({
   index: indexInput,
   state: stateInput,
   repositoryId,
-  scannerPolicyVersion,
+  scannerPolicyVersion = CURRENT_SCANNER_POLICY_VERSION,
   requestCreatedAt,
 }: {
   manifest: unknown;
   index: unknown;
   state: unknown;
   repositoryId: number;
-  scannerPolicyVersion: string;
+  scannerPolicyVersion?: string;
   requestCreatedAt: string;
 }) {
   const manifest = requireTargetManifestV2(parseTargetManifest(manifestInput));
@@ -90,7 +91,7 @@ export function buildTargetedQueueUpdate({
   index: indexInput,
   state: stateInput,
   repositoryId,
-  scannerPolicyVersion,
+  scannerPolicyVersion = CURRENT_SCANNER_POLICY_VERSION,
   requestCreatedAt,
   now,
 }: {
@@ -98,7 +99,7 @@ export function buildTargetedQueueUpdate({
   index: unknown;
   state: unknown;
   repositoryId: number;
-  scannerPolicyVersion: string;
+  scannerPolicyVersion?: string;
   requestCreatedAt: string;
   now: string;
 }) {
@@ -182,7 +183,6 @@ async function main() {
     index,
     state,
     repositoryId: hint.repository_id,
-    scannerPolicyVersion: "3",
     requestCreatedAt: requiredEnvironment(
       process.env,
       "TAVERNKEEPER_REQUEST_CREATED_AT",

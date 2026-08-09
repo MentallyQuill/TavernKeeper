@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
+import { buildQueueSynchronization } from "../src/cli/sync-queue.js";
 import { probeFailureProvesSharedRecovery } from "../src/cli/probe-outcome.js";
 import { applyRetryOperation } from "../src/cli/retry.js";
 import { validateStaffScanRequest } from "../src/cli/staff-request.js";
@@ -103,6 +104,58 @@ function indexedReport(
 }
 
 describe("JSON-only orchestration CLIs", () => {
+  test("defaults every coordinator entry point to scanner policy 4", () => {
+    const targetValue = target(42);
+    const manifest: TargetManifestV2 = {
+      schema_version: 2,
+      generated_at: now,
+      repositories: [
+        { ...targetValue, project_kinds: [...targetValue.project_kinds] },
+      ],
+    };
+    const prior = {
+      ...indexedReport(targetValue, "2026-07-31T17:55:00.000Z"),
+      scanner_policy_version: "3",
+      report_url: indexedReport(
+        targetValue,
+        "2026-07-31T17:55:00.000Z",
+      ).report_url.replace("/2/", "/3/"),
+    };
+    const index = {
+      schema_version: 5 as const,
+      generated_at: now,
+      reports: [prior],
+    };
+    const synchronized = buildQueueSynchronization({
+      manifest,
+      index,
+      state: initialOperationsState(now),
+      now,
+    });
+
+    expect(
+      buildReconcileMatrix({
+        manifest,
+        index,
+        state: synchronized.state,
+        now,
+      }).include[0],
+    ).toMatchObject({
+      reason: "changed",
+      report_version: 1,
+      supersedes_report_id: null,
+    });
+    expect(
+      buildTargetedMatrix({
+        manifest,
+        index,
+        state: initialOperationsState(now),
+        repositoryId: 42,
+        requestCreatedAt: now,
+      }).include[0],
+    ).toMatchObject({ report_version: 1, supersedes_report_id: null });
+  });
+
   test("only complete target contextual failures prove shared provider recovery", () => {
     expect(
       probeFailureProvesSharedRecovery({

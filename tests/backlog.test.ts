@@ -527,6 +527,48 @@ describe("durable backlog planning", () => {
     });
   });
 
+  test("a matching policy canary gate runs one staff target and holds ordinary work", () => {
+    const first = target(41, 1);
+    const canary = target(42, 2);
+    const secondCanary = target(43, 3);
+    const base = queued(first, canary, secondCanary);
+    const state = pauseSystem(
+      {
+        ...base,
+        scan_queue: {
+          ...base.scan_queue,
+          entries: base.scan_queue.entries.map((entry) =>
+            entry.repository_id === 42 || entry.repository_id === 43
+              ? { ...entry, staff_requested: true as const }
+              : entry,
+          ),
+        },
+      },
+      {
+        kind: "staff",
+        reasonCode: "POLICY_V4_CANARY_GATE",
+        at: now,
+      },
+    );
+
+    const plan = planBatch(
+      manifest(first, canary, secondCanary),
+      emptyIndex,
+      state,
+      now,
+      "4",
+    );
+
+    expect(
+      plan.targets.map(({ target: value }) => value.repository_id),
+    ).toEqual([42]);
+    expect(plan).toMatchObject({
+      totalRemaining: 1,
+      runnableRemaining: 1,
+      emergencyStopped: true,
+    });
+  });
+
   test("fails closed when planning sees an unsynchronized target SHA", () => {
     const queuedTarget = target(41, 1);
     const changed = { ...queuedTarget, target_sha: "b".repeat(40) };

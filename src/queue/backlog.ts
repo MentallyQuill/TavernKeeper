@@ -8,6 +8,7 @@ import {
   type CurrentTarget,
   type CurrentTargetManifest,
 } from "../contracts/targets.js";
+import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   OperationsStateSchema,
   type OperationsState,
@@ -80,7 +81,7 @@ export function planBatch(
   indexInput: ReportIndexV5,
   stateInput: OperationsState,
   now: string,
-  scannerPolicyVersion = "3",
+  scannerPolicyVersion: string = CURRENT_SCANNER_POLICY_VERSION,
   forceProviderProbe = false,
 ): BatchPlan {
   const manifest = parseCurrentManifest(manifestInput);
@@ -95,7 +96,7 @@ export function planBatch(
   const activeRepositoryIds = new Set(
     state.active_scans.map(({ repository_id }) => repository_id),
   );
-  const available = [...state.scan_queue.entries]
+  const allAvailable = [...state.scan_queue.entries]
     .filter(({ repository_id }) => !activeRepositoryIds.has(repository_id))
     .sort(
       (left, right) =>
@@ -105,6 +106,13 @@ export function planBatch(
           Number(right.consecutive_failures > 0) ||
         left.ticket - right.ticket,
     );
+  const policyCanaryGate =
+    state.emergency_stop !== null &&
+    state.emergency_stop.reason_code ===
+      `POLICY_V${scannerPolicyVersion}_CANARY_GATE`;
+  const available = policyCanaryGate
+    ? allAvailable.filter(({ staff_requested }) => staff_requested === true)
+    : allAvailable;
   const delayed = available.filter((entry) => {
     const notBefore = effectiveQueueEntryNotBefore(
       entry,
@@ -121,12 +129,25 @@ export function planBatch(
       .filter((value): value is string => value !== null)
       .sort((left, right) => left.localeCompare(right))[0] ?? null;
 
-  if (state.emergency_stop !== null)
+  if (state.emergency_stop !== null && !policyCanaryGate)
     return {
       targets: [],
-      totalRemaining: available.length,
+      totalRemaining: allAvailable.length,
       runnableRemaining: 0,
       delayedEntries: delayed.length,
+      nextWakeAt: null,
+      emergencyStopped: true,
+      automaticHolds: state.automatic_holds.length,
+      recoveryProbes: 0,
+      providerProbeFingerprint: null,
+    };
+
+  if (policyCanaryGate && available.length === 0)
+    return {
+      targets: [],
+      totalRemaining: 0,
+      runnableRemaining: 0,
+      delayedEntries: 0,
       nextWakeAt: null,
       emergencyStopped: true,
       automaticHolds: state.automatic_holds.length,
@@ -177,7 +198,7 @@ export function planBatch(
           : ([futureHoldWake, queueWake]
               .filter((value): value is string => value !== undefined)
               .sort((left, right) => left.localeCompare(right))[0] ?? null),
-      emergencyStopped: false,
+      emergencyStopped: state.emergency_stop !== null,
       automaticHolds: state.automatic_holds.length,
       recoveryProbes: dueHold === undefined ? 0 : 1,
       providerProbeFingerprint: dueHold?.error_fingerprint ?? null,
@@ -205,14 +226,14 @@ export function planBatch(
         queueEntry: entry,
       };
     });
-  const targets = runnable.slice(0, 5);
+  const targets = runnable.slice(0, policyCanaryGate ? 1 : 5);
   return {
     targets,
     totalRemaining: Math.max(0, available.length - targets.length),
     runnableRemaining: Math.max(0, runnable.length - targets.length),
     delayedEntries: delayed.length,
     nextWakeAt,
-    emergencyStopped: false,
+    emergencyStopped: state.emergency_stop !== null,
     automaticHolds: 0,
     recoveryProbes: 0,
     providerProbeFingerprint: null,

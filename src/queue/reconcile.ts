@@ -102,6 +102,34 @@ function targetNeedsScan(
   );
 }
 
+function advancePolicyCampaigns(
+  state: OperationsState,
+  manifest: CurrentTargetManifest,
+  index: ReportIndexV5,
+) {
+  const targetByRepositoryId = new Map(
+    manifest.repositories.map((target) => [target.repository_id, target]),
+  );
+  return state.policy_campaigns.map((campaign) => {
+    if (campaign.status === "completed") return campaign;
+    const remaining = campaign.repository_ids.filter((repositoryId) => {
+      const target = targetByRepositoryId.get(repositoryId);
+      if (target === undefined) return false;
+      return !index.reports.some(
+        (report) =>
+          report.repository_id === repositoryId &&
+          report.target_sha === target.target_sha &&
+          report.scanner_policy_version === campaign.scanner_policy_version,
+      );
+    });
+    return {
+      ...campaign,
+      repository_ids: remaining,
+      status: remaining.length === 0 ? ("completed" as const) : campaign.status,
+    };
+  });
+}
+
 function automaticRescanNotBefore(input: {
   target: CurrentTarget;
   report: ReportIndexV5["reports"][number] | undefined;
@@ -135,6 +163,13 @@ export function reconcileCurrentScanQueue(input: {
   if (!Number.isFinite(Date.parse(input.now)))
     throw new Error("Queue synchronization time is invalid.");
 
+  const policyCampaigns = advancePolicyCampaigns(state, manifest, index);
+  const campaignState = OperationsStateSchema.parse({
+    ...state,
+    policy_campaigns: policyCampaigns,
+  });
+  const campaignsChanged =
+    JSON.stringify(policyCampaigns) !== JSON.stringify(state.policy_campaigns);
   const targetByRepositoryId = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
@@ -143,7 +178,7 @@ export function reconcileCurrentScanQueue(input: {
   );
   const eligibleTargets = manifest.repositories
     .filter((target) =>
-      targetNeedsScan(target, index, state, input.scannerPolicyVersion),
+      targetNeedsScan(target, index, campaignState, input.scannerPolicyVersion),
     )
     .sort(targetOrder);
   const eligibleRepositoryIds = new Set(
@@ -155,7 +190,7 @@ export function reconcileCurrentScanQueue(input: {
   let replaced = 0;
   let removed = 0;
 
-  for (const entry of [...state.scan_queue.entries].sort(
+  for (const entry of [...campaignState.scan_queue.entries].sort(
     (left, right) => left.ticket - right.ticket,
   )) {
     const target = targetByRepositoryId.get(entry.repository_id);
@@ -171,7 +206,7 @@ export function reconcileCurrentScanQueue(input: {
     const rescanNotBefore = automaticRescanNotBefore({
       target,
       report: preferredReportByRepositoryId.get(target.repository_id),
-      state,
+      state: campaignState,
       scannerPolicyVersion: input.scannerPolicyVersion,
       staffRequested: entry.staff_requested === true,
     });
@@ -201,7 +236,7 @@ export function reconcileCurrentScanQueue(input: {
     retained += 1;
   }
 
-  let nextTicket = state.scan_queue.next_ticket;
+  let nextTicket = campaignState.scan_queue.next_ticket;
   let seeded = 0;
   for (const target of eligibleTargets) {
     if (existingRepositoryIds.has(target.repository_id)) continue;
@@ -214,7 +249,7 @@ export function reconcileCurrentScanQueue(input: {
         automaticRescanNotBefore({
           target,
           report: preferredReportByRepositoryId.get(target.repository_id),
-          state,
+          state: campaignState,
           scannerPolicyVersion: input.scannerPolicyVersion,
           staffRequested: false,
         }),
@@ -226,6 +261,7 @@ export function reconcileCurrentScanQueue(input: {
 
   entries.sort((left, right) => left.ticket - right.ticket);
   const changed =
+    campaignsChanged ||
     seeded > 0 ||
     replaced > 0 ||
     removed > 0 ||
@@ -233,17 +269,18 @@ export function reconcileCurrentScanQueue(input: {
       (entry, indexValue) =>
         JSON.stringify(entry) !==
         JSON.stringify(
-          [...state.scan_queue.entries].sort(
+          [...campaignState.scan_queue.entries].sort(
             (left, right) => left.ticket - right.ticket,
           )[indexValue],
         ),
     ) ||
-    (state.coverage_started_at === null && entries.length > 0);
+    (campaignState.coverage_started_at === null && entries.length > 0);
   const nextState = OperationsStateSchema.parse({
-    ...state,
-    updated_at: changed ? input.now : state.updated_at,
+    ...campaignState,
+    updated_at: changed ? input.now : campaignState.updated_at,
     coverage_started_at:
-      state.coverage_started_at ?? (entries.length > 0 ? input.now : null),
+      campaignState.coverage_started_at ??
+      (entries.length > 0 ? input.now : null),
     scan_queue: { next_ticket: nextTicket, entries },
   });
   return {

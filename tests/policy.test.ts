@@ -3,6 +3,8 @@ import { describe, expect, test } from "vitest";
 import * as policyModule from "../src/config/policy.js";
 import {
   ContextualReviewPolicySchema,
+  CURRENT_SCANNER_POLICY_PATH,
+  CURRENT_SCANNER_POLICY_VERSION,
   loadContextualReviewPolicy,
   loadScannerPins,
   loadScannerPolicy,
@@ -11,6 +13,14 @@ import {
 } from "../src/config/policy.js";
 
 describe("deterministic scanner policy", () => {
+  test("names policy 4 as the single current scanner policy", async () => {
+    expect(CURRENT_SCANNER_POLICY_VERSION).toBe("4");
+    expect(CURRENT_SCANNER_POLICY_PATH).toBe("config/scanner-policy.v4.json");
+    expect((await loadScannerPolicy(CURRENT_SCANNER_POLICY_PATH)).version).toBe(
+      CURRENT_SCANNER_POLICY_VERSION,
+    );
+  });
+
   test("loads exact policy 4 JavaScript limits", async () => {
     expect(
       (policyModule as Record<string, unknown>).ScannerPolicyV4Schema,

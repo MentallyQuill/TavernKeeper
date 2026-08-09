@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 
+import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   fetchFixedJson,
   isDirectExecution,
@@ -20,11 +21,18 @@ export function buildQueueSynchronization(input: {
   index: unknown;
   state: unknown;
   now: string;
-  scannerPolicyVersion: string;
+  scannerPolicyVersion?: string;
 }) {
   const manifest = requireTargetManifestV2(parseTargetManifest(input.manifest));
   const index = parseReportIndexV5(input.index);
-  return syncScanQueue({ ...input, manifest, index });
+  return syncScanQueue({
+    manifest,
+    index,
+    state: input.state,
+    now: input.now,
+    scannerPolicyVersion:
+      input.scannerPolicyVersion ?? CURRENT_SCANNER_POLICY_VERSION,
+  });
 }
 
 export async function synchronizeQueueFile(input: {
@@ -42,7 +50,6 @@ export async function synchronizeQueueFile(input: {
     index,
     state,
     now: input.now,
-    scannerPolicyVersion: "3",
   });
   if (input.check && synchronized.changed)
     throw new Error("Committed scan queue is not synchronized.");
