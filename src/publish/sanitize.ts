@@ -2,27 +2,12 @@ import {
   ScanReportV5Schema,
   type ScanReportV5,
 } from "../contracts/reports-v5.js";
+import { publicNarrativeIsSafe } from "../contracts/public-narrative.js";
 import { redactSource } from "../model/redaction.js";
 import { reportIdentity } from "./report-path.js";
 
 const CONTROL_CHARACTER = /[\u0000-\u001f\u007f-\u009f]/u;
 const URL_LIKE = /\b(?:https?|ftp):\/\/|\bwww\./iu;
-const LOCAL_PATH =
-  /(?:\b[A-Za-z]:[\\/]|(?:^|[\s"'(])\/(?:Users|home|tmp|var\/tmp|private\/tmp)\/)/u;
-const SOURCE_SHAPED = [
-  /```/u,
-  /<\/?(?:script|style|iframe|object|embed)\b/iu,
-  /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=/u,
-  /\b(?:async\s+)?function\s+[A-Za-z_$][\w$]*\s*\(/u,
-  /\bclass\s+[A-Za-z_$][\w$]*\s*(?:extends\s+[A-Za-z_$][\w$]*\s*)?\{/u,
-  /\b(?:import|export)\s+(?:\{|\*|default\b|[A-Za-z_$])/u,
-  /=>/u,
-];
-const UNSAFE_HTML = [/<\/?[A-Za-z][^>]*>/u, /\bon[a-z][a-z0-9_-]*\s*=/iu];
-const SAFETY_CLAIM = [
-  /\b(?:repository|project|code|package|extension|plugin)\b.{0,48}\b(?:safe|trusted|certified|verified)\b/iu,
-  /\b(?:safe|trusted|certified|verified)\b.{0,48}\b(?:repository|project|code|package|extension|plugin)\b/iu,
-];
 
 function normalizedPath(path: string[]) {
   return path
@@ -63,16 +48,10 @@ function inspectString(value: string, path: string[]) {
     reject(`${field} contains control characters.`);
   if (!isApprovedUrlPath(path) && URL_LIKE.test(value))
     reject(`${field} contains an unapproved URL.`);
-  if (narrative && LOCAL_PATH.test(value))
-    reject(`${field} contains a local filesystem path.`);
   if (redactSource(value) !== value)
     reject(`${field} contains secret-shaped output.`);
-  if (narrative && SOURCE_SHAPED.some((pattern) => pattern.test(value)))
-    reject(`${field} contains a source excerpt.`);
-  if (narrative && UNSAFE_HTML.some((pattern) => pattern.test(value)))
-    reject(`${field} contains unsafe HTML.`);
-  if (narrative && SAFETY_CLAIM.some((pattern) => pattern.test(value)))
-    reject(`${field} contains a safety claim.`);
+  if (narrative && !publicNarrativeIsSafe(value))
+    reject(`${field} contains unsafe public narrative.`);
 }
 
 function inspectValue(value: unknown, path: string[] = []) {

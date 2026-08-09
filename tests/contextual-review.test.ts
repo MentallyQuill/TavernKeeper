@@ -221,6 +221,7 @@ describe("contextual evidence review", () => {
                 technical_explanation:
                   "const leakedValue = sourceValue; see https://example.invalid/details",
                 layman_explanation: "A".repeat(601),
+                developer_action: "Keep onload = handler for this path.",
               },
             ],
             observations: [],
@@ -251,6 +252,9 @@ describe("contextual evidence review", () => {
     );
     expect(result.assessments[0]?.layman_explanation).toBe(
       "Detailed wording was omitted by the public report safety filter.",
+    );
+    expect(result.assessments[0]?.developer_action).toBe(
+      "Review the cited evidence and confirm the intended behavior.",
     );
     expect(JSON.stringify(result)).not.toContain("leakedValue");
     expect(JSON.stringify(result)).not.toContain("example.invalid");
