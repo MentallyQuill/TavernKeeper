@@ -78,7 +78,7 @@ describe("model provider contextual compatibility check", () => {
     });
     expect(unionBody).not.toHaveProperty("temperature");
     expect(unionBody).not.toHaveProperty("max_tokens");
-    expect(unionBody.messages[0]).toMatchObject({ role: "developer" });
+    expect(unionBody.messages[0]).toMatchObject({ role: "system" });
     expect(unionBody.response_format).toMatchObject({
       type: "json_schema",
       json_schema: {

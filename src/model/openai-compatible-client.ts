@@ -520,6 +520,11 @@ export async function requestTextCompletion(
           },
         }
       : { type: "json_object" };
+  const messages = [
+    { role: "system", content: request.systemContent },
+    { role: "user", content: request.userContent },
+  ];
+  const gpt56 = /^gpt-5\.6(?:-|$)/u.test(model);
   const send = async () => {
     try {
       return await (request.fetchImpl ?? fetch)(request.endpoint, {
@@ -530,18 +535,24 @@ export async function requestTextCompletion(
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "developer", content: request.systemContent },
-            { role: "user", content: request.userContent },
-          ],
-          stream: false,
-          max_completion_tokens: request.maxOutputTokens,
-          reasoning_effort: "low",
-          store: false,
-          response_format: responseFormat(),
-        }),
+        body: JSON.stringify(
+          gpt56
+            ? {
+                model,
+                reasoning_effort: "none",
+                messages,
+                response_format: responseFormat(),
+              }
+            : {
+                model,
+                messages,
+                stream: false,
+                max_completion_tokens: request.maxOutputTokens,
+                reasoning_effort: "low",
+                store: false,
+                response_format: responseFormat(),
+              },
+        ),
       });
     } catch {
       throw new ModelRequestError(

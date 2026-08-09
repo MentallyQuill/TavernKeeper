@@ -3,13 +3,13 @@ import { describe, expect, test, vi } from "vitest";
 import { requestTextCompletion } from "../src/model/openai-compatible-client.js";
 
 describe("OpenAI-compatible contextual-review transport", () => {
-  test("uses the strict modern Chat Completions contract", async () => {
+  test("uses Tavernary's proven strict GPT-5.6 Chat Completions contract", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () =>
       Promise.resolve(
         new Response(
           JSON.stringify({
             id: "chatcmpl-context-1",
-            model: "deepseek/deepseek-v4-flash-0731:thinking",
+            model: "gpt-5.6-luna",
             choices: [
               {
                 message: {
@@ -29,7 +29,7 @@ describe("OpenAI-compatible contextual-review transport", () => {
         ),
       ),
     );
-    const endpoint = "https://nano-gpt.com/api/v1/chat/completions";
+    const endpoint = "https://api.openai.com/v1/chat/completions";
     const responseJsonSchema = {
       name: "contextual_review",
       schema: {
@@ -43,7 +43,7 @@ describe("OpenAI-compatible contextual-review transport", () => {
     const result = await requestTextCompletion({
       endpoint,
       apiKey: " test-key ",
-      model: "deepseek/deepseek-v4-flash-0731:thinking",
+      model: "gpt-5.6-luna",
       maxOutputTokens: 8_192,
       systemContent: "Trusted review policy.",
       userContent: "Delimited untrusted evidence.",
@@ -64,20 +64,22 @@ describe("OpenAI-compatible contextual-review transport", () => {
       }),
     );
     expect(JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body))).toEqual({
-      model: "deepseek/deepseek-v4-flash-0731:thinking",
+      model: "gpt-5.6-luna",
       messages: [
-        { role: "developer", content: "Trusted review policy." },
+        { role: "system", content: "Trusted review policy." },
         { role: "user", content: "Delimited untrusted evidence." },
       ],
-      stream: false,
-      max_completion_tokens: 8_192,
-      reasoning_effort: "low",
-      store: false,
+      reasoning_effort: "none",
       response_format: {
         type: "json_schema",
         json_schema: { ...responseJsonSchema, strict: true },
       },
     });
+    const requestBody = JSON.parse(String(fetchImpl.mock.calls[0]?.[1]?.body));
+    expect(requestBody).not.toHaveProperty("stream");
+    expect(requestBody).not.toHaveProperty("max_completion_tokens");
+    expect(requestBody).not.toHaveProperty("max_tokens");
+    expect(requestBody).not.toHaveProperty("store");
     expect(result).toMatchObject({
       content: '{"status":"complete"}',
       usage: { inputTokens: 100, outputTokens: 30, reasoningTokens: 20 },
