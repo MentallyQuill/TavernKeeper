@@ -62,6 +62,9 @@ describe("JavaScript candidate selection", () => {
         inventoryFile("dist/app.min.js"),
         inventoryFile("dist/app.bundle.js"),
         inventoryFile("dist/generated.js", { likelyMinified: true }),
+        inventoryFile("src/bundle.js"),
+        inventoryFile("bundle/index.js"),
+        inventoryFile("production/index.js"),
         inventoryFile("src/a.ts", { likelyMinified: true }),
       ]).map(({ path, language, requiresNormalization }) => ({
         path,
@@ -69,6 +72,11 @@ describe("JavaScript candidate selection", () => {
         requiresNormalization,
       })),
     ).toEqual([
+      {
+        path: "bundle/index.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
       {
         path: "dist/app.bundle.js",
         language: "javascript",
@@ -85,6 +93,11 @@ describe("JavaScript candidate selection", () => {
         requiresNormalization: true,
       },
       {
+        path: "production/index.js",
+        language: "javascript",
+        requiresNormalization: true,
+      },
+      {
         path: "src/a.js",
         language: "javascript",
         requiresNormalization: false,
@@ -93,6 +106,11 @@ describe("JavaScript candidate selection", () => {
         path: "src/a.ts",
         language: "typescript",
         requiresNormalization: false,
+      },
+      {
+        path: "src/bundle.js",
+        language: "javascript",
+        requiresNormalization: true,
       },
     ]);
   });

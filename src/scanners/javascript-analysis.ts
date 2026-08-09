@@ -139,13 +139,18 @@ function looksLikeJavascriptSource(source: string) {
   const value = source.trim();
   if (value.length === 0) return false;
   return (
-    /(?:=>|[()[\]{};=`]|\+\+|--|&&|\|\|)/u.test(value) ||
+    /(?:=>|\+\+|--|&&|\|\|)/u.test(value) ||
     /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*/u.test(value) ||
     /\b(?:async\s+)?function(?:\s+[A-Za-z_$][\w$]*)?\s*\(/u.test(value) ||
-    /\b(?:await|delete|export|import|new|return|throw|typeof|void|yield)\b/u.test(
+    /\b(?:await|break|case|catch|class|continue|debugger|delete|do|else|export|extends|finally|for|if|import|in|instanceof|new|return|switch|throw|try|typeof|void|while|with|yield)\b/u.test(
       value,
     ) ||
-    /[A-Za-z_$][\w$]*\s*\.[A-Za-z_$][\w$]*/u.test(value)
+    /\b[A-Za-z_$][\w$]*(?:\?\.|\.)[A-Za-z_$][\w$]*/u.test(value) ||
+    /\b[A-Za-z_$][\w$]*(?:\?\.)?\(/u.test(value) ||
+    /\b[A-Za-z_$][\w$]*\s*\[[^\]\r\n]{1,128}\]/u.test(value) ||
+    /\b[A-Za-z_$][\w$]*\s*(?:=|\+=|-=|\*=|\/=|%=|\*\*=|&&=|\|\|=|\?\?=)/u.test(
+      value,
+    )
   );
 }
 

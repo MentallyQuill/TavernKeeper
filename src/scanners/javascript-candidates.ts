@@ -14,7 +14,7 @@ function extension(path: string) {
 }
 
 function bundleLikePath(path: string) {
-  return /(?:^|[._-])(?:bundle|min|packed|prod|production)(?:[._-]|$)/iu.test(
+  return /(?:^|[/._-])(?:bundle|min|packed|prod|production)(?:[/._-]|$)/iu.test(
     path,
   );
 }
