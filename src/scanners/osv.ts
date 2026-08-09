@@ -54,12 +54,19 @@ const PackageIdentitySchema = z
       .optional(),
   })
   .superRefine(({ commit, ecosystem, name, version }, context) => {
-    if (version.length === 0) {
-      if (commit === undefined)
+    if (commit !== undefined) {
+      if (version.length > 0 && !isSafePublicIdentity(version))
         context.addIssue({
           code: "custom",
-          message: "OSV package identity needs a version or commit.",
+          message: "OSV package version contains unsafe public text.",
         });
+      return;
+    }
+    if (version.length === 0) {
+      context.addIssue({
+        code: "custom",
+        message: "OSV package identity needs a version or commit.",
+      });
       return;
     }
     if (
@@ -113,8 +120,10 @@ function findingTitle({
   name,
   version,
 }: z.infer<typeof PackageIdentitySchema>) {
-  if (version.length === 0)
-    return `Known vulnerable commit dependency: ${commit}`;
+  if (commit !== undefined)
+    return version.length === 0
+      ? `Known vulnerable commit dependency: ${commit}`
+      : `Known vulnerable git dependency: ${version}@${commit}`;
   const detailed = `Known vulnerable ${ecosystem} dependency: ${name}@${version}`;
   return detailed.length <= 200
     ? detailed
@@ -127,19 +136,27 @@ function findingExplanation({
   name,
   version,
 }: z.infer<typeof PackageIdentitySchema>) {
-  return version.length === 0
-    ? `OSV-Scanner matched a known advisory for a commit-addressed dependency at commit ${commit}.`
-    : `OSV-Scanner matched a known advisory for ${ecosystem} package ${name} at resolved version ${version}.`;
+  if (commit !== undefined)
+    return version.length === 0
+      ? `OSV-Scanner matched a known advisory for a commit-addressed dependency at commit ${commit}.`
+      : `OSV-Scanner matched a known advisory for a git dependency at version ${version} and commit ${commit}.`;
+  return `OSV-Scanner matched a known advisory for ${ecosystem} package ${name} at resolved version ${version}.`;
 }
 
 function findingRuleId(
   vulnerabilityId: string,
   { commit, ecosystem, name, version }: z.infer<typeof PackageIdentitySchema>,
 ) {
-  const address =
-    version.length > 0 ? `version:${version}` : `commit:${commit}`;
   const identity = createHash("sha256")
-    .update(JSON.stringify([vulnerabilityId, ecosystem, name, address]))
+    .update(
+      JSON.stringify([
+        vulnerabilityId,
+        ecosystem,
+        name,
+        version,
+        commit ?? null,
+      ]),
+    )
     .digest("hex")
     .slice(0, 24);
   return `${vulnerabilityId.slice(0, 91)}:pkg:${identity}`;

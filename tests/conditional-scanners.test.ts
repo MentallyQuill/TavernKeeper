@@ -205,6 +205,65 @@ describe("conditional scanner adapters", () => {
     );
   });
 
+  test("OSV never publishes git repository names when a commit is present", async () => {
+    const packages = [
+      {
+        name: "https://github.com/sfackler/rust-openssl",
+        commit: "0f428d190410263e4daa65b917c0e84707a9c0ef",
+        version: "openssl-v0.8.1",
+        ecosystem: "GIT",
+      },
+      {
+        name: "git://github.com/boostorg/boost",
+        commit: "1a9dda41fbfb0dfbec17ab6afeba8138265395f7",
+        version: "boost-1.67.0",
+        ecosystem: "GIT",
+      },
+      {
+        name: "github.com/boostorg/boost",
+        commit: "1a9dda41fbfb0dfbec17ab6afeba8138265395f7",
+        version: "boost-1.67.0",
+        ecosystem: "GIT",
+      },
+    ];
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "osv-scanner.json", type: "lockfile" },
+            packages: packages.map((identity) => ({
+              package: identity,
+              vulnerabilities: [{ id: "OSV-2023-72" }],
+            })),
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    const run = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("osv-scanner.json")],
+      runner,
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(run.findings).toHaveLength(3);
+    expect(run.findings.map(({ title }) => title).sort()).toEqual(
+      packages
+        .map(
+          ({ commit, version }) =>
+            `Known vulnerable git dependency: ${version}@${commit}`,
+        )
+        .sort(),
+    );
+    expect(JSON.stringify(run.findings)).not.toContain("github.com");
+  });
+
   test("OSV preserves package-specific findings deterministically", async () => {
     const packages: Array<{
       name: string;
@@ -218,13 +277,13 @@ describe("conditional scanner adapters", () => {
       { name: "different", version: "1.0.0", ecosystem: "npm" },
       {
         name: "https://example.invalid/repository",
-        version: "",
+        version: "v1.0.0",
         ecosystem: "",
         commit: "a".repeat(40),
       },
       {
         name: "https://example.invalid/repository",
-        version: "",
+        version: "v1.0.0",
         ecosystem: "",
         commit: "b".repeat(40),
       },
@@ -266,8 +325,8 @@ describe("conditional scanner adapters", () => {
     expect(forward.findings.map(({ title }) => title).sort()).toEqual(
       packages
         .map(({ commit, ecosystem, name, version }) =>
-          version.length === 0
-            ? `Known vulnerable commit dependency: ${commit}`
+          commit !== undefined
+            ? `Known vulnerable git dependency: ${version}@${commit}`
             : `Known vulnerable ${ecosystem} dependency: ${name}@${version}`,
         )
         .sort(),
