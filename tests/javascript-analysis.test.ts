@@ -187,6 +187,7 @@ describe("integrated JavaScript derivative analysis", () => {
   test.each([
     String.raw`const label="\x52un now (recommended)!";`,
     String.raw`const label="\x53tatus: [ready];";`,
+    String.raw`const label="\x43ontinue if safe";`,
   ])("does not parse punctuation-heavy decoded UI text", async (source) => {
     const astInputs: string[] = [];
     const run = await analyzeFixture(source, undefined, {

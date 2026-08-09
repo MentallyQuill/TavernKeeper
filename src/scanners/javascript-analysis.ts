@@ -142,7 +142,13 @@ function looksLikeJavascriptSource(source: string) {
     /(?:=>|\+\+|--|&&|\|\|)/u.test(value) ||
     /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*/u.test(value) ||
     /\b(?:async\s+)?function(?:\s+[A-Za-z_$][\w$]*)?\s*\(/u.test(value) ||
-    /\b(?:await|break|case|catch|class|continue|debugger|delete|do|else|export|extends|finally|for|if|import|in|instanceof|new|return|switch|throw|try|typeof|void|while|with|yield)\b/u.test(
+    /\b(?:catch|for|if|switch|while|with)\s*\(/u.test(value) ||
+    /\b(?:do|else|finally|try)\s*\{/u.test(value) ||
+    /\bclass\s+[A-Za-z_$][\w$]*(?:\s+extends\s+[A-Za-z_$][\w$]*)?\s*\{/u.test(
+      value,
+    ) ||
+    /\bimport\s+.+\s+from\s+["']/u.test(value) ||
+    /\bexport\s+(?:default\s+)?(?:async\s+)?(?:class|const|function|let|var)\b/u.test(
       value,
     ) ||
     /\b[A-Za-z_$][\w$]*(?:\?\.|\.)[A-Za-z_$][\w$]*/u.test(value) ||
