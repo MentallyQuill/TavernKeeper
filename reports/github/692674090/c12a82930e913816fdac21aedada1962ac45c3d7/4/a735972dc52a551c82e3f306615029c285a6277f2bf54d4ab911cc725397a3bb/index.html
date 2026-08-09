@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for vegu-ai/talemate at commit c12a829.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; vegu-ai/talemate</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/vegu-ai/talemate" rel="noopener noreferrer">vegu-ai/talemate</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/vegu-ai/talemate/commit/c12a82930e913816fdac21aedada1962ac45c3d7" rel="noopener noreferrer">c12a829</a></span>
+        <span>Reviewed <time datetime="2026-08-09T23:12:26.010Z">Aug 9, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>34 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported cache-poisoning</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>The workflow uses a cache that could be tricked by someone who knows the date pattern, but the risk is low because the cache only holds temporary build files and there&#39;s no sign anyone has tried to exploit it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule cache-poisoning in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The cache key uses a weekly date-based timestamp (${{ env.cache_id }}), which is predictable and could allow an attacker with knowledge of the workflow&#39;s trigger pattern to potentially poison the cache with malicious mkdocs build artifacts. However, the cache stores only build-time dependencies for documentation deployment, not runtime secrets or user data. The scanner indicates low confidence, and no evidence of an active attacker or concrete exploit path is provided. The attack requires sophisticated control over the CI trigger and the ability to inject malicious packages, which is not demonstrated in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using a more specific cache key that includes a hash of the workflow file or lock file content to reduce predictability and improve cache isolation.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>cache-poisoning</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L70" rel="noopener noreferrer">.github/workflows/ci.yml:70</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a Python setup action by its version number instead of a specific commit. If someone changed what that version number points to, it could run different code. However, this is a common practice for official actions and there is no evidence of tampering.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/setup-python@v5 using a mutable version tag instead of a fixed commit SHA. If the tag were maliciously reassigned, the CI pipeline could execute altered code. However, this is a GitHub official action hosted in the actions organization, which has safeguards against tag rewriting. The workflow runs only on releases and pull request events, and the action is used to set up Python for documentation deployment. No evidence is provided that the action has been compromised or that an attacker can influence the tag resolution. The risk is a standard supply chain best-practice issue rather than an active vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a specific commit SHA to ensure supply chain integrity, for example: actions/setup-python@a4c5e6f (actual SHA).</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L67" rel="noopener noreferrer">.github/workflows/ci.yml:67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The CI script uses a version tag (like v4) for one of its tools instead of a fixed commit hash. This is a minor best-practice issue but unlikely to cause harm here since the tool is official and the job only runs tests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uses actions/cache@v4 pinned only to a major version tag rather than a specific commit hash. While this is a common practice, a malicious update to the tag could in theory inject untrusted code. However, the action is an official GitHub action and the job has no privileged access or secret handling, so practical exploitability is very low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning actions/cache to a specific commit hash for defense-in-depth, though the risk is low.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L32" rel="noopener noreferrer">.github/workflows/test.yml:32</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849:pkg:29462f87d245964d2c009cb3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The project uses a version of a CSS processing tool that has a known security issue. However, this tool is only active during development to prepare the app for deployment and does not run when users interact with the app. There is no evidence that an attacker could take advantage of this issue, so the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849:pkg:29462f87d245964d2c009cb3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The lockfile pins postcss at version 8.5.14, which is subject to advisory GHSA-r28c-9q8g-f849 (high severity). Postcss is a CSS post-processor used at build time by Vite/Vue tooling to transform styles. In a typical frontend deployment, postcss does not run in the browser, so the vulnerable parsing logic is not reachable at runtime. No evidence of an attacker-controlled CSS input path was provided, and the advisory&#39;s impact is not realized in this context. Therefore, while the dependency version is known-vulnerable, exposure is not demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the advisory GHSA-r28c-9q8g-f849 details. If future build pipelines ever process untrusted CSS input, upgrade postcss to the latest patched version. For typical static builds, no urgent action is needed.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849:pkg:29462f87d245964d2c009cb3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow uses a version tag instead of a specific commit hash for a login action. This is a best practice concern but unlikely to be exploited.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Docker login action referenced as docker/login-action@v3 without a commit SHA. This allows the action maintainer to change the action under the same major version, introducing supply chain risk. However, only runs on release events with a GITHUB_TOKEN, and no evidence of compromise exists.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a full commit SHA for supply chain hardening.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L42" rel="noopener noreferrer">.github/workflows/ci.yml:42</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This step uses a generic version tag for a Docker login action instead of a specific commit hash. If an attacker were to take over that action and change what the tag points to, they could run malicious code in your workflow.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uses docker/login-action@v3 with a major version tag instead of a pinned commit SHA. This exposes the workflow to supply chain risks if the tag is maliciously updated, though the action is widely used and maintained. The GITHUB_TOKEN used in this step grants packages:write permission, which could be abused if an attacker gains control of the action. However, the risk is low due to the action&#39;s reputation and the workflow&#39;s limited trigger (prep-* branches).</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a specific commit SHA, e.g., uses: docker/login-action@327cd5a3f5f3f4e7c6a0d7a8f9a0b1c2d3e4f5g6 (replace with the actual SHA for v3).</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L37" rel="noopener noreferrer">.github/workflows/test-container-build.yml:37</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The CI job for running tests doesn&#39;t limit what it can do on GitHub. Since it only runs tests and doesn&#39;t change any files, this is a minor security hardening issue, not an active danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test job has no explicit permissions block and inherits the default workflow permissions (which may be write for push events). The job only performs checkouts, dependency installation, linting, and tests—no deploy or write operations. An attacker would need another compromise to exploit this, making it a minor hardening gap.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add an explicit permissions block with `contents: read` to follow the principle of least privilege.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L10-L62" rel="noopener noreferrer">.github/workflows/test.yml:10-62</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:aca07d40b95977daa7f2c14c applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This is another known issue in the same build-time CSS tool. Since the tool only runs during development, there&#39;s no way for an attacker to use this flaw against users of the app. The risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp:pkg:aca07d40b95977daa7f2c14c to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Postcss version 8.5.14 also matches advisory GHSA-fxqj-rqcc-2cmp (medium severity). The same build-time analysis applies: postcss is a build dependency, not executed at runtime in the browser. No attacker-controlled CSS input path was shown, and the vulnerability is not exploitable in the deployed frontend. Exposure is not demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review GHSA-fxqj-rqcc-2cmp for details. For typical use, no immediate action is required. If build processes ever accept external CSS, upgrade postcss to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp:pkg:aca07d40b95977daa7f2c14c</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A tool used to generate random IDs in the app has a known security flaw. However, there&#39;s no evidence that an attacker can actually exploit it to cause harm. The risk remains low without a clear way to use this weakness against users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Nanoid version 3.3.12 is flagged by advisory GHSA-2v37-7h3g-55p8 (high severity). Nanoid generates random IDs and is used at runtime in the browser for this frontend application. However, the supplied evidence is only a lockfile entry; no runtime code path, attacker-controlled input to nanoid, or actual exploitation scenario was provided. Without evidence of reachability or concrete harm, exposure is not demonstrated. The impact is likely low even if reachable, as ID predictability in a roleplay app is not critical.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consult advisory GHSA-2v37-7h3g-55p8 for details. If nanoid is used with attacker-controlled inputs or for security-sensitive IDs (e.g., authentication), upgrade to a patched version. Otherwise, monitor for updates.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The checkout step uses a shortcut tag (v4) instead of a specific commit hash. This is a common but not best-practice approach; the risk is very low because it&#39;s an official GitHub action and the job doesn&#39;t handle secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uses actions/checkout@v4 with only a major version tag. As with other unpinned actions, a hypothetical tag takeover could execute arbitrary code. The action is official and the job has no secrets, so risk is minimal but not zero.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin actions/checkout to a specific commit hash for improved supply-chain resilience.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L18" rel="noopener noreferrer">.github/workflows/test.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This step uses a generic version tag for a Docker build-and-push action. If the action were compromised, it could alter the built container image or steal access tokens.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uses docker/build-push-action@v5 with a major version tag. This is a supply chain risk similar to the other unpinned action. The step pushes container images to GHCR, and an attacker could potentially inject malicious build steps if they compromise the action tag.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a specific commit SHA, e.g., uses: docker/build-push-action@abcdef1234567890 (replace with the actual SHA for v5).</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L44" rel="noopener noreferrer">.github/workflows/test-container-build.yml:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another unpinned action. A best practice improvement, not an active threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Checkout action referenced as actions/checkout@v4 without SHA pin. Same supply chain risk pattern. Only runs on release events.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin checkout action to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L62" rel="noopener noreferrer">.github/workflows/ci.yml:62</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This step uses a generic version tag for the checkout action. If the action were compromised, it could run malicious code, but it&#39;s unlikely.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uses actions/checkout@v4 with a major version tag. While this is a widely used action, pinning to a commit SHA is a security best practice to avoid supply chain attacks. The risk is low because the action&#39;s maintainers are trusted and the workflow only runs on prep-* branches.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a specific commit SHA, e.g., uses: actions/checkout@b4acde... (replace with the actual SHA for v4).</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L15" rel="noopener noreferrer">.github/workflows/test-container-build.yml:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The caching action is referenced by version tag, which could be swapped out maliciously in theory, but it&#39;s a standard GitHub action and no one has tampered with it. This is a minor improvement opportunity.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow references actions/cache@v4 using a mutable version tag. Similar to the setup-python candidate, this is a GitHub official action but pinning to a commit SHA is recommended to prevent supply chain attacks. The cache action is used to cache mkdocs build output, not sensitive data. No evidence of malicious action modification or attacker influence over the cache key composition beyond the predictable date is provided. The risk is best-practice level rather than an active threat.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin the action to a specific commit SHA, for example: actions/cache@v4 should be replaced with the full commit hash from the action&#39;s repository.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L70" rel="noopener noreferrer">.github/workflows/ci.yml:70</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This is another known issue in the same ID-generation tool. Without proof that an attacker can use it, the danger is not real in practice. The risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Nanoid version 3.3.12 is also subject to advisory GHSA-28wg-ghj8-5hjv (high severity). The same reasoning applies: the lockfile confirms the version, but no runtime reachability, attacker-controlled input, or concrete harm was demonstrated. In a frontend roleplay application, the practical impact of ID-related vulnerabilities is low and exposure remains undemonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review GHSA-28wg-ghj8-5hjv for specifics. If nanoid is used in contexts where ID predictability could be exploited (e.g., session tokens), upgrade. Otherwise, no urgent action.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The workflow gives broad write permissions to the repository and packages. This is more than necessary for most jobs, but used only during releases.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Global permissions set to contents: write and packages: write. The workflow only runs on release events for building and pushing a container (packages: write required) and deploying docs (contents: write required). However, granting broad permissions at the top level increases blast radius if a job is compromised. No evidence of compromise.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Scope permissions per job using permissions: {} blocks for least privilege.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The Python setup step uses a version tag (v5) instead of a specific commit hash. This is a minor best-practice issue but unlikely to cause harm here since the tool is official and the job only runs tests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uses actions/setup-python@v5 pinned only to a major version tag. While this is a common practice, a malicious update to the tag could in theory inject code. The action is official and the job has no secrets, so practical exploitability is very low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider pinning actions/setup-python to a specific commit hash for defense-in-depth.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L21" rel="noopener noreferrer">.github/workflows/test.yml:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Part of the same broad permissions concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same permissions issue as the previous candidate targeting the packages: write permission at line 12. These two candidates cover the same permissions block. This candidate is assessed together with candidate d2643887.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Apply per-job permission scoping.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L12" rel="noopener noreferrer">.github/workflows/ci.yml:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Unpinned action for building and pushing a Docker image. A supply chain hygiene improvement.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Docker build-push-action referenced as docker/build-push-action@v5 without SHA pin. Runs on release events. Supply chain risk similar to other unpinned actions.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin build-push action to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L49" rel="noopener noreferrer">.github/workflows/ci.yml:49</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another unpinned checkout action. Best practice to pin.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Checkout action referenced as actions/checkout@v4 without SHA pin. Same supply chain risk as other checkout instance. Runs in container-build job on release.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pin checkout action to a full commit SHA.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L20" rel="noopener noreferrer">.github/workflows/ci.yml:20</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (11)</summary>
+      <article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a potential issue with credentials in workflow artifacts, but this workflow doesn&#39;t actually use artifacts at all, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags credential persistence through artifacts, but this workflow does not use actions/upload-artifact or any artifact-related steps. The flagged line 20 is a standard checkout action with no artifact upload. No evidence of credential exposure exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L20" rel="noopener noreferrer">.github/workflows/ci.yml:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line uses a regular expression to check whether a color code looks valid (like &quot;#ff6600&quot; or &quot;#ff6600aa&quot;). The pattern is safe and won&#39;t crash the program even if someone types a very long or tricky input. It&#39;s just a normal color validation used when drawing a color picker in the user interface.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex `/^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/` is used to validate hex color codes (6 or 8 hex digits with leading `#`). It contains an optional group `([0-9a-fA-F]{2})?` after a fixed 6‑character match. This pattern does not create exponential backtracking because the preceding `{6}` is an exact quantifier with no repetition overlap; any input that matches the first six hex characters will either match exactly two more or fail immediately. The regex is anchored and uses only character classes, making its runtime linear relative to input length. No ReDoS vulnerability is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/utils/litegraphUtils.js#L340" rel="noopener noreferrer">talemate_frontend/src/utils/litegraphUtils.js:340</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>Another false alert from the artifact credential scanner; this workflow doesn&#39;t use artifacts.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same as previous artipacked candidate. The flagged line 62 is a checkout action in the deploy-docs job. No artifact storage or credential leakage mechanism exists in this workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L62" rel="noopener noreferrer">.github/workflows/ci.yml:62</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line just clears the terminal screen when the program starts. It&#39;s like typing &#39;clear&#39; in a terminal yourself. The command is fixed and cannot be changed by an attacker, so it&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The call os.system(&quot;cls&quot; if os.name == &quot;nt&quot; else &quot;clear&quot;) on line 345 executes a hardcoded platform-specific terminal clear command at server startup. The command string is static and contains no user-controllable input, interpolation, or configuration variable. It is invoked only once during normal startup when the --backend-only flag is not set. This pattern is a conventional cross-platform screen-clearing idiom and does not expose any injection surface.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/server/run.py#L345" rel="noopener noreferrer">src/talemate/server/run.py:345</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line contains a regular expression that reads duration strings like &#39;PT30M&#39; (30 minutes). The regex is built simply with optional numeric parts and cannot be tricked into slowing down or crashing the browser. It behaves safely for any input.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex /^P(?:(\d+)Y)?(?:(\d+)M)?(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?$/ parses ISO-8601 durations. It is anchored with ^ and $, uses only simple optional capturing groups for digit sequences, and contains no nested quantifiers, overlapping alternations, or repetition that would cause catastrophic backtracking. The pattern is safe and performs linearly on valid or invalid input. JS-X-Ray&#39;s unsafe-regex rule is a generic heuristic; it does not apply here because the regex structure avoids ReDoS vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/utils/time.js#L10" rel="noopener noreferrer">talemate_frontend/src/utils/time.js:10</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code runs Python scripts from game scenarios but does so inside a restricted sandbox that blocks dangerous actions. It&#39;s a deliberate feature, not a security hole.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The exec() call at line 47 is wrapped by RestrictedPython&#39;s compile_restricted() and executes within a restricted globals dictionary that includes only safe functions (safer_getattr, guarded_iter_unpack_sequence, etc.). The project intentionally uses RestrictedPython to allow user-defined scene instructions while limiting dangerous operations. No evidence of a sandbox bypass is provided.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/game/engine/__init__.py#L47" rel="noopener noreferrer">src/talemate/game/engine/__init__.py:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Like the previous case, this runs code from game modules inside a restricted sandbox. It&#39;s a normal part of how the game allows custom behavior without risking security.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The exec() call at line 73 is identical in nature to line 47, used in compile_scene_module. It also uses RestrictedPython with the same restricted globals setup. The purpose is to load scene modules safely as part of the game engine. No sandbox escape is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/game/engine/__init__.py#L73" rel="noopener noreferrer">src/talemate/game/engine/__init__.py:73</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>A security scanner thought this step might save credentials in a build artifact, but the step just checks out the code. There is no artifact creation, so no concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked heuristic flagged potential credential persistence through artifacts at line 15, but the step is actions/checkout@v4, which does not upload or create artifacts. The GITHUB_TOKEN is used later in the docker login step, but there is no artifact upload in this workflow. The scanner confidence was low, and no actual risk is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L15" rel="noopener noreferrer">.github/workflows/test-container-build.yml:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>malcontent reported anti-static-xor-terms</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>A security scanner said a logo image might have hidden data, but we only know the file&#39;s name and size, not its actual content. Image files often look like random data to scanners, so this is likely a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule anti-static-xor-terms in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a PNG image asset for &#39;terms obfuscated using xor&#39;, but the artifact was only metadata (hash and size) and its raw bytes were not provided. PNG files commonly contain compressed pixel data that static analysis tools may misinterpret as obfuscation. Without inspecting the actual binary content, this finding cannot be confirmed as intentional obfuscation or a security threat. The file is a logo in a legitimate AI roleplay frontend project.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>anti-static-xor-terms</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/assets/logo-11-final.png" rel="noopener noreferrer">talemate_frontend/src/assets/logo-11-final.png</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The scanner was concerned about credentials being saved in build artifacts, but this workflow never creates or uploads artifacts, so the warning is likely a mistake.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flagged actions/checkout at line 18 as potentially storing credentials in artifacts. However, this workflow does not use any upload-artifact step, nor does it handle or expose credentials. The scanner&#39;s low confidence and absence of artifact usage indicate a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L18" rel="noopener noreferrer">.github/workflows/test.yml:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The installer downloads official Python and Node.js from their official websites. This is normal for setting up the app, just like many other programs do when you install them.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 107 in file uses curl to download a hardcoded Python embed zip from the official python.org URL. After download, the script extracts the archive and later executes python.exe as part of setting up the Talemate application. The download source is pinned to a specific version from a trusted official domain, and the user initiates the installer manually. No attacker-controlled input or untrusted destination is involved. This is a standard dependency-bundling pattern for a local installer and does not represent a security vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/install.bat#L107" rel="noopener noreferrer">install.bat:107</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Global permissions broad for workflow scope</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The workflow gives itself permission to write to the repository and package registry. It&#39;s needed for the release tasks, but it&#39;s better to only give each job the exact permissions it needs.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The permissions block at lines 12-13 grants contents: write and packages: write to the entire workflow. While both jobs (container-build and deploy-docs) legitimately require these permissions for their respective release tasks, global assignment means any future job added without explicit permissions would inherit these broad permissions. This is a defense-in-depth concern but not an active vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Refactor permissions to be per-job, and remove the top-level permissions block.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L11-L13" rel="noopener noreferrer">.github/workflows/ci.yml:11-13</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Unpinned GitHub Action references in CI workflow</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>Two actions in the workflow are referred to by their version numbers, which is convenient but slightly risky because the meaning of a version number can change. Pinning to a specific commit is safer, though the risk is small for these official actions.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The workflow contains two references to GitHub official actions using mutable version tags (@v5 and @v4). While these are official actions and the risk of tag reassignment is low, best practice for supply chain security in CI pipelines is to pin actions to specific commit SHAs to eliminate the risk of unexpected code changes. The actions are used only in the deploy-docs job, which runs on release events and does not handle production credentials beyond a GITHUB_TOKEN.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace all @version references with commit SHAs for actions/setup-python and actions/cache to harden the supply chain.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L67" rel="noopener noreferrer">.github/workflows/ci.yml:67</a></li><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L70" rel="noopener noreferrer">.github/workflows/ci.yml:70</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Artipacked false positive on checkout step</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>A security scanner flagged a possible issue where credentials might be saved in a build output, but this step only checks out code; no such persistence occurs.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The artipacked rule at line 15 flagged potential credential persistence through artifacts, but the step is actions/checkout@v4, which does not produce artifacts. The scanner likely misinterpreted the presence of a GITHUB_TOKEN later in the workflow. No actual artifact upload or credential storage exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L15" rel="noopener noreferrer">.github/workflows/test-container-build.yml:15</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>2788 files &middot; 122549375 bytes</dd>
+      <dt>Contextual coverage</dt><dd>31 of 31 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>35 files &middot; 218679 bytes</dd>
+        <dt>Representations</dt><dd>35 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>35 raw signatures &middot; 35 raw AST &middot; 35 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>One or more scanner candidates refer to non-text artifacts. Their size, digest, and scanner metadata were verified, but raw contents were not provided to the contextual model.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/vegu-ai/talemate/commit/c12a82930e913816fdac21aedada1962ac45c3d7" rel="noopener noreferrer">c12a82930e913816fdac21aedada1962ac45c3d7</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-09T23:12:26.010Z">Aug 9, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>3</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v6</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review usage</dt><dd>100653 input &middot; 40511 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>a735972dc52a551c82e3f306615029c285a6277f2bf54d4ab911cc725397a3bb</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/692674090/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
