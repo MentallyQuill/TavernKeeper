@@ -87,21 +87,72 @@ function githubLocation(
   return `${report.canonical_url}/blob/${source.evidence_sha}/${path}${lines}`;
 }
 
+function assessmentAdvisoryItem(
+  candidate: ScanReportV5["candidates"][number],
+  assessment: ScanReportV5["assessments"][number],
+) {
+  return {
+    ...assessment,
+    file_role: candidate.file_role,
+    origin: candidate.origin,
+    rule_id: candidate.rule_id,
+    category: candidate.category,
+    title: candidate.title,
+    explanation: candidate.explanation,
+  };
+}
+
+function observationAdvisoryItem(
+  report: ScanReportV5,
+  observation: ScanReportV5["observations"][number],
+) {
+  const candidatesById = new Map(
+    report.candidates.map((candidate) => [candidate.candidate_id, candidate]),
+  );
+  const candidates = observation.related_candidate_ids
+    .map((candidateId) => candidatesById.get(candidateId))
+    .filter((candidate) => candidate !== undefined);
+  const completeRelatedSet =
+    candidates.length === observation.related_candidate_ids.length;
+  const shippedRelatedSet =
+    completeRelatedSet &&
+    candidates.every(({ file_role }) =>
+      ["production", "generated", "vendored"].includes(file_role),
+    );
+  return {
+    ...observation,
+    file_role: shippedRelatedSet
+      ? ("production" as const)
+      : ("unknown" as const),
+    origin: candidates.some(({ origin }) => origin === "osv-scanner")
+      ? "osv-scanner"
+      : candidates.map(({ origin }) => origin).join(" "),
+    rule_id: candidates.map(({ rule_id }) => rule_id).join(" "),
+    category: candidates.map(({ category }) => category).join(" "),
+    title: [observation.title, ...candidates.map(({ title }) => title)].join(
+      " ",
+    ),
+    explanation: candidates.map(({ explanation }) => explanation).join(" "),
+  };
+}
+
 function contextualFinding(
   report: ScanReportV5,
   candidate: ScanReportV5["candidates"][number],
   assessment: ScanReportV5["assessments"][number],
 ) {
-  const advisory = deriveProjectAdvisory([assessment]);
+  const advisory = deriveProjectAdvisory([
+    assessmentAdvisoryItem(candidate, assessment),
+  ]);
   const risk = advisory.risk;
   const label =
     risk === "high"
       ? `Immediate danger — ${dangerBasisLabel(advisory.dangerBasis)}`
       : risk === "material"
         ? "Material concern"
-        : assessment.disposition === "minor_weakness"
-          ? "Minor caution"
-          : "Expected behavior";
+        : assessment.disposition === "expected_behavior"
+          ? "Expected behavior"
+          : "Minor caution";
   return `<article class="finding risk-${escapeHtml(risk)}">
     <h3>${escapeHtml(candidate.title)}</h3>
     <p class="label"><strong>${escapeHtml(label)}</strong> &middot; ${escapeHtml(assessment.confidence)} confidence</p>
@@ -126,7 +177,9 @@ function contextualObservation(
   report: ScanReportV5,
   observation: ScanReportV5["observations"][number],
 ) {
-  const advisory = deriveProjectAdvisory([observation]);
+  const advisory = deriveProjectAdvisory([
+    observationAdvisoryItem(report, observation),
+  ]);
   const risk = advisory.risk;
   const candidatesByEvidence = new Map(
     report.candidates.map((candidate) => [candidate.evidence_id, candidate]),
@@ -187,36 +240,49 @@ export function renderReportV5Html(input: unknown) {
   const report = sanitizeReportV5(input);
   const commitUrl = `${report.canonical_url}/commit/${report.target_sha}`;
   const historyUrl = `${SITE_ROOT}reports/github/${report.repository_id}/history/`;
-  const advisory = deriveProjectAdvisory(
-    [...report.assessments, ...report.observations],
-    report.coverage.javascript_analysis?.status ?? "legacy",
-    report.coverage.evidence_validation.status === "completed-with-limitations"
-      ? report.coverage.evidence_validation.metadata_only_candidates
-      : 0,
-  );
-  const risk = advisory.risk;
-  const summary = projectAdvisorySummary(advisory);
   const assessmentByCandidate = new Map(
     report.assessments.map((assessment) => [
       assessment.candidate_id,
       assessment,
     ]),
   );
+  const advisory = deriveProjectAdvisory([
+    ...report.candidates.map((candidate) =>
+      assessmentAdvisoryItem(
+        candidate,
+        assessmentByCandidate.get(candidate.candidate_id)!,
+      ),
+    ),
+    ...report.observations.map((observation) =>
+      observationAdvisoryItem(report, observation),
+    ),
+  ]);
+  const risk = advisory.risk;
+  const summary = projectAdvisorySummary(advisory);
   const rendered = report.candidates.map((candidate) => ({
     candidate,
     assessment: assessmentByCandidate.get(candidate.candidate_id)!,
   }));
   const concerning = rendered.filter(
-    ({ assessment }) => deriveProjectAdvisory([assessment]).risk !== "low",
+    ({ candidate, assessment }) =>
+      deriveProjectAdvisory([assessmentAdvisoryItem(candidate, assessment)])
+        .risk !== "low",
   );
   const concerningObservations = report.observations.filter(
-    (observation) => deriveProjectAdvisory([observation]).risk !== "low",
+    (observation) =>
+      deriveProjectAdvisory([observationAdvisoryItem(report, observation)])
+        .risk !== "low",
   );
   const relatedObservations = report.observations.filter(
-    (observation) => deriveProjectAdvisory([observation]).risk === "low",
+    (observation) =>
+      deriveProjectAdvisory([observationAdvisoryItem(report, observation)])
+        .risk === "low",
   );
   const cautions = rendered.filter(
-    ({ assessment }) => assessment.disposition === "minor_weakness",
+    ({ candidate, assessment }) =>
+      assessment.disposition !== "expected_behavior" &&
+      deriveProjectAdvisory([assessmentAdvisoryItem(candidate, assessment)])
+        .risk === "low",
   );
   const expected = rendered.filter(
     ({ assessment }) => assessment.disposition === "expected_behavior",
@@ -226,8 +292,16 @@ export function renderReportV5Html(input: unknown) {
       .sort((left, right) => {
         const order = { high: 0, material: 1, low: 2 };
         return (
-          order[deriveProjectAdvisory([left.assessment]).risk] -
-            order[deriveProjectAdvisory([right.assessment]).risk] ||
+          order[
+            deriveProjectAdvisory([
+              assessmentAdvisoryItem(left.candidate, left.assessment),
+            ]).risk
+          ] -
+            order[
+              deriveProjectAdvisory([
+                assessmentAdvisoryItem(right.candidate, right.assessment),
+              ]).risk
+            ] ||
           left.candidate.candidate_id.localeCompare(
             right.candidate.candidate_id,
           )
@@ -240,12 +314,16 @@ export function renderReportV5Html(input: unknown) {
   const primaryFindings = [
     ...concerning.map((item) => ({
       id: item.candidate.candidate_id,
-      risk: deriveProjectAdvisory([item.assessment]).risk,
+      risk: deriveProjectAdvisory([
+        assessmentAdvisoryItem(item.candidate, item.assessment),
+      ]).risk,
       html: contextualFinding(report, item.candidate, item.assessment),
     })),
     ...concerningObservations.map((observation) => ({
       id: observation.observation_id,
-      risk: deriveProjectAdvisory([observation]).risk,
+      risk: deriveProjectAdvisory([
+        observationAdvisoryItem(report, observation),
+      ]).risk,
       html: contextualObservation(report, observation),
     })),
   ]

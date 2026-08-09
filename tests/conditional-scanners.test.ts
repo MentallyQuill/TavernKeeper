@@ -68,6 +68,12 @@ describe("conditional scanner adapters", () => {
                   {
                     id: "GHSA-aaaa-bbbb-cccc",
                     database_specific: { severity: "HIGH" },
+                    summary: "UNTRUSTED ADVISORY PROSE MUST NOT BE PUBLISHED",
+                    details:
+                      "Visit https://attacker.example/advisory for details.",
+                    references: [
+                      { type: "WEB", url: "https://attacker.example/raw" },
+                    ],
                   },
                 ],
               },
@@ -114,14 +120,24 @@ describe("conditional scanner adapters", () => {
       findings: [
         expect.objectContaining({
           origin: "osv-scanner",
-          rule_id: "GHSA-aaaa-bbbb-cccc",
+          rule_id: expect.stringMatching(
+            /^GHSA-aaaa-bbbb-cccc:pkg:[a-f0-9]{24}$/u,
+          ),
           category: "dependency-vulnerability",
           severity: "high",
           confidence: "high",
           path: "package-lock.json",
+          evidence_sha: null,
+          title: "Known vulnerable npm dependency: example@1.0.0",
+          explanation:
+            "OSV-Scanner matched a known advisory for npm package example at resolved version 1.0.0.",
         }),
       ],
     });
+    expect(JSON.stringify(run.findings)).not.toContain(
+      "UNTRUSTED ADVISORY PROSE",
+    );
+    expect(JSON.stringify(run.findings)).not.toContain("attacker.example");
   });
 
   test("OSV is not applicable without a supported manifest", async () => {
@@ -140,6 +156,278 @@ describe("conditional scanner adapters", () => {
       findings: [],
     });
     expect(runner.calls).toHaveLength(0);
+  });
+
+  test("OSV accepts and safely renders a v2.4 commit-addressed package", async () => {
+    const commit = "b8da07095979310818f0efde2ef3c69ea70d62c5";
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "deps_flatten.txt", type: "lockfile" },
+            packages: [
+              {
+                package: {
+                  name: "https://fuchsia.googlesource.com/third_party/perfetto",
+                  version: "",
+                  ecosystem: "",
+                  commit,
+                },
+                vulnerabilities: [{ id: "OSV-2023-72" }],
+              },
+            ],
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    const run = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("deps_flatten.txt")],
+      runner,
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(run.findings).toEqual([
+      expect.objectContaining({
+        rule_id: expect.stringMatching(/^OSV-2023-72:pkg:[a-f0-9]{24}$/u),
+        title: `Known vulnerable commit dependency: ${commit}`,
+        explanation: `OSV-Scanner matched a known advisory for a commit-addressed dependency at commit ${commit}.`,
+      }),
+    ]);
+    expect(JSON.stringify(run.findings)).not.toContain(
+      "fuchsia.googlesource.com",
+    );
+  });
+
+  test("OSV never publishes git repository names when a commit is present", async () => {
+    const packages = [
+      {
+        name: "https://github.com/sfackler/rust-openssl",
+        commit: "0f428d190410263e4daa65b917c0e84707a9c0ef",
+        version: "openssl-v0.8.1",
+        ecosystem: "GIT",
+      },
+      {
+        name: "git://github.com/boostorg/boost",
+        commit: "1a9dda41fbfb0dfbec17ab6afeba8138265395f7",
+        version: "boost-1.67.0",
+        ecosystem: "GIT",
+      },
+      {
+        name: "github.com/boostorg/boost",
+        commit: "1a9dda41fbfb0dfbec17ab6afeba8138265395f7",
+        version: "boost-1.67.0",
+        ecosystem: "GIT",
+      },
+    ];
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "osv-scanner.json", type: "lockfile" },
+            packages: packages.map((identity) => ({
+              package: identity,
+              vulnerabilities: [{ id: "OSV-2023-72" }],
+            })),
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    const run = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("osv-scanner.json")],
+      runner,
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(run.findings).toHaveLength(3);
+    expect(run.findings.map(({ title }) => title).sort()).toEqual(
+      packages
+        .map(
+          ({ commit, version }) =>
+            `Known vulnerable git dependency: ${version}@${commit}`,
+        )
+        .sort(),
+    );
+    expect(JSON.stringify(run.findings)).not.toContain("github.com");
+  });
+
+  test("OSV bounds git finding titles at maximum identity lengths", async () => {
+    const commit = "a".repeat(64);
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "osv-scanner.json", type: "lockfile" },
+            packages: [
+              {
+                package: {
+                  name: "https://github.com/example/repository",
+                  version: `v${"1".repeat(159)}`,
+                  ecosystem: "GIT",
+                  commit,
+                },
+                vulnerabilities: [{ id: "OSV-2023-72" }],
+              },
+            ],
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    const run = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("osv-scanner.json")],
+      runner,
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(run.findings).toEqual([
+      expect.objectContaining({
+        title: `Known vulnerable git dependency: ${commit}`,
+      }),
+    ]);
+    expect(run.findings[0]!.title.length).toBeLessThanOrEqual(200);
+  });
+
+  test("OSV preserves package-specific findings deterministically", async () => {
+    const packages: Array<{
+      name: string;
+      version: string;
+      ecosystem: string;
+      commit?: string;
+    }> = [
+      { name: "example", version: "1.0.0", ecosystem: "npm" },
+      { name: "example", version: "2.0.0", ecosystem: "npm" },
+      { name: "example", version: "1.0.0", ecosystem: "PyPI" },
+      { name: "different", version: "1.0.0", ecosystem: "npm" },
+      {
+        name: "https://example.invalid/repository",
+        version: "v1.0.0",
+        ecosystem: "",
+        commit: "a".repeat(40),
+      },
+      {
+        name: "https://example.invalid/repository",
+        version: "v1.0.0",
+        ecosystem: "",
+        commit: "b".repeat(40),
+      },
+    ];
+    const report = (orderedPackages: typeof packages) =>
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "package-lock.json", type: "lockfile" },
+            packages: orderedPackages.map((identity) => ({
+              package: identity,
+              vulnerabilities: [{ id: "GHSA-aaaa-bbbb-cccc" }],
+            })),
+          },
+        ],
+      });
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+    const forward = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("package-lock.json")],
+      runner: new JsonRunner(report(packages), 1),
+      version: "2.4.0",
+      temporaryRoot,
+    });
+    const reverse = await runOsv({
+      root: repositoryRoot,
+      inputs: [file("package-lock.json")],
+      runner: new JsonRunner(report([...packages].reverse()), 1),
+      version: "2.4.0",
+      temporaryRoot,
+    });
+
+    expect(forward.findings).toHaveLength(6);
+    expect(
+      new Set(forward.findings.map(({ fingerprint }) => fingerprint)).size,
+    ).toBe(6);
+    expect(forward.findings.map(({ title }) => title).sort()).toEqual(
+      packages
+        .map(({ commit, ecosystem, name, version }) =>
+          commit !== undefined
+            ? `Known vulnerable git dependency: ${version}@${commit}`
+            : `Known vulnerable ${ecosystem} dependency: ${name}@${version}`,
+        )
+        .sort(),
+    );
+    expect(reverse.findings).toEqual(forward.findings);
+  });
+
+  test.each([
+    ["a missing resolved version", { name: "example", ecosystem: "npm" }],
+    [
+      "an overlong package name",
+      { name: "x".repeat(161), version: "1.0.0", ecosystem: "npm" },
+    ],
+    [
+      "a bidirectional control",
+      { name: "exam\u202eple", version: "1.0.0", ecosystem: "npm" },
+    ],
+    [
+      "a URL-shaped version",
+      {
+        name: "example",
+        version: "https://attacker.example/payload",
+        ecosystem: "npm",
+      },
+    ],
+  ])("OSV rejects package identity containing %s", async (_label, identity) => {
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "package-lock.json", type: "lockfile" },
+            packages: [
+              {
+                package: identity,
+                vulnerabilities: [{ id: "GHSA-aaaa-bbbb-cccc" }],
+              },
+            ],
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    await expect(
+      runOsv({
+        root: repositoryRoot,
+        inputs: [file("package-lock.json")],
+        runner,
+        version: "2.4.0",
+        temporaryRoot,
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      scope: "system",
+    });
   });
 
   test("OSV rejects no-package exit 128 instead of reporting partial coverage", async () => {

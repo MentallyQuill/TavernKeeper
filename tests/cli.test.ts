@@ -1,12 +1,18 @@
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
+import { runCoverageCampaign } from "../src/cli/coverage-campaign.js";
 import { buildQueueSynchronization } from "../src/cli/sync-queue.js";
 import { probeFailureProvesSharedRecovery } from "../src/cli/probe-outcome.js";
 import { applyRetryOperation } from "../src/cli/retry.js";
-import { validateStaffScanRequest } from "../src/cli/staff-request.js";
+import {
+  ScanRequestSchema,
+  validateStaffScanRequest,
+} from "../src/cli/staff-request.js";
 import { reviewConfiguredTarget } from "../src/cli/review-target.js";
 import {
   buildTargetedMatrix,
@@ -14,8 +20,11 @@ import {
 } from "../src/cli/targeted-scan.js";
 import type { TargetManifestV2 } from "../src/contracts/targets.js";
 import {
+  COVERAGE_CAMPAIGN_ID,
   initialOperationsState,
+  parseOperationsState,
   pauseSystem,
+  serializeOperationsState,
 } from "../src/operations/state.js";
 import { recordFailure } from "../src/operations/retry.js";
 import { syncScanQueue } from "../src/queue/sync.js";
@@ -104,6 +113,37 @@ function indexedReport(
   };
 }
 
+function stateObserving(...targets: ReturnType<typeof target>[]) {
+  return {
+    ...initialOperationsState(now),
+    catalog_observation: {
+      initialized_at: now,
+      repositories: targets.map(({ repository_id, target_sha }) => ({
+        repository_id,
+        target_sha,
+      })),
+    },
+  };
+}
+
+function coverageManifest() {
+  return {
+    schema_version: 3 as const,
+    generated_at: now,
+    repositories: Array.from({ length: 20 }, (_, index) => {
+      const repositoryId = index + 1;
+      return {
+        ...target(repositoryId),
+        catalog_priority: {
+          top_30: true,
+          first_cataloged_at: "2026-07-01T00:00:00.000Z",
+          popularity_rank: repositoryId,
+        },
+      };
+    }),
+  };
+}
+
 describe("JSON-only orchestration CLIs", () => {
   test("defaults every coordinator entry point to scanner policy 4", () => {
     const targetValue = target(42);
@@ -130,7 +170,18 @@ describe("JSON-only orchestration CLIs", () => {
     const synchronized = buildQueueSynchronization({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: {
+        ...stateObserving(targetValue),
+        policy_campaigns: [
+          {
+            id: "policy-4-test",
+            scanner_policy_version: "4",
+            repository_ids: [42],
+            created_at: now,
+            status: "active",
+          },
+        ],
+      },
       now,
     });
 
@@ -142,7 +193,7 @@ describe("JSON-only orchestration CLIs", () => {
         now,
       }).include[0],
     ).toMatchObject({
-      reason: "changed",
+      reason: "policy",
       report_version: 1,
       supersedes_report_id: null,
     });
@@ -199,7 +250,7 @@ describe("JSON-only orchestration CLIs", () => {
     const state = syncScanQueue({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: stateObserving(),
       now,
       scannerPolicyVersion: "2",
     }).state;
@@ -296,7 +347,7 @@ describe("JSON-only orchestration CLIs", () => {
         repositories: [targetValue],
       },
       index: { schema_version: 5, generated_at: now, reports: [] },
-      state: initialOperationsState(now),
+      state: stateObserving(),
       repositoryId: 42,
       scannerPolicyVersion: "2",
       requestCreatedAt: now,
@@ -410,7 +461,7 @@ describe("JSON-only orchestration CLIs", () => {
     const queued = buildTargetedQueueUpdate({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: stateObserving(),
       repositoryId: 42,
       scannerPolicyVersion: "2",
       requestCreatedAt: now,
@@ -500,7 +551,7 @@ describe("JSON-only orchestration CLIs", () => {
     const automaticState = syncScanQueue({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: stateObserving(priorTarget),
       now,
       scannerPolicyVersion: "2",
     }).state;
@@ -669,6 +720,18 @@ describe("JSON-only orchestration CLIs", () => {
       expect(() => validateStaffScanRequest(forbidden)).toThrow();
   });
 
+  test("scan requests preserve the bounded coverage reason", () => {
+    expect(
+      ScanRequestSchema.parse({
+        ...target(42),
+        reason: "coverage",
+        report_version: 1,
+        supersedes_report_id: null,
+        previous_report_shas: [],
+      }),
+    ).toMatchObject({ repository_id: 42, reason: "coverage" });
+  });
+
   test("non-model phases never read provider configuration", async () => {
     const texts = await Promise.all(
       ["prepare-target.ts", "finalize-target.ts"].map((name) =>
@@ -692,9 +755,9 @@ describe("JSON-only orchestration CLIs", () => {
       },
       {
         loadPolicy: async () => ({
-          version: "2",
-          promptVersion: "contextual-review-v5",
-          schemaVersion: "contextual-assessment-v1",
+          version: "3",
+          promptVersion: "contextual-review-v6",
+          schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
           maxResponseBytes: 5_000_000,
@@ -714,5 +777,115 @@ describe("JSON-only orchestration CLIs", () => {
       "utf8",
     );
     expect(source).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
+    expect(source).toContain("contextual-review.v3.json");
+    expect(source).not.toContain("contextual-review.v2.json");
+  });
+
+  test("a completed fixed coverage campaign is an idempotent file no-op", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-coverage-cli-"));
+    const statePath = join(root, "state.json");
+    const selected = Array.from({ length: 20 }, (_, index) => index + 1);
+    const state = {
+      ...initialOperationsState(now),
+      coverage_campaigns: [
+        {
+          id: COVERAGE_CAMPAIGN_ID,
+          scanner_policy_version: "4",
+          created_at: now,
+          status: "completed" as const,
+          popular_repository_ids: selected,
+          latest_release_repository_ids: [],
+          repository_ids: selected,
+          remaining_repository_ids: [],
+        },
+      ],
+    };
+    const serialized = serializeOperationsState(state);
+    await writeFile(statePath, serialized);
+
+    try {
+      const result = await runCoverageCampaign({
+        statePath,
+        githubToken: "workflow-token",
+        fetchManifest: async () => {
+          throw new Error("manifest must not be fetched");
+        },
+        fetcher: async () => {
+          throw new Error("release must not be fetched");
+        },
+        now: () => "2026-08-10T00:00:00.000Z",
+      });
+
+      expect(result).toEqual({ status: "already-present" });
+      await expect(readFile(statePath, "utf8")).resolves.toBe(serialized);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("coverage CLI atomically writes one fully selected campaign", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-coverage-cli-"));
+    const statePath = join(root, "state.json");
+    await writeFile(
+      statePath,
+      serializeOperationsState(initialOperationsState(now)),
+    );
+    try {
+      const result = await runCoverageCampaign({
+        statePath,
+        githubToken: "workflow-token",
+        fetchManifest: async () => coverageManifest(),
+        fetcher: async () => new Response(null, { status: 404 }),
+        now: () => now,
+      });
+      const state = parseOperationsState(
+        JSON.parse(await readFile(statePath, "utf8")),
+      );
+
+      expect(result).toEqual({ status: "created", repositories: 20 });
+      expect(state.coverage_campaigns).toEqual([
+        expect.objectContaining({
+          id: COVERAGE_CAMPAIGN_ID,
+          status: "active",
+          popular_repository_ids: [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+            20,
+          ],
+          latest_release_repository_ids: [],
+          repository_ids: [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+            20,
+          ],
+          remaining_repository_ids: [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+            20,
+          ],
+        }),
+      ]);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
+  });
+
+  test("coverage CLI leaves state byte-identical when selection fails", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-coverage-cli-"));
+    const statePath = join(root, "state.json");
+    const serialized = serializeOperationsState(initialOperationsState(now));
+    await writeFile(statePath, serialized);
+    try {
+      await expect(
+        runCoverageCampaign({
+          statePath,
+          githubToken: "workflow-token",
+          fetchManifest: async () => coverageManifest(),
+          fetcher: async () =>
+            new Response("upstream failure", { status: 500 }),
+          now: () => now,
+        }),
+      ).rejects.toThrow();
+      await expect(readFile(statePath, "utf8")).resolves.toBe(serialized);
+    } finally {
+      await rm(root, { recursive: true, force: true });
+    }
   });
 });

@@ -52,6 +52,35 @@ export function buildContractSchemas() {
   return contracts.map((contract) => {
     const generated = z.toJSONSchema(contract.schema, { target: "draft-7" });
     const { $schema, ...body } = generated;
+    const policyConditions =
+      contract.file === "scan-report.v5.schema.json"
+        ? {
+            allOf: [
+              {
+                if: {
+                  properties: {
+                    contextual_review_policy_version: { const: "3" },
+                  },
+                  required: ["contextual_review_policy_version"],
+                },
+                then: {
+                  properties: {
+                    prompt_version: { const: "contextual-review-v6" },
+                    assessment_schema_version: {
+                      const: "contextual-assessment-v2",
+                    },
+                    assessments: {
+                      items: { required: ["risk_exposure"] },
+                    },
+                    observations: {
+                      items: { required: ["risk_exposure"] },
+                    },
+                  },
+                },
+              },
+            ],
+          }
+        : {};
     return {
       file: contract.file,
       document: {
@@ -59,6 +88,7 @@ export function buildContractSchemas() {
         $id: contract.id,
         title: contract.title,
         ...body,
+        ...policyConditions,
       },
     };
   });

@@ -47,10 +47,33 @@ exact target or weaken the current-tree scan.
 Static scanner findings on non-text artifacts remain candidates. TavernKeeper
 rechecks the artifact byte length and SHA-256 digest, passes only fixed
 metadata—not raw binary—to contextual review, publishes
-`completed-with-limitations` evidence coverage, and raises an otherwise-low
-advisory to material. This preserves Trojan and payload signals without
-executing or decoding untrusted binaries or claiming complete contextual
-coverage.
+`completed-with-limitations` evidence coverage, and preserves that limitation
+without changing the advisory color. This retains Trojan and payload signals
+without executing or decoding untrusted binaries or claiming complete
+contextual coverage.
+
+## Advisory colors
+
+The public color describes demonstrated risk, not scan completeness:
+
+- **Teal / low** means the review found no demonstrated caution-level risk. It
+  includes expected behavior, minor security hygiene, unresolved uncertainty,
+  dependency advisories without proven runtime reachability, broad or
+  same-file correlations without proven data flow, and secrets confined to
+  tests, fixtures, documentation, or tooling unless current usability is
+  established. Teal is not a safety certification.
+- **Yellow / material** means a concrete, non-malicious vulnerability is
+  demonstrated in shipped or executable behavior with high confidence,
+  medium-or-greater impact, and plausible-or-greater exploitability. Harm
+  requires an attacker-controlled or untrusted-input trigger; the behavior
+  does not cause harm autonomously.
+- **Red / high** means high-confidence, demonstrated malicious or compromised
+  behavior, or a demonstrated critical vulnerability that is readily
+  exploitable.
+
+Incomplete JavaScript analysis and metadata-only evidence stay visible in the
+coverage status, unresolved-path details, and fixed limitations. Coverage gaps
+never change the advisory color or concern counts.
 
 ## Static JavaScript pipeline
 
@@ -110,10 +133,9 @@ safe or that TavernKeeper can detect every Trojan.
 input, output, candidate, derivative, target, or unsupported-data boundary was
 unresolved. A completed deterministic run may still publish this bounded
 coverage state so the gap is visible. The report includes the fixed first-filter
-warning that there is no clean conclusion about unobserved behavior. An
-otherwise-low project advisory is raised to at least material; incomplete
-coverage alone never creates an immediate-danger basis and never lowers an
-existing material or high advisory.
+warning that there is no clean conclusion about unobserved behavior. The gap
+does not alter a low, material, or high advisory; the color remains a statement
+about demonstrated risk only.
 
 Hard acquisition, inventory, tool-integrity, malformed-output, evidence,
 provider, finalization, sanitizer, or publication failures still publish no

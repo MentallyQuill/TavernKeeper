@@ -29,10 +29,11 @@ describe("public site presentation", () => {
       impact: "critical" as const,
       exploitability: "plausible" as const,
       confidence: "medium" as const,
-      recommended_risk: "high" as const,
+      risk_exposure: "not_demonstrated" as const,
+      recommended_risk: "low" as const,
     };
     expect(deriveProjectAdvisory([materialDependency])).toMatchObject({
-      risk: "material",
+      risk: "low",
       dangerBasis: null,
     });
     expect(
@@ -41,6 +42,8 @@ describe("public site presentation", () => {
           ...materialDependency,
           exploitability: "readily_exploitable",
           confidence: "high",
+          risk_exposure: "demonstrated",
+          recommended_risk: "high",
         },
       ]),
     ).toMatchObject({
@@ -53,11 +56,151 @@ describe("public site presentation", () => {
           ...materialDependency,
           disposition: "credible_malicious_behavior",
           confidence: "high",
+          risk_exposure: "demonstrated",
+          recommended_risk: "high",
         },
       ]),
     ).toMatchObject({
       risk: "high",
       dangerBasis: "malicious_or_compromised",
+    });
+  });
+
+  test("keeps a policy-3 material-looking item teal without demonstrated exposure", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          risk_exposure: "not_demonstrated",
+          recommended_risk: "low",
+        },
+      ]),
+    ).toEqual({
+      risk: "low",
+      dangerBasis: null,
+      counts: { high: 0, material: 0, low: 1 },
+    });
+  });
+
+  test("keeps a legacy imported-template execution vulnerability yellow", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "opengrep",
+          rule_id: "tavernkeeper.dynamic-execution.javascript-eval",
+          technical_explanation:
+            "A user-imported preset supplies JavaScript that is passed directly to new Function and executes with the extension's privileges.",
+          layman_explanation:
+            "Importing a hostile preset can run its code in the extension.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "material",
+      counts: { high: 0, material: 1, low: 0 },
+    });
+  });
+
+  test("downgrades a legacy dependency guess without demonstrated reachability", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "osv-scanner",
+          rule_id: "GHSA-abcd-1234-efgh",
+          technical_explanation:
+            "The advisory matches a lockfile entry, but the supplied evidence does not establish runtime reachability or attacker-controlled input.",
+          layman_explanation:
+            "A dependency advisory is present, but this scan did not show that the vulnerable code can run.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "low",
+      counts: { high: 0, material: 0, low: 1 },
+    });
+  });
+
+  test("downgrades a legacy same-file correlation without demonstrated data flow", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "javascript-analysis",
+          rule_id: "javascript.correlated.download-to-execution",
+          technical_explanation:
+            "Download and execution APIs occur in the same file, but the supplied evidence does not establish a data flow between them or attacker control.",
+          layman_explanation:
+            "The two operations are nearby, but the scan did not show downloaded content being executed.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "low",
+      counts: { high: 0, material: 0, low: 1 },
+    });
+  });
+
+  test("downgrades a legacy unsafe-statement finding with unconfirmed reachability", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "javascript-analysis",
+          rule_id: "javascript.xray.unsafe-stmt",
+          technical_explanation:
+            "Runtime reachability is not demonstrated by the available evidence.",
+          layman_explanation:
+            "The risky-looking statement may not run in the shipped path.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "low",
+      counts: { high: 0, material: 0, low: 1 },
+    });
+  });
+
+  test("downgrades non-OSV legacy dependency evidence with an unknown affected version", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "material_vulnerability",
+          impact: "high",
+          exploitability: "plausible",
+          confidence: "high",
+          recommended_risk: "material",
+          file_role: "production",
+          origin: "javascript-analysis",
+          rule_id: "javascript.xray.unsafe-stmt",
+          category: "dependency-vulnerability",
+          explanation:
+            "The affected package version remains unknown in the supplied evidence.",
+        },
+      ]),
+    ).toMatchObject({
+      risk: "low",
+      counts: { high: 0, material: 0, low: 1 },
     });
   });
 
@@ -84,7 +227,24 @@ describe("public site presentation", () => {
     );
   });
 
-  test("presents incomplete JavaScript coverage as material, not low", () => {
+  test("preserves policy-3 red from its validated demonstrated-risk counts", () => {
+    const advisory = deriveIndexedProjectAdvisory({
+      contextual_review_policy_version: "3",
+      counts: {
+        recommended_risk: { high: 1, material: 0, low: 0 },
+        disposition: { credible_malicious_behavior: 1 },
+      },
+      coverage: { javascript_analysis_status: "complete" },
+    } as never);
+
+    expect(advisory).toMatchObject({
+      risk: "high",
+      dangerBasis: "malicious_or_compromised",
+      counts: { high: 1, material: 0, low: 0 },
+    });
+  });
+
+  test("keeps an otherwise-low advisory teal when JavaScript coverage is incomplete", () => {
     const advisory = deriveIndexedProjectAdvisory({
       contextual_review_policy_version: "2",
       counts: {
@@ -94,12 +254,11 @@ describe("public site presentation", () => {
       coverage: { javascript_analysis_status: "incomplete" },
     } as never);
 
-    expect(advisory.risk).toBe("material");
+    expect(advisory.risk).toBe("low");
     expect(advisory.dangerBasis).toBeNull();
   });
 
-  test("presents metadata-only contextual coverage as material, not low", () => {
-    const direct = deriveProjectAdvisory([], "complete", 1);
+  test("keeps an otherwise-low advisory teal when evidence is metadata-only", () => {
     const indexed = deriveIndexedProjectAdvisory({
       contextual_review_policy_version: "2",
       counts: {
@@ -112,8 +271,7 @@ describe("public site presentation", () => {
       },
     } as never);
 
-    expect(direct.risk).toBe("material");
-    expect(indexed.risk).toBe("material");
+    expect(indexed.risk).toBe("low");
   });
 
   test("formats public identity without losing exact machine values", () => {

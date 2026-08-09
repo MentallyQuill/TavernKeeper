@@ -32,6 +32,7 @@ const downloadArtifactAction =
   "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const workflowNames = [
   "ci.yml",
+  "coverage-campaign.yml",
   "delayed-wake.yml",
   "deploy-pages.yml",
   "pages-reconcile.yml",
@@ -209,6 +210,72 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("the one-time coverage campaign is input-free, protected, and conflict-safe", async () => {
+    const value = await workflow("coverage-campaign.yml");
+    const job = value.jobs.create;
+    const steps = job.steps as Workflow[];
+    const select = steps.find(
+      (step) => step.name === "Select fixed one-time coverage campaign",
+    );
+    const publisher = steps.find(
+      (step) => step.name === "Create TavernKeeper Publisher token",
+    );
+    const commit = steps.find(
+      (step) => step.name === "Commit fixed coverage campaign",
+    );
+    const reconcile = steps.find(
+      (step) => step.name === "Dispatch backlog reconciliation",
+    );
+
+    expect(value.on).toEqual({ workflow_dispatch: null });
+    expect(value.permissions).toEqual({ contents: "read", actions: "write" });
+    expect(value.concurrency).toEqual({
+      group: "tavernkeeper-global-scan",
+      "cancel-in-progress": false,
+    });
+    expect(Object.keys(value.jobs)).toEqual(["create"]);
+    expect(job).toMatchObject({
+      environment: "tavernkeeper-staff",
+      permissions: { contents: "read", actions: "write" },
+    });
+    expect(select).toMatchObject({
+      env: { GITHUB_TOKEN: "${{ github.token }}" },
+      run: "npm run --silent coverage-campaign",
+    });
+    expect(publisher).toMatchObject({
+      id: "publisher-token",
+      uses: publisherAction,
+      with: {
+        owner: "MentallyQuill",
+        repositories: "TavernKeeper",
+        "permission-contents": "write",
+      },
+    });
+    expect(commit?.env).toEqual({
+      GH_TOKEN: "${{ steps.publisher-token.outputs.token }}",
+      SELECTION_TOKEN: "${{ github.token }}",
+    });
+    expect(commit?.run).toContain(
+      'env -u GH_TOKEN GITHUB_TOKEN="$SELECTION_TOKEN" npm run --silent coverage-campaign',
+    );
+    expect(commit?.run).toContain("git diff --quiet -- operations/state.json");
+    expect(commit?.run).toMatch(
+      /env -u GH_TOKEN GITHUB_TOKEN="\$SELECTION_TOKEN" git fetch origin main[\s\S]*git reset --hard origin\/main[\s\S]*run_operation/u,
+    );
+    expect(commit?.run).toContain("for attempt in 1 2 3; do");
+    expect(commit?.run).toContain('test "$push_succeeded" = "true"');
+    expect(reconcile).toMatchObject({
+      env: { GH_TOKEN: "${{ github.token }}" },
+      run: 'gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main',
+    });
+    expect(steps.indexOf(select!)).toBeLessThan(steps.indexOf(publisher!));
+    expect(steps.indexOf(publisher!)).toBeLessThan(steps.indexOf(commit!));
+    expect(steps.indexOf(commit!)).toBeLessThan(steps.indexOf(reconcile!));
+    expect(JSON.stringify(select)).not.toMatch(
+      /TAVERNKEEPER_PUBLISHER_APP|publisher-token/iu,
+    );
+  });
+
   test("automatic reusable deployments bypass only the manual approval gate", async () => {
     const [deploy, pagesReconcile, scanAndPublish] = await Promise.all([
       workflow("deploy-pages.yml"),
@@ -333,7 +400,7 @@ describe("GitHub workflow security policy", () => {
     );
     const reviewConfig = JSON.parse(
       await readFile(
-        new URL("../config/contextual-review.v2.json", import.meta.url),
+        new URL("../config/contextual-review.v3.json", import.meta.url),
         "utf8",
       ),
     ) as { timeoutMs: number };
@@ -912,6 +979,57 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("workflow policy rejects coverage campaign inputs and schedules", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "on:\n  workflow_dispatch:\n",
+          "on:\n  workflow_dispatch:\n    inputs:\n      rerun:\n        type: boolean\n  schedule:\n    - cron: '0 0 * * *'\n",
+        ),
+      /coverage campaign workflow changed from the reviewed contract/iu,
+      "coverage-campaign.yml",
+    );
+  });
+
+  test("workflow policy rejects canceling the coverage campaign", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace("cancel-in-progress: false", "cancel-in-progress: true"),
+      /coverage campaign workflow changed from the reviewed contract/iu,
+      "coverage-campaign.yml",
+    );
+  });
+
+  test("workflow policy keeps the Publisher token out of cohort selection", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "GITHUB_TOKEN: ${{ github.token }}",
+          "GITHUB_TOKEN: ${{ steps.publisher-token.outputs.token }}",
+        ),
+      /coverage campaign workflow changed from the reviewed contract/iu,
+      "coverage-campaign.yml",
+    );
+  });
+
+  test("workflow policy requires conflict reset and atomic reselection", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace("git reset --hard origin/main", "git rebase origin/main"),
+      /coverage campaign workflow changed from the reviewed contract/iu,
+      "coverage-campaign.yml",
+    );
+  });
+
+  test("workflow policy preserves the already-present no-op success path", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace("if ! commit_campaign; then", "if commit_campaign; then"),
+      /coverage campaign workflow changed from the reviewed contract/iu,
+      "coverage-campaign.yml",
+    );
+  });
+
   test("workflow policy rejects an extra Publisher-authenticated push", async () => {
     await expectPolicyFailure(
       (text) =>
@@ -997,7 +1115,15 @@ describe("GitHub workflow security policy", () => {
     expect(scanning).toMatch(/minified.*encoded.*bundle/isu);
     expect(scanning).toMatch(/never.*(?:execute|run).*target/isu);
     expect(scanning).toMatch(/first filter/iu);
-    expect(scanning).toMatch(/incomplete.*material/isu);
+    expect(scanning).toMatch(
+      /The public color describes demonstrated risk, not scan completeness:[\s\S]*?\*\*Teal \/ low\*\* means the review found no demonstrated caution-level risk\./u,
+    );
+    expect(scanning).toMatch(
+      /Coverage gaps\s+never change the advisory color or concern counts\./u,
+    );
+    expect(combined).not.toMatch(
+      /\bincomplete coverage\b[^.]*\bcannot appear low\b/iu,
+    );
     expect(combined).toMatch(/prepared-\$\{repository_id\}/u);
     expect(combined).toMatch(/GitHub-hosted Actions/iu);
     expect(combined).not.toMatch(/external scan server/iu);
@@ -1009,7 +1135,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 12 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 13 workflows/u),
     });
   });
 });

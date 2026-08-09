@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import { buildScanPackage } from "../src/contracts/scan-package.js";
 import {
+  buildContextualCountsV5,
   PUBLIC_JAVASCRIPT_UNRESOLVED_MAX,
   publicJavascriptAnalysisCoverage,
   ScanReportV5Schema,
@@ -150,9 +151,9 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "2",
-  prompt_version: "contextual-review-v5",
-  schema_version: "contextual-assessment-v1",
+  policy_version: "3",
+  prompt_version: "contextual-review-v6",
+  schema_version: "contextual-assessment-v2",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
   endpoint_origin: "https://nano-gpt.com",
@@ -165,6 +166,7 @@ const review: CompletedContextualReview = {
       impact: "none",
       exploitability: "unlikely",
       confidence: "high",
+      risk_exposure: "not_demonstrated",
       recommended_risk: "low",
       technical_explanation:
         "The request matches the documented model-helper purpose.",
@@ -198,6 +200,160 @@ function validReport() {
   );
 }
 
+function legacyImportedTemplateReport() {
+  const report = structuredClone(validReport());
+  report.contextual_review_policy_version = "2";
+  report.prompt_version = "contextual-review-v5";
+  report.assessment_schema_version = "contextual-assessment-v1";
+  Object.assign(report.candidates[0]!, {
+    origin: "opengrep",
+    rule_id: "tavernkeeper.dynamic-execution.javascript-eval",
+    category: "dynamic-execution",
+    file_role: "production",
+    title: "Imported preset template executes JavaScript",
+  });
+  Object.assign(report.assessments[0]!, {
+    disposition: "material_vulnerability",
+    impact: "high",
+    exploitability: "plausible",
+    confidence: "high",
+    recommended_risk: "material",
+    technical_explanation:
+      "A user-imported preset supplies JavaScript that is passed directly to new Function and executes with the extension's privileges.",
+    layman_explanation:
+      "Importing a hostile preset can run its code in the extension.",
+    developer_action: "Require confirmation before template use.",
+  });
+  const assessment = report.assessments[0]!;
+  if (!("risk_exposure" in assessment))
+    throw new Error("Expected a current assessment fixture.");
+  const { risk_exposure: _riskExposure, ...legacyAssessment } = assessment;
+  report.assessments = [legacyAssessment];
+  report.counts = buildContextualCountsV5(
+    report.candidates.length,
+    report.assessments,
+    report.observations,
+  );
+  const identity = reportIdentity(report);
+  return ScanReportV5Schema.parse({
+    ...report,
+    report_id: identity,
+    report_digest: identity,
+  });
+}
+
+function legacyMultiCandidateObservationReport(
+  reverseCandidates = false,
+  unconfirmedSecond = false,
+  shippedSecond = false,
+) {
+  const report = structuredClone(legacyImportedTemplateReport());
+  const firstCandidate = report.candidates[0]!;
+  const firstAssessment = report.assessments[0]!;
+  Object.assign(firstAssessment, {
+    disposition: "expected_behavior",
+    impact: "none",
+    exploitability: "unlikely",
+    confidence: "high",
+    recommended_risk: "low",
+    technical_explanation: "The individual scanner match is expected.",
+    layman_explanation: "This individual match is expected.",
+    developer_action: "none",
+  });
+  const secondCandidate = {
+    ...firstCandidate,
+    candidate_id: "e".repeat(64),
+    evidence_id: "e".repeat(64),
+    file_role:
+      unconfirmedSecond || shippedSecond
+        ? ("production" as const)
+        : ("fixture" as const),
+    path: "test/template-fixture.ts",
+    title: "Fixture template execution",
+    explanation: unconfirmedSecond
+      ? "The runtime path remains unconfirmed in the available evidence."
+      : firstCandidate.explanation,
+  };
+  const secondAssessment = {
+    ...firstAssessment,
+    candidate_id: secondCandidate.candidate_id,
+    evidence_ids: [secondCandidate.evidence_id],
+    locations: [{ path: secondCandidate.path, line_start: 2, line_end: 2 }],
+  };
+  report.candidates = reverseCandidates
+    ? [secondCandidate, firstCandidate]
+    : [firstCandidate, secondCandidate];
+  report.assessments = [firstAssessment, secondAssessment];
+  report.observations = [
+    {
+      observation_id: "d".repeat(64),
+      related_candidate_ids: [
+        firstCandidate.candidate_id,
+        secondCandidate.candidate_id,
+      ],
+      evidence_ids: [firstCandidate.evidence_id, secondCandidate.evidence_id],
+      disposition: "material_vulnerability",
+      impact: "high",
+      exploitability: "plausible",
+      confidence: "high",
+      recommended_risk: "material",
+      title: "Combined template execution path",
+      technical_explanation:
+        "The two scanner matches combine into a potentially exploitable execution path.",
+      layman_explanation:
+        "Together these matches could allow template code execution.",
+      developer_action: "Review both cited locations before release.",
+      locations: [
+        { path: firstCandidate.path, line_start: 2, line_end: 2 },
+        { path: secondCandidate.path, line_start: 2, line_end: 2 },
+      ],
+    },
+  ];
+  report.review_coverage = { required: 2, completed: 2 };
+  report.coverage.evidence_validation = {
+    status: "completed",
+    validated_candidates: 2,
+  };
+  report.counts = buildContextualCountsV5(
+    report.candidates.length,
+    report.assessments,
+    report.observations,
+  );
+  const identity = reportIdentity(report);
+  return ScanReportV5Schema.parse({
+    ...report,
+    report_id: identity,
+    report_digest: identity,
+  });
+}
+
+test("parses immutable policy-2 reports while requiring exposure in policy 3", () => {
+  const current = validReport();
+  const legacy = structuredClone(current) as unknown as {
+    contextual_review_policy_version: string;
+    prompt_version: string;
+    assessment_schema_version: string;
+    assessments: Array<{ risk_exposure?: string }>;
+    observations: Array<{ risk_exposure?: string }>;
+  };
+  legacy.contextual_review_policy_version = "2";
+  legacy.prompt_version = "contextual-review-v5";
+  legacy.assessment_schema_version = "contextual-assessment-v1";
+  for (const assessment of legacy.assessments) delete assessment.risk_exposure;
+  for (const observation of legacy.observations)
+    delete observation.risk_exposure;
+
+  expect(ScanReportV5Schema.safeParse(legacy).success).toBe(true);
+  expect(
+    ScanReportV5Schema.safeParse({
+      ...legacy,
+      contextual_review_policy_version: "3",
+      prompt_version: "contextual-review-v6",
+      assessment_schema_version: "contextual-assessment-v2",
+    }).success,
+  ).toBe(false);
+});
+
 function reportWithObservation(
   risk: "low" | "material" | "high" = "low",
   candidateRisk: "material" | "high" | null = null,
@@ -223,6 +379,7 @@ function reportWithObservation(
             candidateRisk === "high"
               ? ("readily_exploitable" as const)
               : ("plausible" as const),
+          risk_exposure: "demonstrated" as const,
           recommended_risk: candidateRisk,
           technical_explanation: "The candidate requires attention.",
           layman_explanation: "This scanner match requires attention.",
@@ -249,7 +406,8 @@ function reportWithObservation(
                 : risk === "material"
                   ? "plausible"
                   : "unlikely",
-            confidence: risk === "high" ? "high" : "medium",
+            confidence: risk === "low" ? "medium" : "high",
+            risk_exposure: risk === "low" ? "not_demonstrated" : "demonstrated",
             recommended_risk: risk,
             title: "Related request handling",
             technical_explanation:
@@ -341,6 +499,11 @@ describe("contextual V5 reports", () => {
     expect(report.limitations).toEqual(
       expect.arrayContaining([expect.stringMatching(/no clean conclusion/iu)]),
     );
+    const html = renderReportV5Html(report);
+    expect(html).toContain(
+      'class="assessment-summary surface risk-mark risk-low"',
+    );
+    expect(html).toContain("JavaScript analysis was incomplete");
   });
 
   test("publishes metadata-only evidence as incomplete contextual coverage", () => {
@@ -385,6 +548,11 @@ describe("contextual V5 reports", () => {
         expect.stringMatching(/non-text artifacts.*raw contents/iu),
       ]),
     );
+    const html = renderReportV5Html(report);
+    expect(html).toContain(
+      'class="assessment-summary surface risk-mark risk-low"',
+    );
+    expect(html).toContain("non-text artifacts");
   });
 
   test("sorts, deduplicates, and caps public unresolved JavaScript stages", () => {
@@ -623,6 +791,93 @@ describe("contextual V5 reports", () => {
     expect(html).toContain("default-src &#39;none&#39;");
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/safety certification/iu);
+  });
+
+  test("renders a legacy shipped imported-template vulnerability as material", () => {
+    const html = renderReportV5Html(legacyImportedTemplateReport());
+
+    expect(html).toContain("1 material concern identified.");
+    expect(html).toContain("<strong>Material concern</strong>");
+    expect(html).not.toContain(
+      "<p>No material or immediate-danger item was identified.</p>",
+    );
+  });
+
+  test("keeps a downgraded legacy non-production finding visible as a minor caution", () => {
+    const report = structuredClone(legacyImportedTemplateReport());
+    report.candidates[0]!.file_role = "fixture";
+    const identity = reportIdentity(report);
+    const html = renderReportV5Html({
+      ...report,
+      report_id: identity,
+      report_digest: identity,
+    });
+
+    expect(html).toContain("No material or immediate-danger concern");
+    expect(html).toContain("Imported preset template executes JavaScript");
+    expect(html).toContain("<strong>Minor caution</strong>");
+  });
+
+  test("uses non-OSV candidate uncertainty when rendering a legacy dependency finding", () => {
+    const report = structuredClone(legacyImportedTemplateReport());
+    Object.assign(report.candidates[0]!, {
+      origin: "javascript-analysis",
+      rule_id: "javascript.xray.unsafe-stmt",
+      category: "dependency-vulnerability",
+      explanation:
+        "The affected package version remains unknown in the supplied evidence.",
+    });
+    const identity = reportIdentity(report);
+    const html = renderReportV5Html({
+      ...report,
+      report_id: identity,
+      report_digest: identity,
+    });
+
+    expect(html).toContain(
+      'class="assessment-summary surface risk-mark risk-low"',
+    );
+    expect(html).toContain("<strong>Minor caution</strong>");
+  });
+
+  test("requires every related legacy observation candidate to be shipped regardless of order", () => {
+    for (const report of [
+      legacyMultiCandidateObservationReport(),
+      legacyMultiCandidateObservationReport(true),
+    ]) {
+      const html = renderReportV5Html(report);
+      expect(html).toContain(
+        'class="assessment-summary surface risk-mark risk-low"',
+      );
+      expect(html).toContain("Combined template execution path");
+      expect(html).not.toContain("1 material concern identified.");
+    }
+  });
+
+  test("uses unconfirmed evidence from every related legacy observation candidate", () => {
+    for (const report of [
+      legacyMultiCandidateObservationReport(false, true),
+      legacyMultiCandidateObservationReport(true, true),
+    ]) {
+      const html = renderReportV5Html(report);
+      expect(html).toContain(
+        'class="assessment-summary surface risk-mark risk-low"',
+      );
+      expect(html).not.toContain("1 material concern identified.");
+    }
+  });
+
+  test("keeps a fully shipped supported legacy observation yellow regardless of order", () => {
+    for (const report of [
+      legacyMultiCandidateObservationReport(false, false, true),
+      legacyMultiCandidateObservationReport(true, false, true),
+    ]) {
+      const html = renderReportV5Html(report);
+      expect(html).toContain(
+        'class="assessment-summary surface risk-mark risk-material"',
+      );
+      expect(html).toContain("1 material concern identified.");
+    }
   });
 
   test.each(["material", "high"] as const)(

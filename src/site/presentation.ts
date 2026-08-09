@@ -18,7 +18,26 @@ type AdvisoryItem = Pick<
   | "exploitability"
   | "confidence"
   | "recommended_risk"
->;
+> & {
+  risk_exposure?: "not_demonstrated" | "demonstrated";
+  file_role?:
+    | "production"
+    | "test"
+    | "fixture"
+    | "documentation"
+    | "tooling"
+    | "generated"
+    | "vendored"
+    | "unknown";
+  origin?: string;
+  rule_id?: string;
+  category?: string;
+  title?: string;
+  explanation?: string;
+  technical_explanation?: string;
+  layman_explanation?: string;
+  developer_action?: string;
+};
 
 export interface ProjectAdvisory {
   risk: RiskLevel;
@@ -27,24 +46,6 @@ export interface ProjectAdvisory {
 }
 
 type RecommendedRiskCounts = ContextualCountsV5["recommended_risk"];
-type JavascriptAnalysisStatus = "complete" | "incomplete" | "legacy";
-
-function applyCoverageLimitations(
-  advisory: ProjectAdvisory,
-  javascriptStatus: JavascriptAnalysisStatus,
-  metadataOnlyCandidates: number,
-): ProjectAdvisory {
-  if (
-    (javascriptStatus !== "incomplete" && metadataOnlyCandidates === 0) ||
-    advisory.risk !== "low"
-  )
-    return advisory;
-  return {
-    ...advisory,
-    risk: "material",
-    counts: { ...advisory.counts, material: advisory.counts.material + 1 },
-  };
-}
 
 export const SITE_ROOT = "https://mentallyquill.github.io/TavernKeeper/";
 export const TAVERNARY_URL = "https://tavernary.org/";
@@ -224,25 +225,61 @@ export function assessmentSummary(counts: RecommendedRiskCounts) {
 }
 
 function immediateDangerBasis(item: AdvisoryItem): DangerBasis | null {
+  const currentExposureIsDemonstrated =
+    item.risk_exposure === undefined || item.risk_exposure === "demonstrated";
   if (
     item.disposition === "credible_malicious_behavior" &&
-    item.confidence === "high"
+    item.confidence === "high" &&
+    currentExposureIsDemonstrated
   )
     return "malicious_or_compromised";
   if (
     item.disposition === "material_vulnerability" &&
     item.impact === "critical" &&
     item.exploitability === "readily_exploitable" &&
-    item.confidence === "high"
+    item.confidence === "high" &&
+    currentExposureIsDemonstrated
   )
     return "critical_exploitable_vulnerability";
   return null;
 }
 
+const legacyUnconfirmedEvidencePattern =
+  /(?:\bnot (?:demonstrated|established|confirmed|shown)\b|\b(?:unconfirmed|unknown)\b|\binsufficient evidence\b|\bno (?:concrete |demonstrated )?(?:data flow|runtime (?:path|reachability)|attacker-controlled (?:path|trigger|input))\b|\b(?:data flow|runtime (?:path|reachability)|affected (?:package )?version) (?:is |was |remains )?(?:absent|missing|unclear|unknown|unconfirmed)\b)/iu;
+
+function legacyMaterialRisk(item: AdvisoryItem) {
+  const correlationOnly =
+    item.origin === "javascript-analysis" &&
+    [
+      "javascript.credential-to-network",
+      "javascript.download-to-execution",
+      "javascript.correlated.download-to-execution",
+    ].includes(item.rule_id ?? "");
+  const contextualEvidence = [
+    item.technical_explanation,
+    item.layman_explanation,
+    item.developer_action,
+    item.title,
+    item.explanation,
+    item.category,
+  ]
+    .filter((value): value is string => typeof value === "string")
+    .join(" ");
+  return (
+    item.risk_exposure === undefined &&
+    item.origin !== "osv-scanner" &&
+    !correlationOnly &&
+    !legacyUnconfirmedEvidencePattern.test(contextualEvidence) &&
+    item.disposition === "material_vulnerability" &&
+    item.confidence === "high" &&
+    ["medium", "high", "critical"].includes(item.impact) &&
+    ["plausible", "readily_exploitable"].includes(item.exploitability) &&
+    ["production", "generated", "vendored"].includes(item.file_role ?? "")
+  );
+}
+
 export function deriveProjectAdvisory(
   items: readonly AdvisoryItem[],
-  javascriptAnalysisStatus: JavascriptAnalysisStatus = "legacy",
-  metadataOnlyCandidates = 0,
 ): ProjectAdvisory {
   let malicious = false;
   let exploitable = false;
@@ -254,9 +291,12 @@ export function deriveProjectAdvisory(
       malicious ||= basis === "malicious_or_compromised";
       exploitable ||= basis === "critical_exploitable_vulnerability";
     } else if (
-      item.disposition === "material_vulnerability" ||
-      item.disposition === "credible_malicious_behavior" ||
-      item.recommended_risk !== "low"
+      (item.risk_exposure === "demonstrated" &&
+        item.disposition === "material_vulnerability" &&
+        item.confidence === "high" &&
+        ["medium", "high", "critical"].includes(item.impact) &&
+        ["plausible", "readily_exploitable"].includes(item.exploitability)) ||
+      legacyMaterialRisk(item)
     ) {
       counts.material += 1;
     } else {
@@ -271,40 +311,28 @@ export function deriveProjectAdvisory(
         : exploitable
           ? "critical_exploitable_vulnerability"
           : null;
-  return applyCoverageLimitations(
-    {
-      risk:
-        dangerBasis !== null
-          ? "high"
-          : counts.material > 0
-            ? "material"
-            : "low",
-      dangerBasis,
-      counts,
-    },
-    javascriptAnalysisStatus,
-    metadataOnlyCandidates,
-  );
+  return {
+    risk:
+      dangerBasis !== null ? "high" : counts.material > 0 ? "material" : "low",
+    dangerBasis,
+    counts,
+  };
 }
 
 export function deriveIndexedProjectAdvisory(
   entry: ReportIndexEntryV5,
 ): ProjectAdvisory {
   const published = entry.counts.recommended_risk;
-  if (entry.contextual_review_policy_version !== "2")
-    return applyCoverageLimitations(
-      {
-        risk: published.high + published.material > 0 ? "material" : "low",
-        dangerBasis: null,
-        counts: {
-          high: 0,
-          material: published.high + published.material,
-          low: published.low,
-        },
+  if (!["2", "3"].includes(entry.contextual_review_policy_version))
+    return {
+      risk: published.high + published.material > 0 ? "material" : "low",
+      dangerBasis: null,
+      counts: {
+        high: 0,
+        material: published.high + published.material,
+        low: published.low,
       },
-      entry.coverage.javascript_analysis_status,
-      entry.coverage.metadata_only_candidates,
-    );
+    };
   const malicious = entry.counts.disposition.credible_malicious_behavior;
   const dangerBasis: DangerBasis | null =
     published.high === 0
@@ -314,20 +342,16 @@ export function deriveIndexedProjectAdvisory(
         : published.high > malicious
           ? "mixed"
           : "malicious_or_compromised";
-  return applyCoverageLimitations(
-    {
-      risk:
-        dangerBasis !== null
-          ? "high"
-          : published.material > 0
-            ? "material"
-            : "low",
-      dangerBasis,
-      counts: { ...published },
-    },
-    entry.coverage.javascript_analysis_status,
-    entry.coverage.metadata_only_candidates,
-  );
+  return {
+    risk:
+      dangerBasis !== null
+        ? "high"
+        : published.material > 0
+          ? "material"
+          : "low",
+    dangerBasis,
+    counts: { ...published },
+  };
 }
 
 export function dangerBasisLabel(basis: DangerBasis | null) {

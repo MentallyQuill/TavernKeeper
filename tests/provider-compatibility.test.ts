@@ -31,6 +31,7 @@ describe("model provider contextual compatibility check", () => {
           impact: "none",
           exploitability: "unlikely",
           confidence: "high",
+          risk_exposure: "not_demonstrated",
           recommended_risk: "low",
           technical_explanation:
             "The credential-like word appears only in explanatory documentation.",
@@ -193,6 +194,7 @@ describe("model provider contextual compatibility check", () => {
         impact: "none",
         exploitability: "unlikely",
         confidence: "high",
+        risk_exposure: "not_demonstrated",
         recommended_risk: "low",
         technical_explanation:
           "The credential-like word appears only in explanatory documentation.",

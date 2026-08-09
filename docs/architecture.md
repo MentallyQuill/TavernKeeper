@@ -97,9 +97,8 @@ candidate must receive exactly one valid contextual assessment. Bounded
 policy-4 JavaScript limitations publish as explicit `incomplete` coverage.
 Findings on non-text artifacts publish verified scanner metadata as
 `completed-with-limitations` contextual evidence without sending raw binary to
-the model. Either limitation raises an otherwise-low advisory to material; it
-never invents immediate danger. Hard scanner or integrity failures still
-produce no report.
+the model. Both limitations remain visible without altering advisory color or
+concern counts. Hard scanner or integrity failures still produce no report.
 TavernKeeper attaches each
 assessment's location from validated deterministic candidate evidence instead
 of asking the model to reproduce it. Model-authored observation locations must
@@ -142,6 +141,17 @@ failure. The sole scheduling stop is an explicit protected staff emergency
 stop. Manifest V2 remains a temporary compatibility input and uses the earlier
 Top-30/new/old order when seeding.
 
+Schema V3 also stores a bounded, immutable coverage campaign selected by the
+protected `coverage-campaign.yml` workflow. One atomic V3-manifest snapshot
+fixes the current top 20 popularity IDs and the 20 IDs with the newest
+qualifying GitHub releases, then stores their sorted deduplicated union and a
+shrinking remaining set. Overlap can produce fewer than 40 members. The
+workflow has no schedule or inputs: rerunning its fixed campaign ID is a no-op,
+not a fresh selection or a catalog rescan. Reconciliation gives those members
+ordinary queue eligibility and removes them only after a qualifying
+post-campaign current-SHA report; retry ordering, scanner-policy authority, and
+the 48-hour rescan deadline remain unchanged.
+
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Prepare matrix jobs
 first use one-day secret-free GitHub artifacts; review matrix jobs then encrypt
@@ -161,17 +171,19 @@ recommendations (`low`, `material`, or `high`), but it does not assign the
 project's public color. Tavernary's separate strict synthesis applies
 deterministic minimum-risk floors and produces the final project assessment:
 
-- `low` / teal includes expected behavior, no concerns, minor sensitivities,
-  and small hardening weaknesses;
-- `material` / orange represents a meaningful potential vulnerability;
-- `high` / red represents high-confidence credible malicious or compromised
-  behavior, or a high-confidence critical vulnerability that is readily
-  exploitable in the shipped project.
+- `low` / teal includes expected behavior, minor security hygiene, coverage
+  limitations, and risk whose exposure or reachability is not demonstrated;
+- `material` / yellow represents a high-confidence, demonstrated,
+  non-malicious vulnerability in shipped or executable behavior with
+  medium-or-greater impact and plausible-or-greater exploitability; and
+- `high` / red represents high-confidence demonstrated malicious or
+  compromised behavior, or a demonstrated critical vulnerability that is
+  readily exploitable in the shipped project.
 
 For dependency advisories, the contextual policy must establish the shipped
 version, runtime reachability, attacker control, and concrete user harm.
 Scanner or advisory severity alone cannot produce red. Uncertainty remains
-material/orange.
+teal with its findings and limitations visible.
 
 Freshness is separate. An older assessment retains its risk color and gains a
 clock marker while an updated scan is pending. Gray means no completed final

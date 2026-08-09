@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
@@ -17,13 +18,69 @@ import {
   type ScannerRun,
 } from "./types.js";
 
+const UNSAFE_PUBLIC_IDENTITY =
+  /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/u;
+const URL_LIKE_IDENTITY = /\b(?:https?|ftp):\/\/|\bwww\./iu;
+
+const PackageIdentitySourceStringSchema = (maximum: number) =>
+  z
+    .string()
+    .trim()
+    .max(maximum)
+    .refine(
+      (value) => !UNSAFE_PUBLIC_IDENTITY.test(value),
+      "OSV package identity contains unsafe text.",
+    );
+
+function isSafePublicIdentity(value: string) {
+  return value.length > 0 && !URL_LIKE_IDENTITY.test(value);
+}
+
 const VulnerabilitySchema = z.looseObject({
   id: z.string().min(1).max(120),
   database_specific: z
     .looseObject({ severity: z.string().optional() })
     .optional(),
 });
+const PackageIdentitySchema = z
+  .looseObject({
+    name: PackageIdentitySourceStringSchema(160),
+    version: PackageIdentitySourceStringSchema(160),
+    ecosystem: PackageIdentitySourceStringSchema(80),
+    commit: z
+      .string()
+      .trim()
+      .regex(/^[a-f0-9]{7,64}$/iu)
+      .optional(),
+  })
+  .superRefine(({ commit, ecosystem, name, version }, context) => {
+    if (commit !== undefined) {
+      if (version.length > 0 && !isSafePublicIdentity(version))
+        context.addIssue({
+          code: "custom",
+          message: "OSV package version contains unsafe public text.",
+        });
+      return;
+    }
+    if (version.length === 0) {
+      context.addIssue({
+        code: "custom",
+        message: "OSV package identity needs a version or commit.",
+      });
+      return;
+    }
+    if (
+      !isSafePublicIdentity(ecosystem) ||
+      !isSafePublicIdentity(name) ||
+      !isSafePublicIdentity(version)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "OSV package identity contains unsafe public text.",
+      });
+  });
 const PackageSchema = z.looseObject({
+  package: PackageIdentitySchema,
   vulnerabilities: z.array(VulnerabilitySchema).max(100_000),
 });
 const ResultSchema = z.looseObject({
@@ -57,6 +114,70 @@ function severity(value: string | undefined): Severity {
   }
 }
 
+function boundedFindingTitle(...alternatives: string[]) {
+  return (
+    alternatives.find((alternative) => alternative.length <= 200) ??
+    "Known vulnerable dependency"
+  );
+}
+
+function findingTitle({
+  commit,
+  ecosystem,
+  name,
+  version,
+}: z.infer<typeof PackageIdentitySchema>) {
+  if (commit !== undefined)
+    return version.length === 0
+      ? boundedFindingTitle(
+          `Known vulnerable commit dependency: ${commit}`,
+          "Known vulnerable commit dependency",
+        )
+      : boundedFindingTitle(
+          `Known vulnerable git dependency: ${version}@${commit}`,
+          `Known vulnerable git dependency: ${commit}`,
+          "Known vulnerable git dependency",
+        );
+  const detailed = `Known vulnerable ${ecosystem} dependency: ${name}@${version}`;
+  return boundedFindingTitle(
+    detailed,
+    `Known vulnerable dependency: ${name}`,
+    "Known vulnerable dependency",
+  );
+}
+
+function findingExplanation({
+  commit,
+  ecosystem,
+  name,
+  version,
+}: z.infer<typeof PackageIdentitySchema>) {
+  if (commit !== undefined)
+    return version.length === 0
+      ? `OSV-Scanner matched a known advisory for a commit-addressed dependency at commit ${commit}.`
+      : `OSV-Scanner matched a known advisory for a git dependency at version ${version} and commit ${commit}.`;
+  return `OSV-Scanner matched a known advisory for ${ecosystem} package ${name} at resolved version ${version}.`;
+}
+
+function findingRuleId(
+  vulnerabilityId: string,
+  { commit, ecosystem, name, version }: z.infer<typeof PackageIdentitySchema>,
+) {
+  const identity = createHash("sha256")
+    .update(
+      JSON.stringify([
+        vulnerabilityId,
+        ecosystem,
+        name,
+        version,
+        commit ?? null,
+      ]),
+    )
+    .digest("hex")
+    .slice(0, 24);
+  return `${vulnerabilityId.slice(0, 91)}:pkg:${identity}`;
+}
+
 function parseReport(root: string, stdout: string) {
   let report: z.infer<typeof OsvReportSchema>;
   try {
@@ -76,7 +197,7 @@ function parseReport(root: string, stdout: string) {
         entry.vulnerabilities.map((vulnerability) =>
           normalizeFinding({
             origin: "osv-scanner",
-            ruleId: vulnerability.id,
+            ruleId: findingRuleId(vulnerability.id, entry.package),
             category: "dependency-vulnerability",
             severity: severity(vulnerability.database_specific?.severity),
             confidence: "high",
@@ -84,9 +205,8 @@ function parseReport(root: string, stdout: string) {
             lineStart: null,
             lineEnd: null,
             evidenceSha: null,
-            title: "Known vulnerable dependency",
-            explanation:
-              "OSV-Scanner matched a known advisory for a declared dependency; package details were removed.",
+            title: findingTitle(entry.package),
+            explanation: findingExplanation(entry.package),
           }),
         ),
       );

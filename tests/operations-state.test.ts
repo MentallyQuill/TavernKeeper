@@ -135,6 +135,77 @@ describe("secret-free operations state V3", () => {
     );
   });
 
+  test("preserves a sorted catalog observation and queue change provenance", () => {
+    const observed = parseOperationsState({
+      ...initialOperationsState(at),
+      catalog_observation: {
+        initialized_at: at,
+        repositories: [
+          { repository_id: 42, target_sha: "a".repeat(40) },
+          { repository_id: 43, target_sha: "b".repeat(40) },
+        ],
+      },
+      scan_queue: {
+        next_ticket: 2,
+        entries: [{ ...entry(42, 1), catalog_change: "new" }],
+      },
+    });
+
+    expect(serializeOperationsState(observed)).toContain(
+      '"catalog_change": "new"',
+    );
+    expect(observed.catalog_observation).toEqual({
+      initialized_at: at,
+      repositories: [
+        { repository_id: 42, target_sha: "a".repeat(40) },
+        { repository_id: 43, target_sha: "b".repeat(40) },
+      ],
+    });
+  });
+
+  test.each([
+    {
+      name: "duplicate repository IDs",
+      repositories: [
+        { repository_id: 42, target_sha: "a".repeat(40) },
+        { repository_id: 42, target_sha: "b".repeat(40) },
+      ],
+    },
+    {
+      name: "descending repository IDs",
+      repositories: [
+        { repository_id: 43, target_sha: "b".repeat(40) },
+        { repository_id: 42, target_sha: "a".repeat(40) },
+      ],
+    },
+    {
+      name: "invalid target SHAs",
+      repositories: [{ repository_id: 42, target_sha: "not-a-sha" }],
+    },
+  ])("rejects catalog observations with $name", ({ repositories }) => {
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(at),
+        catalog_observation: { initialized_at: at, repositories },
+      }),
+    ).toThrow();
+  });
+
+  test.each(["existing", "removed", "NEW", ""])(
+    "rejects unsupported catalog change %j",
+    (catalogChange) => {
+      expect(() =>
+        parseOperationsState({
+          ...initialOperationsState(at),
+          scan_queue: {
+            next_ticket: 2,
+            entries: [{ ...entry(42, 1), catalog_change: catalogChange }],
+          },
+        }),
+      ).toThrow();
+    },
+  );
+
   test.each([
     {
       name: "repository identities",

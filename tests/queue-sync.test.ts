@@ -5,6 +5,7 @@ import { describe, expect, test } from "vitest";
 import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
 import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
 import {
+  COVERAGE_CAMPAIGN_ID,
   initialOperationsState,
   serializeOperationsState,
 } from "../src/operations/state.js";
@@ -120,34 +121,459 @@ function manifest(...targets: TargetV3[]): TargetManifestV3 {
   };
 }
 
+function stateObserving(...targets: TargetV3[]) {
+  return {
+    ...initialOperationsState(now),
+    catalog_observation: {
+      initialized_at: now,
+      repositories: [...targets]
+        .sort((left, right) => left.repository_id - right.repository_id)
+        .map(({ repository_id, target_sha }) => ({
+          repository_id,
+          target_sha,
+        })),
+    },
+  };
+}
+
+function coverageCampaign(
+  repositoryIds: number[],
+  createdAt = now,
+  remainingRepositoryIds = repositoryIds,
+) {
+  return {
+    id: COVERAGE_CAMPAIGN_ID,
+    scanner_policy_version: "3",
+    created_at: createdAt,
+    status: "active" as const,
+    popular_repository_ids: [...repositoryIds],
+    latest_release_repository_ids: [] as number[],
+    repository_ids: [...repositoryIds],
+    remaining_repository_ids: [...remainingRepositoryIds],
+  };
+}
+
+function indexWithRepositoryReport(
+  repositoryId: number,
+  shaDigit: string,
+  completedAt = reportCompletedAt,
+): ReportIndexV5 {
+  const reportedTarget = target(repositoryId, 1, shaDigit);
+  return {
+    ...indexWithPreviousRepositoryReport,
+    generated_at: completedAt,
+    reports: indexWithPreviousRepositoryReport.reports.map((report) => ({
+      ...report,
+      source_id: reportedTarget.source_id,
+      repository_id: reportedTarget.repository_id,
+      repository: reportedTarget.repository,
+      target_sha: reportedTarget.target_sha,
+      completed_at: completedAt,
+      report_url:
+        `https://mentallyquill.github.io/TavernKeeper/reports/github/${repositoryId}/` +
+        `${reportedTarget.target_sha}/3/${report.report_digest}/`,
+      history_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/${repositoryId}/history/`,
+    })),
+  };
+}
+
 describe("scan queue synchronization", () => {
-  test("seeds the initial queue by popularity rank", () => {
-    const result = syncScanQueue({
-      manifest: manifest(target(41, 3), target(42, 1), target(43, 2)),
+  test("queues only the current targets selected by a coverage campaign", () => {
+    const first = target(41, 1, "a");
+    const ordinary = target(42, 2, "b");
+    const second = target(43, 3, "c");
+    const state = {
+      ...stateObserving(first, ordinary, second),
+      coverage_campaigns: [coverageCampaign([41, 43])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(first, ordinary, second),
       index: emptyIndex,
-      state: initialOperationsState(now),
-      now,
+      state,
+      now: "2026-08-04T12:01:00.000Z",
       scannerPolicyVersion: "3",
     });
 
     expect(
-      result.state.scan_queue.entries.map(({ repository_id, ticket }) => [
-        repository_id,
-        ticket,
-      ]),
+      synchronized.state.scan_queue.entries.map((entry) => ({
+        repository_id: entry.repository_id,
+        target_sha: entry.target_sha,
+        staff_requested: entry.staff_requested,
+        catalog_change: entry.catalog_change,
+        rescan_not_before: entry.rescan_not_before,
+      })),
     ).toEqual([
-      [42, 1],
-      [43, 2],
-      [41, 3],
+      {
+        repository_id: 41,
+        target_sha: first.target_sha,
+        staff_requested: undefined,
+        catalog_change: undefined,
+        rescan_not_before: undefined,
+      },
+      {
+        repository_id: 43,
+        target_sha: second.target_sha,
+        staff_requested: undefined,
+        catalog_change: undefined,
+        rescan_not_before: undefined,
+      },
     ]);
+  });
+
+  test("delays a selected same-SHA target for 48 hours after its pre-campaign report", () => {
+    const selected = target(41, 1, "a");
+    const reportAt = "2026-08-04T08:00:00.000Z";
+    const state = {
+      ...stateObserving(selected),
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: indexWithRepositoryReport(41, "a", reportAt),
+      state,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.coverage_campaigns[0]).toMatchObject({
+      status: "active",
+      remaining_repository_ids: [41],
+    });
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        rescan_not_before: "2026-08-06T08:00:00.000Z",
+      }),
+    ]);
+  });
+
+  test("treats a selected prior-SHA report as cooldown evidence without catalog authority", () => {
+    const selected = target(41, 1, "b");
+    const state = {
+      ...stateObserving(selected),
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: indexWithRepositoryReport(41, "a", "2026-08-04T08:00:00.000Z"),
+      state,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        target_sha: selected.target_sha,
+        rescan_not_before: "2026-08-06T08:00:00.000Z",
+      }),
+    ]);
+    expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
+      "catalog_change",
+    );
+  });
+
+  test("retains a selected target's existing failure deadline and state", () => {
+    const selected = target(41, 1, "a");
+    const failed = rotateFailedTarget(
+      appendQueuedTarget(stateObserving(selected), selected),
+      {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: now,
+      },
+    ).state;
+    const original = failed.scan_queue.entries[0]!;
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state: {
+        ...failed,
+        coverage_campaigns: [coverageCampaign([41])],
+      },
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        ticket: original.ticket,
+        consecutive_failures: 1,
+        total_failures: 1,
+        not_before: original.not_before,
+        last_failure: original.last_failure,
+      }),
+    ]);
+    expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
+      "staff_requested",
+    );
+    expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
+      "catalog_change",
+    );
+  });
+
+  test("advances only completed or removed coverage members and preserves the selection", () => {
+    const completed = target(41, 1, "a");
+    const pending = target(42, 2, "b");
+    const removed = target(43, 3, "c");
+    const state = {
+      ...stateObserving(completed, pending, removed),
+      coverage_campaigns: [coverageCampaign([41, 42, 43])],
+    };
+    const postCampaignReport = indexWithRepositoryReport(
+      41,
+      "a",
+      "2026-08-04T12:01:00.000Z",
+    );
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(completed, pending),
+      index: postCampaignReport,
+      state,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.coverage_campaigns).toEqual([
+      {
+        ...coverageCampaign([41, 42, 43]),
+        remaining_repository_ids: [42],
+      },
+    ]);
+    expect(
+      synchronized.state.scan_queue.entries.map(
+        ({ repository_id }) => repository_id,
+      ),
+    ).toEqual([42]);
+  });
+
+  test("permanently completes a coverage campaign when no member remains", () => {
+    const selected = target(41, 1, "a");
+    const state = {
+      ...stateObserving(selected),
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+    const postCampaignReport = indexWithRepositoryReport(
+      41,
+      "a",
+      "2026-08-04T12:01:00.000Z",
+    );
+    const completed = syncScanQueue({
+      manifest: manifest(selected),
+      index: postCampaignReport,
+      state,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    }).state;
+
+    expect(completed.coverage_campaigns).toEqual([
+      {
+        ...coverageCampaign([41]),
+        remaining_repository_ids: [],
+        status: "completed",
+      },
+    ]);
+
+    const stable = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state: completed,
+      now: "2026-08-04T12:03:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+    expect(stable.changed).toBe(false);
+    expect(stable.state.coverage_campaigns[0]?.status).toBe("completed");
+    expect(stable.state.scan_queue.entries).toEqual([]);
+  });
+
+  test("initializes an incremental baseline without scanning legacy entries", () => {
+    const legacy = manifest(target(41, 1), target(42, 2));
+    const preBaseline = {
+      ...appendQueuedTarget(
+        appendQueuedTarget(
+          initialOperationsState(now),
+          legacy.repositories[0]!,
+        ),
+        legacy.repositories[1]!,
+        { staffRequested: true },
+      ),
+      emergency_stop: {
+        kind: "staff" as const,
+        reason_code: "CATALOG_WIDE_RESCAN_BLOCKED",
+        paused_at: now,
+      },
+    };
+
+    const result = syncScanQueue({
+      manifest: legacy,
+      index: emptyIndex,
+      state: preBaseline,
+      now,
+      scannerPolicyVersion: "4",
+    });
+
+    expect(result.state.scan_queue.entries).toEqual([]);
+    expect(result.summary).toMatchObject({ seeded: 0, removed: 2 });
+    expect(result.state.catalog_observation?.repositories).toEqual([
+      { repository_id: 41, target_sha: target(41, 1).target_sha },
+      { repository_id: 42, target_sha: target(42, 2).target_sha },
+    ]);
+  });
+
+  test("strips pre-baseline staff authority from report-backed changed-SHA work", () => {
+    const changed = target(41, 1, "b");
+    const preBaseline = appendQueuedTarget(
+      initialOperationsState(now),
+      changed,
+      { staffRequested: true },
+    );
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(changed),
+      index: indexWithPreviousRepositoryReport,
+      state: preBaseline,
+      now,
+      scannerPolicyVersion: "3",
+    }).state.scan_queue.entries[0]!;
+
+    expect(synchronized).not.toHaveProperty("staff_requested");
+    expect(synchronized).toMatchObject({
+      repository_id: 41,
+      target_sha: "b".repeat(40),
+      rescan_not_before: "2026-08-04T12:00:00.000Z",
+    });
+  });
+
+  test("queues a repository first observed after the incremental baseline", () => {
+    const baseline = syncScanQueue({
+      manifest: manifest(target(41, 1)),
+      index: emptyIndex,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "4",
+    }).state;
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(target(41, 1), target(43, 3, "b")),
+      index: indexWithRepositoryReport(43, "a"),
+      state: baseline,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "4",
+    }).state;
+
+    expect(synchronized.scan_queue.entries[0]).toMatchObject({
+      repository_id: 43,
+      catalog_change: "new",
+    });
+    expect(synchronized.scan_queue.entries[0]).not.toHaveProperty(
+      "rescan_not_before",
+    );
+  });
+
+  test("runs a removed and re-added repository immediately despite report history", () => {
+    const original = target(43, 3, "a");
+    const baseline = syncScanQueue({
+      manifest: manifest(target(41, 1), original),
+      index: emptyIndex,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "4",
+    }).state;
+    const removed = syncScanQueue({
+      manifest: manifest(target(41, 1)),
+      index: indexWithRepositoryReport(43, "a"),
+      state: baseline,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "4",
+    }).state;
+
+    const readded = syncScanQueue({
+      manifest: manifest(target(41, 1), target(43, 3, "b")),
+      index: indexWithRepositoryReport(43, "a"),
+      state: removed,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "4",
+    }).state.scan_queue.entries[0]!;
+
+    expect(readded).toMatchObject({
+      repository_id: 43,
+      catalog_change: "new",
+    });
+    expect(readded).not.toHaveProperty("rescan_not_before");
+  });
+
+  test("queues an unreported SHA update after the incremental baseline", () => {
+    const baseline = syncScanQueue({
+      manifest: manifest(target(41, 1, "a"), target(42, 2)),
+      index: emptyIndex,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "4",
+    }).state;
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(target(41, 1, "b"), target(42, 2)),
+      index: emptyIndex,
+      state: baseline,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "4",
+    }).state;
+
+    expect(synchronized.scan_queue.entries).toHaveLength(1);
+    expect(synchronized.scan_queue.entries[0]).toMatchObject({
+      repository_id: 41,
+      target_sha: "b".repeat(40),
+      catalog_change: "updated",
+    });
+    expect(
+      synchronized.scan_queue.entries.some(
+        ({ repository_id }) => repository_id === 42,
+      ),
+    ).toBe(false);
+  });
+
+  test("does not queue an unchanged target only because its report uses an older policy", () => {
+    const baseline = syncScanQueue({
+      manifest: manifest(target(41, 1, "a")),
+      index: emptyIndex,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "4",
+    }).state;
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(target(41, 1, "a")),
+      index: indexWithPreviousRepositoryReport,
+      state: baseline,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "4",
+    }).state;
+
+    expect(synchronized.scan_queue.entries).toEqual([]);
   });
 
   test("appends later arrivals after a previously requeued failure", () => {
     const firstManifest = manifest(target(41, 1), target(42, 2));
+    const baseline = syncScanQueue({
+      manifest: manifest(),
+      index: emptyIndex,
+      state: initialOperationsState(now),
+      now,
+      scannerPolicyVersion: "3",
+    }).state;
     let state = syncScanQueue({
       manifest: firstManifest,
       index: emptyIndex,
-      state: initialOperationsState(now),
+      state: baseline,
       now,
       scannerPolicyVersion: "3",
     }).state;
@@ -183,7 +609,18 @@ describe("scan queue synchronization", () => {
 
   test("preserves a ticket while replacing a changed SHA", () => {
     const original = target(41, 1, "a");
-    let state = appendQueuedTarget(initialOperationsState(now), original);
+    let state = appendQueuedTarget(
+      {
+        ...initialOperationsState(now),
+        catalog_observation: {
+          initialized_at: now,
+          repositories: [
+            { repository_id: 41, target_sha: original.target_sha },
+          ],
+        },
+      },
+      original,
+    );
     state = rotateFailedTarget(state, {
       target: original,
       failure: {
@@ -215,7 +652,7 @@ describe("scan queue synchronization", () => {
     const synchronized = syncScanQueue({
       manifest: manifest(target(41, 1, "b")),
       index: indexWithPreviousRepositoryReport,
-      state: initialOperationsState(now),
+      state: stateObserving(target(41, 1, "a")),
       now,
       scannerPolicyVersion: "3",
     }).state;
@@ -223,6 +660,7 @@ describe("scan queue synchronization", () => {
     expect(synchronized.scan_queue.entries).toMatchObject([
       {
         target_sha: "b".repeat(40),
+        catalog_change: "updated",
         rescan_not_before: "2026-08-04T12:00:00.000Z",
       },
     ]);
@@ -233,7 +671,7 @@ describe("scan queue synchronization", () => {
     const synchronized = syncScanQueue({
       manifest: manifest(changed),
       index: indexWithPreviousRepositoryReport,
-      state: initialOperationsState(now),
+      state: stateObserving(target(41, 1, "a")),
       now,
       scannerPolicyVersion: "3",
     }).state;
@@ -271,10 +709,16 @@ describe("scan queue synchronization", () => {
     const first = syncScanQueue({
       manifest: manifest(target(41, 1, "b")),
       index: indexWithPreviousRepositoryReport,
-      state: initialOperationsState(now),
+      state: stateObserving(target(41, 1, "a")),
       now,
       scannerPolicyVersion: "3",
     }).state;
+    const firstEntry = first.scan_queue.entries[0]!;
+    expect(firstEntry).toMatchObject({
+      target_sha: "b".repeat(40),
+      catalog_change: "updated",
+      rescan_not_before: "2026-08-04T12:00:00.000Z",
+    });
 
     const synchronized = syncScanQueue({
       manifest: manifest(target(41, 1, "c")),
@@ -287,21 +731,55 @@ describe("scan queue synchronization", () => {
     expect(synchronized.scan_queue.entries).toMatchObject([
       {
         target_sha: "c".repeat(40),
+        ticket: firstEntry.ticket,
+        catalog_change: "updated",
+        rescan_not_before: "2026-08-04T12:00:00.000Z",
+      },
+    ]);
+
+    const afterInFlightPublication = syncScanQueue({
+      manifest: manifest(target(41, 1, "c")),
+      index: indexWithRepositoryReport(41, "b", "2026-08-04T12:01:30.000Z"),
+      state: synchronized,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    }).state;
+
+    expect(afterInFlightPublication.scan_queue.entries).toMatchObject([
+      {
+        target_sha: "c".repeat(40),
+        ticket: firstEntry.ticket,
+        catalog_change: "updated",
         rescan_not_before: "2026-08-04T12:00:00.000Z",
       },
     ]);
   });
 
   test("omits an automatic-rescan deadline for first, staff, and active-policy work", () => {
-    const firstScan = syncScanQueue({
-      manifest: manifest(target(42, 1)),
+    const emptyBaseline = syncScanQueue({
+      manifest: manifest(),
       index: emptyIndex,
       state: initialOperationsState(now),
       now,
       scannerPolicyVersion: "3",
+    }).state;
+    const firstScan = syncScanQueue({
+      manifest: manifest(target(42, 1)),
+      index: emptyIndex,
+      state: emptyBaseline,
+      now,
+      scannerPolicyVersion: "3",
     }).state.scan_queue.entries[0]!;
     const staffState = appendQueuedTarget(
-      initialOperationsState(now),
+      {
+        ...initialOperationsState(now),
+        catalog_observation: {
+          initialized_at: now,
+          repositories: [
+            { repository_id: 41, target_sha: target(41, 1, "a").target_sha },
+          ],
+        },
+      },
       target(41, 1, "a"),
       { staffRequested: true },
     );

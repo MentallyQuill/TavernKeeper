@@ -14,6 +14,7 @@ import {
   reconcileCurrentScanQueue,
   type QueueSyncSummary,
 } from "../queue/reconcile.js";
+import { appendQueuedTarget } from "../queue/durable-queue.js";
 import { FailureDescriptorSchema, failureFingerprint } from "./failure.js";
 import {
   ActiveScanSchema,
@@ -105,6 +106,26 @@ export function migrateOperationsState(
   const legacy = OperationsStateV2Schema.parse(value);
   const manifest = parseCurrentManifest(input.manifest);
   const index = ReportIndexV5Schema.parse(input.index);
+  const targetByRepositoryId = new Map(
+    manifest.repositories.map((target) => [target.repository_id, target]),
+  );
+  const selectedLegacyRetries = manifest.repositories.flatMap((target) => {
+    const selected = legacy.target_retries
+      .filter(
+        (retry) =>
+          retry.repository_id === target.repository_id &&
+          retry.target_sha === target.target_sha,
+      )
+      .sort(
+        (left, right) =>
+          right.attempt - left.attempt ||
+          right.last_failed_at.localeCompare(left.last_failed_at) ||
+          left.initial_failed_at.localeCompare(right.initial_failed_at) ||
+          left.error_fingerprint.localeCompare(right.error_fingerprint) ||
+          JSON.stringify(left).localeCompare(JSON.stringify(right)),
+      )[0];
+    return selected === undefined ? [] : [selected];
+  });
   const legacyAutomaticHolds: AutomaticRecoveryHold[] = legacy.shared_holds.map(
     (hold) => {
       const failure = {
@@ -165,19 +186,40 @@ export function migrateOperationsState(
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: legacy.active_scans,
     policy_campaigns: legacy.policy_campaigns,
+    coverage_campaigns: [],
+    catalog_observation: {
+      initialized_at: input.at,
+      repositories: manifest.repositories.map(
+        ({ repository_id, target_sha }) => ({ repository_id, target_sha }),
+      ),
+    },
   });
   const seeded = reconcileCurrentScanQueue({
     manifest,
-    index,
+    index: {
+      ...index,
+      reports: index.reports.filter(
+        (report) =>
+          targetByRepositoryId.get(report.repository_id)?.target_sha ===
+          report.target_sha,
+      ),
+    },
     state: base,
     now: input.at,
     scannerPolicyVersion: input.scannerPolicyVersion,
   });
 
   const retryByRepositoryId = new Map(
-    legacy.target_retries.map((entry) => [entry.repository_id, entry]),
+    selectedLegacyRetries.map((entry) => [entry.repository_id, entry]),
   );
-  const retryEntries = seeded.state.scan_queue.entries
+  let stateWithRetries = seeded.state;
+  for (const retry of selectedLegacyRetries) {
+    const target = targetByRepositoryId.get(retry.repository_id);
+    if (target === undefined || target.target_sha !== retry.target_sha)
+      continue;
+    stateWithRetries = appendQueuedTarget(stateWithRetries, target);
+  }
+  const retryEntries = stateWithRetries.scan_queue.entries
     .filter((entry) => {
       const retry = retryByRepositoryId.get(entry.repository_id);
       return retry !== undefined && retry.target_sha === entry.target_sha;
@@ -194,7 +236,7 @@ export function migrateOperationsState(
   const retryRepositoryIds = new Set(
     retryEntries.map(({ repository_id }) => repository_id),
   );
-  const healthyEntries = seeded.state.scan_queue.entries.filter(
+  const healthyEntries = stateWithRetries.scan_queue.entries.filter(
     ({ repository_id }) => !retryRepositoryIds.has(repository_id),
   );
   let nextTicket = 1;
@@ -224,7 +266,7 @@ export function migrateOperationsState(
   });
 
   const state = OperationsStateSchema.parse({
-    ...seeded.state,
+    ...stateWithRetries,
     updated_at: input.at,
     scan_queue: {
       next_ticket: nextTicket,

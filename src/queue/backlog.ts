@@ -17,7 +17,8 @@ import {
 import { failureFingerprint } from "../operations/failure.js";
 import { effectiveQueueEntryNotBefore } from "./durable-queue.js";
 
-export type BacklogReason = "new" | "changed" | "retry" | "policy" | "staff";
+export type BacklogReason =
+  "new" | "changed" | "retry" | "policy" | "coverage" | "staff";
 
 export interface PlannedTarget {
   target: CurrentTarget;
@@ -53,6 +54,24 @@ function reasonFor(
 ): BacklogReason {
   if (entry.consecutive_failures > 0) return "retry";
   if (entry.staff_requested === true) return "staff";
+  if (
+    state.policy_campaigns.some(
+      (campaign) =>
+        campaign.status === "active" &&
+        campaign.scanner_policy_version === scannerPolicyVersion &&
+        campaign.repository_ids.includes(target.repository_id),
+    )
+  )
+    return "policy";
+  if (
+    state.coverage_campaigns.some(
+      (campaign) =>
+        campaign.status === "active" &&
+        campaign.scanner_policy_version === scannerPolicyVersion &&
+        campaign.remaining_repository_ids.includes(target.repository_id),
+    )
+  )
+    return "coverage";
   const reports = index.reports.filter(
     ({ repository_id }) => repository_id === target.repository_id,
   );
@@ -62,16 +81,6 @@ function reasonFor(
       report.target_sha === target.target_sha &&
       report.scanner_policy_version === scannerPolicyVersion,
   );
-  if (
-    covered &&
-    state.policy_campaigns.some(
-      (campaign) =>
-        campaign.status === "active" &&
-        campaign.scanner_policy_version === scannerPolicyVersion &&
-        campaign.repository_ids.includes(target.repository_id),
-    )
-  )
-    return "policy";
   if (covered) return "staff";
   return "changed";
 }

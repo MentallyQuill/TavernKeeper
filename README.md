@@ -36,7 +36,7 @@ Target repositories are hostile data:
 - Every finding candidate receives one schema-validated contextual assessment
   bound to immutable evidence and locations. Hard scan failures produce no
   report; bounded incomplete JavaScript coverage is published explicitly and
-  prevents an otherwise-low advisory from appearing low.
+  remains visible without changing advisory color or concern counts.
 - Published JSON and HTML exclude raw source excerpts, raw tool or model
   payloads, credentials, hidden reasoning, and runner-local paths.
 

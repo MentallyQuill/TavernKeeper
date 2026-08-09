@@ -62,7 +62,7 @@ describe("SillyTavern ecosystem context", () => {
     const prompt = buildContextualReviewPrompt(group);
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
-    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v5");
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v6");
     expect(prompt.systemContent).toMatch(
       /top-level object.*key named review.*status="complete"/isu,
     );
@@ -71,6 +71,12 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toMatch(/runtime reachability/iu);
     expect(prompt.systemContent).toMatch(/attacker control/iu);
     expect(prompt.systemContent).toMatch(/concrete user harm/iu);
+    expect(prompt.systemContent).toMatch(
+      /risk_exposure is demonstrated only when.*shipped or executable behavior.*attacker-controlled trigger/isu,
+    );
+    expect(prompt.systemContent).toMatch(
+      /advisory match.*same-file.*metadata-only.*not demonstrated exposure/isu,
+    );
     expect(prompt.systemContent).toMatch(
       /critical.*readily_exploitable.*high confidence/isu,
     );
@@ -88,7 +94,7 @@ describe("SillyTavern ecosystem context", () => {
       source_kind: "metadata-only",
     });
     expect(metadataOnlyPrompt.systemContent).toMatch(
-      /metadata-only.*not.*proof of a low-risk conclusion/isu,
+      /metadata-only.*not demonstrated exposure.*cannot support material or high/isu,
     );
     expect(metadataOnlyPrompt.userContent).toContain(
       '\"source_kind\": \"metadata-only\"',
@@ -104,6 +110,22 @@ describe("SillyTavern ecosystem context", () => {
     );
     expect(completionRequired.systemContent).not.toMatch(
       /if the supplied evidence is genuinely insufficient.*needs_more_context/isu,
+    );
+    expect(completionRequired.systemContent).toMatch(
+      /risk_exposure=not_demonstrated.*recommended_risk=low/isu,
+    );
+    expect(completionRequired.systemContent).not.toMatch(
+      /uncertainty.*material rather than high/isu,
+    );
+
+    const exposureRepair = buildContextualReviewPrompt(group, {
+      diagnostic: "assessment_risk_exposure",
+    });
+    expect(exposureRepair.systemContent).toMatch(
+      /risk_exposure must be exactly not_demonstrated or demonstrated/iu,
+    );
+    expect(exposureRepair.systemContent).toMatch(
+      /attacker-controlled or untrusted-input trigger or data flow/iu,
     );
 
     const developerActionRepair = buildContextualReviewPrompt(group, {
