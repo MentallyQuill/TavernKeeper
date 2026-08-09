@@ -154,8 +154,7 @@ function indexWithRepositoryReport(
       report_url:
         `https://mentallyquill.github.io/TavernKeeper/reports/github/${repositoryId}/` +
         `${reportedTarget.target_sha}/3/${report.report_digest}/`,
-      history_url:
-        `https://mentallyquill.github.io/TavernKeeper/reports/github/${repositoryId}/history/`,
+      history_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/${repositoryId}/history/`,
     })),
   };
 }
@@ -165,7 +164,10 @@ describe("scan queue synchronization", () => {
     const legacy = manifest(target(41, 1), target(42, 2));
     const preBaseline = {
       ...appendQueuedTarget(
-        appendQueuedTarget(initialOperationsState(now), legacy.repositories[0]!),
+        appendQueuedTarget(
+          initialOperationsState(now),
+          legacy.repositories[0]!,
+        ),
         legacy.repositories[1]!,
         { staffRequested: true },
       ),
@@ -502,11 +504,7 @@ describe("scan queue synchronization", () => {
 
     const afterInFlightPublication = syncScanQueue({
       manifest: manifest(target(41, 1, "c")),
-      index: indexWithRepositoryReport(
-        41,
-        "b",
-        "2026-08-04T12:01:30.000Z",
-      ),
+      index: indexWithRepositoryReport(41, "b", "2026-08-04T12:01:30.000Z"),
       state: synchronized,
       now: "2026-08-04T12:02:00.000Z",
       scannerPolicyVersion: "3",

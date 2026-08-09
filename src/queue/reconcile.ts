@@ -70,9 +70,7 @@ function blankEntry(
     ...(rescanNotBefore === undefined
       ? {}
       : { rescan_not_before: rescanNotBefore }),
-    ...(catalogChange === undefined
-      ? {}
-      : { catalog_change: catalogChange }),
+    ...(catalogChange === undefined ? {} : { catalog_change: catalogChange }),
     chronic: false,
   };
 }
@@ -265,9 +263,7 @@ export function reconcileCurrentScanQueue(input: {
       source_id: target.source_id,
       repository: target.repository,
       ...(staffRequested ? { staff_requested: true as const } : {}),
-      ...(catalogChange === undefined
-        ? {}
-        : { catalog_change: catalogChange }),
+      ...(catalogChange === undefined ? {} : { catalog_change: catalogChange }),
     };
     if (rescanNotBefore === undefined) {
       const { rescan_not_before: _ignored, ...entryWithoutRescanDeadline } =
