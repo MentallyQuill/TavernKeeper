@@ -17,13 +17,35 @@ import {
   type ScannerRun,
 } from "./types.js";
 
+const UNSAFE_PUBLIC_IDENTITY =
+  /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069<>]/u;
+const URL_LIKE_IDENTITY = /\b(?:https?|ftp):\/\/|\bwww\./iu;
+
+const PackageIdentityStringSchema = (maximum: number) =>
+  z
+    .string()
+    .trim()
+    .min(1)
+    .max(maximum)
+    .refine(
+      (value) =>
+        !UNSAFE_PUBLIC_IDENTITY.test(value) && !URL_LIKE_IDENTITY.test(value),
+      "OSV package identity contains unsafe public text.",
+    );
+
 const VulnerabilitySchema = z.looseObject({
   id: z.string().min(1).max(120),
   database_specific: z
     .looseObject({ severity: z.string().optional() })
     .optional(),
 });
+const PackageIdentitySchema = z.looseObject({
+  name: PackageIdentityStringSchema(160),
+  version: PackageIdentityStringSchema(160),
+  ecosystem: PackageIdentityStringSchema(80),
+});
 const PackageSchema = z.looseObject({
+  package: PackageIdentitySchema,
   vulnerabilities: z.array(VulnerabilitySchema).max(100_000),
 });
 const ResultSchema = z.looseObject({
@@ -57,6 +79,17 @@ function severity(value: string | undefined): Severity {
   }
 }
 
+function findingTitle({
+  ecosystem,
+  name,
+  version,
+}: z.infer<typeof PackageIdentitySchema>) {
+  const detailed = `Known vulnerable ${ecosystem} dependency: ${name}@${version}`;
+  return detailed.length <= 200
+    ? detailed
+    : `Known vulnerable dependency: ${name}`;
+}
+
 function parseReport(root: string, stdout: string) {
   let report: z.infer<typeof OsvReportSchema>;
   try {
@@ -84,9 +117,8 @@ function parseReport(root: string, stdout: string) {
             lineStart: null,
             lineEnd: null,
             evidenceSha: null,
-            title: "Known vulnerable dependency",
-            explanation:
-              "OSV-Scanner matched a known advisory for a declared dependency; package details were removed.",
+            title: findingTitle(entry.package),
+            explanation: `OSV-Scanner matched a known advisory for ${entry.package.ecosystem} package ${entry.package.name} at resolved version ${entry.package.version}.`,
           }),
         ),
       );

@@ -68,6 +68,12 @@ describe("conditional scanner adapters", () => {
                   {
                     id: "GHSA-aaaa-bbbb-cccc",
                     database_specific: { severity: "HIGH" },
+                    summary: "UNTRUSTED ADVISORY PROSE MUST NOT BE PUBLISHED",
+                    details:
+                      "Visit https://attacker.example/advisory for details.",
+                    references: [
+                      { type: "WEB", url: "https://attacker.example/raw" },
+                    ],
                   },
                 ],
               },
@@ -119,9 +125,16 @@ describe("conditional scanner adapters", () => {
           severity: "high",
           confidence: "high",
           path: "package-lock.json",
+          title: "Known vulnerable npm dependency: example@1.0.0",
+          explanation:
+            "OSV-Scanner matched a known advisory for npm package example at resolved version 1.0.0.",
         }),
       ],
     });
+    expect(JSON.stringify(run.findings)).not.toContain(
+      "UNTRUSTED ADVISORY PROSE",
+    );
+    expect(JSON.stringify(run.findings)).not.toContain("attacker.example");
   });
 
   test("OSV is not applicable without a supported manifest", async () => {
@@ -140,6 +153,59 @@ describe("conditional scanner adapters", () => {
       findings: [],
     });
     expect(runner.calls).toHaveLength(0);
+  });
+
+  test.each([
+    ["a missing resolved version", { name: "example", ecosystem: "npm" }],
+    [
+      "an overlong package name",
+      { name: "x".repeat(161), version: "1.0.0", ecosystem: "npm" },
+    ],
+    [
+      "a bidirectional control",
+      { name: "exam\u202eple", version: "1.0.0", ecosystem: "npm" },
+    ],
+    [
+      "a URL-shaped version",
+      {
+        name: "example",
+        version: "https://attacker.example/payload",
+        ecosystem: "npm",
+      },
+    ],
+  ])("OSV rejects package identity containing %s", async (_label, identity) => {
+    const runner = new JsonRunner(
+      JSON.stringify({
+        results: [
+          {
+            source: { path: "package-lock.json", type: "lockfile" },
+            packages: [
+              {
+                package: identity,
+                vulnerabilities: [{ id: "GHSA-aaaa-bbbb-cccc" }],
+              },
+            ],
+          },
+        ],
+      }),
+      1,
+    );
+    const temporaryRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-osv-test-"),
+    );
+
+    await expect(
+      runOsv({
+        root: repositoryRoot,
+        inputs: [file("package-lock.json")],
+        runner,
+        version: "2.4.0",
+        temporaryRoot,
+      }),
+    ).rejects.toMatchObject({
+      code: "MALFORMED_SCANNER_OUTPUT",
+      scope: "system",
+    });
   });
 
   test("OSV rejects no-package exit 128 instead of reporting partial coverage", async () => {
