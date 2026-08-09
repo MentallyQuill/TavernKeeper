@@ -14,6 +14,7 @@ import {
   reconcileCurrentScanQueue,
   type QueueSyncSummary,
 } from "../queue/reconcile.js";
+import { appendQueuedTarget } from "../queue/durable-queue.js";
 import { FailureDescriptorSchema, failureFingerprint } from "./failure.js";
 import {
   ActiveScanSchema,
@@ -177,7 +178,17 @@ export function migrateOperationsState(
   const retryByRepositoryId = new Map(
     legacy.target_retries.map((entry) => [entry.repository_id, entry]),
   );
-  const retryEntries = seeded.state.scan_queue.entries
+  const targetByRepositoryId = new Map(
+    manifest.repositories.map((target) => [target.repository_id, target]),
+  );
+  let stateWithRetries = seeded.state;
+  for (const retry of legacy.target_retries) {
+    const target = targetByRepositoryId.get(retry.repository_id);
+    if (target === undefined || target.target_sha !== retry.target_sha)
+      continue;
+    stateWithRetries = appendQueuedTarget(stateWithRetries, target);
+  }
+  const retryEntries = stateWithRetries.scan_queue.entries
     .filter((entry) => {
       const retry = retryByRepositoryId.get(entry.repository_id);
       return retry !== undefined && retry.target_sha === entry.target_sha;
@@ -194,7 +205,7 @@ export function migrateOperationsState(
   const retryRepositoryIds = new Set(
     retryEntries.map(({ repository_id }) => repository_id),
   );
-  const healthyEntries = seeded.state.scan_queue.entries.filter(
+  const healthyEntries = stateWithRetries.scan_queue.entries.filter(
     ({ repository_id }) => !retryRepositoryIds.has(repository_id),
   );
   let nextTicket = 1;
@@ -224,7 +235,7 @@ export function migrateOperationsState(
   });
 
   const state = OperationsStateSchema.parse({
-    ...seeded.state,
+    ...stateWithRetries,
     updated_at: input.at,
     scan_queue: {
       next_ticket: nextTicket,

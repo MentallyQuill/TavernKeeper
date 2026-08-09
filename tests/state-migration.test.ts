@@ -95,7 +95,7 @@ function v2State(
 }
 
 describe("automatic operations-state migration", () => {
-  test("moves legacy retries behind the current healthy catalog backlog", () => {
+  test("baselines ordinary catalog entries while restoring legacy retries", () => {
     const failed = target(41, 1);
     const healthy = target(42, 2);
     const migrated = migrateOperationsState(v2State([failed]), {
@@ -108,17 +108,18 @@ describe("automatic operations-state migration", () => {
     expect(migrated.state).toMatchObject({
       schema_version: 3,
       emergency_stop: null,
-      scan_queue: { next_ticket: 3 },
+      scan_queue: { next_ticket: 2 },
     });
+    expect(migrated.state.catalog_observation?.repositories).toEqual([
+      { repository_id: 41, target_sha: failed.target_sha },
+      { repository_id: 42, target_sha: healthy.target_sha },
+    ]);
     expect(
       migrated.state.scan_queue.entries.map(({ repository_id, ticket }) => [
         repository_id,
         ticket,
       ]),
-    ).toEqual([
-      [42, 1],
-      [41, 2],
-    ]);
+    ).toEqual([[41, 1]]);
     expect(
       migrated.state.scan_queue.entries.find(
         ({ repository_id }) => repository_id === 41,

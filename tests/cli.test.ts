@@ -104,6 +104,19 @@ function indexedReport(
   };
 }
 
+function stateObserving(...targets: ReturnType<typeof target>[]) {
+  return {
+    ...initialOperationsState(now),
+    catalog_observation: {
+      initialized_at: now,
+      repositories: targets.map(({ repository_id, target_sha }) => ({
+        repository_id,
+        target_sha,
+      })),
+    },
+  };
+}
+
 describe("JSON-only orchestration CLIs", () => {
   test("defaults every coordinator entry point to scanner policy 4", () => {
     const targetValue = target(42);
@@ -130,7 +143,18 @@ describe("JSON-only orchestration CLIs", () => {
     const synchronized = buildQueueSynchronization({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: {
+        ...stateObserving(targetValue),
+        policy_campaigns: [
+          {
+            id: "policy-4-test",
+            scanner_policy_version: "4",
+            repository_ids: [42],
+            created_at: now,
+            status: "active",
+          },
+        ],
+      },
       now,
     });
 
@@ -199,7 +223,7 @@ describe("JSON-only orchestration CLIs", () => {
     const state = syncScanQueue({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: stateObserving(),
       now,
       scannerPolicyVersion: "2",
     }).state;
@@ -296,7 +320,7 @@ describe("JSON-only orchestration CLIs", () => {
         repositories: [targetValue],
       },
       index: { schema_version: 5, generated_at: now, reports: [] },
-      state: initialOperationsState(now),
+      state: stateObserving(),
       repositoryId: 42,
       scannerPolicyVersion: "2",
       requestCreatedAt: now,
@@ -410,7 +434,7 @@ describe("JSON-only orchestration CLIs", () => {
     const queued = buildTargetedQueueUpdate({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: stateObserving(),
       repositoryId: 42,
       scannerPolicyVersion: "2",
       requestCreatedAt: now,

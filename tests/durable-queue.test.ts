@@ -153,6 +153,22 @@ describe("durable scan ticket operations", () => {
     expect(failed.becameChronic).toBe(false);
   });
 
+  test("retains new-catalog provenance when a failed target rotates", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42), {
+      catalogChange: "new",
+    });
+    state = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at,
+    }).state;
+
+    expect(state.scan_queue.entries[0]).toMatchObject({
+      catalog_change: "new",
+      consecutive_failures: 1,
+    });
+  });
+
   test("a fifth and sixth failure remain queued and rotate again", () => {
     let state = appendQueuedTarget(initialOperationsState(at), target(42));
     for (let attempt = 1; attempt <= 6; attempt += 1) {
@@ -229,6 +245,53 @@ describe("durable scan ticket operations", () => {
     expect(replaced.scan_queue.entries[0]).not.toHaveProperty(
       "failure_history",
     );
+  });
+
+  test("replacing a SHA preserves updated-catalog provenance and queue history", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42), {
+      catalogChange: "updated",
+    });
+    state = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at,
+    }).state;
+
+    const replaced = replaceQueuedTargetSha(
+      state,
+      target(42, "b"),
+      "2026-08-04T00:01:00.000Z",
+    );
+
+    expect(replaced.scan_queue.entries[0]).toMatchObject({
+      target_sha: "b".repeat(40),
+      catalog_change: "updated",
+      ticket: 2,
+      total_failures: 1,
+    });
+  });
+
+  test("adds missing same-SHA provenance without clearing its cooldown", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.map((entry) => ({
+          ...entry,
+          rescan_not_before: "2026-08-06T00:00:00.000Z",
+        })),
+      },
+    };
+
+    const enriched = appendQueuedTarget(state, target(42), {
+      catalogChange: "updated",
+    });
+
+    expect(enriched.scan_queue.entries[0]).toMatchObject({
+      catalog_change: "updated",
+      rescan_not_before: "2026-08-06T00:00:00.000Z",
+    });
   });
 
   test("success removes only the exact immutable target", () => {

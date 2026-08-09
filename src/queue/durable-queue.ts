@@ -77,7 +77,10 @@ export function effectiveQueueEntryNotBefore(
 export function appendQueuedTarget(
   stateInput: OperationsState,
   targetInput: Target,
-  options: { staffRequested?: boolean } = {},
+  options: {
+    staffRequested?: boolean;
+    catalogChange?: "new" | "updated";
+  } = {},
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const target = parseTargetIdentity(targetInput);
@@ -86,15 +89,27 @@ export function appendQueuedTarget(
   );
   if (existing !== undefined) {
     if (existing.target_sha === target.target_sha) {
-      if (options.staffRequested !== true || existing.staff_requested === true)
-        return state;
+      const promoteToStaff =
+        options.staffRequested === true && existing.staff_requested !== true;
+      const addCatalogChange =
+        options.catalogChange !== undefined &&
+        existing.catalog_change === undefined;
+      if (!promoteToStaff && !addCatalogChange) return state;
       return OperationsStateSchema.parse({
         ...state,
         scan_queue: {
           ...state.scan_queue,
           entries: state.scan_queue.entries.map((entry) => {
             if (entry.repository_id !== target.repository_id) return entry;
-            const { rescan_not_before: _ignored, ...staffEntry } = entry;
+            const enrichedEntry = {
+              ...entry,
+              ...(addCatalogChange
+                ? { catalog_change: options.catalogChange }
+                : {}),
+            };
+            if (!promoteToStaff) return enrichedEntry;
+            const { rescan_not_before: _ignored, ...staffEntry } =
+              enrichedEntry;
             return { ...staffEntry, staff_requested: true };
           }),
         },
@@ -114,6 +129,9 @@ export function appendQueuedTarget(
         {
           ...entryForTarget(target, state.scan_queue.next_ticket),
           ...(options.staffRequested === true ? { staff_requested: true } : {}),
+          ...(options.catalogChange !== undefined
+            ? { catalog_change: options.catalogChange }
+            : {}),
         },
       ],
     },
@@ -264,6 +282,9 @@ export function replaceQueuedTargetSha(
               total_failures: entry.total_failures,
               ...(entry.staff_requested === true
                 ? { staff_requested: true }
+                : {}),
+              ...(entry.catalog_change !== undefined
+                ? { catalog_change: entry.catalog_change }
                 : {}),
             }
           : entry,

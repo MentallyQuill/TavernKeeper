@@ -77,12 +77,11 @@ retry, targeted, and policy-campaign scans
 converge on the same automatic V5 publication path. Committed queue work starts
 the next input-free batch independently of Pages deployment.
 
-On the first queue activation, TavernKeeper records an immutable
-`coverage_started_at` timestamp. Manifest V3 initial coverage is strict
-`popularity_rank` order. V2 remains a
-temporary compatibility path: current Top 30, submissions first cataloged on or
-after coverage start, and older projects. V2 new and old lanes sort by
-`first_cataloged_at`.
+The first incremental synchronization snapshots the current Tavernary manifest
+without treating unreported legacy repositories as work. Later manifest deltas
+enqueue a newly observed repository ID or a changed observed SHA. A changed SHA
+with a preferred report remains delayed until 48 hours after that report's
+completion. Scanner-policy changes require an explicit protected campaign.
 
 The queue is a durable monotonic ticket ledger reconciled against current
 eligibility. A target that advances before acquisition keeps its ticket while
@@ -100,16 +99,16 @@ queued SHA without moving that deadline. The cooldown does not apply to initial
 scans, staff-targeted scans, retry entries with a failure streak, or active
 policy-campaign scans.
 
-Ticket allocation is the fairness guarantee. Initial projects receive tickets
-in catalog order. Any failure removes that target from its old position and
-assigns it the next tail ticket, behind every project currently assigned to be
-scanned. Projects discovered afterward receive higher tickets, so a growing
-catalog cannot repeatedly push an older failure backward. Targeted rescans use
-durable tickets and are marked as staff requested. Once due, staff requests are
-selected before ordinary due tickets so an approved investigation does not
-wait behind the full catalog. Priority never bypasses an emergency stop,
-automatic hold, retry cooldown, exact-SHA validation, batch size, or
-concurrency limit.
+Ticket allocation is the fairness guarantee among new, updated, retry, and
+explicit staff work; the legacy catalog is not automatically ticketed. Any
+failure removes that target from its old position and assigns it the next tail
+ticket behind every project currently assigned to be scanned. Later catalog
+deltas receive higher tickets, so they cannot repeatedly push an older failure
+backward. Targeted rescans use durable tickets and are marked as staff
+requested. Once due, staff requests are selected before ordinary due tickets
+so an approved investigation does not wait behind automatic work. Priority
+never bypasses an emergency stop, automatic hold, retry cooldown,
+exact-SHA validation, batch size, or concurrency limit.
 
 ## Scan lifecycle
 
