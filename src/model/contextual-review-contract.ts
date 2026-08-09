@@ -405,13 +405,19 @@ const ContextualCompletedReviewWireResponseSchema = z.strictObject({
   review: CompleteReviewResponseSchema,
 });
 
-export const ContextualReviewResponseJsonSchema = z.toJSONSchema(
-  ContextualReviewWireResponseSchema,
-) as Record<string, unknown>;
+function structuredOutputJsonSchema(schema: z.ZodType) {
+  const generated = z.toJSONSchema(schema) as Record<string, unknown>;
+  const transportSchema = { ...generated };
+  delete transportSchema.$schema;
+  return transportSchema;
+}
 
-export const ContextualCompletedReviewResponseJsonSchema = z.toJSONSchema(
-  ContextualCompletedReviewWireResponseSchema,
-) as Record<string, unknown>;
+export const ContextualReviewResponseJsonSchema = structuredOutputJsonSchema(
+  ContextualReviewWireResponseSchema,
+);
+
+export const ContextualCompletedReviewResponseJsonSchema =
+  structuredOutputJsonSchema(ContextualCompletedReviewWireResponseSchema);
 
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;
 export type ContextualAssessmentInput = z.infer<

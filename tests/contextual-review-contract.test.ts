@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
   ContextualAssessmentSchema,
+  ContextualCompletedReviewResponseJsonSchema,
   ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
 } from "../src/model/contextual-review-contract.js";
@@ -39,6 +40,10 @@ describe("contextual review contract", () => {
         >
       ).review,
     ).not.toHaveProperty("oneOf");
+    expect(ContextualReviewResponseJsonSchema).not.toHaveProperty("$schema");
+    expect(ContextualCompletedReviewResponseJsonSchema).not.toHaveProperty(
+      "$schema",
+    );
   });
 
   test("accepts a complete expected-behavior assessment", () => {

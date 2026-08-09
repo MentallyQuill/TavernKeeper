@@ -114,7 +114,12 @@ describe("OpenAI-compatible contextual-review transport", () => {
   });
 
   test.each([
-    [400, "response_format", "invalid_json_schema", "provider_schema_rejected"],
+    [
+      400,
+      "response_format.json_schema.schema",
+      "invalid_request_error",
+      "provider_schema_rejected",
+    ],
     [404, "model", "model_not_found", "provider_model_unavailable"],
     [
       400,

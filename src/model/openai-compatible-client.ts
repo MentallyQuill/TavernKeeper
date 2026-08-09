@@ -380,16 +380,19 @@ async function providerHttpDiagnostic(response: Response) {
   if (error === null || typeof error !== "object") return fallback;
   const code = "code" in error ? error.code : undefined;
   const param = "param" in error ? error.param : undefined;
-  if (code === "model_not_found" || param === "model")
+  const parameter = typeof param === "string" ? param : "";
+  if (code === "model_not_found" || parameter === "model")
     return "provider_model_unavailable";
-  if (code === "invalid_json_schema" || param === "response_format")
+  if (
+    code === "invalid_json_schema" ||
+    parameter === "response_format" ||
+    parameter.startsWith("response_format.")
+  )
     return "provider_schema_rejected";
   if (
     code === "unsupported_parameter" ||
     code === "invalid_parameter" ||
-    ["max_completion_tokens", "reasoning_effort", "store"].includes(
-      String(param),
-    )
+    ["max_completion_tokens", "reasoning_effort", "store"].includes(parameter)
   )
     return "provider_parameter_rejected";
   return fallback;
