@@ -22,11 +22,13 @@ import {
   assertPreparedEvidenceArtifactSize,
   MAX_PREPARED_EVIDENCE_BYTES,
   MAX_PREPARED_MANIFEST_BYTES,
+  MAX_PREPARED_PAYLOAD_BYTES,
 } from "./prepared-evidence-limits.js";
 
 export {
   assertPreparedEvidenceArtifactSize,
   MAX_PREPARED_EVIDENCE_BYTES,
+  MAX_PREPARED_PAYLOAD_BYTES,
 } from "./prepared-evidence-limits.js";
 
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);

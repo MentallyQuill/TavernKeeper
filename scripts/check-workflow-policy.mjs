@@ -669,6 +669,27 @@ function checkEncryptedHandoff(file, workflow) {
       file,
       "prepare must upload one bounded per-repository artifact for one day",
     );
+  const pack = prepareSteps.find(
+    (step) => step?.name === "Package bounded prepared evidence",
+  );
+  const packageFailure = prepareSteps.find(
+    (step) => step?.name === "Package sanitized preparation failure",
+  );
+  const markPreparationFailure = prepareSteps.find(
+    (step) =>
+      step?.name === "Mark failed preparation after preserving the handoff",
+  );
+  if (
+    pack?.id !== "pack" ||
+    pack?.["continue-on-error"] !== true ||
+    pack?.env?.TAVERNKEEPER_ERROR_OUTPUT !== "phase-error.json" ||
+    !pack?.run?.includes("prepared_bytes") ||
+    !pack?.run?.includes("evidence_bytes") ||
+    !pack?.run?.includes("prepared-evidence -- pack") ||
+    !packageFailure?.if?.includes("steps.pack.outcome != 'success'") ||
+    !markPreparationFailure?.if?.includes("steps.pack.outcome != 'success'")
+  )
+    fail(file, "prepare must preserve a sanitized pack-failure artifact");
   const preparedDownloads = steps.filter(
     (step) =>
       typeof step?.uses === "string" &&

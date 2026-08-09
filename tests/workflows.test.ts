@@ -384,6 +384,16 @@ describe("GitHub workflow security policy", () => {
     const prepareIndex = prepareSteps.findIndex(
       (step) => step.name === "Prepare exact target and scanner evidence",
     );
+    const pack = prepareSteps.find(
+      (step) => step.name === "Package bounded prepared evidence",
+    );
+    const packageFailure = prepareSteps.find(
+      (step) => step.name === "Package sanitized preparation failure",
+    );
+    const markPreparationFailure = prepareSteps.find(
+      (step) =>
+        step.name === "Mark failed preparation after preserving the handoff",
+    );
     const finalizeIndex = steps.findIndex(
       (step) => step.name === "Finalize contextual V5 report",
     );
@@ -481,6 +491,17 @@ describe("GitHub workflow security policy", () => {
     expect(toolchainFailure?.run).toContain("SCANNER_UNAVAILABLE");
     expect(prepareSteps[prepareIndex]?.if).toContain(
       "steps.toolchain.outcome == 'success'",
+    );
+    expect(pack?.id).toBe("pack");
+    expect(pack?.continueOnError ?? pack?.["continue-on-error"]).toBe(true);
+    expect(pack?.env).toMatchObject({
+      TAVERNKEEPER_ERROR_OUTPUT: "phase-error.json",
+    });
+    expect(pack?.run).toContain("prepared_bytes");
+    expect(pack?.run).toContain("evidence_bytes");
+    expect(packageFailure?.if).toContain("steps.pack.outcome != 'success'");
+    expect(markPreparationFailure?.if).toContain(
+      "steps.pack.outcome != 'success'",
     );
   });
 
@@ -923,6 +944,13 @@ describe("GitHub workflow security policy", () => {
           "path: candidate.json",
         ),
       /scan artifact upload must always retain only outcome\.enc for one day/u,
+    );
+  });
+
+  test("workflow policy preserves sanitized pack-failure handoffs", async () => {
+    await expectPolicyFailure(
+      (text) => text.replace("        id: pack\n", ""),
+      /prepare must preserve a sanitized pack-failure artifact/u,
     );
   });
 
