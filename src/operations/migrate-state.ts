@@ -106,6 +106,26 @@ export function migrateOperationsState(
   const legacy = OperationsStateV2Schema.parse(value);
   const manifest = parseCurrentManifest(input.manifest);
   const index = ReportIndexV5Schema.parse(input.index);
+  const targetByRepositoryId = new Map(
+    manifest.repositories.map((target) => [target.repository_id, target]),
+  );
+  const selectedLegacyRetries = manifest.repositories.flatMap((target) => {
+    const selected = legacy.target_retries
+      .filter(
+        (retry) =>
+          retry.repository_id === target.repository_id &&
+          retry.target_sha === target.target_sha,
+      )
+      .sort(
+        (left, right) =>
+          right.attempt - left.attempt ||
+          right.last_failed_at.localeCompare(left.last_failed_at) ||
+          left.initial_failed_at.localeCompare(right.initial_failed_at) ||
+          left.error_fingerprint.localeCompare(right.error_fingerprint) ||
+          JSON.stringify(left).localeCompare(JSON.stringify(right)),
+      )[0];
+    return selected === undefined ? [] : [selected];
+  });
   const legacyAutomaticHolds: AutomaticRecoveryHold[] = legacy.shared_holds.map(
     (hold) => {
       const failure = {
@@ -166,23 +186,33 @@ export function migrateOperationsState(
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: legacy.active_scans,
     policy_campaigns: legacy.policy_campaigns,
+    catalog_observation: {
+      initialized_at: input.at,
+      repositories: manifest.repositories.map(
+        ({ repository_id, target_sha }) => ({ repository_id, target_sha }),
+      ),
+    },
   });
   const seeded = reconcileCurrentScanQueue({
     manifest,
-    index,
+    index: {
+      ...index,
+      reports: index.reports.filter(
+        (report) =>
+          targetByRepositoryId.get(report.repository_id)?.target_sha ===
+          report.target_sha,
+      ),
+    },
     state: base,
     now: input.at,
     scannerPolicyVersion: input.scannerPolicyVersion,
   });
 
   const retryByRepositoryId = new Map(
-    legacy.target_retries.map((entry) => [entry.repository_id, entry]),
-  );
-  const targetByRepositoryId = new Map(
-    manifest.repositories.map((target) => [target.repository_id, target]),
+    selectedLegacyRetries.map((entry) => [entry.repository_id, entry]),
   );
   let stateWithRetries = seeded.state;
-  for (const retry of legacy.target_retries) {
+  for (const retry of selectedLegacyRetries) {
     const target = targetByRepositoryId.get(retry.repository_id);
     if (target === undefined || target.target_sha !== retry.target_sha)
       continue;

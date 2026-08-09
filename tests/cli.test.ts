@@ -524,7 +524,7 @@ describe("JSON-only orchestration CLIs", () => {
     const automaticState = syncScanQueue({
       manifest,
       index,
-      state: initialOperationsState(now),
+      state: stateObserving(priorTarget),
       now,
       scannerPolicyVersion: "2",
     }).state;
