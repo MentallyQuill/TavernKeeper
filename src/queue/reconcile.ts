@@ -226,28 +226,45 @@ export function reconcileCurrentScanQueue(input: {
       continue;
     }
     existingRepositoryIds.add(entry.repository_id);
-    const rescanNotBefore = automaticRescanNotBefore({
-      target,
-      report: preferredReportByRepositoryId.get(target.repository_id),
-      state: campaignState,
-      scannerPolicyVersion: input.scannerPolicyVersion,
-      staffRequested: entry.staff_requested === true,
-    });
     const catalogChange =
       entry.catalog_change ?? detectedCatalogChange.get(entry.repository_id);
+    const staffRequested =
+      observationInitialized && entry.staff_requested === true;
+    const campaignRequested = hasActivePolicyCampaign(
+      target,
+      campaignState,
+      input.scannerPolicyVersion,
+    );
+    const clearsRescanDeadline =
+      staffRequested || campaignRequested || catalogChange === "new";
+    const durableRescanDeadline =
+      catalogChange === undefined ? undefined : entry.rescan_not_before;
+    const rescanNotBefore = clearsRescanDeadline
+      ? undefined
+      : (durableRescanDeadline ??
+        automaticRescanNotBefore({
+          target,
+          report: preferredReportByRepositoryId.get(target.repository_id),
+          state: campaignState,
+          scannerPolicyVersion: input.scannerPolicyVersion,
+          staffRequested,
+        }));
     if (entry.target_sha !== target.target_sha) {
       entries.push({
         ...blankEntry(target, entry.ticket, rescanNotBefore, catalogChange),
         total_failures: entry.total_failures,
-        ...(entry.staff_requested === true ? { staff_requested: true } : {}),
+        ...(staffRequested ? { staff_requested: true } : {}),
       });
       replaced += 1;
       continue;
     }
+    const { staff_requested: _ignoredStaffRequest, ...entryWithoutStaff } =
+      entry;
     const normalizedEntry = {
-      ...entry,
+      ...entryWithoutStaff,
       source_id: target.source_id,
       repository: target.repository,
+      ...(staffRequested ? { staff_requested: true as const } : {}),
       ...(catalogChange === undefined
         ? {}
         : { catalog_change: catalogChange }),
@@ -280,13 +297,15 @@ export function reconcileCurrentScanQueue(input: {
       blankEntry(
         target,
         nextTicket,
-        automaticRescanNotBefore({
-          target,
-          report,
-          state: campaignState,
-          scannerPolicyVersion: input.scannerPolicyVersion,
-          staffRequested: false,
-        }),
+        catalogChange === "new"
+          ? undefined
+          : automaticRescanNotBefore({
+              target,
+              report,
+              state: campaignState,
+              scannerPolicyVersion: input.scannerPolicyVersion,
+              staffRequested: false,
+            }),
         catalogChange,
       ),
     );
