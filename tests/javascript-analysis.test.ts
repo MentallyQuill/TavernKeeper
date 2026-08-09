@@ -206,6 +206,33 @@ describe("integrated JavaScript derivative analysis", () => {
     });
   });
 
+  test("parses and normalizes decoded computed-member execution chains", async () => {
+    const decoded = String.raw`[]["filter"]["constructor"]("return 1")()`;
+    const source = `atob("${Buffer.from(decoded).toString("base64")}")`;
+    const astInputs: string[] = [];
+    const normalizationInputs: string[] = [];
+    const run = await analyzeFixture(source, undefined, {
+      analyzeAst: (input) => {
+        astInputs.push(input);
+        return { warnings: [] };
+      },
+      normalize: async (input) => {
+        normalizationInputs.push(input);
+        return { derivatives: [] };
+      },
+    });
+
+    expect(astInputs).toEqual(expect.arrayContaining([source, decoded]));
+    expect(normalizationInputs).toEqual(
+      expect.arrayContaining([source, decoded]),
+    );
+    expect(run.javascriptAnalysis).toMatchObject({
+      status: "complete",
+      unresolved: [],
+      representations: { raw: 1, decoded: 1, normalized: 0 },
+    });
+  });
+
   test("fails closed when inventory content changes after hashing", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-digest-"));
     await writeFile(join(root, "app.js"), "const changed=true");
