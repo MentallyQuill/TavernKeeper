@@ -13,6 +13,11 @@ import { afterEach, describe, expect, test } from "vitest";
 
 import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
 import {
+  assertPreparedEvidenceArtifactSize,
+  createPreparedEvidenceArtifact,
+  restorePreparedEvidenceArtifact,
+} from "../src/contracts/prepared-evidence.js";
+import {
   loadScannerPins,
   loadScannerPolicy,
   ScannerPolicyV4Schema,
@@ -818,5 +823,58 @@ describe("three-phase contextual scan session", () => {
         contextual_review: {},
       }).success,
     ).toBe(false);
+  });
+
+  test("rejects a prepared artifact whose evidence digest changed", async () => {
+    const { root, prepared } = await preparedSession();
+    const artifactRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-prepared-artifact-"),
+    );
+    const restoredRoot = join(
+      tmpdir(),
+      `tavernkeeper-session-restored-${Date.now()}`,
+    );
+    roots.push(artifactRoot, restoredRoot);
+    const request = {
+      ...prepared.target,
+      project_kinds: [...prepared.project_kinds],
+      catalog_priority: {
+        top_30: false,
+        first_cataloged_at: "2026-08-01T00:00:00.000Z",
+      },
+      reason: "new" as const,
+      report_version: prepared.report_version,
+      supersedes_report_id: prepared.supersedes_report_id,
+      previous_report_shas: [],
+    };
+    await createPreparedEvidenceArtifact({
+      request,
+      sessionRoot: root,
+      artifactRoot,
+    });
+    const evidencePath = join(artifactRoot, "evidence-context.json");
+    const evidence = await readFile(evidencePath, "utf8");
+    await writeFile(
+      evidencePath,
+      evidence.replace("sendCredential();", "sendCredentials();"),
+    );
+
+    await expect(
+      restorePreparedEvidenceArtifact({
+        artifactRoot,
+        sessionRoot: restoredRoot,
+        expectedRequest: request,
+      }),
+    ).rejects.toThrow(/digest/iu);
+    await expect(access(restoredRoot)).rejects.toMatchObject({
+      code: "ENOENT",
+    });
+  });
+
+  test("caps a prepared artifact before upload", () => {
+    expect(() => assertPreparedEvidenceArtifactSize(20_000_001)).toThrow(
+      /size ceiling/iu,
+    );
+    expect(() => assertPreparedEvidenceArtifactSize(20_000_000)).not.toThrow();
   });
 });

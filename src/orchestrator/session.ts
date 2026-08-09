@@ -152,7 +152,7 @@ const PreparedSessionObjectSchema = z.strictObject({
 
 type PreparedSession = z.infer<typeof PreparedSessionObjectSchema>;
 
-const EvidenceContextBundleObjectSchema = z.strictObject({
+export const EvidenceContextBundleSchema = z.strictObject({
   schema_version: z.literal(1),
   session_id: DigestSchema,
   evidence_digest: DigestSchema,
@@ -595,7 +595,7 @@ export async function prepareTargetSession(
       maxEvidenceCharactersPerFinding:
         policy.javascriptAnalysis.maxEvidenceCharactersPerFinding,
     });
-    const evidenceBundle = EvidenceContextBundleObjectSchema.parse({
+    const evidenceBundle = EvidenceContextBundleSchema.parse({
       schema_version: 1,
       session_id: prepared.session_id,
       evidence_digest: evidenceContextIdentity({
@@ -638,24 +638,14 @@ export async function prepareTargetSession(
   }
 }
 
-async function loadPrepared(sessionRoot: string) {
-  const prepared = PreparedSessionSchema.parse(
-    JSON.parse(await readFile(resolve(sessionRoot, "prepared.json"), "utf8")),
-  );
+export function validatePreparedSessionEvidence(
+  preparedInput: unknown,
+  evidenceInput: unknown,
+) {
+  const prepared = PreparedSessionSchema.parse(preparedInput);
   if (prepared.session_id !== preparedSessionIdentity(prepared))
     throw new Error("Prepared session identity does not match its contents.");
-  return prepared;
-}
-
-async function loadEvidenceContext(
-  sessionRoot: string,
-  prepared: PreparedSession,
-) {
-  const bundle = EvidenceContextBundleObjectSchema.parse(
-    JSON.parse(
-      await readFile(resolve(sessionRoot, "evidence-context.json"), "utf8"),
-    ),
-  );
+  const bundle = EvidenceContextBundleSchema.parse(evidenceInput);
   if (
     bundle.session_id !== prepared.session_id ||
     bundle.evidence_digest !==
@@ -676,7 +666,26 @@ async function loadEvidenceContext(
     )
   )
     throw new Error("Evidence context does not cover prepared findings.");
-  return bundle;
+  return { prepared, evidence: bundle };
+}
+
+async function loadPrepared(sessionRoot: string) {
+  const prepared = PreparedSessionSchema.parse(
+    JSON.parse(await readFile(resolve(sessionRoot, "prepared.json"), "utf8")),
+  );
+  if (prepared.session_id !== preparedSessionIdentity(prepared))
+    throw new Error("Prepared session identity does not match its contents.");
+  return prepared;
+}
+
+async function loadEvidenceContext(
+  sessionRoot: string,
+  prepared: PreparedSession,
+) {
+  const evidence = JSON.parse(
+    await readFile(resolve(sessionRoot, "evidence-context.json"), "utf8"),
+  );
+  return validatePreparedSessionEvidence(prepared, evidence).evidence;
 }
 
 function safeSessionRoot(sessionRoot: string) {

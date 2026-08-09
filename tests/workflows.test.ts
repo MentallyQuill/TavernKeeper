@@ -97,6 +97,41 @@ async function expectPolicyFailure(
 }
 
 describe("GitHub workflow security policy", () => {
+  test("prepares without secrets and reviews only the bounded handoff", async () => {
+    const value = await workflow("scan-and-publish.yml");
+    const prepare = value.jobs.prepare;
+    const review = value.jobs.scan;
+
+    expect(prepare.strategy["max-parallel"]).toBe(2);
+    expect(prepare.strategy["fail-fast"]).toBe(false);
+    expect(review.needs).toBe("prepare");
+    expect(review.strategy.matrix).toEqual(prepare.strategy.matrix);
+    expect(JSON.stringify(prepare)).not.toMatch(
+      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
+    );
+    expect(JSON.stringify(review)).toContain("TAVERNKEEPER_API_KEY");
+    expect(JSON.stringify(review)).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
+
+    const prepareUpload = (prepare.steps as Workflow[]).find(
+      (step) => step.name === "Upload bounded prepared evidence",
+    );
+    const reviewDownload = (review.steps as Workflow[]).find(
+      (step) => step.name === "Download bounded prepared evidence",
+    );
+    expect(prepareUpload).toMatchObject({
+      uses: uploadArtifactAction,
+      if: "always()",
+      with: {
+        name: "prepared-${{ matrix.request.repository_id }}",
+        "retention-days": 1,
+      },
+    });
+    expect(reviewDownload).toMatchObject({
+      uses: downloadArtifactAction,
+      with: { name: "prepared-${{ matrix.request.repository_id }}" },
+    });
+  });
+
   test("the review progress counter never prints malformed checkpoint content", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-review-progress-"));
     const checkpoint = join(root, "review-progress.json");
@@ -278,7 +313,8 @@ describe("GitHub workflow security policy", () => {
   test("the scan job isolates provider secrets to contextual review", async () => {
     const value = await workflow("scan-and-publish.yml");
     const steps = value.jobs.scan.steps as Workflow[];
-    const prepareIndex = steps.findIndex(
+    const prepareSteps = value.jobs.prepare.steps as Workflow[];
+    const prepareIndex = prepareSteps.findIndex(
       (step) => step.name === "Prepare exact target and scanner evidence",
     );
     const finalizeIndex = steps.findIndex(
@@ -304,9 +340,11 @@ describe("GitHub workflow security policy", () => {
 
     expect(value.jobs.scan.strategy["max-parallel"]).toBe(2);
     expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
-    expect(reviewIndex).toBe(prepareIndex + 1);
+    expect(prepareIndex).toBeGreaterThan(-1);
     expect(finalizeIndex).toBe(reviewIndex + 1);
-    expect(steps[prepareIndex]?.run).toBe("npm run --silent prepare-target");
+    expect(prepareSteps[prepareIndex]?.run).toBe(
+      "npm run --silent prepare-target",
+    );
     expect(steps[finalizeIndex]?.run).toBe(
       "npm run --silent finalize-target -- candidate.json",
     );
@@ -356,13 +394,13 @@ describe("GitHub workflow security policy", () => {
     expect(providerSecretSteps.map((step) => step.name)).toEqual([
       "Contextually assess scanner evidence",
     ]);
-    const dependencies = steps.find(
+    const dependencies = prepareSteps.find(
       (step) => step.name === "Install dependencies",
     );
-    const toolchain = steps.find(
+    const toolchain = prepareSteps.find(
       (step) => step.name === "Install and verify pinned scanners",
     );
-    const toolchainFailure = steps.find(
+    const toolchainFailure = prepareSteps.find(
       (step) => step.name === "Record shared scanner toolchain failure",
     );
     expect(
@@ -372,7 +410,7 @@ describe("GitHub workflow security policy", () => {
       true,
     );
     expect(toolchainFailure?.run).toContain("SCANNER_UNAVAILABLE");
-    expect(steps[prepareIndex]?.if).toContain(
+    expect(prepareSteps[prepareIndex]?.if).toContain(
       "steps.toolchain.outcome == 'success'",
     );
   });
@@ -774,7 +812,7 @@ describe("GitHub workflow security policy", () => {
   test("workflow policy rejects fail-fast batch cancellation", async () => {
     await expectPolicyFailure(
       (text) => text.replace("fail-fast: false", "fail-fast: true"),
-      /scan matrix must finish every selected repository/u,
+      /prepare matrix must finish every selected repository/u,
     );
   });
 
@@ -826,7 +864,7 @@ describe("GitHub workflow security policy", () => {
           uploadArtifactAction,
           `actions/upload-artifact@${"0".repeat(40)}`,
         ),
-      /scan artifact upload must always retain only outcome\.enc for one day/u,
+      /prepare must upload one bounded per-repository artifact for one day/u,
     );
     await expectPolicyFailure(
       (text) =>
@@ -834,7 +872,7 @@ describe("GitHub workflow security policy", () => {
           downloadArtifactAction,
           `actions/download-artifact@${"0".repeat(40)}`,
         ),
-      /artifact actions must retain the reviewed Node 24 pins/u,
+      /review must download only its bounded prepared artifact/u,
     );
   });
 
