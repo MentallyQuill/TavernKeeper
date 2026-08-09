@@ -5,7 +5,6 @@ import type {
 import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   buildContextualCountsV5,
-  DETERMINISTIC_REVIEW_FALLBACK_LIMITATION,
   INCOMPLETE_JAVASCRIPT_LIMITATION,
   METADATA_ONLY_EVIDENCE_LIMITATION,
   publicJavascriptAnalysisCoverage,
@@ -59,7 +58,6 @@ function reportLimitations(
   scanPackage: ScanPackageV1,
   configured: readonly string[],
   evidenceGroups: readonly EvidenceContextGroup[],
-  deterministicFallback: number,
 ) {
   const scannerLimitations = scanPackage.tools.flatMap((tool) =>
     (tool.limitations ?? []).map(
@@ -75,15 +73,12 @@ function reportLimitations(
   )
     ? [METADATA_ONLY_EVIDENCE_LIMITATION]
     : [];
-  const reviewLimitations =
-    deterministicFallback > 0 ? [DETERMINISTIC_REVIEW_FALLBACK_LIMITATION] : [];
   return [
     ...new Set([
       ...configured,
       ...scannerLimitations,
       ...javascriptLimitations,
       ...contextualLimitations,
-      ...reviewLimitations,
     ]),
   ];
 }
@@ -187,12 +182,6 @@ export function buildContextualReport(
       (group.source_kind === "metadata-only" ? group.candidates.length : 0),
     0,
   );
-  const modelCompleted =
-    input.review.coverage.model_completed ?? input.review.coverage.completed;
-  const deterministicFallback =
-    input.review.coverage.deterministic_fallback ?? 0;
-  if (modelCompleted + deterministicFallback !== candidates.length)
-    throw new Error("Contextual review method coverage is incomplete.");
   const withoutIdentity = {
     schema_version: 5 as const,
     report_version: options.reportVersion,
@@ -251,12 +240,7 @@ export function buildContextualReport(
           : {}),
       },
     },
-    review_coverage: {
-      required: input.review.coverage.required,
-      completed: input.review.coverage.completed,
-      model_completed: modelCompleted,
-      deterministic_fallback: deterministicFallback,
-    },
+    review_coverage: input.review.coverage,
     candidates,
     assessments: input.review.assessments,
     observations: input.review.observations,
@@ -265,7 +249,6 @@ export function buildContextualReport(
       scanPackage,
       options.limitations,
       input.evidenceGroups,
-      deterministicFallback,
     ),
   };
   const identity = reportIdentity({

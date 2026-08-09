@@ -89,11 +89,46 @@ const canonicalStaffPublisherRun =
     'git config user.email "tavernkeeper@users.noreply.github.com"',
     ...canonicalStaffPublisherPushLines,
   ].join("\n") + "\n";
-const canonicalContextualReviewRun = String.raw`node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
-if timeout --signal=TERM --kill-after=5s 22m npm run --silent review-target; then
-  rm -f phase-error.json
-  exit 0
-fi
+const canonicalContextualReviewRun = String.raw`progress_count() {
+  node scripts/contextual-review-progress-count.mjs "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
+}
+run_review() {
+  node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
+  if timeout --signal=TERM --kill-after=5s 20m npm run --silent review-target; then
+    rm -f phase-error.json
+    return 0
+  fi
+  return 1
+}
+retryable_review_failure() {
+  jq -e '(.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model") or (.code == "MODEL_REVIEW_TIMEOUT" and .domain == "target" and .component == "contextual-model")' phase-error.json >/dev/null
+}
+provider_review_failure() {
+  jq -e '.code == "MODEL_PROVIDER" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
+}
+provider_no_progress_retries="0"
+for pass in 1 2 3; do
+  progress_before="$(progress_count)"
+  if run_review; then
+    exit 0
+  fi
+  progress_after="$(progress_count)"
+  if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then
+    exit 1
+  fi
+  if [[ "$progress_after" -gt "$progress_before" ]]; then
+    rm -f phase-error.json
+    sleep "$((pass * 5))"
+    continue
+  fi
+  if provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]; then
+    provider_no_progress_retries="$((provider_no_progress_retries + 1))"
+    rm -f phase-error.json
+    sleep "$((pass * 5))"
+    continue
+  fi
+  exit 1
+done
 exit 1
 `;
 const canonicalProviderProbeOutcomeRun = String.raw`operation="provider-probe-failure"
@@ -150,10 +185,7 @@ const permissionProfiles = {
   },
   "provider-check.yml": {
     workflow: { contents: "read" },
-    jobs: {
-      authorize: {},
-      check: { contents: "read", "id-token": "write" },
-    },
+    jobs: { authorize: {}, check: { contents: "read" } },
   },
   "reconcile.yml": {
     workflow: {
@@ -166,11 +198,7 @@ const permissionProfiles = {
     jobs: {
       sync: { contents: "read" },
       plan: { contents: "read", actions: "write" },
-      "probe-provider": {
-        contents: "read",
-        actions: "write",
-        "id-token": "write",
-      },
+      "probe-provider": { contents: "read", actions: "write" },
       run: undefined,
     },
   },
@@ -198,7 +226,7 @@ const permissionProfiles = {
     },
     jobs: {
       prepare: { contents: "read" },
-      scan: { contents: "read", "id-token": "write" },
+      scan: { contents: "read" },
       publish: { contents: "read", issues: "write" },
       deploy: undefined,
       incident: { contents: "read", issues: "write" },
@@ -256,6 +284,9 @@ const mutationJobs = {
 };
 const approvedWorkflowSecretNames = new Set([
   "TAVERNKEEPER_ARTIFACT_KEY",
+  "TAVERNKEEPER_API_ENDPOINT",
+  "TAVERNKEEPER_API_KEY",
+  "TAVERNKEEPER_MODEL",
   "TAVERNKEEPER_PUBLISHER_APP_ID",
   "TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY",
   "TAVERNARY_WAKE_APP_ID",
@@ -266,11 +297,6 @@ const publisherSecretPattern =
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
 const providerSecretPattern =
   /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
-const openAIWorkloadIdentityEnv = {
-  OPENAI_WIF_AUDIENCE: "${{ vars.OPENAI_WIF_AUDIENCE }}",
-  OPENAI_IDENTITY_PROVIDER_ID: "${{ vars.OPENAI_IDENTITY_PROVIDER_ID }}",
-  OPENAI_SERVICE_ACCOUNT_ID: "${{ vars.OPENAI_SERVICE_ACCOUNT_ID }}",
-};
 const sensitiveInputPattern =
   /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
 const forbiddenRuntimePattern =
@@ -278,12 +304,6 @@ const forbiddenRuntimePattern =
 
 function fail(file, message) {
   failures.push(`${file}: ${message}`);
-}
-
-function hasOpenAIWorkloadIdentity(step) {
-  return Object.entries(openAIWorkloadIdentityEnv).every(
-    ([name, value]) => step?.env?.[name] === value,
-  );
 }
 
 function containsOnlyCanonicalPublisherPush(
@@ -449,8 +469,19 @@ function checkSecretPlacement(file, workflow) {
       fail(file, "artifact key appears outside authenticated transport steps");
   }
   for (const location of locationsMatching(workflow, providerSecretPattern)) {
-    if (location)
-      fail(file, "legacy external model provider configuration is forbidden");
+    const stepIndex = location.path[3];
+    const step = Number.isInteger(stepIndex)
+      ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
+      : undefined;
+    const approved =
+      (file === "scan-and-publish.yml" &&
+        step?.name === "Contextually assess scanner evidence") ||
+      (file === "provider-check.yml" &&
+        step?.name === "Check one benign contextual review") ||
+      (file === "reconcile.yml" &&
+        step?.name === "Check benign provider compatibility");
+    if (!approved)
+      fail(file, "model provider secret appears outside a review-only step");
   }
 }
 
@@ -478,9 +509,7 @@ function checkContextualRuntime(file, workflow) {
     if (
       prepareIndex < 0 ||
       finalizeIndex !== reviewIndex + 1 ||
-      reviewSteps[reviewIndex]?.["timeout-minutes"] !== 25 ||
-      workflow.jobs?.scan?.permissions?.["id-token"] !== "write" ||
-      !hasOpenAIWorkloadIdentity(reviewSteps[reviewIndex])
+      reviewSteps[reviewIndex]?.["timeout-minutes"] !== 62
     )
       fail(
         file,
@@ -496,8 +525,6 @@ function checkContextualRuntime(file, workflow) {
     );
     if (
       check.length !== 1 ||
-      workflow.jobs?.check?.permissions?.["id-token"] !== "write" ||
-      !hasOpenAIWorkloadIdentity(check[0]) ||
       /publish|candidate\.json|git push/iu.test(JSON.stringify(workflow))
     )
       fail(
@@ -516,8 +543,6 @@ function checkContextualRuntime(file, workflow) {
       checks.length !== 1 ||
       checks[0]?.["continue-on-error"] !== true ||
       checks[0]?.["timeout-minutes"] !== 5 ||
-      job?.permissions?.["id-token"] !== "write" ||
-      !hasOpenAIWorkloadIdentity(checks[0]) ||
       /prepare-target|review-target|finalize-target|candidate\.json/iu.test(
         JSON.stringify(job),
       )
