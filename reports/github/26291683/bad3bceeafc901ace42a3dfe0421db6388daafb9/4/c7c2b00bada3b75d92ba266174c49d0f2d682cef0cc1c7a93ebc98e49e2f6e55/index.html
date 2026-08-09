@@ -1,0 +1,825 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for twitter/twemoji at commit bad3bce.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; twitter/twemoji</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/twitter/twemoji" rel="noopener noreferrer">twitter/twemoji</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/twitter/twemoji/commit/bad3bceeafc901ace42a3dfe0421db6388daafb9" rel="noopener noreferrer">bad3bce</a></span>
+        <span>Reviewed <time datetime="2026-08-09T09:14:34.554Z">Aug 9, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-material" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">1 material concern identified.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>1 material</span>
+        <span>32 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-6rw7-vpxm-498p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-6rw7-vpxm-498p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-6rw7-vpxm-498p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-72xf-g2v4-qvf3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-72xf-g2v4-qvf3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-72xf-g2v4-qvf3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-p8p7-x288-28g6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p8p7-x288-28g6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p8p7-x288-28g6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2qf-rxjj-qqgw applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2qf-rxjj-qqgw to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2qf-rxjj-qqgw</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2g4f-4pwh-qvx6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2g4f-4pwh-qvx6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2g4f-4pwh-qvx6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-hrpp-h998-j3pp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-hrpp-h998-j3pp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-hrpp-h998-j3pp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-23c5-xmqv-rm74 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-23c5-xmqv-rm74 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-23c5-xmqv-rm74</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f886-m6hf-6m8v applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses some outdated tools to build its files, but those tools are not included in the final product that users download. This means the security issues in those tools don&#39;t directly affect people using the library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f886-m6hf-6m8v to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a dependency declared in the project&#39;s lockfile. This project is a client-side emoji library, and the lockfile dependencies are used for the build process rather than shipped to end users. The vulnerable code is not included in the distributed artifact, so there is no runtime reachability for end users. The impact is limited to the local build environment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependencies to their patched versions to secure the development and build environment.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f886-m6hf-6m8v</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A build-tool package used during development has a known security issue, but the finished emoji library that users actually load does not include this package. The risk to people using the library is minimal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a declared dependency in the project yarn.lock. The project is a client-side emoji parsing library whose shipped artifact is a standalone minified script and image assets. The advisory corresponds to a build-tooling dependency that is not part of the runtime artifact consumed by end users. No data flow from untrusted user input to the vulnerable code in a production runtime context is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependency to a patched version when convenient; this is low priority for end-user safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-vh95-rmgr-6w4m applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development-time package has a known issue, but it is not part of the emoji library that end users load, so the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-vh95-rmgr-6w4m to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a declared dependency in the yarn.lock. The project ships a standalone client-side emoji script; the affected package is a build or tooling dependency not present in the runtime artifact. No runtime reachability from attacker-controlled input to the vulnerable code is evident in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-vh95-rmgr-6w4m</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6h2-p8h4-qcjw applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A minor known issue exists in a development package, but it does not reach the emoji library that users actually use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6h2-p8h4-qcjw to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This low-severity advisory matches a declared dependency in the yarn.lock. The affected package is part of the build toolchain for a client-side emoji library and is not included in the shipped runtime artifact. No concrete end-user harm path is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6h2-p8h4-qcjw</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-896r-f27r-55mw applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development package has a serious known issue, but because it is only used during the build process and is not included in the emoji library that users load, the actual risk to users is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-896r-f27r-55mw to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Although the scanner rates this advisory as critical, the affected dependency is declared in the file of a client-side emoji library whose shipped artifact is a standalone script. The vulnerable package is a build or tooling dependency with no demonstrated runtime reachability in the shipped library. Advisory severity alone does not establish immediate danger without a reachable exploitation path in the production artifact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected build-time dependency to a patched version as part of routine maintenance; prioritize it above lower-severity items but it is not an end-user emergency.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-896r-f27r-55mw</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-f8q6-p94x-37v3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A build-time package has a known issue, but it is not part of the emoji library that end users load, so practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-f8q6-p94x-37v3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a declared dependency in the yarn.lock. The project is a client-side emoji library; the affected package is a build or tooling dependency not present in the shipped runtime artifact. No data flow from untrusted input to the vulnerable code in production is demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-f8q6-p94x-37v3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3xgq-45jj-v275 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development package has a known issue, but it does not reach the emoji library that users actually load.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3xgq-45jj-v275 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a declared dependency in the file of a client-side emoji library. The affected package is part of the build toolchain and is not included in the shipped runtime artifact. No runtime reachability from attacker-controlled input is evident in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3xgq-45jj-v275</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-395f-4hp3-45gv applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A build-time package has a known issue, but it is not part of the emoji library that end users load, so the practical risk is low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-395f-4hp3-45gv to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a declared dependency in the yarn.lock. The project ships a standalone client-side emoji script; the affected package is a build or tooling dependency not present in the runtime artifact. No concrete exploitation path in the shipped library is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version during routine maintenance.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-395f-4hp3-45gv</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7r86-cg39-jmmj applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A development package has a known issue, but it does not reach the emoji library that users actually use.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7r86-cg39-jmmj to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> This advisory matches a declared dependency in the file of a client-side emoji library. The affected package is a build or tooling dependency not included in the shipped runtime artifact. No runtime reachability from untrusted input to the vulnerable code is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the affected dependency to a patched version when convenient.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7r86-cg39-jmmj</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fjxv-7rqg-78g4 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fjxv-7rqg-78g4 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fjxv-7rqg-78g4</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xvch-5gv4-984h applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xvch-5gv4-984h to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xvch-5gv4-984h</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3ppc-4f35-3m26 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3ppc-4f35-3m26 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3ppc-4f35-3m26</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-hmw2-7cc7-3qxx applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-hmw2-7cc7-3qxx to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-hmw2-7cc7-3qxx</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w5hq-g745-h8pq applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w5hq-g745-h8pq to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w5hq-g745-h8pq</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-w7jw-789q-3m8p applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged dependency is a tool used by the developers to build the library, not a part of the final product that users run. The security issue does not affect people using the emoji library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-w7jw-789q-3m8p to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The advisory matches a development dependency declared in the project&#39;s lockfile. Twemoji is a client-side emoji parsing library that ships a static built JavaScript file. The dependencies in the lockfile are used for building and testing the repository and are not bundled into the shipped artifact consumed by extensions. Therefore, the vulnerable code has no runtime reachability in production environments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update the development dependency in the repository to resolve the advisory, though it does not affect the shipped product.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-w7jw-789q-3m8p</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock" rel="noopener noreferrer">yarn.lock</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (5)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a build helper that calls the openssl program to generate a security hash for emoji asset files. The command and its options are fixed, and the file name is passed safely as a separate argument, so there is no way for input to sneak in extra commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line uses spawnSync to invoke the openssl binary with an argument array to compute a SHA-384 digest for SRI integrity hashing. The executable name and algorithm are static literals, and the filename is passed as a discrete array element rather than through a shell string, so there is no command-injection vector. This is a standard build-time tooling operation consistent with the file role.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/scripts/utils.js#L34" rel="noopener noreferrer">scripts/utils.js:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code is a test file for an emoji library. The flagged &#39;obfuscation&#39; is actually just the standard way of writing emoji characters in JavaScript code for testing purposes.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged this file for obfuscated code, but the source context shows it is a standard test file for the twemoji library. The unicode escape sequences (e.g., \u2764) are used to represent emoji characters in test strings, which is normal for an emoji parsing library and not an obfuscation technique.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/src/test/test.js#L1" rel="noopener noreferrer">src/test/test.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a small test image file used by the emoji library. The flagged link is just the standard identifier that all SVG files must include; it is not a real internet connection and does nothing harmful.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged content is a static SVG test fixture containing a standard XML namespace declaration and an inline emoji character. The namespace URI is a structural identifier required by SVG, not a runtime network destination. No script execution, network request, credential access, or data flow occurs. The scanner signal is a false positive on a literal namespace string in a test asset.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/src/test/test.js#L1" rel="noopener noreferrer">src/test/test.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that loads a small piece of example emoji text into a browser frame using a built-in data link, then checks that the emoji library can process it correctly. It does not contact any external website or send any data anywhere. The alert is a false alarm caused by the test&#39;s use of an encoded data link.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is inside a test file for the twemoji library. The test named &#39;XHTML parseNode compatibility&#39; creates an iframe whose src is a data URI containing URL-encoded XHTML with a heart emoji character. This is a standard technique for loading test XHTML content into an iframe without a separate server-hosted file. The data URI decodes to a minimal XHTML document used solely to verify that twemoji.parse correctly handles XHTML nodes. There is no network request to an external host, no credential access, no exfiltration, and no concealed execution. The scanner&#39;s shady-link signal is a false positive triggered by the data URI scheme combined with encoded content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/src/test/test.js#L613" rel="noopener noreferrer">src/test/test.js:613</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a build helper that assembles the final emoji library file by combining text and code templates. The scanner mistook this normal code-generation pattern for obfuscation. There is no hidden or harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged an obfuscation signal on a build script that generates the distributed twemoji library by concatenating string literals with an inline function source. This pattern of writing a generated file via string concatenation and function serialization is standard for build tooling and does not indicate concealed logic, encoded payloads, or hidden execution. The script imports only expected Node modules and local project utilities, with no network exfiltration, credential access, or runtime obfuscation of malicious behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/scripts/build.js#L1" rel="noopener noreferrer">scripts/build.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>spawnSync used with static command and argument array for integrity hashing</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The code safely runs an external hashing tool by passing fixed options and the file name as separate items, which prevents any hidden command injection.</p>
+    <details><summary>Technical assessment</summary>
+      <p>spawnSync is invoked with a fixed executable and an arguments array, avoiding shell interpretation. The filename argument is passed directly, preventing injection. This matches the tooling file role of generating SRI hashes.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/scripts/utils.js#L34" rel="noopener noreferrer">scripts/utils.js:34</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>SVG namespace declaration mistaken for network link</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner saw a web address inside an image file, but that address is a mandatory label for SVG images and is never actually contacted.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file is an SVG fixture whose root element declares the standard SVG namespace. JS-X-Ray appears to have treated the namespace literal as a fixed link. No fetch, import, or network call is present; the string is a structural XML identifier.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/src/test/test.js#L1" rel="noopener noreferrer">src/test/test.js:1</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All advisories target build-tooling dependencies in a client-side emoji library</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>All of the flagged security issues are in packages used to build the emoji library, not in the library itself. Users who load the finished emoji script are not exposed to these issues. Updating the build packages is good hygiene but is not urgent for user safety.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The supplied file is for a project whose shipped artifact is a standalone client-side emoji parsing script and image assets. All eight advisories match declared dependencies that are part of the build or development toolchain rather than the runtime library. The source context is truncated, preventing exact per-advisory package-version mapping, but the project purpose and the nature of the visible dependency tree indicate no runtime reachability from end-user input to any vulnerable code in the shipped artifact. The confidence is medium because the truncated source does not allow full verification of every package version and its dependency classification.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Run a dependency update pass to resolve all flagged advisories in the build toolchain. No urgent end-user-facing action is required.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/twitter/twemoji/blob/bad3bceeafc901ace42a3dfe0421db6388daafb9/yarn.lock#L1-L41" rel="noopener noreferrer">yarn.lock:1-41</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>7406 files &middot; 12393412 bytes</dd>
+      <dt>Contextual coverage</dt><dd>29 of 29 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>5 files &middot; 83562 bytes</dd>
+        <dt>Representations</dt><dd>5 raw &middot; 70 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>5 raw signatures &middot; 4 raw AST &middot; 5 raw OpenGrep &middot; 70 derived signatures &middot; 2 derived AST &middot; 70 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>index.d.ts</code> &mdash; raw-ast / parse</li><li><code>src/test/test.js</code> &mdash; derived-ast / parse</li><li><code>src/test/test.js</code> &mdash; literal-decode / derivative-limit</li><li><code>src/test/test.js</code> &mdash; normalize / derivative-limit</li><li><code>src/test/test.js</code> &mdash; normalize / unsupported</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/twitter/twemoji/commit/bad3bceeafc901ace42a3dfe0421db6388daafb9" rel="noopener noreferrer">bad3bceeafc901ace42a3dfe0421db6388daafb9</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-09T09:14:34.554Z">Aug 9, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-5.2:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>2</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v4</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v1</dd>
+        <dt>Review usage</dt><dd>48983 input &middot; 18795 output &middot; 10124 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>c7c2b00bada3b75d92ba266174c49d0f2d682cef0cc1c7a93ebc98e49e2f6e55</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/26291683/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
