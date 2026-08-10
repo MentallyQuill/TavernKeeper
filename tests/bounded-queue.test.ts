@@ -76,6 +76,37 @@ function observing(targets: TargetV3[]): OperationsState {
 }
 
 describe("bounded catalog queue", () => {
+  test("marks a retained SHA mismatch as updated", async () => {
+    const previous = target(41, 1, 410);
+    const updated = target(41, 1, 411);
+    const report = await fixtureReportV5({
+      source_id: previous.source_id,
+      repository_id: previous.repository_id,
+      repository: previous.repository,
+      target_sha: previous.target_sha,
+      canonical_url: previous.canonical_url,
+      completed_at: "2026-08-09T13:00:00.000Z",
+    });
+    const state = appendQueuedTarget(observing([updated]), updated);
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(updated),
+      index: {
+        schema_version: 5,
+        generated_at: now,
+        reports: [projectReportToIndexV5(report)],
+      },
+      state,
+      now,
+      scannerPolicyVersion: "4",
+      contextualReviewPolicyVersion: "4",
+    });
+
+    expect(synchronized.state.scan_queue.entries[0]?.catalog_change).toBe(
+      "updated",
+    );
+  });
+
   test("prunes version-only backlog and keeps new, updated, and coverage work", () => {
     const ordinary = target(41, 1);
     const selected = target(42, 2);

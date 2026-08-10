@@ -298,8 +298,6 @@ export function reconcileCurrentScanQueue(input: {
       continue;
     }
     existingRepositoryIds.add(entry.repository_id);
-    const catalogChange =
-      entry.catalog_change ?? detectedCatalogChange.get(entry.repository_id);
     const staffRequested =
       observationInitialized && entry.staff_requested === true;
     const campaignRequested = hasActivePolicyCampaign(
@@ -312,6 +310,15 @@ export function reconcileCurrentScanQueue(input: {
       campaignState,
       input.scannerPolicyVersion,
     );
+    const report = preferredReportByRepositoryId.get(target.repository_id);
+    const catalogChange =
+      entry.catalog_change ??
+      detectedCatalogChange.get(entry.repository_id) ??
+      (!coverageRequested &&
+      report !== undefined &&
+      report.target_sha !== target.target_sha
+        ? "updated"
+        : undefined);
     const clearsRescanDeadline =
       staffRequested || campaignRequested || catalogChange === "new";
     const durableRescanDeadline =
@@ -323,7 +330,7 @@ export function reconcileCurrentScanQueue(input: {
       : (durableRescanDeadline ??
         automaticRescanNotBefore({
           target,
-          report: preferredReportByRepositoryId.get(target.repository_id),
+          report,
           state: campaignState,
           scannerPolicyVersion: input.scannerPolicyVersion,
           staffRequested,
