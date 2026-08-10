@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ganon3264/focus at commit a40e528.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ganon3264/focus</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ganon3264/focus" rel="noopener noreferrer">ganon3264/focus</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ganon3264/focus/commit/a40e528d939de0d7aaaa9e8373469665ad5480bc" rel="noopener noreferrer">a40e528</a></span>
+        <span>Reviewed <time datetime="2026-08-10T07:25:52.834Z">Aug 10, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>65 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The code builds buttons that let you restore or permanently delete items from a trash folder. It sticks information from the server directly into the button&#39;s code without cleaning it first. If the server sent back bad information (which would only happen if someone messed with your own server), it could run unwanted commands in your browser. Since you run your own server, this is unlikely to be a real problem, but it&#39;s still sloppy.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file uses `fetch` to retrieve a list of trashed items from the API and then constructs HTML containing inline `onclick` event handlers (lines 98-99). The `item.id` and `item.name` from the API response are interpolated directly into JavaScript code within the attribute values. While `item.name` is escaped for single quotes, `item.id` is not escaped for a JavaScript context, and neither value is HTML-encoded before being placed into an HTML attribute. This creates a stored/reflected XSS vector if an attacker can control the API response (e.g., via a compromised backend or a malicious third-party API). In the typical self-hosted deployment, the API is controlled by the same user, making exploitation by an external attacker unlikely. The code also uses `innerHTML` and `insertAdjacentHTML` with data from the API, adding additional XSS surface area. No evidence of active exploitation or malicious intent was found.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace inline `onclick` attributes with event listeners added via `addEventListener` or `element.onclick`. Sanitize `item.id` and `item.name` for both HTML context (via `textContent` or `encodeURIComponent` where appropriate) and JavaScript string context. Avoid string concatenation for HTML construction; consider using `document.createElement` and `textContent`/`setAttribute` instead. For the `innerHTML` and `insertAdjacentHTML` calls, ensure that any string values from the API are escaped or otherwise validated before insertion.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/modals/shared-entity-modal.js#L1-L53" rel="noopener noreferrer">static/js/modals/shared-entity-modal.js:1-53</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (61)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load a normal part of the program so it can be tested. It never runs on a user&#39;s device and doesn&#39;t involve any outside information, so it&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval on line 101 of test-edit-message.js loads a fixed project file (file) into a Node.js test environment to exercise its functions synchronously. This is a standard testing pattern for browser-side scripts and does not involve user-controlled input, external sources, or dynamic content. The file is a development artifact (file_role: test) and is never shipped or executed in the production application. There is no data flow from untrusted origins to this eval, and no concrete harm is possible.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-edit-message.js#L101" rel="noopener noreferrer">tests/frontend/test-edit-message.js:101</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load a production script into the testing environment. The script being loaded is one that the developers themselves wrote, located at a fixed spot in the project folder. Since no outside data or user input goes into the eval, it&#39;s just a tool to run the tests—safe and expected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval statement at line 101 reads a hardcoded file path (`edit-message.js`) and executes its contents. This file is a known production source script from the same repository. The path is entirely static, derived from `__dirname` and fixed relative segments; no user input or external data influences the argument. The call exists solely within a test file (`test-edit-message.js`) that sets up a mock DOM and global stubs before loading the target module for unit testing. This is a standard pattern for testing browser-oriented JavaScript in Node.js when the module relies on globals. Since the argument is constant and under the developer&#39;s control, there is no injection vector. The test file is never shipped to production users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-edit-message.js#L101" rel="noopener noreferrer">tests/frontend/test-edit-message.js:101</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses eval to load the scroll-manager code for testing. Since it only loads a file that comes with the project and isn&#39;t used in the real app, it&#39;s harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call on line 44 loads a hardcoded local file (scroll-manager.js) into a Node.js test harness to unit-test scroll-manager behavior. The file path is constructed from __dirname and static relative segments, not from any user or external input. This pattern is standard in test files for mocking and loading modules without a bundler. No production browser code is affected, and no untrusted data reaches eval.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-scroll-manager.js#L44" rel="noopener noreferrer">tests/frontend/test-scroll-manager.js:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file purposely runs the project&#39;s own code in a special test environment to check if it works correctly. The code being run comes from a file inside the project itself, not from the internet or from a user. This is a normal testing technique and doesn&#39;t pose a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval at line 47 loads a project-internal source file (file) into the test environment via a hardcoded relative path. This is a standard pattern in Node.js test suites to exercise code that attaches functions to the global scope. The loaded content is not user-controlled; it is the project&#39;s own production code committed to the same repository. No attacker-controlled input reaches this eval. The test file is not shipped to end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-edit-entity.js#L47" rel="noopener noreferrer">tests/frontend/test-edit-entity.js:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses eval to load code from the project itself so it can run automated checks. The code being evaluated is a known file from the project, not any outside input. Test files like this only run during development and are never used by real users, so there is no danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-status-panel.js#L72" rel="noopener noreferrer">tests/frontend/test-status-panel.js:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses JavaScript&#39;s eval to load a specific file that contains the main code being tested. It&#39;s a common way to set up tests for programs that run in a browser-like environment. The test only loads a file that is part of the project itself, so there is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call on line 28 loads a known, committed production module (state-manager.js) from a fixed relative path into the test environment. This pattern is common in Node.js test suites when a module expects browser-like globals and cannot be loaded via a standard require. The file path is hardcoded and not influenced by any external or attacker-controlled input. The eval is only executed during test runs, never in the shipped application. No user data or untrusted content reaches the eval argument.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-state-manager.js#L28" rel="noopener noreferrer">tests/frontend/test-state-manager.js:28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load the project&#39;s own code so it can run tests. Since the code comes from the project itself and is only used by developers during testing, it is not a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 74 uses eval() to load a project module (file) from a fixed filesystem path. This is a common Node.js test pattern for loading a module&#39;s internals during unit testing. The evaluated code originates from the project&#39;s own source, not from any user or attacker-controlled input. The file is a test file (file) and is not shipped or executed in production contexts. Therefore, the eval poses no security risk in the built application.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-delete-mode.js#L74" rel="noopener noreferrer">tests/frontend/test-delete-mode.js:74</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses eval to load a piece of the app&#39;s own code so it can be tested. It only reads a specific file from the project itself, not anything from the internet or from user input. This is a normal testing practice and not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call on line 24 reads a hardcoded project source file (file) and executes it in a test context after setting up global mocks. This is a standard pattern for loading a module that expects a browser-like global environment (window, document, localStorage). The file path is fixed and relative to the test directory; no user input or external untrusted data reaches the eval argument. The test file is not shipped to users and does not affect production behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-list-manager.js#L24" rel="noopener noreferrer">tests/frontend/test-list-manager.js:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads the project&#39;s own code using eval. The file it loads is always the same, and the test is only run by the developer, not by users. This is a normal way to test browser code in Node.js and is not a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval on line 24 reads a hardcoded project source file (list-manager.js) and executes it in a test environment where all browser globals are mocked. The file path is fixed within the test, not influenced by any external or user input. This is a common pattern for loading non-CommonJS modules in Node.js test runners. No attacker-controlled data reaches the eval, and the executed code is part of the project&#39;s own shipped source. There is no evidence of exposure to untrusted input, and the test file has no production deployment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-list-manager.js#L24" rel="noopener noreferrer">tests/frontend/test-list-manager.js:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This file is part of the app&#39;s user interface and uses network requests to save settings and create items, which is normal for this kind of app. It does not run any remote code or execute hidden commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains dynamic window property assignments and fetch calls, but no actual code execution sink such as eval, Function constructor, or innerHTML. The htmx.ajax call fetches HTML from a configurable endpoint, but the endpoint is under project control and no attacker-controlled path is demonstrated. Dynamic property names are used for registering callbacks, not for executing attacker-supplied code. The scanner correlation between network retrieval and a code execution sink is not substantiated by the actual code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/ui/list-manager.js#L3-L18" rel="noopener noreferrer">static/js/ui/list-manager.js:3-18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line is in a test file and loads the project&#39;s own code into the test environment. It always reads a fixed file from the developer&#39;s computer, not anything from the internet or a user, so it cannot cause any harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval on line 24 loads a local project source file (`reasoning-utils.js`) from a hardcoded, relative path within the test directory. This pattern is standard for unit testing JavaScript modules without a bundler in a Node.js environment. The evaluated string comes from the developer-controlled repository, not from any untrusted or user-supplied input. There is no attacker-controlled data flow, no exfiltration, no persistence, and no harm beyond the test scope. The scanner signal (xray unsafe-stmt) is a static pattern match that does not account for the safe, intentional test context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-reasoning-visibility.js#L24" rel="noopener noreferrer">tests/frontend/test-reasoning-visibility.js:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval() to run the main lightbox code so it can check that the functions work correctly. The code being run comes from a file in the project itself, not from anything a user or attacker could control. This is a normal way to test JavaScript modules in Node.js.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval() call on line 78 is part of a unit test file that loads the production module lightbox.js from the local filesystem and executes it to expose functions for testing. The source string read by fs.readFileSync comes from a hardcoded path within the repository; it is not derived from user input, network data, or any untrusted source. This pattern is standard for Node.js tests that need to evaluate a module&#39;s code in a mocked browser environment. No attacker-controlled data flows into the eval argument. The test file (file_role: test) is not shipped or executed in production. The eval use is proportionate to its testing purpose and is transparent in the source code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-lightbox.js#L78" rel="noopener noreferrer">tests/frontend/test-lightbox.js:78</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file manages the app&#39;s settings and state. It stores info like which character or provider you&#39;ve selected and sends that data to the backend server to save it. It does not download and run any code from the internet, so there&#39;s no security risk here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains fetch() calls to internal API endpoints (/api/chats/ and /api/settings/active-provider) for persisting application state, which is standard client-server communication for a frontend application. There is no dynamic code execution (eval, Function constructor, innerHTML injection, or similar) present in the code. The scanner rule appears to flag the co-occurrence of network retrieval and a code execution sink, but no such sink exists in this file. The fetch responses are not processed as code; they are simply API calls. No arguments from network responses are passed to any execution primitive. The code is a straightforward state manager module.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/core/state-manager.js#L1-L68" rel="noopener noreferrer">static/js/core/state-manager.js:1-68</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged a test message as a possible bad link, but it&#39;s just a harmless description like &#39;cap: only 5 active&#39; used to explain what a test is checking.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line (line 149) contains a static assertion message string &#39;cap: only 5 active&#39; inside an assertEqual call. This is plain test documentation text, not a URL, hostname, or any network reference. The JS-X-Ray &#39;shady-link&#39; signal is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-notifications.js#L149" rel="noopener noreferrer">tests/frontend/test-notifications.js:149</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged a line in a test file as a suspicious link, but that line is just a pretend function returning a fake URL for testing purposes. It has no effect on users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate is a JS-X-Ray &#39;shady-link&#39; signal on line 47 of the test file. The line defines a mock for global.URL.createObjectURL returning a hardcoded string &#39;blob:url&#39;. This is a test helper, not an actual network call or link to an external service. No user data is involved, and the mock is only used within the test harness. There is no security concern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-lightbox.js#L47" rel="noopener noreferrer">tests/frontend/test-lightbox.js:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file uses eval() to load a JavaScript file from the project&#39;s own code. This is fine because the file is a fixed part of the project and no outside user can change what code gets run. It&#39;s just a testing helper, not something users would encounter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval() call on line 23 is used in a test file (file) to load the providers.js module by reading it from a hardcoded project path. The file path is constructed from __dirname and known subdirectories; no user-controlled or untrusted input reaches the eval argument. This is a common testing pattern in Node.js to set up global mocks before executing the module under test. The eval does not introduce dynamic code from external sources and is not present in production code paths. No attacker trigger exists in this test context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-extract-data.js#L23" rel="noopener noreferrer">tests/frontend/test-extract-data.js:23</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged a line in a test file that sets up a fake URL creator. In tests it is normal to replace real browser features with harmless stubs. This line does nothing dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 55 sets global.URL.createObjectURL to a stub function that returns the fixed string &#39;blob:url&#39;. This is a standard test mock to prevent real URL API calls. No actual link or network destination is referenced; the &#39;shady-link&#39; signal is a false positive from static analysis of the string &#39;blob:url&#39; in a test environment.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-file-staging.js#L55" rel="noopener noreferrer">tests/frontend/test-file-staging.js:55</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This eval is in a test file and is used to load the actual code being tested into the test environment. It&#39;s a common and safe technique. The file being loaded is always the same static file from the project, not anything provided by a user or attacker. Tests are only run by the developer and never shipped to users, so there is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call at line 46 of the test file loads a hardcoded static JavaScript module into the global scope for unit testing. The argument is a synchronous file read of a known project path (file). There is no user input, no dynamic string construction, and no external data flow. This is a standard Node.js testing pattern where the module under test assigns properties to the global/window object. The code runs only when tests are executed, not in production. No attacker-controlled input reaches the eval, and no secrets or credentials are involved. This cannot be exploited in a shipped build.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-message-renderer.js#L46" rel="noopener noreferrer">tests/frontend/test-message-renderer.js:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load a project&#39;s own JavaScript file so it can run unit tests. The file being loaded is part of the project itself, not something a user or attacker could control. This is a normal testing technique and not a security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval at line 28 loads a hard-coded project source file (state-manager.js) into the test runner. This is a standard pattern in Node.js testing to evaluate a module&#39;s source without requiring module exports. The path is fixed and points to a file within the project&#39;s own static directory. There is no user-controlled input, no network data, and no runtime variability in the source being evaluated. The file is not shipped to users; it is only executed during development testing. No privilege escalation, code injection from untrusted origin, or exfiltration path is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-state-manager.js#L28" rel="noopener noreferrer">tests/frontend/test-state-manager.js:28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses eval to load the main code for testing. It&#39;s only used during development and has no effect on the live app. A normal user would never trigger this code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The evaluated code is an inline eval of a project source file read from a known hardcoded path, occurring only inside a test file. The eval is not reachable by any user input or network request during production use. This is a standard testing pattern to load browser-targeted modules into a Node.js test environment without a bundler. There is no data flow from untrusted sources, no persistence, and no attacker control over the evaluated string.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-message-renderer.js#L46" rel="noopener noreferrer">tests/frontend/test-message-renderer.js:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged an eval statement in a test file. The test loads the real code to check that it works correctly, but this only runs during development tests, not when you use the app. There is no danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate is a JS-X-Ray &#39;unsafe-stmt&#39; signal on line 78 of the test file. The line uses eval() to execute the source code of lightbox.js loaded from the local filesystem. This is a standard Node.js testing technique to invoke the module&#39;s functions in a mocked environment without modifying the production source. The evaluated code is entirely from a known local file, and no attacker-controlled input reaches the eval. The test never runs in production.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-lightbox.js#L78" rel="noopener noreferrer">tests/frontend/test-lightbox.js:78</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses eval to load a module for testing purposes. Since it&#39;s only used by developers when testing and never runs in the real app, it&#39;s not a security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval at line 84 loads the message-pruner.js module into a Node.js test harness using a hardcoded project path. This is a standard unit-test pattern for client-side code that expects a window global. The test file is not shipped or executed in production. No attacker-controlled input reaches the eval argument; the file content is static and project-supplied. Therefore the eval poses no security risk to end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-message-pruner.js#L84" rel="noopener noreferrer">tests/frontend/test-message-pruner.js:84</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval() to run the notification code in a controlled test environment. Since the code being evaluated comes from a file that is part of the project itself (and not from any outside source), there is no security risk. This is the same as importing a module, just done without a module system. Test files like this are never shipped to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval(src) call at line 58 is used within a test harness to load the notifications.js module&#39;s source code into the test environment. The src variable is read from a project-internal file (static/js/ui/notifications.js) using fs.readFileSync with a hardcoded local path. No user input, network data, or untrusted external source flows into this eval. The test file also overrides setTimeout, clearTimeout, and DOM methods to create a deterministic, isolated test sandbox. This is a standard pattern for testing non-modular JavaScript in Node.js without a module bundler. There is no potential for code injection because the source is entirely project-controlled and accessed via a fixed relative path. The scanner signal (unsafe-stmt) is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-notifications.js#L58" rel="noopener noreferrer">tests/frontend/test-notifications.js:58</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code retrieves a list of AI models and OpenRouter routing options from the server, but it only shows them in dropdown menus. It never runs any downloaded code, so there is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate code contains two fetch() calls: one to api.providerFetchModels (line 119) and one to /api/providers/openrouter/endpoints/ (line 159). Both responses are parsed as JSON and used only to dispatch custom DOM events or populate UI option arrays. No eval, Function constructor, innerHTML injection, or any dynamic code execution sink is present in lines 119-160 or elsewhere in the provided file. The scanner rule &#39;javascript.download-to-execution&#39; is a false positive; there is no executable content derived from network responses.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/modals/providers.js#L119-L160" rel="noopener noreferrer">static/js/modals/providers.js:119-160</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file uses eval to load a piece of the app’s code so it can test it in a fake browser environment. This is a normal way to test code that was written for a web browser. The eval only runs during tests and only loads a file from inside the project, so there is no danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval on line 72 loads the source code of status-panel.js from a fixed local file path. The string passed to eval is constructed from the file contents plus a small wrapper that exports functions to the global window object. No untrusted or user-controlled input is included; the data source is a static project file read via fs.readFileSync with a path relative to __dirname. This pattern is standard in Node.js test harnesses for frontend modules that expect a browser global scope and lack module exports. The test file is not shipped to end users and runs only during development or CI. Therefore, the eval does not create a security vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-status-panel.js#L72" rel="noopener noreferrer">tests/frontend/test-status-panel.js:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code was flagged because it uses both &#39;fetch&#39; (to send files to a server) and &#39;innerHTML&#39; (to show icons). But the icons are fixed pictures, not anything that came from the server or a user, so there is no risk of malicious code execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner rule &#39;javascript.download-to-execution&#39; flagged the co-occurrence of a network retrieval primitive (fetch) and an innerHTML assignment in the same file. However, the innerHTML assignments (lines 33, 43-46) are limited to hardcoded SVG sprite strings returned by window.getSvgSprite and do not incorporate any data from the fetch response. The fetch at line 150 uploads file data to a server endpoint and only parses JSON response for attachment IDs—no dynamic code execution or command injection is present. Therefore, the flagged pattern does not constitute a security issue.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/messages/file-staging.js#L1-L150" rel="noopener noreferrer">static/js/messages/file-staging.js:1-150</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged a short string of letters and numbers as possibly hidden data, but it&#39;s just a test color code, not a secret or encoded message.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The encoded-literal signal on line 95 corresponds to a hex color string &#39;6366f1&#39; passed as an argument to the hexToRgb function during a unit test. This is a static test input, not encoded or obfuscated data. It is a legitimate test case for parsing a hex color without the &#39;#&#39; prefix.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-theme-manager.js#L95" rel="noopener noreferrer">tests/frontend/test-theme-manager.js:95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file handles theme colors and fetches data from the app&#39;s own API. It never runs code downloaded from the network or executes anything dangerous. The scanner warning was a false alarm—fetching data and changing colors is normal and safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains fetch calls for theme CRUD operations and a character endpoint, but no response data is passed to eval, innerHTML, Function, setTimeout with string, or any other dynamic code execution sink. The only DOM mutation is setting CSS custom properties via document.documentElement.style.setProperty, which is not a code execution primitive. There is no data flow from network responses to any execution sink. The scanner alert is a false positive based on co-occurrence of fetch and DOM manipulation, not actual dangerous behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/ui/theme-manager.js#L38-L107" rel="noopener noreferrer">static/js/ui/theme-manager.js:38-107</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code is just reading a streaming chat response from the server, line by line. There&#39;s no hidden link or malicious network call.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a &#39;shady-link&#39; signal at line 168, which is part of standard Server-Sent Events parsing logic. The code checks if a line starts with &#39;data: &#39; and then slices and trims the content for JSON parsing. No fixed suspicious URL or malicious link is present. This is standard and expected behavior for a chat streaming client.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/core/chat-stream.js#L168" rel="noopener noreferrer">static/js/core/chat-stream.js:168</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file just shows an empty backup message with a folder icon. There is no code that connects to the internet or does anything suspicious. The scanner warning was a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied source is a static HTML fragment containing an SVG icon and a message placeholder. No JavaScript code, URL strings, network fetch calls, or dynamic data flows are present. The &#39;shady-link&#39; scanner signal appears to be a false positive triggered by the XML namespace attribute in the SVG. No evidence of network access, credential handling, data exfiltration, or any executable behavior exists in the provided lines.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/features/backup-manager.js#L1" rel="noopener noreferrer">static/js/features/backup-manager.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file loads extra parts of the page (like a prompt arranger panel) when you pick a preset. It uses a library called HTMX to fetch that content from the same server and insert it. That&#39;s a normal, safe way to build a web app – not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged region (lines 79–104) contains a normal HTMX `ajax` call that fetches a server partial based on the user-selected preset value and swaps it into the DOM via `innerHTML`. This is the intended pattern for dynamic UI content loading within the application. The `htmx.ajax` call is a standard library function; the URL is constructed by `window.api.partials.promptArranger` using the preset select value, which is a same-origin request. No raw `fetch`, `eval`, or dynamic script execution is present. The scanner heuristic correlated a network retrieval with an innerHTML swap (a code-execution sink), but in this context the swap is performed by HTMX and the response content is server-controlled and expected. No attacker-controlled input reaches the response body, and no direct execution of untrusted content occurs.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/ui/status-panel.js#L79-L104" rel="noopener noreferrer">static/js/ui/status-panel.js:79-104</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses a JavaScript eval to load a message-pruning script so it can run unit tests. Since the file being loaded is always the same local file and never user-controlled, this is a normal testing technique, not a security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval on line 84 of this test file loads a fixed, hardcoded production JavaScript file (message-pruner.js) from a known path within the repository. There is no user input, runtime variable input, or attacker-controlled data involved. The pattern is standard for Node.js test harnesses that need to evaluate an IIFE-style module in a simulated browser environment. This eval is never executed in production or shipped to end users. It is a test-only construct with no exploitable attack surface.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-message-pruner.js#L84" rel="noopener noreferrer">tests/frontend/test-message-pruner.js:84</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test checks that a provider&#39;s address is stored correctly using a harmless example URL. No real connection is made.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The URL is a test assertion string used to verify that the base_url field is correctly preserved. No actual network access occurs during test execution. The string is compared as part of validation logic. This is expected test data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-extract-data.js#L38" rel="noopener noreferrer">tests/frontend/test-extract-data.js:38</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>This code loads parts of the page from the server, which is normal for this app. It doesn&#39;t run dangerous commands from the internet or take user input in a risky way. There&#39;s no evidence this could be misused.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file uses htmx.ajax to load a server-side partial into a DOM element via innerHTML swap. This is a standard pattern for dynamic content loading in this project, which uses a local Python server. The presetId parameter originates from internal application state (StateManager or DOM parsing), not from direct untrusted user input. The fetch call for file uploads also retrieves data but only processes JSON safely. No dynamic code execution (eval, Function, etc.) is present. The scanner correlation does not reflect an actual exploitable path because the server endpoint is controlled by the application and the inputs are not user-controllable in a meaningful way.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/modals/edit-entity.js#L1-L38" rel="noopener noreferrer">static/js/modals/edit-entity.js:1-38</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load one of the project&#39;s own code files so it can run tests against it. Since the file being loaded is part of the project itself and this only happens during testing, it is a normal and safe practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call on line 24 loads a fixed, project-owned source file (reasoning-utils.js) from disk for unit testing purposes. The file path is constructed from __dirname and hardcoded relative path segments, with no user-supplied or attacker-controlled input involved. The file role is &#39;test&#39;, meaning this code runs only during development and testing, never in production. The eval simply enables the module to be executed in a DOM-mocked global context so that its functions are available for test assertions. There is no dynamic code generation, no untrusted data flow, and no persistence or exfiltration risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-reasoning-visibility.js#L24" rel="noopener noreferrer">tests/frontend/test-reasoning-visibility.js:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file uses a common trick to load the code being tested by reading and running it. This is safe because it only happens when developers run tests, not when the app is used normally.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call on line 35 reads the production module source file using a hardcoded path and executes it to load the module in the test environment. This is a standard pattern for testing browser-focused JavaScript modules in Node.js without a build step. The test file is not shipped or executed in production, and there is no attacker-controlled input reaching this eval. Therefore, it poses no security risk in shipped code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-backup-manager.js#L35" rel="noopener noreferrer">tests/frontend/test-backup-manager.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test uses a sample local address as example data, but no actual browsing or connection happens.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The URL is test fixture data passed to a mock form object. It is only read as a field value and never used to initiate a connection. This is standard practice in unit tests to simulate provider configuration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-extract-data.js#L30" rel="noopener noreferrer">tests/frontend/test-extract-data.js:30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file loads its own JavaScript code using eval() to test it. This is a normal way to run code for testing purposes, and since the code being loaded comes from the project&#39;s own files, there is no danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 44 uses eval() to execute the contents of the project&#39;s own scroll-manager.js file, read via fs.readFileSync from a hardcoded relative path. This pattern is common in test files to load a module into a mocked global environment for unit testing. The input is a fixed file within the project&#39;s own source tree; there is no dynamic user input, no external data flow, and the code is only executed during test runs. The scanner signal (unsafe-stmt) is triggered by the use of eval, but in this context it does not introduce a security risk because the evaluated string is not attacker-controlled.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-scroll-manager.js#L44" rel="noopener noreferrer">tests/frontend/test-scroll-manager.js:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged an eval() call as potentially dangerous. In this case, it&#39;s only used in a test file to load up the theme manager functions for testing. No user data is involved, so it&#39;s not a real security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-stmt signal on line 83 corresponds to eval(src + &#39;...&#39;) where src is read from a hardcoded theme-manager.js file using fs.readFileSync. This eval is used within a Node.js unit test to load functions that are not exported by the module. No user input or external data reaches the eval argument. The eval is confined to the test environment and does not run in production or affect users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-theme-manager.js#L83" rel="noopener noreferrer">tests/frontend/test-theme-manager.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file lets you select and delete messages in a chat app. It uses standard web techniques (fetch and htmx) to talk to the server and update the page. There is no hidden code execution or dangerous behavior here—it&#39;s just what a normal delete function does.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner rule &#39;javascript.download-to-execution&#39; flagged a correlation between network retrieval (fetch, htmx.ajax) and a putative code execution sink. However, the actual source code in this file does not contain any dynamic code execution mechanism such as eval, Function constructor, innerHTML assignment of untrusted content, or similar. The fetch call is used to POST a bulk delete request to an API endpoint, and the response is only checked for HTTP status; htmx.ajax performs a GET to reload a message list partial safely via the htmx library, which processes the response as HTML in a managed way. No attacker-controlled input reaches an executable context. The correlation is a false positive; no code execution path exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/messages/delete-mode.js#L1-L68" rel="noopener noreferrer">static/js/messages/delete-mode.js:1-68</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses eval to load a character editor for testing. This is a normal way to test browser-based code in Node.js. The eval is not used in the actual app that users run, so there is no danger to anyone using the program.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This test file uses eval() to load and expose functions from a browser-oriented module (char-editor.js) into Node.js&#39;s global scope for unit testing. The evaluated string is a hardcoded combination of the project&#39;s own source file and a fixed snippet that assigns function references to window. No user-controlled or external input is involved. The file is not shipped or executed in production; it is solely a developer tool for test execution. The scanner flagged eval() as a generic unsafe statement, but in this test context it is standard practice for testing JavaScript modules that rely on global/window bindings. There is no attacker-controlled path, no credential exposure, and no persistent harm.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-char-editor.js#L69" rel="noopener noreferrer">tests/frontend/test-char-editor.js:69</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code loads a message from the app&#39;s own server to let you edit it. It uses the data to create text boxes and labels, but it never runs any code from that data. All text that appears is safely cleaned up before being added to the page. This is exactly how a message editing feature should work.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags a correlation between a network fetch (line 120) and a potential code execution sink. However, the actual code uses `fetch` to retrieve a chat message from the application&#39;s own API and then renders the content into DOM elements using `createElement`, `innerHTML`, and `escapeHtml` for user-controlled fields (function name, arguments, result, image URL). There is no dynamic code execution (eval, Function, setTimeout with string) present. The `innerHTML` assignments use hardcoded HTML templates and escaped data, which is a standard and safe UI pattern. The scanner&#39;s download-to-execution signal is a false positive because no executable code path arises from the network data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/messages/edit-message.js#L1-L120" rel="noopener noreferrer">static/js/messages/edit-message.js:1-120</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file uses eval() to load the app&#39;s route-helper code so it can check that all API paths are correct. This is a normal testing trick—like opening a textbook to check your answers. The file being loaded comes from the project itself (not from a stranger), and the test only runs when the developer is working on the code. No one using the app will ever run this test.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval() call on line 7 reads a hardcoded project source file (static/js/core/api-paths.js) for unit testing. This is a standard Node.js testing pattern where a non-module file that defines globals is loaded into the test runner&#39;s scope. The file path is static and determined at build time; no user or attacker input is involved. The test file is not shipped as part of the runtime application and only runs during development or CI. There is no mechanism for an external attacker to control the evaluated code. Even if the source file were compromised, that would require write access to the repository—a separate, out-of-scope threat. Therefore, the use of eval here is proportional to its legitimate testing purpose and poses no concrete risk to end users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-api-paths.js#L7" rel="noopener noreferrer">tests/frontend/test-api-paths.js:7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file loads a small notification module into the test environment so it can check that the notification popups work correctly. It only loads the project&#39;s own code, not anything from the internet or from a user. This is a normal part of testing and is not dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The `eval(src)` on line 58 is used in a test file to load the project&#39;s `notifications.js` module into the Node.js test context so that its exported functions (showToast, showErrorToast, etc.) can be unit tested. The source is read from a hardcoded project path (`static/js/ui/notifications.js`) via `fs.readFileSync`. No user input, network data, or attacker-controlled content reaches this eval. The test runs only in a development/test environment and is not shipped to production. This pattern is standard for testing non-modular frontend code in Node.js and does not represent a security concern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-notifications.js#L58" rel="noopener noreferrer">tests/frontend/test-notifications.js:58</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that loads its own project code to run tests. It uses a JavaScript &#39;eval&#39; command, but only on a file the project itself wrote, so there is no risk of someone sneaking in malicious code from outside.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 7 uses eval with fs.readFileSync to load a project-owned source file in a unit test. This is a common pattern in Node.js testing to evaluate a module&#39;s code without a proper module system. The input is a hardcoded path to a file within the same repository (static/js/core/api-paths.js). No attacker-controlled or untrusted data reaches the eval. The test file is not shipped to end users; it is only executed during development or CI. Therefore, there is no demonstrated security exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-api-paths.js#L7" rel="noopener noreferrer">tests/frontend/test-api-paths.js:7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The other signal is just a test mock that simulates a browser API, not real network access. It exists only in the test file and has no effect on the actual app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 31 mocks the global URL object with stub methods (createObjectURL, revokeObjectURL) for use in test fixtures. It performs no actual network access or URL parsing. This mock is only present in the test environment and is not shipped to users. No security concern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-backup-manager.js#L31" rel="noopener noreferrer">tests/frontend/test-backup-manager.js:31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged a test message as a possible bad link, but it&#39;s just a harmless description like &#39;cap: oldest evicted&#39; used to explain what a test is checking.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line (line 150) contains a static assertion message string &#39;cap: oldest evicted&#39; inside an assert call. This is plain test documentation text, not a URL, hostname, or any network reference. The JS-X-Ray &#39;shady-link&#39; signal is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-notifications.js#L150" rel="noopener noreferrer">tests/frontend/test-notifications.js:150</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses eval() in a test file to load a helper module. The evaluated source code comes from a file the developer wrote, and it&#39;s only used during testing. Since nobody else can control what gets evaluated, it&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval statement in this test file reads a hardcoded project source file (file) via fs.readFileSync and appends a hardcoded string to expose functions for unit testing. The input to eval is entirely developer-controlled; no user input or external data flows into it. The file is a test file (file_role: test) and is never shipped to end users. This is a standard pattern for loading modules in a test environment without a module bundler. There is no security vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-theme-manager.js#L83" rel="noopener noreferrer">tests/frontend/test-theme-manager.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged an eval statement in a test file. This test reads the app&#39;s own code from a fixed file and runs it to check if it works. It is a normal testing technique and does not run any outside or harmful code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 83 uses eval to load and execute the project&#39;s own file-staging.js source code in a test environment. This is a common pattern for unit testing browser-like modules in Node.js. The source path is hardcoded and references a known project file. There is no dynamic or untrusted input; the eval is part of test setup and not present in production code. No security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-file-staging.js#L83" rel="noopener noreferrer">tests/frontend/test-file-staging.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>This file fetches data from the app&#39;s own server to manage characters, and updates the page accordingly. That is normal for any web app. The scanner saw that the code also builds some HTML to show dialogs, but there is no evidence this is dangerous or could be exploited.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file uses fetch() calls to communicate with the backend API, which is standard and expected for a frontend web application. The rule flags a correlation between network retrieval and a potential code execution sink, but no dynamic code execution (eval, Function, setTimeout string) is present. The only candidate sink is a template literal passed to window.customConfirm, whose implementation is not provided and may safely handle HTML. No attacker-controlled data flow to a code execution sink is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/features/char-editor.js#L5-L52" rel="noopener noreferrer">static/js/features/char-editor.js:5-52</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged a test message as a possible bad link, but it&#39;s just a harmless description like &#39;cap: evicted removed after animation&#39; used to explain what a test is checking.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line (line 152) contains a static assertion message string &#39;cap: evicted removed after animation&#39; inside an assertEqual call. This is plain test documentation text, not a URL, hostname, or any network reference. The JS-X-Ray &#39;shady-link&#39; signal is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-notifications.js#L152" rel="noopener noreferrer">tests/frontend/test-notifications.js:152</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load a piece of the app&#39;s own code so it can run checks on it. That&#39;s a normal way to test browser code in Node.js, and it only runs the app&#39;s own files, not anything from a stranger or the internet.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call reads a project-owned JavaScript file from a hardcoded local path and executes it within a mock DOM environment. This is a standard pattern for unit-testing browser modules in Node.js. The evaluated content is a first-party source file, not user-controlled or external input. No untrusted data flow reaches eval. The test fixture does not introduce a runtime security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-delete-mode.js#L74" rel="noopener noreferrer">tests/frontend/test-delete-mode.js:74</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>This is a normal part of the app that replaces automatically loaded images with placeholders you can click to load. The regex used is safe and does not pose a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 55 replaces img tags with external src attributes with click-to-load placeholders. It uses non-greedy quantifiers and clear delimiters, making catastrophic backtracking unlikely. The scanner signal &#39;unsafe-regex&#39; does not show a demonstrated vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/messages/message-renderer.js#L55" rel="noopener noreferrer">static/js/messages/message-renderer.js:55</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses eval to load a regular part of the app&#39;s code so the tests can check that it works. It&#39;s like a practice run – the evaluation only happens when the developer runs tests, not when you use the app. The test reads a fixed file from the project&#39;s own source, so there&#39;s no way for an attacker to abuse it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call on line 83 reads and executes a local, hardcoded project source file (file) within a Node.js test environment. This is a standard pattern for unit-testing a client-side module that exports via an IIFE and global assignments. The path is constructed with __dirname and literal path components, not from any external or user-supplied input. The file is a test file (file_role: test) and does not run in production or shipped contexts. There is no data flow from untrusted sources into eval, no concealment of purpose, and the file&#39;s comment explicitly documents the intent.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-file-staging.js#L83" rel="noopener noreferrer">tests/frontend/test-file-staging.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file uses a special JavaScript function (eval) to load the actual code it&#39;s testing. This is a common technique in test files and doesn&#39;t create any security risk because the path is fixed and the code is only run during testing, not in the real app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This eval call in a test file synchronously loads a fixed local module (edit-entity.js) into the test environment&#39;s global scope. The file path is hardcoded to the project&#39;s own static directory. No untrusted input reaches the eval argument. This is a standard pattern for testing frontend scripts that are not written as modules and rely on global/window exports. The eval only executes during test runs, never in production. No security exposure exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-edit-entity.js#L47" rel="noopener noreferrer">tests/frontend/test-edit-entity.js:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code gets a chat response from a server and displays it on the page. That&#39;s exactly what a chat app should do. It&#39;s not doing anything dangerous like running hidden code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner correlated a network retrieval primitive (fetch at line 136) with a code execution sink (innerHTML assignments at lines 43 and 282). The fetch posts chat data to the server&#39;s streaming endpoint, a core app function. The innerHTML calls render chat messages via window.renderMessage, which is assumed to safely convert markdown to HTML. No dynamic code execution (eval, Function constructor) is present. The combination is expected for a chat application that displays AI responses.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/core/chat-stream.js#L1-L136" rel="noopener noreferrer">static/js/core/chat-stream.js:1-136</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses eval to load its own code (the backup manager feature) into a simulated browser environment so it can be tested. It&#39;s a common technique and not a security issue because the code being run was written by the same developers and is not influenced by outside users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval on line 35 executes a hardcoded file path (backup-manager.js) read via fs.readFileSync. This is a standard testing pattern to load a browser-oriented module into a Node.js test environment after setting up mock globals. The argument is not user-controlled; the file is the project&#39;s own source code. No external input, no attacker control, and no production execution. The eval does not introduce a security vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-backup-manager.js#L35" rel="noopener noreferrer">tests/frontend/test-backup-manager.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code fetches a list of backups from the app&#39;s own server and displays them. It builds the list using standard web techniques. There is no attempt to run hidden code or steal information—the buttons just call the app&#39;s own restore or delete functions. The item IDs come from the server, which you control, so this is safe normal behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags the co-occurrence of `fetch` and `innerHTML` assignment as a potential code-execution path. The code fetches a JSON list of backups from the project&#39;s own API (`window.api.backups`), then builds UI strings that include backup IDs and sizes. The `innerHTML` assignments (lines 40–41, 46–53, 56–78, 80–82) insert these server-supplied values into the DOM. However, no dynamic code execution (eval, Function constructor, setTimeout with string) occurs. The inline `onclick` handlers refer to hardcoded `BackupManager.restore(...)` and `BackupManager.delete(...)` with the backup ID interpolated as a string literal. Since the backup ID originates from the same local server the user operates, and no untrusted external input enters this flow without server sanitization, the combination does not create a remotely exploitable vulnerability. The use of `innerHTML` is consistent with typical client-side UI rendering for a hobbyist project, and no credential handling, exfiltration, or hidden behavior is present.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/features/backup-manager.js#L1-L43" rel="noopener noreferrer">static/js/features/backup-manager.js:1-43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code updates chat messages on screen by asking its own server for new HTML and swapping it in, exactly like a normal web app refreshes content. It only talks to the app&#39;s own backend, so there is no hidden danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file fetches partial HTML from the same-origin server and replaces DOM nodes using standard DOM manipulation (replaceWith, innerHTML). No eval, remote code execution, or data exfiltration. The fetch target is a relative URL controlled by the application&#39;s own backend; user-supplied values are only used to construct the URL parameter from existing DOM attributes. The innerHTML calls are on markdown content processed by a designated renderer, which is standard chat UI behavior. The scanner correlation between network retrieval and code execution sink does not indicate actual vulnerability in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/messages/message-refresh.js#L1-L45" rel="noopener noreferrer">static/js/messages/message-refresh.js:1-45</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses a special command to load and run the character editor code so it can check that everything works correctly. The command only uses a file that is part of the project, not anything from outside or from a user. This is a normal way to test code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval call is in a test file and operates on a local module source file read from disk with a known static path. No user-controlled or external input reaches the eval. The pattern loads the module for unit testing functions, which is a standard testing approach in Node.js environments. There is no mechanism for an attacker to influence the evaluated string, and the file is part of the project&#39;s own codebase.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-char-editor.js#L69" rel="noopener noreferrer">tests/frontend/test-char-editor.js:69</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-stmt</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test loads the actual code file to run tests against it. This happens only when developers are testing, not when users use the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The eval loads a fixed project source file at test time using an absolute derivation of the path. The file path is known and controlled entirely by the project. No external or user input influences the content. This is a standard technique used in Node.js test setups to load modules that have not been bundled. It does not execute in production.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-stmt</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-extract-data.js#L23" rel="noopener noreferrer">tests/frontend/test-extract-data.js:23</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Unreviewed HTML template in customConfirm may allow DOM injection</h3>
+    <p><strong>low risk</strong> &middot; low confidence</p>
+    <p>When you delete a character, a confirmation box shows the character&#39;s name. If someone created a character with a tricky name containing code, and the popup isn&#39;t careful, that code could run. Since the app controls the character data, this is unlikely, but worth reviewing the popup function.</p>
+    <details><summary>Technical assessment</summary>
+      <p>In promptDeleteChar (lines 29-52), a template literal containing charName from btn.dataset.charName is passed to window.customConfirm. If that function uses innerHTML without sanitization, an attacker who can inject a malicious character name (e.g., via imported character data) could cause DOM-based XSS. The implementation of customConfirm is not visible in the evidence, so the risk is unconfirmed but noted.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the window.customConfirm function to ensure it escapes HTML before inserting into the DOM, or use safe DOM methods like textContent.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/static/js/features/char-editor.js#L29-L52" rel="noopener noreferrer">static/js/features/char-editor.js:29-52</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>False positive: static assertion strings flagged as shady-link</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A security scanner thought some test messages might be bad links, but they are just harmless text used to explain what each test checks.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The JS-X-Ray scanner flagged three lines in a test file as potential &#39;shady-link&#39; signals. All three lines contain static assertion message strings used to describe test expectations (e.g., &#39;cap: only 5 active&#39;). These strings are not URLs, hostnames, or network references. The file is a test file (not shipped to users) and performs no network access. The signal is a false positive from static analysis.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-notifications.js#L149-L152" rel="noopener noreferrer">tests/frontend/test-notifications.js:149-152</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test file uses eval for module loading</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>In testing, developers sometimes use eval to load a piece of code. Here it&#39;s done with a file the developer wrote, and it&#39;s only for tests. It&#39;s not dangerous.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The test file employs eval to dynamically evaluate a project source file and expose its functions. This is a common technique in Node.js test environments when a module is not bundled or exported. The eval input is entirely static and hardcoded, posing no security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ganon3264/focus/blob/a40e528d939de0d7aaaa9e8373469665ad5480bc/tests/frontend/test-theme-manager.js#L83" rel="noopener noreferrer">tests/frontend/test-theme-manager.js:83</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>227 files &middot; 2473812 bytes</dd>
+      <dt>Contextual coverage</dt><dd>62 of 62 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>57 files &middot; 343274 bytes</dd>
+        <dt>Representations</dt><dd>57 raw &middot; 13 decoded &middot; 2 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>57 raw signatures &middot; 57 raw AST &middot; 57 raw OpenGrep &middot; 15 derived signatures &middot; 4 derived AST &middot; 15 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>static/js/features/backup-manager.js</code> &mdash; derived-ast / parse</li><li><code>static/js/features/backup-manager.js</code> &mdash; normalize / unsupported</li><li><code>static/js/messages/edit-message.js</code> &mdash; derived-ast / parse</li><li><code>static/js/messages/edit-message.js</code> &mdash; normalize / unsupported</li><li><code>static/js/modals/shared-entity-modal.js</code> &mdash; derived-ast / parse</li><li><code>static/js/modals/shared-entity-modal.js</code> &mdash; normalize / parse</li><li><code>static/js/ui/lightbox.js</code> &mdash; derived-ast / parse</li><li><code>static/js/ui/lightbox.js</code> &mdash; normalize / parse</li><li><code>static/js/ui/list-manager.js</code> &mdash; derived-ast / parse</li><li><code>static/js/ui/list-manager.js</code> &mdash; normalize / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ganon3264/focus/commit/a40e528d939de0d7aaaa9e8373469665ad5480bc" rel="noopener noreferrer">a40e528d939de0d7aaaa9e8373469665ad5480bc</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-10T07:25:52.834Z">Aug 10, 2026</time></dd>
+        <dt>History depth</dt><dd>1 commit</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>4</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>53 fresh / 0 reused groups &middot; 62 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Review usage</dt><dd>801776 input &middot; 83693 output &middot; 10240 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>2c51c5e680ad3f95302e005a3208d1dae8372b45cb807dcbe63c9d8d24e0092c</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1305306157/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
