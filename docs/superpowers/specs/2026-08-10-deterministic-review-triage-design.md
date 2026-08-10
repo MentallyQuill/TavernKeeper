@@ -1,7 +1,8 @@
 # Deterministic Review Triage Design
 
-**Date:** 2026-08-10  
-**Status:** Approved  
+**Date:** 2026-08-10
+
+**Status:** Approved
 **Scope:** TavernKeeper scanner evidence triage, contextual-model budgeting, report transparency, and the required Tavernary reader update
 
 ## Problem
