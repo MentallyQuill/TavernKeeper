@@ -49,21 +49,22 @@ retry state, immutable Technical Report V5 publication, and technical history.
 Input-free GitHub App wake-ups reduce latency in both directions; scheduled
 reconciliation repairs missed wake-ups.
 
-Every selected repository finishes independently inside its bounded batch.
-The serialized publisher keeps every complete Technical Report V5 candidate,
-publishes the valid subset atomically, removes successful targets from the
-durable queue, and rotates every unsuccessful target behind the currently
-assigned queue. A failure never creates an automatic pause or terminal retry;
-only an explicit protected staff emergency stop can suspend scheduling.
+TavernKeeper maintains two durable scan slots. Each claimed repository runs in
+its own reusable workflow and publishes its complete Technical Report V5 as
+soon as that target finishes; it never waits for another repository or a batch
+barrier. Publication removes a successful target from the durable queue, while
+a failure clears its claim and rotates it behind the currently assigned queue.
+A failure never creates an automatic pause or terminal retry; only an explicit
+protected staff emergency stop can suspend scheduling.
 
 Only Tavernary staff can initiate a targeted scan, through Tavernary's
 exact-GitHub-URL Action. TavernKeeper accepts only the authorized wake App's
 repository-ID hint and resolves the repository again from Tavernary's public
-manifest. Public Issues do not trigger scans. Automatic work is limited to five
-repositories per batch and two concurrent repositories.
+manifest. Public Issues do not trigger scans. Committed claim leases enforce a
+global limit of two concurrently scanned repositories across every wake-up.
 Due staff-requested scans run before ordinary due tickets. They do not bypass
 an emergency stop, automatic recovery hold, retry cooldown, exact-SHA checks,
-batch limit, or concurrency limit.
+claim capacity, or concurrency limit.
 
 Provider configuration is model-agnostic. `TAVERNKEEPER_MODEL` selects the
 configured OpenAI-compatible reviewer without changing the report contract or
@@ -90,12 +91,13 @@ candidate's evidence hashes or drop an optional observation whose evidence or
 location is invalid; deterministic validation still decides whether the
 original review is accepted.
 
-Every Tavernary catalog project without a report for its exact target SHA,
-scanner policy, and contextual-review policy is automatically queued. Protected
-staff work runs first; automatic work is ordered newly submitted, newly
-updated, then all remaining out-of-version projects. The policy-4 catch-up
-bypasses the ordinary 48-hour changed-SHA cooldown once because its prior report
-uses an older policy. Durable retry and provider-hold deadlines remain
+Automatic eligibility is limited to newly submitted projects, newly updated
+projects, protected staff or policy work, and the frozen one-time coverage
+cohort selected from the current top 20 by popularity plus latest 20 stable
+GitHub releases. A missing current-version report alone does not queue the rest
+of the catalog. Protected staff and policy work runs first, followed by new
+submissions, updates, and coverage. Updated and coverage targets observe the
+ordinary 48-hour cooldown; durable retry and provider-hold deadlines remain
 authoritative. See
 [operations](docs/operations.md), [architecture](docs/architecture.md),
 [scanning policy](docs/SCANNING.md), and [rule documentation](docs/rules.md).
@@ -129,8 +131,8 @@ npm run build
 Scanner binaries used in Actions are version- and digest-pinned in
 `config/scanners.v1.json`. `npm run workflows:check` separately enforces
 triggers, permissions, action pins, secret placement, Publisher-token
-placement, checkout authentication, batch size, concurrency, and the required
-prepare-review-finalize boundary.
+placement, checkout authentication, claim capacity, concurrency, and the
+required prepare-review-publish boundary.
 
 `npm run test:e2e` is an in-process hostile-data safety and publication gate.
 It exercises inventory, classification, scanner evidence, contextual review,

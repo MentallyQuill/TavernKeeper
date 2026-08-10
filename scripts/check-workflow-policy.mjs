@@ -46,6 +46,70 @@ const canonicalStaffPublisherPushLines = [
   "done",
   'test "$push_succeeded" = "true"',
 ];
+const canonicalCoverageCampaignPushLines = [
+  'push_succeeded="false"',
+  "if ! commit_campaign; then",
+  '  push_succeeded="true"',
+  "else",
+  "  for attempt in 1 2 3; do",
+  "    if git push origin HEAD:main; then",
+  '      push_succeeded="true"',
+  "      break",
+  "    fi",
+  '    if [[ "$attempt" -lt 3 ]]; then',
+  '      sleep "$((attempt * 15))"',
+  '      env -u GH_TOKEN GITHUB_TOKEN="$SELECTION_TOKEN" git fetch origin main',
+  "      git reset --hard origin/main",
+  "      run_operation",
+  "      if ! commit_campaign; then",
+  '        push_succeeded="true"',
+  "        break",
+  "      fi",
+  "    fi",
+  "  done",
+  "fi",
+  'test "$push_succeeded" = "true"',
+];
+const canonicalClaimPushLines = [
+  'push_succeeded="false"',
+  "for attempt in 1 2 3; do",
+  "  git fetch origin main",
+  "  git reset --hard origin/main",
+  "  run_claim",
+  "  if ! commit_claim; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  "  if git push origin HEAD:main; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  '  if [[ "$attempt" -lt 3 ]]; then',
+  '    sleep "$((attempt * 15))"',
+  "  fi",
+  "done",
+  'test "$push_succeeded" = "true"',
+];
+const canonicalPublicationReplayPushLines = [
+  'push_succeeded="false"',
+  "for attempt in 1 2 3; do",
+  "  if git push origin HEAD:main; then",
+  '    push_succeeded="true"',
+  "    break",
+  "  fi",
+  '  if [[ "$attempt" -lt 3 ]]; then',
+  '    sleep "$((attempt * 15))"',
+  "    git fetch origin main",
+  "    git reset --hard origin/main",
+  "    run_publication",
+  "    if ! commit_publication; then",
+  '      push_succeeded="true"',
+  "      break",
+  "    fi",
+  "  fi",
+  "done",
+  'test "$push_succeeded" = "true"',
+];
 const canonicalProviderProbePushLines = [
   'push_succeeded="false"',
   "for attempt in 1 2 3; do",
@@ -88,6 +152,24 @@ const canonicalStaffPublisherRun =
     'git config user.name "TavernKeeper"',
     'git config user.email "tavernkeeper@users.noreply.github.com"',
     ...canonicalStaffPublisherPushLines,
+  ].join("\n") + "\n";
+const canonicalCoverageCampaignPublisherRun =
+  [
+    "run_operation() {",
+    '  env -u GH_TOKEN GITHUB_TOKEN="$SELECTION_TOKEN" npm run --silent coverage-campaign',
+    "}",
+    "commit_campaign() {",
+    "  if git diff --quiet -- operations/state.json; then",
+    "    return 1",
+    "  fi",
+    "  git add operations/state.json",
+    '  git commit -m "chore(scans): schedule one-time coverage"',
+    "}",
+    "",
+    "gh auth setup-git",
+    'git config user.name "TavernKeeper"',
+    'git config user.email "tavernkeeper@users.noreply.github.com"',
+    ...canonicalCoverageCampaignPushLines,
   ].join("\n") + "\n";
 const canonicalContextualReviewRun = String.raw`progress_count() {
   node scripts/contextual-review-progress-count.mjs "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
@@ -152,6 +234,7 @@ const artifactSecret = "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}";
 
 const allowedTriggers = {
   "ci.yml": ["pull_request", "push"],
+  "coverage-campaign.yml": ["workflow_dispatch"],
   "delayed-wake.yml": ["workflow_dispatch"],
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "pages-reconcile.yml": ["schedule", "workflow_dispatch"],
@@ -174,6 +257,10 @@ const permissionProfiles = {
   "ci.yml": {
     workflow: { contents: "read" },
     jobs: { check: undefined, "scanner-toolchain": undefined },
+  },
+  "coverage-campaign.yml": {
+    workflow: { contents: "read", actions: "write" },
+    jobs: { create: { contents: "read", actions: "write" } },
   },
   "delayed-wake.yml": {
     workflow: { contents: "read", actions: "write" },
@@ -204,8 +291,7 @@ const permissionProfiles = {
       actions: "write",
     },
     jobs: {
-      sync: { contents: "read" },
-      plan: { contents: "read", actions: "write" },
+      claim: { contents: "read", actions: "write" },
       "probe-provider": { contents: "read", actions: "write" },
       run: undefined,
     },
@@ -254,15 +340,19 @@ const permissionProfiles = {
 };
 
 const protectedManual = new Set([
+  "coverage-campaign.yml",
   "policy-rescan.yml",
   "provider-check.yml",
   "release-holds.yml",
   "staff-operations.yml",
 ]);
 const mutationJobs = {
+  "coverage-campaign.yml": [
+    { job: "create", environment: "tavernkeeper-staff" },
+  ],
   "policy-rescan.yml": [{ job: "schedule", environment: "tavernkeeper-staff" }],
   "reconcile.yml": [
-    { job: "sync", environment: "tavernkeeper-scanner" },
+    { job: "claim", environment: "tavernkeeper-scanner" },
     { job: "probe-provider", environment: "tavernkeeper-scanner" },
   ],
   "scan-and-publish.yml": [
@@ -475,7 +565,7 @@ function checkSecretPlacement(file, workflow) {
       ![
         "Initialize encrypted bootstrap failure",
         "Encrypt sanitized outcome",
-        "Decrypt sanitized outcomes",
+        "Decrypt sanitized outcome",
       ].includes(step?.name)
     )
       fail(file, "artifact key appears outside authenticated transport steps");
@@ -594,12 +684,14 @@ function checkEncryptedHandoff(file, workflow) {
   if (file !== "scan-and-publish.yml") return;
   const steps = workflow.jobs?.scan?.steps ?? [];
   const prepareSteps = workflow.jobs?.prepare?.steps ?? [];
+  const repositoryExpression =
+    "${{ fromJSON(inputs.request_json).repository_id }}";
   const bootstrap = steps[0];
   if (
     bootstrap?.name !== "Initialize encrypted bootstrap failure" ||
     bootstrap?.env?.TAVERNKEEPER_ARTIFACT_KEY !== artifactSecret ||
     bootstrap?.env?.TAVERNKEEPER_BOOTSTRAP_OUTCOME !==
-      "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc" ||
+      `${"${{ runner.temp }}"}/tavernkeeper-outcome-${repositoryExpression}.enc` ||
     !bootstrap?.run?.includes("SCAN_BOOTSTRAP_FAILED") ||
     !bootstrap?.run?.includes("aes-256-gcm") ||
     !bootstrap?.run?.includes("TAVERNKEEPER_BOOTSTRAP_OUTCOME")
@@ -615,7 +707,7 @@ function checkEncryptedHandoff(file, workflow) {
     uploads[0]?.uses !== uploadArtifactAction ||
     uploads[0]?.if !== "always()" ||
     uploads[0]?.with?.path !==
-      "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc" ||
+      `${"${{ runner.temp }}"}/tavernkeeper-outcome-${repositoryExpression}.enc` ||
     uploads[0]?.with?.["retention-days"] !== 1
   )
     fail(
@@ -631,10 +723,9 @@ function checkEncryptedHandoff(file, workflow) {
     preparedUploads.length !== 1 ||
     preparedUploads[0]?.uses !== uploadArtifactAction ||
     preparedUploads[0]?.if !== "always()" ||
-    preparedUploads[0]?.with?.name !==
-      "prepared-${{ matrix.request.repository_id }}" ||
+    preparedUploads[0]?.with?.name !== `prepared-${repositoryExpression}` ||
     preparedUploads[0]?.with?.path !==
-      "${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}" ||
+      `${"${{ runner.temp }}"}/tavernkeeper-prepared-${repositoryExpression}` ||
     preparedUploads[0]?.with?.["retention-days"] !== 1
   )
     fail(
@@ -670,8 +761,7 @@ function checkEncryptedHandoff(file, workflow) {
   if (
     preparedDownloads.length !== 1 ||
     preparedDownloads[0]?.uses !== downloadArtifactAction ||
-    preparedDownloads[0]?.with?.name !==
-      "prepared-${{ matrix.request.repository_id }}"
+    preparedDownloads[0]?.with?.name !== `prepared-${repositoryExpression}`
   )
     fail(file, "review must download only its bounded prepared artifact");
   const downloads = (workflow.jobs?.publish?.steps ?? []).filter(
@@ -679,22 +769,26 @@ function checkEncryptedHandoff(file, workflow) {
       typeof step?.uses === "string" &&
       step.uses.startsWith("actions/download-artifact@"),
   );
-  if (downloads.length !== 1 || downloads[0]?.uses !== downloadArtifactAction)
+  if (
+    downloads.length !== 1 ||
+    downloads[0]?.uses !== downloadArtifactAction ||
+    downloads[0]?.with?.name !== `scan-${repositoryExpression}` ||
+    downloads[0]?.with?.pattern !== undefined
+  )
     fail(file, "artifact actions must retain the reviewed Node 24 pins");
   const decrypt = (workflow.jobs?.publish?.steps ?? []).find(
-    (step) => step?.name === "Decrypt sanitized outcomes",
+    (step) => step?.name === "Decrypt sanitized outcome",
   );
   if (
-    decrypt?.env?.TAVERNKEEPER_SCAN_REQUESTS !==
-      "${{ inputs.requests_json }}" ||
+    decrypt?.env?.TAVERNKEEPER_ARTIFACT_KEY !== artifactSecret ||
     !decrypt?.run?.includes(
-      "find encrypted-artifacts -type f -name 'tavernkeeper-outcome-*.enc' -print0",
+      `encrypted-artifact/tavernkeeper-outcome-${repositoryExpression}.enc`,
     ) ||
-    !decrypt?.run?.includes('test "$position" -eq "$expected"')
+    decrypt?.run?.includes("find encrypted-artifacts")
   )
     fail(
       file,
-      "publisher must decrypt the exact per-repository artifact batch",
+      "publisher must decrypt exactly its requested repository artifact",
     );
   const encrypt = steps.find(
     (step) => step?.name === "Encrypt sanitized outcome",
@@ -703,30 +797,29 @@ function checkEncryptedHandoff(file, workflow) {
     encrypt?.if !== "always()" ||
     !encrypt?.run?.includes("outcome-actual.enc") ||
     !encrypt?.run?.includes(
-      'mv outcome-actual.enc "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc"',
+      `mv outcome-actual.enc "${"${{ runner.temp }}"}/tavernkeeper-outcome-${repositoryExpression}.enc"`,
     )
   )
     fail(file, "scan must atomically replace the bootstrap failure outcome");
-  if (workflow.jobs?.scan?.strategy?.["max-parallel"] !== 1)
-    fail(file, "scan matrix must retain max-parallel: 1");
-  if (workflow.jobs?.scan?.strategy?.["fail-fast"] !== false)
-    fail(file, "scan matrix must finish every selected repository");
-  if (workflow.jobs?.prepare?.strategy?.["max-parallel"] !== 2)
-    fail(file, "prepare matrix must retain max-parallel: 2");
-  if (workflow.jobs?.prepare?.strategy?.["fail-fast"] !== false)
-    fail(file, "prepare matrix must finish every selected repository");
+  if (
+    workflow.jobs?.scan?.strategy !== undefined ||
+    workflow.jobs?.prepare?.strategy !== undefined ||
+    workflow.jobs?.prepare?.["timeout-minutes"] !== 30 ||
+    workflow.jobs?.scan?.["timeout-minutes"] !== 90
+  )
+    fail(file, "single-target child jobs must retain bounded timeouts");
   if (workflow.jobs?.scan?.needs !== "prepare")
-    fail(file, "review matrix must wait for preparation");
+    fail(file, "review must wait for preparation");
   if (
     JSON.stringify(workflow.jobs?.prepare).match(
       /secrets\.|TAVERNKEEPER_API_|TAVERNKEEPER_MODEL|JSONREPAIR_|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
     )
   )
-    fail(file, "prepare matrix must remain credential-free");
+    fail(file, "preparation must remain credential-free");
   if (
     JSON.stringify(workflow.jobs?.scan).includes("TAVERNKEEPER_CHECKOUT_ROOT")
   )
-    fail(file, "review matrix must not receive a target checkout path");
+    fail(file, "review must not receive a target checkout path");
   const dependencies = prepareSteps.find(
     (step) => step?.name === "Install dependencies",
   );
@@ -752,14 +845,13 @@ function checkEncryptedHandoff(file, workflow) {
 
   const publishJob = workflow.jobs?.publish;
   const publish = (publishJob?.steps ?? []).find(
-    (step) => step?.name === "Publish serialized batch",
+    (step) => step?.name === "Publish serialized target",
   );
   const publishRun = publish?.run ?? "";
   if (
     publish?.id !== "publish" ||
     publish?.shell !== "bash" ||
-    publish?.env?.TAVERNKEEPER_SCAN_REQUESTS !==
-      "${{ inputs.requests_json }}" ||
+    publish?.env?.TAVERNKEEPER_SCAN_REQUEST !== "${{ inputs.request_json }}" ||
     !publishRun.includes(
       `reports="$(jq -er '.reports | select(type == "number")' <<< "$result")"`,
     ) ||
@@ -785,14 +877,14 @@ function checkEncryptedHandoff(file, workflow) {
   )
     fail(
       file,
-      "publisher must authenticate every decrypted outcome against the requested batch and expose typed routing outputs",
+      "publisher must authenticate its decrypted target and expose typed routing outputs",
     );
 
   if (
     workflow.jobs?.deploy?.if !==
     "${{ always() && needs.publish.result == 'success' && needs.publish.outputs.reports != '0' }}"
   )
-    fail(file, "deployment must accept a successful mixed-batch publisher");
+    fail(file, "deployment must accept each successful target publisher");
 
   const continuation = workflow.jobs?.continue;
   if (
@@ -897,12 +989,23 @@ function checkPublisherBoundary(file, workflow) {
       pushRun !== canonicalStaffPublisherRun
     )
       fail(file, "staff operation and Publisher token boundary changed");
+    if (
+      file === "coverage-campaign.yml" &&
+      pushRun !== canonicalCoverageCampaignPublisherRun
+    )
+      fail(file, "coverage selection and Publisher token boundary changed");
     const expectedPushLines =
-      file === "reconcile.yml" && mutation.job === "probe-provider"
-        ? canonicalProviderProbePushLines
-        : file === "staff-operations.yml"
-          ? canonicalStaffPublisherPushLines
-          : canonicalPublisherPushLines;
+      file === "coverage-campaign.yml"
+        ? canonicalCoverageCampaignPushLines
+        : file === "reconcile.yml" && mutation.job === "claim"
+          ? canonicalClaimPushLines
+          : file === "reconcile.yml" && mutation.job === "probe-provider"
+            ? canonicalProviderProbePushLines
+            : file === "scan-and-publish.yml"
+              ? canonicalPublicationReplayPushLines
+              : file === "staff-operations.yml"
+                ? canonicalStaffPublisherPushLines
+                : canonicalPublisherPushLines;
     if (!containsOnlyCanonicalPublisherPush(pushRun, expectedPushLines))
       fail(
         file,
@@ -952,17 +1055,17 @@ function checkScannerToolchain(file, workflow) {
 
 function checkDelayedWake(file, workflow) {
   if (file === "reconcile.yml") {
-    const schedule = (workflow.jobs?.plan?.steps ?? []).find(
+    const schedule = (workflow.jobs?.claim?.steps ?? []).find(
       (step) => step?.name === "Schedule deterministic delayed wake",
     );
     if (
       !schedule?.if?.includes(
-        "fromJSON(steps.plan.outputs.requests_json)[0] == null",
+        "fromJSON(steps.claim.outputs.requests_json)[0] == null",
       ) ||
-      !schedule.if.includes("steps.plan.outputs.total_remaining != '0'") ||
-      !schedule.if.includes("steps.plan.outputs.next_wake_at != ''") ||
+      !schedule.if.includes("steps.claim.outputs.total_remaining != '0'") ||
+      !schedule.if.includes("steps.claim.outputs.next_wake_at != ''") ||
       schedule?.env?.TAVERNKEEPER_WAKE_AT !==
-        "${{ steps.plan.outputs.next_wake_at }}" ||
+        "${{ steps.claim.outputs.next_wake_at }}" ||
       schedule?.run !==
         'gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"'
     )

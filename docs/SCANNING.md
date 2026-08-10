@@ -16,15 +16,15 @@ source cache, or separately hosted deobfuscation service. The only non-GitHub
 runtime calls are the configured contextual reviewer and, only after a final
 allowlisted binding failure, one minimal GPT-5.6 Luna JSON patch request.
 
-The existing `scan-and-publish.yml` workflow is divided at a credential
+Each single-target `scan-and-publish.yml` invocation is divided at a credential
 boundary:
 
-1. The credential-free `prepare` matrix job checks out trusted TavernKeeper
+1. The credential-free `prepare` job checks out trusted TavernKeeper
    code, acquires the exact target as hostile data, scans it, constructs bounded
    redacted evidence, verifies the target HEAD, deletes the target checkout,
    and uploads `prepared-${repository_id}` for one day. It receives no model,
    artifact-encryption, or Publisher credential.
-2. The fresh `scan` matrix job downloads only its matching prepared artifact,
+2. The fresh `scan` job downloads only its matching prepared artifact,
    checks the request, schema, byte ceiling, session identity, file digests, and
    evidence digest, and restores only `prepared.json` and
    `evidence-context.json`. It never receives a target checkout path or complete
@@ -35,8 +35,9 @@ boundary:
    file paths, line numbers, scanner finding prose, or report narratives and
    cannot replace review or summary generation. The finalized public report and
    sanitized transition then use
-   the existing authenticated, encrypted `scan-${repository_id}` artifact and
-   serialized publisher.
+   an authenticated, encrypted `scan-${repository_id}` artifact and the
+   target-local publisher. The publisher writes and deploys that complete
+   result immediately without waiting for a peer target.
 
 GitHub artifact transport is the only prepare-to-review handoff. The prepared
 artifact is capped at 20,000,000 bytes and contains fixed scanner descriptions,

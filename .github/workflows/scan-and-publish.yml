@@ -3,7 +3,7 @@ name: Scan and publish
 on:
   workflow_call:
     inputs:
-      requests_json:
+      request_json:
         type: string
         required: true
 permissions:
@@ -15,20 +15,16 @@ permissions:
 
 jobs:
   prepare:
-    if: ${{ fromJSON(inputs.requests_json)[0] != null }}
+    if: ${{ fromJSON(inputs.request_json) != null }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      max-parallel: 2
-      matrix:
-        request: ${{ fromJSON(inputs.requests_json) }}
     steps:
       - name: Initialize sanitized preparation failure
         env:
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
-          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ fromJSON(inputs.request_json).repository_id }}
         shell: bash
         run: |
           node <<'NODE'
@@ -88,9 +84,9 @@ jobs:
         if: ${{ steps.dependencies.outcome == 'success' && steps.toolchain.outcome == 'success' }}
         continue-on-error: true
         env:
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
-          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ matrix.request.repository_id }}
-          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ fromJSON(inputs.request_json).repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         run: npm run --silent prepare-target
       - name: Package bounded prepared evidence
@@ -98,9 +94,9 @@ jobs:
         if: steps.prepare.outcome == 'success'
         continue-on-error: true
         env:
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
-          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
-          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}
+          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ fromJSON(inputs.request_json).repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         shell: bash
         run: |
@@ -114,8 +110,8 @@ jobs:
       - name: Package sanitized preparation failure
         if: ${{ always() && steps.dependencies.outcome == 'success' && (steps.prepare.outcome != 'success' || steps.pack.outcome != 'success') }}
         env:
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
-          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ fromJSON(inputs.request_json).repository_id }}
         run: npm run --silent prepared-evidence -- fail phase-error.json "$TAVERNKEEPER_PREPARED_ARTIFACT"
       - name: Remove preparation diagnostics
         if: always()
@@ -124,8 +120,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: prepared-${{ matrix.request.repository_id }}
-          path: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
+          name: prepared-${{ fromJSON(inputs.request_json).repository_id }}
+          path: ${{ runner.temp }}/tavernkeeper-prepared-${{ fromJSON(inputs.request_json).repository_id }}
           if-no-files-found: error
           retention-days: 1
       - name: Mark failed preparation after preserving the handoff
@@ -134,22 +130,18 @@ jobs:
 
   scan:
     needs: prepare
-    if: ${{ always() && fromJSON(inputs.requests_json)[0] != null }}
+    if: ${{ always() }}
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     environment: tavernkeeper-scanner
     permissions:
       contents: read
-    strategy:
-      fail-fast: false
-      max-parallel: 1
-      matrix:
-        request: ${{ fromJSON(inputs.requests_json) }}
     steps:
       - name: Initialize encrypted bootstrap failure
         env:
           TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
-          TAVERNKEEPER_BOOTSTRAP_OUTCOME: ${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_BOOTSTRAP_OUTCOME: ${{ runner.temp }}/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc
         shell: bash
         run: |
           node <<'NODE'
@@ -224,8 +216,8 @@ jobs:
         continue-on-error: true
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: prepared-${{ matrix.request.repository_id }}
-          path: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
+          name: prepared-${{ fromJSON(inputs.request_json).repository_id }}
+          path: ${{ runner.temp }}/tavernkeeper-prepared-${{ fromJSON(inputs.request_json).repository_id }}
       - name: Record unavailable prepared evidence
         if: ${{ steps.dependencies.outcome == 'success' && steps.download.outcome != 'success' }}
         run: node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"PREPARED_ARTIFACT_UNAVAILABLE",domain:"shared",component:"artifact-transport"}) + "\n", {flag:"wx"})'
@@ -234,9 +226,9 @@ jobs:
         if: ${{ steps.dependencies.outcome == 'success' && steps.download.outcome == 'success' }}
         continue-on-error: true
         env:
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
-          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
-          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}
+          TAVERNKEEPER_PREPARED_ARTIFACT: ${{ runner.temp }}/tavernkeeper-prepared-${{ fromJSON(inputs.request_json).repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         shell: bash
         run: |
@@ -255,7 +247,7 @@ jobs:
           JSONREPAIR_API_ENDPOINT: ${{ secrets.JSONREPAIR_API_ENDPOINT }}
           JSONREPAIR_API_KEY: ${{ secrets.JSONREPAIR_API_KEY }}
           JSONREPAIR_MODEL: ${{ secrets.JSONREPAIR_MODEL }}
-          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         shell: bash
         run: |
@@ -313,14 +305,14 @@ jobs:
         if: steps.review.outcome == 'success'
         continue-on-error: true
         env:
-          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ matrix.request.repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}
           TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
         run: npm run --silent finalize-target -- candidate.json
       - name: Record secret-free phase transition
         id: transition
         if: ${{ always() && steps.dependencies.outcome == 'success' }}
         env:
-          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
         shell: bash
         run: |
           npm run --silent transition-result -- candidate.json transition.json phase-error.json
@@ -332,7 +324,7 @@ jobs:
         shell: bash
         run: |
           npm run --silent artifact-transport -- encrypt outcome-actual.enc candidate.json transition.json
-          mv outcome-actual.enc "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc"
+          mv outcome-actual.enc "${{ runner.temp }}/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc"
       - name: Remove plaintext handoff files
         if: always()
         shell: bash
@@ -341,8 +333,8 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: scan-${{ matrix.request.repository_id }}
-          path: ${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc
+          name: scan-${{ fromJSON(inputs.request_json).repository_id }}
+          path: ${{ runner.temp }}/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc
           if-no-files-found: error
           retention-days: 1
       - name: Mark this repository failed after a recorded scan failure
@@ -380,28 +372,23 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Download encrypted outcomes
+      - name: Download encrypted outcome
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: scan-*
-          path: encrypted-artifacts
-      - name: Decrypt sanitized outcomes
+          name: scan-${{ fromJSON(inputs.request_json).repository_id }}
+          path: encrypted-artifact
+      - name: Decrypt sanitized outcome
         env:
           TAVERNKEEPER_ARTIFACT_KEY: ${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}
-          TAVERNKEEPER_SCAN_REQUESTS: ${{ inputs.requests_json }}
         shell: bash
         run: |
-          expected="$(jq -er 'if type == "array" and length > 0 then length else error("invalid scan request batch") end' <<< "$TAVERNKEEPER_SCAN_REQUESTS")"
-          position=0
-          while IFS= read -r -d '' artifact; do
-            npm run --silent artifact-transport -- decrypt "$artifact" "artifacts/scan-$position"
-            position=$((position + 1))
-          done < <(find encrypted-artifacts -type f -name 'tavernkeeper-outcome-*.enc' -print0)
-          test "$position" -eq "$expected"
-      - name: Publish serialized batch
+          npm run --silent artifact-transport -- decrypt \
+            "encrypted-artifact/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc" \
+            artifacts/scan
+      - name: Publish serialized target
         id: publish
         env:
-          TAVERNKEEPER_SCAN_REQUESTS: ${{ inputs.requests_json }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
         shell: bash
         run: |
           result="$(npm run --silent publish -- artifacts)"
@@ -499,18 +486,28 @@ jobs:
           owner: MentallyQuill
           repositories: TavernKeeper
           permission-contents: write
-      - name: Commit reports and state
+      - name: Commit report and state
         id: commit
         env:
           GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
         shell: bash
         run: |
+          run_publication() {
+            env -u GH_TOKEN -u GITHUB_TOKEN npm run --silent publish -- artifacts >/dev/null
+          }
+          commit_publication() {
+            git add reports operations/state.json
+            if git diff --cached --quiet; then
+              return 1
+            fi
+            git commit -m "chore(reports): publish completed scan"
+          }
+
           gh auth setup-git
           git config user.name "TavernKeeper"
           git config user.email "tavernkeeper@users.noreply.github.com"
-          git add reports operations/state.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(reports): publish completed scans"
+          if commit_publication; then
             push_succeeded="false"
             for attempt in 1 2 3; do
               if git push origin HEAD:main; then
@@ -519,6 +516,13 @@ jobs:
               fi
               if [[ "$attempt" -lt 3 ]]; then
                 sleep "$((attempt * 15))"
+                git fetch origin main
+                git reset --hard origin/main
+                run_publication
+                if ! commit_publication; then
+                  push_succeeded="true"
+                  break
+                fi
               fi
             done
             test "$push_succeeded" = "true"
@@ -559,7 +563,7 @@ jobs:
             gh issue create \
               --label scanner-operations \
               --title "[scanner-operations] publication pipeline failed" \
-              --body "TavernKeeper could not persist its sanitized batch outcome. No scan payload or secret is included.\n\nCode: \`$code\`\nComponent: \`$component\`\nRun: $run_url\n\nAutomatic schedules remain enabled; inspect and repair the trusted publication boundary."
+              --body "TavernKeeper could not persist its sanitized target outcome. No scan payload or secret is included.\n\nCode: \`$code\`\nComponent: \`$component\`\nRun: $run_url\n\nAutomatic schedules remain enabled; inspect and repair the trusted publication boundary."
           fi
 
   continue:

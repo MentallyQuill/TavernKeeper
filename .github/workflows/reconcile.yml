@@ -14,10 +14,6 @@ on:
   repository_dispatch:
     types: [tavernary-targets-updated]
 
-concurrency:
-  group: tavernkeeper-global-scan
-  cancel-in-progress: false
-
 permissions:
   contents: read
   issues: write
@@ -26,11 +22,23 @@ permissions:
   actions: write
 
 jobs:
-  sync:
+  claim:
     runs-on: ubuntu-latest
     environment: tavernkeeper-scanner
     permissions:
       contents: read
+      actions: write
+    outputs:
+      requests_json: ${{ steps.claim.outputs.requests_json }}
+      total_remaining: ${{ steps.claim.outputs.total_remaining }}
+      runnable_remaining: ${{ steps.claim.outputs.runnable_remaining }}
+      delayed_entries: ${{ steps.claim.outputs.delayed_entries }}
+      next_wake_at: ${{ steps.claim.outputs.next_wake_at }}
+      emergency_stopped: ${{ steps.claim.outputs.emergency_stopped }}
+      automatic_holds: ${{ steps.claim.outputs.automatic_holds }}
+      recovery_probes: ${{ steps.claim.outputs.recovery_probes }}
+      provider_probe_fingerprint: ${{ steps.claim.outputs.provider_probe_fingerprint }}
+      active_scans: ${{ steps.claim.outputs.active_scans }}
     steps:
       - name: Check out trusted TavernKeeper main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -44,8 +52,6 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
-      - name: Synchronize durable scan queue
-        run: npm run --silent queue:sync
       - name: Create TavernKeeper Publisher token
         id: publisher-token
         uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
@@ -55,97 +61,79 @@ jobs:
           owner: MentallyQuill
           repositories: TavernKeeper
           permission-contents: write
-      - name: Commit synchronized queue
+      - name: Claim and commit available scan slots
+        id: claim
         env:
           GH_TOKEN: ${{ steps.publisher-token.outputs.token }}
-        shell: bash
-        run: |
-          gh auth setup-git
-          git config user.name "TavernKeeper"
-          git config user.email "tavernkeeper@users.noreply.github.com"
-          git add operations/state.json
-          if ! git diff --cached --quiet; then
-            git commit -m "chore(ops): synchronize durable scan queue"
-            push_succeeded="false"
-            for attempt in 1 2 3; do
-              if git push origin HEAD:main; then
-                push_succeeded="true"
-                break
-              fi
-              if [[ "$attempt" -lt 3 ]]; then
-                sleep "$((attempt * 15))"
-              fi
-            done
-            test "$push_succeeded" = "true"
-          fi
-
-  plan:
-    needs: sync
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
-    outputs:
-      requests_json: ${{ steps.plan.outputs.requests_json }}
-      total_remaining: ${{ steps.plan.outputs.total_remaining }}
-      runnable_remaining: ${{ steps.plan.outputs.runnable_remaining }}
-      delayed_entries: ${{ steps.plan.outputs.delayed_entries }}
-      next_wake_at: ${{ steps.plan.outputs.next_wake_at }}
-      emergency_stopped: ${{ steps.plan.outputs.emergency_stopped }}
-      automatic_holds: ${{ steps.plan.outputs.automatic_holds }}
-      recovery_probes: ${{ steps.plan.outputs.recovery_probes }}
-      provider_probe_fingerprint: ${{ steps.plan.outputs.provider_probe_fingerprint }}
-    steps:
-      - name: Check out synchronized TavernKeeper main
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: main
-          persist-credentials: false
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: 24
-          cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Plan bounded ticket batch
-        id: plan
-        env:
+          TAVERNKEEPER_CLAIM_RUN_ID: actions-${{ github.run_id }}-${{ github.run_attempt }}
           TAVERNKEEPER_FORCE_PROVIDER_PROBE: ${{ github.event.inputs.force_provider_probe || 'false' }}
         shell: bash
         run: |
-          planned="$(npm run --silent reconcile)"
-          echo "requests_json=$(jq -c '.include' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "total_remaining=$(jq -er '.total_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "runnable_remaining=$(jq -er '.runnable_remaining | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "delayed_entries=$(jq -er '.delayed_entries | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "next_wake_at=$(jq -r '.next_wake_at // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "emergency_stopped=$(jq -er '.emergency_stopped | select(type == "boolean") | tostring' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "automatic_holds=$(jq -er '.automatic_holds | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "recovery_probes=$(jq -er '.recovery_probes | select(type == "number")' <<< "$planned")" >> "$GITHUB_OUTPUT"
-          echo "provider_probe_fingerprint=$(jq -r '.provider_probe_fingerprint // ""' <<< "$planned")" >> "$GITHUB_OUTPUT"
+          run_claim() {
+            claim_result="$(env -u GH_TOKEN -u GITHUB_TOKEN npm run --silent queue:claim)"
+          }
+          commit_claim() {
+            git add operations/state.json
+            if git diff --cached --quiet; then
+              return 1
+            fi
+            git commit -m "chore(ops): claim scan slots"
+          }
+
+          gh auth setup-git
+          git config user.name "TavernKeeper"
+          git config user.email "tavernkeeper@users.noreply.github.com"
+          push_succeeded="false"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            run_claim
+            if ! commit_claim; then
+              push_succeeded="true"
+              break
+            fi
+            if git push origin HEAD:main; then
+              push_succeeded="true"
+              break
+            fi
+            if [[ "$attempt" -lt 3 ]]; then
+              sleep "$((attempt * 15))"
+            fi
+          done
+          test "$push_succeeded" = "true"
+
+          echo "requests_json=$(jq -c '.include' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "total_remaining=$(jq -er '.total_remaining | select(type == "number")' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "runnable_remaining=$(jq -er '.runnable_remaining | select(type == "number")' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "delayed_entries=$(jq -er '.delayed_entries | select(type == "number")' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "next_wake_at=$(jq -r '.next_wake_at // ""' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "emergency_stopped=$(jq -er '.emergency_stopped | select(type == "boolean") | tostring' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "automatic_holds=$(jq -er '.automatic_holds | select(type == "number")' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "recovery_probes=$(jq -er '.recovery_probes | select(type == "number")' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "provider_probe_fingerprint=$(jq -r '.provider_probe_fingerprint // ""' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
+          echo "active_scans=$(jq -er '.active_scans | select(type == "number")' <<< "$claim_result")" >> "$GITHUB_OUTPUT"
           {
-            echo "### TavernKeeper durable queue"
+            echo "### TavernKeeper durable scan slots"
             echo
-            echo "- Remaining after this batch: $(jq -r '.total_remaining' <<< "$planned")"
-            echo "- Runnable after this batch: $(jq -r '.runnable_remaining' <<< "$planned")"
-            echo "- Cooling entries: $(jq -r '.delayed_entries' <<< "$planned")"
-            echo "- Next automatic wake: $(jq -r '.next_wake_at // "none"' <<< "$planned")"
-            echo "- Staff emergency stop: $(jq -r '.emergency_stopped' <<< "$planned")"
-            echo "- Automatic recovery circuits: $(jq -r '.automatic_holds' <<< "$planned")"
-            echo "- Recovery probes in this batch: $(jq -r '.recovery_probes' <<< "$planned")"
+            echo "- Active scans: $(jq -r '.active_scans' <<< "$claim_result") / 2"
+            echo "- Claimed now: $(jq -r '.include | length' <<< "$claim_result")"
+            echo "- Remaining after claims: $(jq -r '.total_remaining' <<< "$claim_result")"
+            echo "- Runnable after claims: $(jq -r '.runnable_remaining' <<< "$claim_result")"
+            echo "- Cooling entries: $(jq -r '.delayed_entries' <<< "$claim_result")"
+            echo "- Expired claims recovered: $(jq -r '.expired_claims' <<< "$claim_result")"
+            echo "- Staff emergency stop: $(jq -r '.emergency_stopped' <<< "$claim_result")"
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Schedule deterministic delayed wake
-        if: ${{ fromJSON(steps.plan.outputs.requests_json)[0] == null && steps.plan.outputs.total_remaining != '0' && steps.plan.outputs.next_wake_at != '' }}
+        if: ${{ fromJSON(steps.claim.outputs.requests_json)[0] == null && steps.claim.outputs.total_remaining != '0' && steps.claim.outputs.next_wake_at != '' }}
         env:
           GH_TOKEN: ${{ github.token }}
-          TAVERNKEEPER_WAKE_AT: ${{ steps.plan.outputs.next_wake_at }}
+          TAVERNKEEPER_WAKE_AT: ${{ steps.claim.outputs.next_wake_at }}
         shell: bash
         run: gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"
 
   probe-provider:
-    needs: plan
-    if: ${{ needs.plan.outputs.provider_probe_fingerprint != '' }}
+    needs: claim
+    if: ${{ needs.claim.outputs.provider_probe_fingerprint != '' }}
     runs-on: ubuntu-latest
     environment: tavernkeeper-scanner
     permissions:
@@ -177,7 +165,7 @@ jobs:
       - name: Apply provider probe outcome
         id: apply_probe
         env:
-          TAVERNKEEPER_PROBE_FINGERPRINT: ${{ needs.plan.outputs.provider_probe_fingerprint }}
+          TAVERNKEEPER_PROBE_FINGERPRINT: ${{ needs.claim.outputs.provider_probe_fingerprint }}
           TAVERNKEEPER_PROBE_OUTCOME: ${{ steps.provider_check.outcome }}
         shell: bash
         run: |
@@ -239,9 +227,14 @@ jobs:
         run: gh workflow run reconcile.yml --repo "$GITHUB_REPOSITORY" --ref main
 
   run:
-    needs: plan
-    if: ${{ fromJSON(needs.plan.outputs.requests_json)[0] != null }}
+    needs: claim
+    if: ${{ fromJSON(needs.claim.outputs.requests_json)[0] != null }}
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        request: ${{ fromJSON(needs.claim.outputs.requests_json) }}
     uses: ./.github/workflows/scan-and-publish.yml
     with:
-      requests_json: ${{ needs.plan.outputs.requests_json }}
+      request_json: ${{ toJSON(matrix.request) }}
     secrets: inherit

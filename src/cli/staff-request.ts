@@ -19,7 +19,7 @@ export function validateTargetedScanHint(input: unknown) {
 }
 
 const ScanRequestFields = {
-  reason: z.enum(["new", "changed", "retry", "policy", "version", "staff"]),
+  reason: z.enum(["new", "changed", "retry", "policy", "coverage", "staff"]),
   recovery_fingerprint: z
     .string()
     .regex(/^[0-9a-f]{64}$/u)

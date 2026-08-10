@@ -108,13 +108,14 @@ TavernKeeper rechecks exact HEAD before finalization. A tool, provider, context,
 review, quota, evidence, schema, sanitizer, or publication failure yields no
 report for that repository and enters the retry path.
 
-Matrix targets finish independently. The serialized publisher pairs each
-completed transition with its own candidate, records every failed transition,
-and atomically publishes the complete successful subset. A peer failure never
-turns a completed report into degraded output and never causes that report to
-be discarded. Committed publisher state, not matrix or Pages job status, drives
-continuation after a mixed batch. A separate scheduled reconciler repairs Pages
-drift without holding the scan queue.
+Committed `active_scans` claims provide two global scan slots with two-hour
+leases. Each target runs in its own reusable workflow and publishes immediately
+after its review succeeds. Claim and publication commits replay their
+deterministic state transition after an optimistic push conflict, so overlapping
+wake-ups cannot overfill the slots or discard a completed report. Committed
+publisher state, not child-workflow or Pages status, drives continuation. A
+separate scheduled reconciler repairs Pages drift without holding the scan
+queue.
 
 Every sanitized failure carries a bounded domain, component, code, and optional
 diagnostic stage. Domains preserve useful incident classification, but no
@@ -135,24 +136,25 @@ only; identical corrective feedback is not retried indefinitely.
 
 Operations state schema V3 persists one monotonic ticket ledger. A target is
 current only when one preferred report matches its exact manifest SHA, scanner
-policy, and contextual-review policy. Reconciliation queues every mismatch;
-catalog observation classifies work as newly submitted or newly updated but is
-not an eligibility gate. Protected staff work is selected first, followed by
-new submissions, updates, and all remaining version catch-up work. Failure and
-provider-hold deadlines remain authoritative.
+policy, and contextual-review policy, but a version mismatch alone is not an
+eligibility grant. Reconciliation admits newly submitted projects, newly
+updated projects, frozen coverage-cohort targets, and protected staff or policy
+work. Selection order is staff and policy work, new submissions, updates, then
+coverage. Failure and provider-hold deadlines remain authoritative.
 
-The retired top-20/latest-20 campaign field remains in schema V3 only as an
-empty backward-compatible tombstone. Reconciliation clears any legacy value
-and never grants it eligibility or priority.
+The coverage workflow calculates one fresh, fixed campaign from Tavernary's
+current top 20 projects by popularity plus latest 20 stable GitHub releases.
+The deduplicated membership is committed under campaign V2 and does not drift
+as catalog rankings or release dates change.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
-scanner and contextual-policy versions, and report version. Prepare matrix jobs
-first use one-day secret-free GitHub artifacts; review matrix jobs then encrypt
-sanitized outcomes before a second one-day artifact handoff. A serialized publisher
-decrypts in ephemeral storage, prevalidates the whole successful subset, writes
-immutable V5 JSON and script-free HTML plus repository history, updates the
-preferred V5 index and the repository's bounded `review-cache.json`, and rolls
-back partial writes on failure.
+scanner and contextual-policy versions, and report version. Each claimed target
+uses a one-day secret-free GitHub artifact between prepare and review, then an
+authenticated encrypted artifact between review and publication. Its publisher
+decrypts in ephemeral storage, validates the complete outcome, writes immutable
+V5 JSON and script-free HTML plus repository history, updates the preferred V5
+index and the repository's bounded `review-cache.json`, clears the target's
+claim, and rolls back partial writes on failure.
 
 Deterministic scanners always run from scratch for every target. Model-review
 reuse is a separate optimization keyed by a canonical digest of the complete
