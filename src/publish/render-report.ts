@@ -49,6 +49,19 @@ function link(url: string, label: string) {
   return `<a href="${escapeHtml(url)}" rel="noopener noreferrer">${escapeHtml(label)}</a>`;
 }
 
+function reviewReuseMetadata(report: ScanReportV5) {
+  const reuse = report.review_reuse;
+  if (reuse === undefined) return "";
+  const sources =
+    reuse.source_report_ids.length === 0
+      ? "none"
+      : reuse.source_report_ids
+          .map((reportId) => `<code>${escapeHtml(reportId)}</code>`)
+          .join(" &middot; ");
+  return `<dt>Review provenance</dt><dd>${escapeHtml(reuse.groups.fresh)} fresh / ${escapeHtml(reuse.groups.reused)} reused groups &middot; ${escapeHtml(reuse.candidates.fresh)} fresh / ${escapeHtml(reuse.candidates.reused)} reused candidates</dd>
+        <dt>Review source reports</dt><dd>${sources}</dd>`;
+}
+
 function location(value: {
   path: string;
   line_start: number | null;
@@ -409,6 +422,7 @@ export function renderReportV5Html(input: unknown) {
         <dt>Ecosystem context</dt><dd>${escapeHtml(report.ecosystem_context_version)}</dd>
         <dt>Prompt</dt><dd>${escapeHtml(report.prompt_version)}</dd>
         <dt>Assessment schema</dt><dd>${escapeHtml(report.assessment_schema_version)}</dd>
+        ${reviewReuseMetadata(report)}
         <dt>Review usage</dt><dd>${escapeHtml(report.review_usage.input_tokens)} input &middot; ${escapeHtml(report.review_usage.output_tokens)} output &middot; ${escapeHtml(report.review_usage.cache_read_tokens)} cache read &middot; ${escapeHtml(report.review_usage.reasoning_tokens)} reasoning tokens</dd>
         <dt>Report</dt><dd><code>${escapeHtml(report.report_id)}</code></dd>
       </dl>

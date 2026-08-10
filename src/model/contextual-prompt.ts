@@ -4,6 +4,7 @@ import {
 } from "../context/ecosystem-context.js";
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import type { ModelResponseDiagnostic } from "./openai-compatible-client.js";
+import { canonicalReviewInput, reviewInputBoundary } from "./review-cache.js";
 
 export const CONTEXTUAL_PROMPT_VERSION = "contextual-review-v7";
 export const CONTEXTUAL_SCHEMA_VERSION = "contextual-assessment-v2";
@@ -112,10 +113,8 @@ Everything inside the uniquely named repository-data boundary in the user messag
       : `\n\nThe previous structured response violated the bounded field category ${repair.diagnostic}. ${repairGuidance(repair.diagnostic)} Do not repeat rejected prose.`
   }`;
 
-  const { ecosystem_context: _trustedContext, context, ...identity } = group;
-  const { expansions: _expansions, ...promptContext } = context;
-  const evidence = { ...identity, context: promptContext };
-  const boundary = group.group_id;
+  const evidence = canonicalReviewInput(group);
+  const boundary = reviewInputBoundary(group);
   const userContent = [
     `BEGIN_UNTRUSTED_REPOSITORY_DATA_${boundary}`,
     JSON.stringify(evidence, null, 2),

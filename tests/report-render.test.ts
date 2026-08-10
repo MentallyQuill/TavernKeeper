@@ -86,4 +86,20 @@ describe("V5 technical report HTML", () => {
     expect(html).toContain("dist/app.min.js");
     expect(html).not.toContain("derived/000001-");
   });
+
+  test("renders fresh and reused review counts with source report IDs", async () => {
+    const sourceReportId = "e".repeat(64);
+    const report = await fixtureReportV5({
+      review_reuse: {
+        groups: { fresh: 0, reused: 1 },
+        candidates: { fresh: 0, reused: 0 },
+        source_report_ids: [sourceReportId],
+      },
+    });
+    const html = renderReportV5Html(report);
+
+    expect(html).toContain("0 fresh / 1 reused groups");
+    expect(html).toContain("0 fresh / 0 reused candidates");
+    expect(html).toContain(sourceReportId);
+  });
 });

@@ -91,8 +91,11 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toMatch(/do not quote code/iu);
     expect(prompt.systemContent).not.toContain(injection);
     expect(prompt.userContent).toContain(injection);
-    expect(prompt.userContent).not.toContain("// expanded");
-    expect(prompt.userContent).toContain(groupId);
+    expect(prompt.userContent).toContain("// expanded");
+    expect(prompt.userContent).not.toContain(groupId);
+    expect(prompt.userContent).not.toContain(group.target_sha);
+    expect(prompt.userContent).not.toContain(group.evidence_sha);
+    expect(prompt.userContent).not.toContain(group.source_sha256);
     expect(prompt.userContent).toContain("BEGIN_UNTRUSTED_REPOSITORY_DATA");
 
     const metadataOnlyPrompt = buildContextualReviewPrompt({

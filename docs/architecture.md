@@ -151,7 +151,25 @@ first use one-day secret-free GitHub artifacts; review matrix jobs then encrypt
 sanitized outcomes before a second one-day artifact handoff. A serialized publisher
 decrypts in ephemeral storage, prevalidates the whole successful subset, writes
 immutable V5 JSON and script-free HTML plus repository history, updates the
-preferred V5 index, and rolls back partial writes on failure.
+preferred V5 index and the repository's bounded `review-cache.json`, and rolls
+back partial writes on failure.
+
+Deterministic scanners always run from scratch for every target. Model-review
+reuse is a separate optimization keyed by a canonical digest of the complete
+evidence group and the scanner, tool, contextual-policy, prompt, assessment,
+provider, endpoint-origin, and model identity. Group IDs, target SHA, raw source
+bytes, and representation hashes are excluded only where the canonical input
+already binds their relevant semantic content. Candidate IDs must still match
+exactly. Only complete groups whose assessments and observations are all
+`low` with `risk_exposure: not_demonstrated` enter the cache; material, high,
+demonstrated, partial, or invalid results never do.
+
+The policy-4 migration intentionally has no policy-3 cache compatibility, so
+the first policy-4 pass is cold. Cache absence, corruption, identity drift,
+source-report mismatch, or per-group validation failure becomes a miss and
+sends the group to the model. It never removes a scanner result. Technical
+Report V5 records fresh and reused group/candidate counts and all immutable
+source report IDs used, making every saved model call auditable.
 
 Every direct write to `main` uses the dedicated Publisher App. Checkout
 credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and

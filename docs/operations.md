@@ -141,16 +141,31 @@ For every exact target, TavernKeeper:
 3. validates and groups every candidate with bounded evidence context;
 4. revalidates exact HEAD, deletes the target checkout, and validates a bounded
    secret-free GitHub artifact on a fresh runner;
-5. asks the configured model to assess every finding candidate under the versioned
+5. calculates the canonical review-input digest for every evidence group and
+   reuses only exact, validated low-risk/not-demonstrated matches from the
+   current repository cache;
+6. asks the configured model to assess every cache miss under the versioned
    ecosystem prompt and strict response schema;
-6. rejects missing context, invented citations, invalid structured output,
+7. rejects missing context, invented citations, invalid structured output,
    provider errors, and hard scanner or evidence-integrity failures;
-7. publishes bounded unresolved JavaScript coverage as `incomplete`, without
+8. publishes bounded unresolved JavaScript coverage as `incomplete`, without
    changing advisory color or concern counts;
-8. constructs the complete Technical Report V5;
-9. transports the sanitized candidate through authenticated encryption; and
-10. atomically publishes immutable JSON/HTML, history, and the preferred index
-    for every complete successful outcome in the batch.
+9. constructs the complete Technical Report V5 with fresh/reused provenance;
+10. transports the sanitized report and replacement review-cache manifest
+    through authenticated encryption; and
+11. atomically publishes immutable JSON/HTML, history, the preferred index, and
+    `reports/github/<repository-id>/review-cache.json` for every complete
+    successful outcome in the batch.
+
+Policy 4 starts cold: policy-3 reports cannot seed its cache. On subsequent
+scans, a cache hit requires an identical evidence-group digest, exact candidate
+IDs, an exact scanner/tool/reviewer identity, and a valid immutable source
+report. Only groups whose assessments and related observations are all low with
+exposure not demonstrated are reusable. Any missing, malformed, stale,
+mismatched, material, high-risk, or demonstrated entry is treated as a miss and
+reviewed fresh. All deterministic scanners still rerun regardless of reuse.
+Operators can audit reuse through the report's `review_reuse` counts and source
+report IDs and through the repository cache manifest.
 
 The model may classify candidate evidence as expected behavior, a minor
 weakness, a material vulnerability, or credible malicious behavior. It does

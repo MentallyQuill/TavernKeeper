@@ -100,6 +100,17 @@ authoritative. See
 [operations](docs/operations.md), [architecture](docs/architecture.md),
 [scanning policy](docs/SCANNING.md), and [rule documentation](docs/rules.md).
 
+Every scan reruns the complete deterministic scanner suite. Contextual policy 4
+starts with a cold model-review baseline; later scans may reuse a prior model
+decision only when the full evidence group and review identity have the same
+content digest and every reused assessment remains low-risk with exposure not
+demonstrated. Material, high-risk, demonstrated, changed, or unverifiable
+groups always receive fresh model review. A missing, stale, malformed, or
+mismatched cache is only a cache miss and cannot suppress scanning or review.
+Reports publish fresh/reused group and candidate counts plus source report IDs,
+while each repository's atomically replaced `review-cache.json` points back to
+the immutable source report.
+
 Every complete report remains public regardless of risk. An immediate-danger
 report is an awareness signal, never an automatic hide, quarantine, ranking,
 or delisting instruction.

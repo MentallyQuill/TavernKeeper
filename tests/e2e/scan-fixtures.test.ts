@@ -32,7 +32,7 @@ import {
 } from "../../src/scanners/javascript-analysis.js";
 import { selectJavascriptCandidates } from "../../src/scanners/javascript-candidates.js";
 import type { InventoryFile } from "../../src/inventory/inventory-handler.js";
-import { fixtureReportV5 } from "../helpers/v5-report.js";
+import { fixtureReportV5, fixtureReviewCache } from "../helpers/v5-report.js";
 
 const repositoryRoot = dirname(
   dirname(dirname(fileURLToPath(import.meta.url))),
@@ -341,9 +341,11 @@ describe("in-process hostile-data safety and deterministic publication gate", ()
       join(tmpdir(), "tavernkeeper-hostile-e2e-"),
     );
     temporaryRoots.push(publicationRoot);
+    const publicationReport = await fixtureReportV5();
     const published = await publishCandidates({
       root: publicationRoot,
-      candidates: [await fixtureReportV5()],
+      candidates: [publicationReport],
+      reviewCaches: [fixtureReviewCache(publicationReport)],
       state: initialOperationsState(completedAt),
       generatedAt: completedAt,
     });

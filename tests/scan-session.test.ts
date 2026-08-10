@@ -563,6 +563,21 @@ describe("three-phase contextual scan session", () => {
           schema_version: 5,
           assessment_method: "deterministic-evidence-contextual-review",
           review_coverage: { required: 1, completed: 1 },
+          review_reuse: {
+            groups: { fresh: 1, reused: 0 },
+            candidates: { fresh: 1, reused: 0 },
+            source_report_ids: [],
+          },
+        },
+        review_cache: {
+          schema_version: 1,
+          repository_id: 42,
+          repository: "owner/repo",
+          entries: [
+            expect.objectContaining({
+              candidate_ids: [expect.stringMatching(/^[0-9a-f]{64}$/u)],
+            }),
+          ],
         },
       },
     });

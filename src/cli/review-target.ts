@@ -17,6 +17,7 @@ export async function reviewConfiguredTarget(
   const repositoryRoot = process.cwd();
   const result = await dependencies.review({
     sessionRoot: requiredEnvironment(environment, "TAVERNKEEPER_SESSION_ROOT"),
+    repositoryRoot,
     provider: {
       endpoint: requiredEnvironment(environment, "TAVERNKEEPER_API_ENDPOINT"),
       apiKey: requiredEnvironment(environment, "TAVERNKEEPER_API_KEY"),

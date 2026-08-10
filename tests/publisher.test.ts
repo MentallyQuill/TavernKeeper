@@ -8,7 +8,8 @@ import { ReportIndexV5Schema } from "../src/contracts/reports-v5.js";
 import { initialOperationsState } from "../src/operations/state.js";
 import { publishCandidates } from "../src/publish/publisher.js";
 import { historyPath, reportPath } from "../src/publish/report-path.js";
-import { fixtureReportV5 } from "./helpers/v5-report.js";
+import { reviewCachePath } from "../src/model/review-cache.js";
+import { fixtureReportV5, fixtureReviewCache } from "./helpers/v5-report.js";
 
 const roots: string[] = [];
 
@@ -33,6 +34,7 @@ describe("atomic V5 publisher", () => {
     const published = await publishCandidates({
       root: output,
       candidates: [report],
+      reviewCaches: [fixtureReviewCache(report)],
       state: initialOperationsState(generatedAt),
       generatedAt,
     });
@@ -62,6 +64,12 @@ describe("atomic V5 publisher", () => {
     await expect(
       access(join(output, ...historyPath(report).split("/"), "history.json")),
     ).resolves.toBeUndefined();
+    await expect(
+      readFile(
+        join(output, ...reviewCachePath(report.repository_id).split("/")),
+        "utf8",
+      ),
+    ).resolves.toContain(report.report_id);
   });
 
   test("keeps only the newest report per repository in the preferred index", async () => {
@@ -76,12 +84,14 @@ describe("atomic V5 publisher", () => {
     await publishCandidates({
       root: output,
       candidates: [first],
+      reviewCaches: [fixtureReviewCache(first)],
       state,
       generatedAt: "2026-08-02T12:30:00.000Z",
     });
     const published = await publishCandidates({
       root: output,
       candidates: [second],
+      reviewCaches: [fixtureReviewCache(second)],
       state,
       generatedAt: "2026-08-03T12:30:00.000Z",
     });
@@ -109,10 +119,35 @@ describe("atomic V5 publisher", () => {
       publishCandidates({
         root: output,
         candidates: [report, { ...report, raw_model_response: "hidden" }],
+        reviewCaches: [fixtureReviewCache(report), fixtureReviewCache(report)],
         state: initialOperationsState("2026-08-02T12:30:00.000Z"),
         generatedAt: "2026-08-02T12:30:00.000Z",
       }),
     ).rejects.toThrow(/schema/iu);
+    await expect(
+      access(join(output, ...reportPath(report).split("/"))),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("rejects a cache that does not belong to its report before publication", async () => {
+    const output = await root();
+    const report = await fixtureReportV5();
+    const cache = fixtureReviewCache(report);
+
+    await expect(
+      publishCandidates({
+        root: output,
+        candidates: [report],
+        reviewCaches: [
+          {
+            ...cache,
+            repository: "owner/different-repo",
+          },
+        ],
+        state: initialOperationsState("2026-08-02T12:30:00.000Z"),
+        generatedAt: "2026-08-02T12:30:00.000Z",
+      }),
+    ).rejects.toThrow(/does not match/iu);
     await expect(
       access(join(output, ...reportPath(report).split("/"))),
     ).rejects.toMatchObject({ code: "ENOENT" });

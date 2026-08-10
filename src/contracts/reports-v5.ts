@@ -291,6 +291,18 @@ const ReportIdentityV5Fields = {
   assessment_method: z.literal("deterministic-evidence-contextual-review"),
 };
 
+export const ReviewReuseV5Schema = z.strictObject({
+  groups: z.strictObject({
+    fresh: CountSchema,
+    reused: CountSchema,
+  }),
+  candidates: z.strictObject({
+    fresh: CountSchema,
+    reused: CountSchema,
+  }),
+  source_report_ids: z.array(DigestSchema).max(10_000),
+});
+
 export const ScanReportV5Schema = z
   .strictObject({
     schema_version: z.literal(5),
@@ -319,6 +331,7 @@ export const ScanReportV5Schema = z
       required: CountSchema,
       completed: CountSchema,
     }),
+    review_reuse: ReviewReuseV5Schema.optional(),
     candidates: z.array(CandidateV5Schema),
     assessments: z.array(PublishedContextualAssessmentSchema),
     observations: z.array(PublishedContextualObservationSchema),
@@ -326,6 +339,25 @@ export const ScanReportV5Schema = z
     limitations: z.array(SafeTextSchema(600)).min(1).max(20),
   })
   .superRefine((report, context) => {
+    if (report.review_reuse !== undefined) {
+      const sourceIds = report.review_reuse.source_report_ids;
+      if (
+        report.review_reuse.candidates.fresh +
+          report.review_reuse.candidates.reused !==
+          report.candidates.length ||
+        (report.review_reuse.groups.reused === 0) !==
+          (sourceIds.length === 0) ||
+        new Set(sourceIds).size !== sourceIds.length ||
+        sourceIds.some(
+          (sourceId, index) => index > 0 && sourceIds[index - 1]! >= sourceId,
+        )
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["review_reuse"],
+          message: "Review reuse provenance is inconsistent.",
+        });
+    }
     if (
       report.scanner_policy_version === "4" &&
       report.coverage.javascript_analysis === undefined

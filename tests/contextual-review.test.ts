@@ -97,6 +97,83 @@ function reviewContent(review: unknown) {
 }
 
 describe("contextual evidence review", () => {
+  test("reuses one validated low group and calls the model only for the miss", async () => {
+    const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-fresh",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: reviewContent({
+        status: "complete",
+        assessments: [assessment(ids[1]!, groups[1]!.path, 2)],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+    const reusedDigest = "f".repeat(64);
+    const freshDigest = "0".repeat(64);
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+      reviewInputDigests: new Map([
+        [groups[0]!.group_id, reusedDigest],
+        [groups[1]!.group_id, freshDigest],
+      ]),
+      reusableGroups: new Map([
+        [
+          groups[0]!.group_id,
+          {
+            review_input_digest: reusedDigest,
+            origin_report_id: "1".repeat(64),
+            response: {
+              status: "complete" as const,
+              assessments: [assessment(ids[0]!, groups[0]!.path, 2)],
+              observations: [],
+            },
+          },
+        ],
+      ]) as never,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(1);
+    expect(result.coverage).toEqual({ required: 2, completed: 2 });
+    expect(result.usage).toEqual({
+      inputTokens: 100,
+      outputTokens: 40,
+      cacheReadTokens: 0,
+      reasoningTokens: 10,
+    });
+    expect(result.completion_ids).toEqual(["completion-fresh"]);
+    expect(result.review_units).toEqual([
+      {
+        group_id: groups[0]!.group_id,
+        review_input_digest: reusedDigest,
+        candidate_ids: [ids[0]!],
+        reused: true,
+        origin_report_id: "1".repeat(64),
+      },
+      {
+        group_id: groups[1]!.group_id,
+        review_input_digest: freshDigest,
+        candidate_ids: [ids[1]!],
+        reused: false,
+        origin_report_id: null,
+      },
+    ]);
+  });
+
   test("reviews every file group and covers every candidate exactly once", async () => {
     const groups = [
       group("src/a.ts", ids.slice(0, 2)),

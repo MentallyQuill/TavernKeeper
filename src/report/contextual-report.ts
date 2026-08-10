@@ -182,6 +182,38 @@ export function buildContextualReport(
       (group.source_kind === "metadata-only" ? group.candidates.length : 0),
     0,
   );
+  const reviewReuse =
+    input.review.review_units === undefined
+      ? undefined
+      : {
+          groups: {
+            fresh: input.review.review_units.filter(({ reused }) => !reused)
+              .length,
+            reused: input.review.review_units.filter(({ reused }) => reused)
+              .length,
+          },
+          candidates: {
+            fresh: input.review.review_units
+              .filter(({ reused }) => !reused)
+              .reduce(
+                (total, { candidate_ids }) => total + candidate_ids.length,
+                0,
+              ),
+            reused: input.review.review_units
+              .filter(({ reused }) => reused)
+              .reduce(
+                (total, { candidate_ids }) => total + candidate_ids.length,
+                0,
+              ),
+          },
+          source_report_ids: [
+            ...new Set(
+              input.review.review_units.flatMap(({ origin_report_id }) =>
+                origin_report_id === null ? [] : [origin_report_id],
+              ),
+            ),
+          ].sort(),
+        };
   const withoutIdentity = {
     schema_version: 5 as const,
     report_version: options.reportVersion,
@@ -241,6 +273,7 @@ export function buildContextualReport(
       },
     },
     review_coverage: input.review.coverage,
+    ...(reviewReuse === undefined ? {} : { review_reuse: reviewReuse }),
     candidates,
     assessments: input.review.assessments,
     observations: input.review.observations,

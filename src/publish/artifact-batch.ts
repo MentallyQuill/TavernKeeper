@@ -12,6 +12,10 @@ import {
   ScanReportV5Schema,
   type ScanReportV5,
 } from "../contracts/reports-v5.js";
+import {
+  ReviewCacheManifestSchema,
+  type ReviewCacheManifest,
+} from "../model/review-cache.js";
 import type { Target } from "../contracts/targets.js";
 import { recordFailure, recordSuccess } from "../operations/retry.js";
 import { parseOperationsState } from "../operations/state.js";
@@ -21,7 +25,10 @@ import {
 } from "../queue/durable-queue.js";
 import { publishCandidates } from "./publisher.js";
 
-const CandidateEnvelopeSchema = z.strictObject({ report: ScanReportV5Schema });
+const CandidateEnvelopeSchema = z.strictObject({
+  report: ScanReportV5Schema,
+  review_cache: ReviewCacheManifestSchema,
+});
 
 type FailedScanTransition = Extract<ScanTransition, { status: "failure" }>;
 
@@ -181,6 +188,7 @@ export async function publishArtifactBatch(
       throw new Error("Requested batch target is not the queued target SHA.");
   }
   const reports: ScanReportV5[] = [];
+  const reviewCaches: ReviewCacheManifest[] = [];
   const failures: FailedScanTransition[] = [];
 
   for (const outcome of orderedOutcomes) {
@@ -201,7 +209,8 @@ export async function publishArtifactBatch(
 
     if (outcome.candidate === null)
       throw new Error("Completed outcome is missing its candidate.");
-    const report = CandidateEnvelopeSchema.parse(outcome.candidate).report;
+    const candidate = CandidateEnvelopeSchema.parse(outcome.candidate);
+    const report = candidate.report;
     if (!targetMatches(report, outcome.transition.target))
       throw new Error(
         "Completed candidate does not match its transition target.",
@@ -214,11 +223,13 @@ export async function publishArtifactBatch(
         .recovery_fingerprint,
     );
     reports.push(report);
+    reviewCaches.push(candidate.review_cache);
   }
 
   const published = await publishCandidates({
     root: input.root,
     candidates: reports,
+    reviewCaches,
     state,
     generatedAt: input.generatedAt,
   });

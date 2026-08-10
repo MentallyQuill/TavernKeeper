@@ -14,7 +14,7 @@ import {
 } from "../src/operations/state.js";
 import { publishArtifactBatch } from "../src/publish/artifact-batch.js";
 import { appendQueuedTarget } from "../src/queue/durable-queue.js";
-import { fixtureReportV5 } from "./helpers/v5-report.js";
+import { fixtureReportV5, fixtureReviewCache } from "./helpers/v5-report.js";
 
 const roots: string[] = [];
 const initialAt = "2026-08-04T04:00:00.000Z";
@@ -90,6 +90,7 @@ async function writeOutcome(
   position: number,
   transition: ScanTransition,
   report?: ScanReportV5,
+  includeReviewCache = true,
 ) {
   const directory = join(artifactsRoot, `scan-${position}`);
   await mkdir(directory, { recursive: true });
@@ -100,7 +101,16 @@ async function writeOutcome(
   if (report !== undefined)
     await writeFile(
       join(directory, "candidate.json"),
-      `${JSON.stringify({ report }, null, 2)}\n`,
+      `${JSON.stringify(
+        {
+          report,
+          ...(includeReviewCache
+            ? { review_cache: fixtureReviewCache(report) }
+            : {}),
+        },
+        null,
+        2,
+      )}\n`,
     );
 }
 
@@ -379,6 +389,18 @@ describe("artifact batch publication", () => {
         publicationInput(root, artifactsRoot, [targetOf(report)]),
       ),
     ).rejects.toThrow("Completed outcome is missing its candidate.");
+  });
+
+  test("rejects a completed candidate without its review cache", async () => {
+    const { root, artifactsRoot } = await batchRoot();
+    const report = await reportFor(56, "9");
+    await writeOutcome(artifactsRoot, 0, completed(report), report, false);
+
+    await expect(
+      publishArtifactBatch(
+        publicationInput(root, artifactsRoot, [targetOf(report)]),
+      ),
+    ).rejects.toThrow(/review_cache/iu);
   });
 
   test("rejects a failure transition carrying a candidate", async () => {
