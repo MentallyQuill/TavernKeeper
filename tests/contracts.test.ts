@@ -49,6 +49,7 @@ async function policy5DeterministicReport() {
     line_end: 1,
     evidence_sha: "a".repeat(40),
     file_role: "production",
+    execution_scope: "runtime",
     title: "Bidirectional source control",
     explanation: "The scanner found a bidirectional source control.",
   };
@@ -160,6 +161,12 @@ describe("public TavernKeeper contracts", () => {
     expect(report).toEqual(await fixture("report.v5.policy5.valid.json"));
     expect(ScanReportV5Schema.parse(report)).toEqual(report);
     for (const invalid of [
+      {
+        ...report,
+        candidates: report.candidates.map(
+          ({ execution_scope: _executionScope, ...candidate }) => candidate,
+        ),
+      },
       {
         ...report,
         assessments: [

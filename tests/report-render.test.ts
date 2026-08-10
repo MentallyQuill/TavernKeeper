@@ -1,9 +1,27 @@
 import { describe, expect, test } from "vitest";
 
 import { renderReportV5Html } from "../src/publish/render-report.js";
-import { fixtureReportV5 } from "./helpers/v5-report.js";
+import {
+  fixturePolicy5ReportV5,
+  fixtureReportV5,
+} from "./helpers/v5-report.js";
 
 describe("V5 technical report HTML", () => {
+  test("separates deterministic technical evidence from model-reviewed findings", async () => {
+    const report = await fixturePolicy5ReportV5();
+    const html = renderReportV5Html(report);
+
+    expect(html).toContain("Deterministic technical evidence (1)");
+    expect(html).toContain("owned-structured-weakness");
+    expect(html).toContain("runtime");
+    expect(html).toContain("0 model calls");
+    expect(html).not.toContain("Minor cautions</h3>");
+    expect(html).not.toContain("Expected scanner matches");
+    expect(html).toContain(
+      "No material or immediate-danger item was identified",
+    );
+  });
+
   test("renders complete coverage without assigning Tavernary's final grade", async () => {
     const report = await fixtureReportV5();
     const html = renderReportV5Html(report);
@@ -25,7 +43,7 @@ describe("V5 technical report HTML", () => {
     );
     expect(html).toContain(report.target_sha);
     expect(html).toContain(report.report_id);
-    expect(html).toContain(report.contextual_reviewer.model);
+    expect(html).toContain(report.contextual_reviewer?.model);
     expect(html).toContain("0 of 0 candidates assessed");
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/https:\/\/(?:fonts|cdn)\./iu);

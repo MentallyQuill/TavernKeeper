@@ -252,7 +252,14 @@ function candidateRoles(
   groups: readonly EvidenceContextGroup[],
   scanPackage: ScanPackageV1,
 ) {
-  const roles = new Map<string, { role: FileRole; evidenceId: string }>();
+  const roles = new Map<
+    string,
+    {
+      role: FileRole;
+      executionScope: EvidenceContextGroup["execution_scope"];
+      evidenceId: string;
+    }
+  >();
   for (const group of groups) {
     if (
       group.repository !== scanPackage.target.repository ||
@@ -267,6 +274,7 @@ function candidateRoles(
         throw new Error("Evidence candidate identities must be unique.");
       roles.set(candidate.candidate_id, {
         role: group.file_role,
+        executionScope: group.execution_scope,
         evidenceId: candidate.evidence_id,
       });
     }
@@ -308,6 +316,7 @@ function publicCandidates(
       line_end: finding.line_end,
       evidence_sha: finding.evidence_sha ?? scanPackage.target.target_sha,
       file_role: role.role,
+      execution_scope: role.executionScope,
       title: description.title,
       explanation: description.explanation,
       remediation: description.remediation,

@@ -21,6 +21,7 @@ import {
   JavascriptUnresolvedSchema,
   type JavascriptAnalysisCoverage,
 } from "../scanners/javascript-analysis-types.js";
+import { ExecutionScopeSchema } from "../triage/execution-scope.js";
 
 const CountSchema = z.number().int().nonnegative();
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
@@ -151,6 +152,7 @@ export const CandidateV5Schema = z
     line_end: z.number().int().positive().nullable(),
     evidence_sha: FullShaSchema,
     file_role: FileRoleSchema,
+    execution_scope: ExecutionScopeSchema.optional(),
     title: SafeTextSchema(200),
     explanation: SafeTextSchema(1_000),
     remediation: SafeTextSchema(1_000).optional(),
@@ -523,6 +525,13 @@ export const ScanReportV5Schema = z
           path: ["review_triage"],
           message: "Policy 5 requires deterministic triage provenance.",
         });
+      for (const [index, candidate] of report.candidates.entries())
+        if (candidate.execution_scope === undefined)
+          context.addIssue({
+            code: "custom",
+            path: ["candidates", index, "execution_scope"],
+            message: "Policy 5 candidates require execution scope.",
+          });
       for (const [index, assessment] of report.assessments.entries())
         if (!PolicyV5AssessmentSchema.safeParse(assessment).success)
           context.addIssue({

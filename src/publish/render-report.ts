@@ -36,6 +36,9 @@ const REPORT_STYLES = `
   .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
   .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
   .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
   .coverage-summary { margin-bottom: 22px; }
   .tools,
   .limitations { color: var(--text-secondary); }
@@ -80,6 +83,15 @@ function reviewBatchMetadata(report: ScanReportV5) {
     ...batches.map(({ candidate_count }) => candidate_count),
   );
   return `<dt>Review batching</dt><dd>${escapeHtml(batches.length)} model call${batches.length === 1 ? "" : "s"} &middot; up to ${escapeHtml(maximumGroups)} groups and ${escapeHtml(maximumCandidates)} candidates per call &middot; ${escapeHtml(retryCalls)} retry call${retryCalls === 1 ? "" : "s"} &middot; ${escapeHtml(oversizedCalls)} over-budget singleton call${oversizedCalls === 1 ? "" : "s"}</dd>`;
+}
+
+function reviewTriageMetadata(report: ScanReportV5) {
+  const triage = report.review_triage;
+  if (triage === undefined) return "";
+  const actual = triage.model_budget.actual;
+  const configured = triage.model_budget.configured;
+  return `<dt>Evidence triage</dt><dd>${escapeHtml(triage.candidates.deterministic)} deterministic / ${escapeHtml(triage.candidates.contextual)} contextual candidates &middot; ${escapeHtml(triage.cases.contextual)} contextual / ${escapeHtml(triage.cases.total)} total behavior cases</dd>
+        <dt>Model budget</dt><dd>${escapeHtml(actual.provider_calls)} model call${actual.provider_calls === 1 ? "" : "s"} &middot; ${escapeHtml(actual.fresh_behavior_cases)} / ${escapeHtml(configured.max_fresh_behavior_cases)} fresh cases &middot; ${escapeHtml(actual.estimated_input_tokens)} / ${escapeHtml(configured.max_estimated_input_tokens)} estimated input &middot; ${escapeHtml(actual.input_tokens)} / ${escapeHtml(configured.max_actual_input_tokens)} actual input &middot; ${escapeHtml(actual.output_tokens)} / ${escapeHtml(configured.max_actual_output_tokens)} output tokens</dd>`;
 }
 
 function location(value: {
@@ -206,6 +218,26 @@ function contextualFinding(
   </article>`;
 }
 
+function deterministicTechnicalEvidence(
+  report: ScanReportV5,
+  item: {
+    candidate: ScanReportV5["candidates"][number];
+    assessment: ScanReportV5["assessments"][number];
+  },
+) {
+  const { candidate, assessment } = item;
+  const reason =
+    "triage_reason_code" in assessment
+      ? assessment.triage_reason_code
+      : "historical-policy";
+  return `<li>
+    <p><strong>${escapeHtml(candidate.title)}</strong> &middot; ${escapeHtml(candidate.origin)} ${escapeHtml(candidate.scanner_version)}</p>
+    <p>${escapeHtml(assessment.layman_explanation)}</p>
+    <p><strong>Policy reason:</strong> <code>${escapeHtml(reason)}</code> &middot; <strong>Execution scope:</strong> ${escapeHtml(candidate.execution_scope ?? "not recorded")}</p>
+    <p><strong>Source:</strong> ${link(githubLocation(report, candidate), location(candidate))}</p>
+  </li>`;
+}
+
 function contextualObservation(
   report: ScanReportV5,
   observation: ScanReportV5["observations"][number],
@@ -302,6 +334,21 @@ export function renderReportV5Html(input: unknown) {
     candidate,
     assessment: assessmentByCandidate.get(candidate.candidate_id)!,
   }));
+  const policy5 = report.contextual_review_policy_version === "5";
+  const individualRisk = ({
+    candidate,
+    assessment,
+  }: (typeof rendered)[number]) =>
+    deriveProjectAdvisory([assessmentAdvisoryItem(candidate, assessment)]).risk;
+  const deterministicTechnical = policy5
+    ? rendered.filter(
+        ({ assessment, ...item }) =>
+          "assessment_source" in assessment &&
+          assessment.assessment_source === "deterministic-policy" &&
+          assessment.disposition !== "minor_weakness" &&
+          individualRisk({ ...item, assessment }) === "low",
+      )
+    : [];
   const concerning = rendered.filter(
     ({ candidate, assessment }) =>
       deriveProjectAdvisory([assessmentAdvisoryItem(candidate, assessment)])
@@ -321,10 +368,18 @@ export function renderReportV5Html(input: unknown) {
     ({ candidate, assessment }) =>
       assessment.disposition !== "expected_behavior" &&
       deriveProjectAdvisory([assessmentAdvisoryItem(candidate, assessment)])
-        .risk === "low",
+        .risk === "low" &&
+      (!policy5 ||
+        !("assessment_source" in assessment) ||
+        assessment.assessment_source !== "deterministic-policy" ||
+        assessment.disposition === "minor_weakness"),
   );
   const expected = rendered.filter(
-    ({ assessment }) => assessment.disposition === "expected_behavior",
+    ({ assessment }) =>
+      assessment.disposition === "expected_behavior" &&
+      (!policy5 ||
+        !("assessment_source" in assessment) ||
+        assessment.assessment_source === "contextual-model"),
   );
   const reviewItems = (items: typeof rendered) =>
     [...items]
@@ -400,7 +455,7 @@ export function renderReportV5Html(input: unknown) {
 
     <section class="assessment-summary surface risk-mark risk-${risk}" aria-labelledby="assessment-summary-title">
       <h2 id="assessment-summary-title">${escapeHtml(summary)}</h2>
-      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
       <p class="risk-counts">
         <span>${escapeHtml(advisory.counts.high)} immediate danger</span>
         <span>${escapeHtml(advisory.counts.material)} material</span>
@@ -412,10 +467,22 @@ export function renderReportV5Html(input: unknown) {
       <h2 id="assessment-title">What this review found</h2>
       ${primaryFindings.length === 0 ? "<p>No material or immediate-danger item was identified.</p>" : primaryFindings}
     ${cautions.length === 0 ? "" : `<h3>Minor cautions</h3>${reviewItems(cautions)}`}
-    <details class="expected">
-      <summary>Expected scanner matches (${escapeHtml(expected.length)})</summary>
+    ${
+      deterministicTechnical.length === 0
+        ? ""
+        : `<details class="expected">
+      <summary>Deterministic technical evidence (${escapeHtml(deterministicTechnical.length)})</summary>
+      <ul class="technical-evidence-list">${deterministicTechnical.map((item) => deterministicTechnicalEvidence(report, item)).join("\n")}</ul>
+    </details>`
+    }
+    ${
+      policy5 && expected.length === 0
+        ? ""
+        : `<details class="expected">
+      <summary>${policy5 ? "Contextual expected matches" : "Expected scanner matches"} (${escapeHtml(expected.length)})</summary>
       ${expected.length === 0 ? "<p>None.</p>" : reviewItems(expected)}
-    </details>
+    </details>`
+    }
     </section>
 
     ${relatedObservations.length === 0 ? "" : `<section class="report-section"><h2>Related contextual observations</h2>${relatedObservations.map((observation) => contextualObservation(report, observation)).join("\n")}</section>`}
@@ -440,7 +507,7 @@ export function renderReportV5Html(input: unknown) {
         <dt>Completed</dt><dd><time datetime="${escapeHtml(report.completed_at)}">${escapeHtml(formatPublicDate(report.completed_at))}</time></dd>
         <dt>History depth</dt><dd>${escapeHtml(report.history.commits)} commit${report.history.commits === 1 ? "" : "s"}</dd>
         <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
-        <dt>Reviewer</dt><dd>${escapeHtml(report.contextual_reviewer.provider)} &middot; ${escapeHtml(report.contextual_reviewer.model)}</dd>
+        <dt>Reviewer</dt><dd>${report.contextual_reviewer === undefined ? "Not used &mdash; deterministic policy" : `${escapeHtml(report.contextual_reviewer.provider)} &middot; ${escapeHtml(report.contextual_reviewer.model)}`}</dd>
         <dt>Scanner</dt><dd>${escapeHtml(report.scanner_version)}</dd>
         <dt>Scanner policy</dt><dd>${escapeHtml(report.scanner_policy_version)}</dd>
         <dt>Rule catalog</dt><dd>${escapeHtml(report.rule_catalog_version)}</dd>
@@ -449,6 +516,7 @@ export function renderReportV5Html(input: unknown) {
         <dt>Prompt</dt><dd>${escapeHtml(report.prompt_version)}</dd>
         <dt>Assessment schema</dt><dd>${escapeHtml(report.assessment_schema_version)}</dd>
         ${reviewReuseMetadata(report)}
+        ${reviewTriageMetadata(report)}
         ${reviewBatchMetadata(report)}
         <dt>Review usage</dt><dd>${escapeHtml(report.review_usage.input_tokens)} input &middot; ${escapeHtml(report.review_usage.output_tokens)} output &middot; ${escapeHtml(report.review_usage.cache_read_tokens)} cache read &middot; ${escapeHtml(report.review_usage.reasoning_tokens)} reasoning tokens</dd>
         <dt>Report</dt><dd><code>${escapeHtml(report.report_id)}</code></dd>
