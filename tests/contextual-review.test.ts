@@ -1745,6 +1745,35 @@ describe("contextual evidence review", () => {
       "contextual_review",
       "json_repair",
     ]);
+
+    primaryCalls = 0;
+    requestCompletion.mockClear();
+    requestRepair.mockClear();
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "deepseek-v4-flash",
+          requestCompletion,
+        },
+        jsonRepairProvider: {
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: "repair-key",
+          model: "gpt-5.6-luna",
+          requestCompletion: requestRepair,
+        },
+        policy: {
+          ...policy,
+          maxBatchGroups: 5,
+          maxBatchInputTokens: 1_000_000,
+          maxProviderCalls: 3,
+        },
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_REVIEW_BUDGET_EXCEEDED" });
+    expect(primaryCalls).toBe(3);
+    expect(requestRepair).not.toHaveBeenCalled();
   });
 
   test("does not send malformed or semantically invalid output to Luna", async () => {
