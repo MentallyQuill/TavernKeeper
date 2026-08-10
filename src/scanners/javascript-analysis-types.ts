@@ -85,6 +85,8 @@ export const JavascriptAnalysisCoverageSchema = z
     status: z.enum(["complete", "incomplete"]),
     candidates: z.number().int().nonnegative(),
     candidate_bytes: z.number().int().nonnegative(),
+    warning_occurrences: z.number().int().nonnegative().optional(),
+    warning_families: z.number().int().nonnegative().optional(),
     representations: z.strictObject({
       raw: z.number().int().nonnegative(),
       decoded: z.number().int().nonnegative(),
@@ -102,6 +104,29 @@ export const JavascriptAnalysisCoverageSchema = z
     unresolved: z.array(JavascriptUnresolvedSchema),
   })
   .superRefine((coverage, context) => {
+    if (
+      (coverage.warning_occurrences === undefined) !==
+      (coverage.warning_families === undefined)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["warning_families"],
+        message:
+          "JavaScript warning occurrence and family counts must appear together.",
+      });
+    }
+    if (
+      coverage.warning_occurrences !== undefined &&
+      coverage.warning_families !== undefined &&
+      coverage.warning_families > coverage.warning_occurrences
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["warning_families"],
+        message:
+          "JavaScript warning families cannot exceed warning occurrences.",
+      });
+    }
     if (coverage.status === "complete" && coverage.unresolved.length > 0) {
       context.addIssue({
         code: "custom",

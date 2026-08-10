@@ -166,6 +166,13 @@ exactly. Only complete groups whose assessments and observations are all
 `low` with `risk_exposure: not_demonstrated` enter the cache; material, high,
 demonstrated, partial, or invalid results never do.
 
+JS-X-Ray warnings are normalized into path-, rule-, and
+representation-specific review families before contextual review. The family
+keeps every occurrence location for evidence-window construction, while one
+assessment replaces repetitive per-occurrence prose. Public JavaScript
+coverage reports both raw warning occurrences and resulting review-family
+counts. Other scanner origins are never folded into these families.
+
 The policy-4 migration intentionally has no policy-3 cache compatibility, so
 the first policy-4 pass is cold. Cache absence, corruption, identity drift,
 source-report mismatch, or per-group validation failure becomes a miss and

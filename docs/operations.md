@@ -171,6 +171,13 @@ input estimate, over-budget singleton flag, and actual provider token usage.
 Valid groups from a partially invalid response are retained in memory and only
 missing or invalid groups are retried.
 
+Before contextual grouping, repeated JS-X-Ray warnings of the same kind in one
+immutable JavaScript representation become one evidence-preserving review
+family. Every warning location still contributes a bounded evidence window,
+the report exposes occurrence and family counts, and the JavaScript-analysis
+tool version binds this behavior into review-cache identity. Findings from all
+other scanners remain independent cards.
+
 The model may classify candidate evidence as expected behavior, a minor
 weakness, a material vulnerability, or credible malicious behavior. It does
 not assign Tavernary's final project color. Tavernary performs a separate

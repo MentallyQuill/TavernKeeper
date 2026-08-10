@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
+import type { Warning } from "@nodesecure/js-x-ray";
 import { describe, expect, test } from "vitest";
 
 import {
@@ -128,6 +129,67 @@ describe("integrated JavaScript derivative analysis", () => {
       line_start: 1,
     });
     expect(JSON.stringify(finding)).not.toContain("payload");
+  });
+
+  test("reviews repeated X-ray warnings as one evidence-preserving family", async () => {
+    const source = Array.from({ length: 100 }, (_, index) =>
+      index === 4
+        ? "const first = JSON.stringify(process.env);"
+        : index === 89
+          ? "const second = JSON.stringify(process.env);"
+          : `const line${index + 1} = ${index + 1};`,
+    ).join("\n");
+    const warnings: Warning[] = [
+      {
+        kind: "serialize-environment",
+        value: "first-secret-shaped-value",
+        source: "first",
+        location: [
+          [
+            [5, 14],
+            [5, 41],
+          ],
+        ],
+        i18n: "test",
+        severity: "Warning",
+      },
+      {
+        kind: "serialize-environment",
+        value: "second-secret-shaped-value",
+        source: "second",
+        location: [
+          [
+            [90, 15],
+            [90, 42],
+          ],
+        ],
+        i18n: "test",
+        severity: "Warning",
+      },
+    ];
+    const run = await analyzeFixture(source, undefined, {
+      analyzeAst: () => ({ warnings }),
+      normalize: async () => ({ derivatives: [] }),
+    });
+
+    const findings = run.findings.filter(
+      ({ rule_id }) => rule_id === "javascript.xray.serialize-environment",
+    );
+    expect(findings).toHaveLength(1);
+    expect(findings[0]?.explanation).toContain("2 occurrences");
+    expect(JSON.stringify(findings)).not.toContain("secret-shaped-value");
+    expect(
+      run.evidenceHints
+        ?.filter(
+          ({ finding_fingerprint }) =>
+            finding_fingerprint === findings[0]?.fingerprint,
+        )
+        .map(({ line_start }) => line_start),
+    ).toEqual([5, 90]);
+    expect(run.javascriptAnalysis).toMatchObject({
+      warning_occurrences: 2,
+      warning_families: 1,
+    });
   });
 
   test("sends every derived representation to OpenGrep even without a finding", async () => {

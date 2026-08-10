@@ -107,8 +107,18 @@ For each candidate, TavernKeeper:
    representations;
 5. rescans every novel derivative with the same signatures, JS-X-Ray, and the
    pinned OpenGrep rules; and
-6. deduplicates findings while retaining only original repository paths and
+6. compacts repeated JS-X-Ray warnings of the same kind in one exact
+   representation into one review family while retaining every occurrence
+   location as bounded evidence; and
+7. deduplicates findings while retaining only original repository paths and
    stage, digest, parent, transform, and depth provenance.
+
+Family compaction applies only to repeated JS-X-Ray warnings within the same
+path and exact representation. It does not merge Gitleaks, repository
+OpenGrep, OSV, Zizmor, Malcontent, TavernKeeper-static, signature, or derived
+OpenGrep findings. A family receives one contextual assessment because its
+members are the same fixed rule over the same immutable source; the model
+still receives bounded windows for every recorded occurrence.
 
 TavernKeeper never imports, evaluates, executes, builds, tests, or installs the
 target. It never runs target package scripts, hooks, macros, Actions,
@@ -132,8 +142,9 @@ Policy 4 currently bounds JavaScript analysis to:
   bytes per target.
 
 The public report carries candidate bytes, representation counts, stage scan
-counts, and at most 100 sorted unique unresolved original-path records. It does
-not publish synthetic `derived/...` filenames or derivative contents.
+counts, raw JS-X-Ray warning-occurrence and compacted-family counts, and at
+most 100 sorted unique unresolved original-path records. It does not publish
+synthetic `derived/...` filenames or derivative contents.
 
 ## Complete and incomplete results
 
