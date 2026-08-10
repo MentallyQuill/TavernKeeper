@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for MentallyQuill/Wandlight at commit 2d4f818.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; MentallyQuill/Wandlight</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/MentallyQuill/Wandlight" rel="noopener noreferrer">MentallyQuill/Wandlight</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/MentallyQuill/Wandlight/commit/2d4f818c2ad5855b0faff387d88c3f64479865c6" rel="noopener noreferrer">2d4f818</a></span>
+        <span>Reviewed <time datetime="2026-08-10T17:57:26.567Z">Aug 10, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>5 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Expected scanner matches (5)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a developer helper that lists project files with git so it can check them for accidentally committed secrets. It only runs a fixed harmless command and does not send data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged command executes a fixed git command to enumerate repository files for a local secret-scanning script. The command string is constant; no attacker-controlled input is interpolated into it, and it is run with standard error and output piping. The script is developer tooling, not shipped extension runtime code. Its purpose is defensive: scanning tracked and untracked text files for API keys and private key material and failing the run on findings. No exfiltration or unexpected code execution is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Wandlight/blob/2d4f818c2ad5855b0faff387d88c3f64479865c6/scripts/scan-secrets.mjs#L23-L26" rel="noopener noreferrer">scripts/scan-secrets.mjs:23-26</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flag is just the standard SVG namespace used to draw charts in the lore timeline. It is a harmless technical identifier, not a link to any website, and nothing is sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line creates SVG elements using the standard SVG namespace identifier. The scanned signal is categorized as a shady link because a URL-like literal appears in a createElementNS call, but the literal is the fixed W3C SVG namespace used by every SVG creation helper in this UI code. There is no external request, no user-controlled destination, and no data flow leaving the extension. The surrounding functions construct in-memory DOM for a lore timeline visualization and never transmit the namespace value.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Wandlight/blob/2d4f818c2ad5855b0faff387d88c3f64479865c6/lore-panel.js#L8110" rel="noopener noreferrer">lore-panel.js:8110</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This pattern reads a version number out of a preset description so the extension can tell whether the bundled preset is newer. It only looks at text on your own machine, does not send anything anywhere, and does not take any action by itself.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged pattern at line 1983 extracts a Wandlight preset version token from the notes field of a SillyTavern preset. It is a short, linear pattern with a single bounded digit group and no nested quantifiers, so the unsafe-regex heuristic does not correspond to demonstrated catastrophic backtracking. The input is the notes text of the user&#39;s own locally stored presets, and the result is used only to compare preset versions and drive UI status messages. The surrounding code shows preset installation is user-confirmed and version parsing feeds local comparison logic only. No credential exposure, network destination, or attacker-controlled execution path is present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Wandlight/blob/2d4f818c2ad5855b0faff387d88c3f64479865c6/lore-panel.js#L1983" rel="noopener noreferrer">lore-panel.js:1983</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flag is a version-number matching pattern used to tell if a preset is outdated. It is simple and safe, and it only reads local preset labels to compare versions.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a version-parsing regular expression used on provider preset version strings. The pattern matches a bounded digit-and-dot version sequence with no nested quantifiers or ambiguous backtracking states, so it is not a ReDoS risk under realistic input lengths. The data being matched comes from local preset metadata and is used only to compare version numbers. No untrusted network input, no evaluation of matched content, and no security boundary is crossed. Similar version-matching logic appears nearby for the same benign purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Wandlight/blob/2d4f818c2ad5855b0faff387d88c3f64479865c6/ui.js#L95" rel="noopener noreferrer">ui.js:95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a pattern for recognizing a date, like a weekday and month spelling, inside story messages so the extension can figure out when the story is happening. It runs entirely on your own computer and does not send data anywhere or change files. A strange message could at most briefly pause the page.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged pattern at line 479 is a human-readable date parser used by parseSceneDateParts to extract scene dates from roleplay message content. The static unsafe-regex signal is a ReDoS heuristic rather than a demonstrated vulnerability: the pattern&#39;s alternations (weekday and month names, ordinal suffixes) are distinctive literal alternatives without nested quantified ambiguity that would produce exponential backtracking. Input is local chat text processed in the browser with an abort guard around detection; no network destination, credential handling, or persistence of attacker-controlled data is involved in the supplied evidence. In the worst theoretical case a crafted message could cause a transient UI delay, which is a recoverable local performance effect and does not rise to material harm. No concrete attacker-controlled path to data loss, exfiltration, or code execution is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> No change required. Optional hardening: cap the length of message lines before applying the date pattern.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Wandlight/blob/2d4f818c2ad5855b0faff387d88c3f64479865c6/lore-generator.js#L479" rel="noopener noreferrer">lore-generator.js:479</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>163 files &middot; 15522678 bytes</dd>
+      <dt>Contextual coverage</dt><dd>5 of 5 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>23 files &middot; 1193016 bytes</dd>
+        <dt>X-Ray review families</dt><dd>8 warning occurrences compacted to 5 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>23 raw &middot; 8 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>23 raw signatures &middot; 23 raw AST &middot; 23 raw OpenGrep &middot; 8 derived signatures &middot; 0 derived AST &middot; 8 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/MentallyQuill/Wandlight/commit/2d4f818c2ad5855b0faff387d88c3f64479865c6" rel="noopener noreferrer">2d4f818c2ad5855b0faff387d88c3f64479865c6</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-10T17:57:26.567Z">Aug 10, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>4</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>5 fresh / 0 reused groups &middot; 5 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Review batching</dt><dd>2 model calls &middot; up to 3 groups and 3 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>87048 input &middot; 7031 output &middot; 1536 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>98b3ed44558989e00d0e5fe0a3912d00ffb64a6775530ade4d8a8ad8cb0fb732</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1254077407/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
