@@ -21,6 +21,8 @@ const policy = {
   maxOutputTokens: 8_192,
   maxResponseBytes: 5_000_000,
   timeoutMs: 600_000,
+  maxBatchGroups: 1,
+  maxBatchInputTokens: 64_000,
 } as const;
 
 function group(
@@ -96,7 +98,384 @@ function reviewContent(review: unknown) {
   return JSON.stringify({ review });
 }
 
+function batchContent(
+  reviews: ReadonlyArray<{ group_id: string; review: unknown }>,
+) {
+  return JSON.stringify({ reviews });
+}
+
 describe("contextual evidence review", () => {
+  test("packs cache misses into ordered batches of at most five groups", async () => {
+    const groups = Array.from({ length: 8 }, (_, index) => {
+      const candidateId = (index + 1).toString(16).repeat(64);
+      return group(`src/${index}.ts`, [candidateId]);
+    });
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const included = groups.filter((item) =>
+        request.userContent.includes(item.group_id),
+      );
+      return {
+        completionId: `completion-batch-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent(
+          included.map((item) => ({
+            group_id: item.group_id,
+            review: {
+              status: "complete",
+              assessments: item.candidates.map((candidate) =>
+                assessment(candidate.candidate_id, item.path, 2),
+              ),
+              observations: [],
+            },
+          })),
+        ),
+        usage: {
+          inputTokens: 500,
+          outputTokens: 100,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxOutputTokens: 32_768,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+      reusableGroups: new Map([
+        [
+          groups[0]!.group_id,
+          {
+            review_input_digest: groups[0]!.group_id,
+            origin_report_id: "f".repeat(64),
+            response: {
+              status: "complete" as const,
+              assessments: [
+                assessment(
+                  groups[0]!.candidates[0]!.candidate_id,
+                  groups[0]!.path,
+                  2,
+                ),
+              ],
+              observations: [],
+            },
+          },
+        ],
+      ]) as never,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    const firstBatchSchema = requestCompletion.mock.calls[0]![0]
+      .responseJsonSchema!.schema as {
+      properties?: {
+        reviews?: {
+          minItems?: number;
+          maxItems?: number;
+          items?: { anyOf?: unknown[] };
+        };
+      };
+    };
+    expect(firstBatchSchema.properties?.reviews).toMatchObject({
+      minItems: 5,
+      maxItems: 5,
+    });
+    expect(firstBatchSchema.properties?.reviews?.items?.anyOf).toHaveLength(5);
+    expect(JSON.stringify(firstBatchSchema)).not.toContain('"$ref"');
+    const firstRequest = requestCompletion.mock.calls[0]![0];
+    const messageOnlyEstimate = Math.ceil(
+      (Buffer.byteLength(firstRequest.systemContent, "utf8") +
+        Buffer.byteLength(firstRequest.userContent, "utf8")) /
+        3,
+    );
+    expect(
+      requestCompletion.mock.calls.map(
+        ([request]) =>
+          groups.filter((item) => request.userContent.includes(item.group_id))
+            .length,
+      ),
+    ).toEqual([5, 2]);
+    expect(requestCompletion.mock.calls[0]![0].userContent).not.toContain(
+      groups[0]!.group_id,
+    );
+    expect(result.coverage).toEqual({ required: 8, completed: 8 });
+    expect(result.review_batches).toMatchObject([
+      { group_count: 5, candidate_count: 5, input_tokens: 500 },
+      { group_count: 2, candidate_count: 2, input_tokens: 500 },
+    ]);
+    expect(result.review_batches![0]!.estimated_input_tokens).toBeGreaterThan(
+      messageOnlyEstimate,
+    );
+  });
+
+  test("uses the input-token budget to split otherwise eligible groups", async () => {
+    const groups = [
+      group("src/a.ts", [ids[0]!]),
+      group("src/b.ts", [ids[1]!]),
+      group("src/c.ts", [ids[2]!]),
+    ];
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const current = groups.find((item) =>
+        request.userContent.includes(item.group_id),
+      )!;
+      return {
+        completionId: `completion-token-batch-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent([
+          {
+            group_id: current.group_id,
+            review: {
+              status: "complete",
+              assessments: [
+                assessment(
+                  current.candidates[0]!.candidate_id,
+                  current.path,
+                  2,
+                ),
+              ],
+              observations: [],
+            },
+          },
+        ]),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 20,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: { ...policy, maxBatchGroups: 5, maxBatchInputTokens: 1 },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(
+      result.review_batches!.map(({ group_count }) => group_count),
+    ).toEqual([1, 1, 1]);
+    expect(result.review_batches!.every(({ over_budget }) => over_budget)).toBe(
+      true,
+    );
+  });
+
+  test("splits dense groups before their estimated output can exceed the response budget", async () => {
+    const candidateIds = Array.from({ length: 20 }, (_, index) =>
+      (index + 1).toString(16).padStart(64, "0"),
+    );
+    const groups = [
+      group("src/a.ts", candidateIds.slice(0, 10)),
+      group("src/b.ts", candidateIds.slice(10)),
+    ];
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const included = groups.filter((item) =>
+        request.userContent.includes(item.group_id),
+      );
+      return {
+        completionId: `completion-dense-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent(
+          included.map((item) => ({
+            group_id: item.group_id,
+            review: {
+              status: "complete",
+              assessments: item.candidates.map((candidate) =>
+                assessment(candidate.candidate_id, item.path, 2),
+              ),
+              observations: [],
+            },
+          })),
+        ),
+        usage: {
+          inputTokens: 200,
+          outputTokens: 100,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(result.coverage).toEqual({ required: 20, completed: 20 });
+  });
+
+  test("checkpoints valid cards and retries only a missing batch result", async () => {
+    const groups = [
+      group("src/a.ts", [ids[0]!]),
+      group("src/b.ts", [ids[1]!]),
+      group("src/c.ts", [ids[2]!]),
+    ];
+    const checkpoints: ContextualReviewProgress[] = [];
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const included = groups.filter((item) =>
+        request.userContent.includes(item.group_id),
+      );
+      const returned =
+        requestCompletion.mock.calls.length === 1
+          ? included.slice(0, 2)
+          : included;
+      return {
+        completionId: `completion-partial-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent(
+          returned.map((item) => ({
+            group_id: item.group_id,
+            review: {
+              status: "complete",
+              assessments: [
+                assessment(item.candidates[0]!.candidate_id, item.path, 2),
+              ],
+              observations: [],
+            },
+          })),
+        ),
+        usage: {
+          inputTokens: 300,
+          outputTokens: 60,
+          cacheReadTokens: 0,
+          reasoningTokens: 5,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+      onProgress: async (progress) => {
+        checkpoints.push(structuredClone(progress));
+      },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(
+      groups.filter((item) =>
+        requestCompletion.mock.calls[1]![0].userContent.includes(item.group_id),
+      ),
+    ).toEqual([groups[2]]);
+    expect(requestCompletion.mock.calls[1]![0].systemContent).toContain(
+      `For group_id ${groups[2]!.group_id}`,
+    );
+    expect(requestCompletion.mock.calls[1]![0].systemContent).not.toContain(
+      "The top-level object must contain exactly one key named review.",
+    );
+    expect(
+      checkpoints.map(({ completed_group_ids }) => completed_group_ids),
+    ).toEqual([groups.map(({ group_id }) => group_id)]);
+    expect(result.completion_ids).toEqual([
+      "completion-partial-1",
+      "completion-partial-2",
+    ]);
+  });
+
+  test("retries only the batch card containing secret-shaped output", async () => {
+    const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const included = groups.filter((item) =>
+        request.userContent.includes(item.group_id),
+      );
+      return {
+        completionId: `completion-secret-batch-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent(
+          included.map((item) => ({
+            group_id: item.group_id,
+            review: {
+              status: "complete",
+              assessments: [
+                {
+                  ...assessment(item.candidates[0]!.candidate_id, item.path, 2),
+                  ...(requestCompletion.mock.calls.length === 1 &&
+                  item === groups[1]
+                    ? {
+                        layman_explanation: `The key was sk-nano-${"z".repeat(32)}.`,
+                      }
+                    : {}),
+                },
+              ],
+              observations: [],
+            },
+          })),
+        ),
+        usage: {
+          inputTokens: 200,
+          outputTokens: 50,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(requestCompletion.mock.calls[1]![0].userContent).not.toContain(
+      groups[0]!.group_id,
+    );
+    expect(requestCompletion.mock.calls[1]![0].userContent).toContain(
+      groups[1]!.group_id,
+    );
+    expect(result.coverage).toEqual({ required: 2, completed: 2 });
+  });
+
   test("reuses one validated low group and calls the model only for the miss", async () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const requestCompletion = vi.fn(async () => ({
@@ -1010,19 +1389,23 @@ describe("contextual evidence review", () => {
       completionId: `completion-${requestCompletion.mock.calls.length}`,
       endpointOrigin: "https://provider.example",
       provider: "provider.example",
-      content: reviewContent(
-        requestCompletion.mock.calls.length === 1
-          ? {
-              status: "needs_more_context",
-              candidate_ids: [ids[0]!],
-              requested_context: "Include the destination configuration.",
-            }
-          : {
-              status: "complete",
-              assessments: [assessment(ids[0]!, current.path, 2)],
-              observations: [],
-            },
-      ),
+      content: batchContent([
+        {
+          group_id: current.group_id,
+          review:
+            requestCompletion.mock.calls.length === 1
+              ? {
+                  status: "needs_more_context",
+                  candidate_ids: [ids[0]!],
+                  requested_context: "Include the destination configuration.",
+                }
+              : {
+                  status: "complete",
+                  assessments: [assessment(ids[0]!, current.path, 2)],
+                  observations: [],
+                },
+        },
+      ]),
       usage: {
         inputTokens: 100,
         outputTokens: 40,
@@ -1046,13 +1429,20 @@ describe("contextual evidence review", () => {
         model: "configured/model:thinking",
         requestCompletion,
       },
-      policy,
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
       expandContext,
     });
 
     expect(requestCompletion).toHaveBeenCalledTimes(2);
     expect(expandContext).toHaveBeenCalledOnce();
     expect(result.assessments[0]?.recommended_risk).toBe("low");
+    expect(result.review_batches?.map(({ attempt }) => attempt)).toEqual([
+      1, 2,
+    ]);
   });
 
   test("refuses a response that omits a supplied candidate", async () => {
@@ -1247,27 +1637,34 @@ describe("contextual evidence review", () => {
         completionId: `completion-primary-${primaryCalls}`,
         endpointOrigin: "https://provider.example",
         provider: "provider.example",
-        content: reviewContent({
-          status: "complete",
-          assessments: [assessment(ids[0]!, current.path, 2)],
-          observations: [
-            {
-              related_candidate_ids: [ids[0]!],
-              evidence_ids: [ids[0]!],
-              disposition: "minor_weakness",
-              impact: "low",
-              exploitability: "unlikely",
-              confidence: "medium",
-              risk_exposure: "not_demonstrated",
-              recommended_risk: "low",
-              title: "Bounded observation",
-              technical_explanation: "The behavior should remain bounded.",
-              layman_explanation: "This deserves a small caution.",
-              developer_action: "Document the intended boundary.",
-              locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+        content: batchContent([
+          {
+            group_id: current.group_id,
+            review: {
+              status: "complete",
+              assessments: [assessment(ids[0]!, current.path, 2)],
+              observations: [
+                {
+                  related_candidate_ids: [ids[0]!],
+                  evidence_ids: [ids[0]!],
+                  disposition: "minor_weakness",
+                  impact: "low",
+                  exploitability: "unlikely",
+                  confidence: "medium",
+                  risk_exposure: "not_demonstrated",
+                  recommended_risk: "low",
+                  title: "Bounded observation",
+                  technical_explanation: "The behavior should remain bounded.",
+                  layman_explanation: "This deserves a small caution.",
+                  developer_action: "Document the intended boundary.",
+                  locations: [
+                    { path: current.path, line_start: 99, line_end: 99 },
+                  ],
+                },
+              ],
             },
-          ],
-        }),
+          },
+        ]),
         usage: {
           inputTokens: 100,
           outputTokens: 40,
@@ -1313,7 +1710,11 @@ describe("contextual evidence review", () => {
         model: "gpt-5.6-luna",
         requestCompletion: requestRepair,
       },
-      policy,
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
     });
 
     expect(primaryCalls).toBe(3);
@@ -1331,6 +1732,12 @@ describe("contextual evidence review", () => {
       "completion-primary-2",
       "completion-primary-3",
       "jsonrepair:completion-luna-repair",
+    ]);
+    expect(result.review_batches?.map(({ kind }) => kind)).toEqual([
+      "contextual_review",
+      "contextual_review",
+      "contextual_review",
+      "json_repair",
     ]);
   });
 

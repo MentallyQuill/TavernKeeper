@@ -255,6 +255,46 @@ test("publishes complete fresh and reused review provenance", () => {
   ).toBe(false);
 });
 
+test("publishes per-batch token usage and rejects totals that do not reconcile", () => {
+  const batchedReview: CompletedContextualReview = {
+    ...review,
+    review_batches: [
+      {
+        kind: "contextual_review",
+        attempt: 1,
+        group_count: 1,
+        candidate_count: 1,
+        estimated_input_tokens: 120,
+        over_budget: false,
+        input_tokens: 100,
+        output_tokens: 40,
+        cache_read_tokens: 0,
+        reasoning_tokens: 10,
+      },
+    ],
+  };
+  const report = buildContextualReport(
+    { scanPackage, review: batchedReview, evidenceGroups: [group] },
+    {
+      targetSha,
+      completedAt: "2026-08-02T16:00:00.000Z",
+      reportVersion: 1,
+      supersedesReportId: null,
+      limitations: [
+        "This advisory review cannot prove the absence of unknown behavior.",
+      ],
+    },
+  );
+
+  expect(report.review_batches).toEqual(batchedReview.review_batches);
+  expect(
+    ScanReportV5Schema.safeParse({
+      ...report,
+      review_batches: [{ ...report.review_batches![0]!, input_tokens: 99 }],
+    }).success,
+  ).toBe(false);
+});
+
 function legacyImportedTemplateReport() {
   const report = structuredClone(validReport());
   report.contextual_review_policy_version = "2";

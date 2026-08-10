@@ -297,6 +297,8 @@ async function completeReview(root: string) {
       maxOutputTokens: 32_768,
       maxResponseBytes: 5_000_000,
       timeoutMs: 900_000,
+      maxBatchGroups: 1,
+      maxBatchInputTokens: 64_000,
     },
   });
 }
@@ -699,6 +701,8 @@ describe("three-phase contextual scan session", () => {
           maxOutputTokens: 32_768,
           maxResponseBytes: 5_000_000,
           timeoutMs: 900_000,
+          maxBatchGroups: 1,
+          maxBatchInputTokens: 64_000,
         },
       }),
     ).resolves.toMatchObject({ status: "reviewed" });

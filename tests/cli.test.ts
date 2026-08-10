@@ -766,6 +766,8 @@ describe("JSON-only orchestration CLIs", () => {
           maxOutputTokens: 32_768,
           maxResponseBytes: 5_000_000,
           timeoutMs: 300_000,
+          maxBatchGroups: 5,
+          maxBatchInputTokens: 64_000,
         }),
         review: async (spec) => {
           expect(spec.sessionRoot).toBe("C:/runner/tavernkeeper-session-42");

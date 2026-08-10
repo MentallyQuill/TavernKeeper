@@ -303,6 +303,19 @@ export const ReviewReuseV5Schema = z.strictObject({
   source_report_ids: z.array(DigestSchema).max(10_000),
 });
 
+export const ReviewBatchUsageV5Schema = z.strictObject({
+  kind: z.enum(["contextual_review", "json_repair"]),
+  attempt: z.number().int().min(1).max(5),
+  group_count: z.number().int().min(1).max(5),
+  candidate_count: z.number().int().min(1).max(320),
+  estimated_input_tokens: CountSchema.nullable(),
+  over_budget: z.boolean(),
+  input_tokens: CountSchema,
+  output_tokens: CountSchema,
+  cache_read_tokens: CountSchema,
+  reasoning_tokens: CountSchema,
+});
+
 export const ScanReportV5Schema = z
   .strictObject({
     schema_version: z.literal(5),
@@ -317,6 +330,7 @@ export const ScanReportV5Schema = z
       cache_read_tokens: CountSchema,
       reasoning_tokens: CountSchema,
     }),
+    review_batches: z.array(ReviewBatchUsageV5Schema).max(10_000).optional(),
     history: z.strictObject({
       base_sha: FullShaSchema.nullable(),
       commits: z.number().int().min(1).max(20),
@@ -339,6 +353,28 @@ export const ScanReportV5Schema = z
     limitations: z.array(SafeTextSchema(600)).min(1).max(20),
   })
   .superRefine((report, context) => {
+    if (
+      report.review_batches !== undefined &&
+      (
+        [
+          ["input_tokens", report.review_usage.input_tokens],
+          ["output_tokens", report.review_usage.output_tokens],
+          ["cache_read_tokens", report.review_usage.cache_read_tokens],
+          ["reasoning_tokens", report.review_usage.reasoning_tokens],
+        ] as const
+      ).some(
+        ([field, total]) =>
+          report.review_batches!.reduce(
+            (sum, batch) => sum + batch[field],
+            0,
+          ) !== total,
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["review_batches"],
+        message: "Published review batch usage must reconcile with totals.",
+      });
     if (report.review_reuse !== undefined) {
       const sourceIds = report.review_reuse.source_report_ids;
       if (

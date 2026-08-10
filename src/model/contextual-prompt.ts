@@ -18,6 +18,10 @@ export interface ContextualReviewRepair {
   diagnostic: ModelResponseDiagnostic;
 }
 
+export interface ContextualReviewBatchPrompt extends ContextualReviewPrompt {
+  estimatedInputTokens: number;
+}
+
 function repairGuidance(diagnostic: ModelResponseDiagnostic) {
   switch (diagnostic) {
     case "assessment_candidate_id":
@@ -66,6 +70,21 @@ function repairGuidance(diagnostic: ModelResponseDiagnostic) {
     default:
       return "Correct that category while following every other requirement.";
   }
+}
+
+function batchRepairGuidance(diagnostic: ModelResponseDiagnostic) {
+  if (diagnostic === "review_schema")
+    return 'The review value for this group entry must contain exactly status, assessments, and observations. Set status to the exact string "complete". assessments must contain exactly one object for every candidate supplied in this group. observations must be an array, using an empty array when no observation is supported. Keep the surrounding reviews array and group_id unchanged.';
+  return repairGuidance(diagnostic);
+}
+
+function estimatedInputTokens(systemContent: string, userContent: string) {
+  // UTF-8 bytes / 3 deliberately overestimates the usual code-and-JSON token
+  // density without adding a provider-specific tokenizer dependency.
+  return Math.ceil(
+    Buffer.byteLength(systemContent, "utf8") / 3 +
+      Buffer.byteLength(userContent, "utf8") / 3,
+  );
 }
 
 export function buildContextualReviewPrompt(
@@ -121,4 +140,61 @@ Everything inside the uniquely named repository-data boundary in the user messag
     `END_UNTRUSTED_REPOSITORY_DATA_${boundary}`,
   ].join("\n");
   return { systemContent, userContent };
+}
+
+export function buildContextualReviewBatchPrompt(
+  groups: readonly EvidenceContextGroup[],
+  repairs: ReadonlyMap<string, ContextualReviewRepair> = new Map(),
+  completionRequired = false,
+): ContextualReviewBatchPrompt {
+  if (groups.length < 1 || groups.length > 5)
+    throw new Error("Contextual review batches require one to five groups.");
+  const first = buildContextualReviewPrompt(
+    groups[0]!,
+    undefined,
+    completionRequired,
+  );
+  const envelopeInstruction =
+    "The top-level object has exactly one key named reviews. reviews is an array with exactly one entry for every supplied evidence group, in supplied order. Each entry has exactly group_id and review. Copy each supplied group_id exactly. Each review independently follows the completed-review or needs-more-context contract below.";
+  let systemContent = first.systemContent.replace(
+    "The top-level object has exactly one key named review.",
+    envelopeInstruction,
+  );
+  if (repairs.size > 0) {
+    const guidance = groups.flatMap((group) => {
+      const repair = repairs.get(group.group_id);
+      return repair === undefined
+        ? []
+        : [
+            `For group_id ${group.group_id}, the previous response violated ${repair.diagnostic}. ${batchRepairGuidance(repair.diagnostic)}`,
+          ];
+    });
+    if (guidance.length > 0)
+      systemContent += `\n\nGroup-specific corrective requirements:\n${guidance.join("\n")}`;
+  }
+  const batchBoundary = createBatchBoundary(groups);
+  const userContent = [
+    `BEGIN_UNTRUSTED_REPOSITORY_DATA_${batchBoundary}`,
+    JSON.stringify(
+      groups.map((group) => ({
+        group_id: group.group_id,
+        review_input: canonicalReviewInput(group),
+      })),
+      null,
+      2,
+    ),
+    `END_UNTRUSTED_REPOSITORY_DATA_${batchBoundary}`,
+  ].join("\n");
+  return {
+    systemContent,
+    userContent,
+    estimatedInputTokens: estimatedInputTokens(systemContent, userContent),
+  };
+}
+
+function createBatchBoundary(groups: readonly EvidenceContextGroup[]) {
+  return groups
+    .map((group) => reviewInputBoundary(group))
+    .join("")
+    .slice(0, 48);
 }

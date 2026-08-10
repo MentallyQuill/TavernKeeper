@@ -47,7 +47,7 @@ describe("deterministic scanner policy", () => {
     });
   });
 
-  test("loads the versioned contextual review policy without a token budget", async () => {
+  test("loads the versioned contextual review policy with bounded batches", async () => {
     expect(
       (policyModule as Record<string, unknown>)
         .CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
@@ -61,6 +61,8 @@ describe("deterministic scanner policy", () => {
       schemaVersion: "contextual-assessment-v2",
       maxImmediateAttempts: 3,
       timeoutMs: 300_000,
+      maxBatchGroups: 5,
+      maxBatchInputTokens: 64_000,
     });
     expect(policy).not.toHaveProperty("tokenBudget");
     expect(

@@ -62,6 +62,26 @@ function reviewReuseMetadata(report: ScanReportV5) {
         <dt>Review source reports</dt><dd>${sources}</dd>`;
 }
 
+function reviewBatchMetadata(report: ScanReportV5) {
+  const batches = report.review_batches;
+  if (batches === undefined) return "";
+  if (batches.length === 0)
+    return "<dt>Review batching</dt><dd>0 model calls &middot; all eligible groups reused</dd>";
+  const retryCalls = batches.filter(({ attempt }) => attempt > 1).length;
+  const oversizedCalls = batches.filter(
+    ({ over_budget }) => over_budget,
+  ).length;
+  const maximumGroups = Math.max(
+    0,
+    ...batches.map(({ group_count }) => group_count),
+  );
+  const maximumCandidates = Math.max(
+    0,
+    ...batches.map(({ candidate_count }) => candidate_count),
+  );
+  return `<dt>Review batching</dt><dd>${escapeHtml(batches.length)} model call${batches.length === 1 ? "" : "s"} &middot; up to ${escapeHtml(maximumGroups)} groups and ${escapeHtml(maximumCandidates)} candidates per call &middot; ${escapeHtml(retryCalls)} retry call${retryCalls === 1 ? "" : "s"} &middot; ${escapeHtml(oversizedCalls)} over-budget singleton call${oversizedCalls === 1 ? "" : "s"}</dd>`;
+}
+
 function location(value: {
   path: string;
   line_start: number | null;
@@ -423,6 +443,7 @@ export function renderReportV5Html(input: unknown) {
         <dt>Prompt</dt><dd>${escapeHtml(report.prompt_version)}</dd>
         <dt>Assessment schema</dt><dd>${escapeHtml(report.assessment_schema_version)}</dd>
         ${reviewReuseMetadata(report)}
+        ${reviewBatchMetadata(report)}
         <dt>Review usage</dt><dd>${escapeHtml(report.review_usage.input_tokens)} input &middot; ${escapeHtml(report.review_usage.output_tokens)} output &middot; ${escapeHtml(report.review_usage.cache_read_tokens)} cache read &middot; ${escapeHtml(report.review_usage.reasoning_tokens)} reasoning tokens</dd>
         <dt>Report</dt><dd><code>${escapeHtml(report.report_id)}</code></dd>
       </dl>

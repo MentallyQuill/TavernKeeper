@@ -679,6 +679,52 @@ export function contextualReviewResponseJsonSchemaForGroup(
   return schema;
 }
 
+export function contextualReviewResponseJsonSchemaForBatch(
+  groups: readonly (ContextualReviewSchemaGroup & { group_id: string })[],
+  completionRequired: boolean,
+) {
+  if (groups.length < 1 || groups.length > 5)
+    throw new Error("Contextual review batch size is invalid.");
+  const groupIds = groups.map(({ group_id }) => group_id);
+  if (
+    new Set(groupIds).size !== groupIds.length ||
+    groupIds.some((value) => !IdentifierSchema.safeParse(value).success)
+  )
+    throw new Error("Contextual review batch identities are invalid.");
+  const variants = groups.map((group) => {
+    const groupSchema = contextualReviewResponseJsonSchemaForGroup(
+      group,
+      completionRequired,
+    );
+    const reviewSchema = jsonSchemaProperties(
+      groupSchema,
+      "group response root properties",
+    ).review;
+    return {
+      type: "object",
+      properties: {
+        group_id: { type: "string", const: group.group_id },
+        review: reviewSchema,
+      },
+      required: ["group_id", "review"],
+      additionalProperties: false,
+    };
+  });
+  return {
+    type: "object",
+    properties: {
+      reviews: {
+        type: "array",
+        minItems: groups.length,
+        maxItems: groups.length,
+        items: { anyOf: variants },
+      },
+    },
+    required: ["reviews"],
+    additionalProperties: false,
+  };
+}
+
 export type ContextualAssessment = z.infer<typeof ContextualAssessmentSchema>;
 export type ContextualAssessmentInput = z.infer<
   typeof ContextualAssessmentInputSchema
