@@ -146,7 +146,7 @@ function coverageManifest() {
 }
 
 describe("JSON-only orchestration CLIs", () => {
-  test("defaults every coordinator entry point to scanner policy 4", () => {
+  test("defaults every coordinator entry point to scanner policy 5", () => {
     const targetValue = target(42);
     const manifest: TargetManifestV2 = {
       schema_version: 2,
@@ -175,8 +175,8 @@ describe("JSON-only orchestration CLIs", () => {
         ...stateObserving(targetValue),
         policy_campaigns: [
           {
-            id: "policy-4-test",
-            scanner_policy_version: "4",
+            id: "policy-5-test",
+            scanner_policy_version: "5",
             repository_ids: [42],
             created_at: now,
             status: "active",
@@ -759,7 +759,7 @@ describe("JSON-only orchestration CLIs", () => {
       },
       {
         loadPolicy: async () => ({
-          version: "4",
+          version: "5",
           promptVersion: "contextual-review-v7",
           schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
@@ -768,6 +768,11 @@ describe("JSON-only orchestration CLIs", () => {
           timeoutMs: 300_000,
           maxBatchGroups: 5,
           maxBatchInputTokens: 64_000,
+          maxFreshBehaviorCases: 12,
+          maxProviderCalls: 6,
+          maxEstimatedInputTokens: 200_000,
+          maxActualInputTokens: 250_000,
+          maxActualOutputTokens: 40_000,
         }),
         review: async (spec) => {
           expect(spec.sessionRoot).toBe("C:/runner/tavernkeeper-session-42");
@@ -796,7 +801,7 @@ describe("JSON-only orchestration CLIs", () => {
       "utf8",
     );
     expect(source).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
-    expect(source).toContain("contextual-review.v4.json");
+    expect(source).toContain("contextual-review.v5.json");
     expect(source).not.toContain("contextual-review.v3.json");
   });
 

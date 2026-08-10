@@ -13,9 +13,9 @@ import {
 } from "../src/config/policy.js";
 
 describe("deterministic scanner policy", () => {
-  test("names policy 4 as the single current scanner policy", async () => {
-    expect(CURRENT_SCANNER_POLICY_VERSION).toBe("4");
-    expect(CURRENT_SCANNER_POLICY_PATH).toBe("config/scanner-policy.v4.json");
+  test("names policy 5 as the single current scanner policy", async () => {
+    expect(CURRENT_SCANNER_POLICY_VERSION).toBe("5");
+    expect(CURRENT_SCANNER_POLICY_PATH).toBe("config/scanner-policy.v5.json");
     expect((await loadScannerPolicy(CURRENT_SCANNER_POLICY_PATH)).version).toBe(
       CURRENT_SCANNER_POLICY_VERSION,
     );
@@ -47,22 +47,27 @@ describe("deterministic scanner policy", () => {
     });
   });
 
-  test("loads the versioned contextual review policy with bounded batches", async () => {
+  test("loads policy 5 with hard contextual review budgets", async () => {
     expect(
       (policyModule as Record<string, unknown>)
         .CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
-    ).toBe("4");
+    ).toBe("5");
     const policy = await loadContextualReviewPolicy(
-      "config/contextual-review.v4.json",
+      "config/contextual-review.v5.json",
     );
     expect(policy).toMatchObject({
-      version: "4",
+      version: "5",
       promptVersion: "contextual-review-v7",
       schemaVersion: "contextual-assessment-v2",
       maxImmediateAttempts: 3,
       timeoutMs: 300_000,
       maxBatchGroups: 5,
       maxBatchInputTokens: 64_000,
+      maxFreshBehaviorCases: 12,
+      maxProviderCalls: 6,
+      maxEstimatedInputTokens: 200_000,
+      maxActualInputTokens: 250_000,
+      maxActualOutputTokens: 40_000,
     });
     expect(policy).not.toHaveProperty("tokenBudget");
     expect(

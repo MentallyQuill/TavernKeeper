@@ -201,13 +201,14 @@ export const ScanPackageV1Schema = ScanPackageV1ObjectSchema.superRefine(
       ({ name }) => name === "javascript-analysis",
     );
     if (
-      scanPackage.scanner_policy_version === "4" &&
+      ["4", "5"].includes(scanPackage.scanner_policy_version) &&
       scanPackage.javascript_analysis === undefined
     )
       context.addIssue({
         code: "custom",
         path: ["javascript_analysis"],
-        message: "JavaScript coverage is required for scanner policy 4.",
+        message:
+          "JavaScript coverage is required for current scanner policies.",
       });
     if (
       scanPackage.javascript_analysis !== undefined &&
@@ -312,10 +313,9 @@ export function validateScanPackageEvidence(input: unknown): ScanPackageV1 {
   )
     throw new Error("Scan Package classification count is inconsistent.");
 
-  const requiredTools =
-    scanPackage.scanner_policy_version === "4"
-      ? RequiredScanPackageTools
-      : LegacyScanPackageTools;
+  const requiredTools = ["4", "5"].includes(scanPackage.scanner_policy_version)
+    ? RequiredScanPackageTools
+    : LegacyScanPackageTools;
   if (
     scanPackage.tools.length !== requiredTools.length ||
     new Set(scanPackage.tools.map(({ name }) => name)).size !==
@@ -424,10 +424,9 @@ export function buildScanPackage(input: BuildScanPackageInput): ScanPackageV1 {
   const findings = [...findingsByFingerprint.values()].sort((left, right) =>
     left.fingerprint.localeCompare(right.fingerprint),
   );
-  const toolOrder =
-    input.scannerPolicyVersion === "4"
-      ? RequiredScanPackageTools
-      : LegacyScanPackageTools;
+  const toolOrder = ["4", "5"].includes(input.scannerPolicyVersion)
+    ? RequiredScanPackageTools
+    : LegacyScanPackageTools;
   const tools = input.tools
     .map(({ name, version, status, limitations }) => ({
       name,

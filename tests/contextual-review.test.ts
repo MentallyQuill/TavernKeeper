@@ -14,7 +14,7 @@ import {
 
 const ids = ["a", "b", "c"].map((character) => character.repeat(64));
 const policy = {
-  version: "4",
+  version: "5",
   promptVersion: "contextual-review-v7",
   schemaVersion: "contextual-assessment-v2",
   maxImmediateAttempts: 3,
@@ -23,6 +23,11 @@ const policy = {
   timeoutMs: 600_000,
   maxBatchGroups: 1,
   maxBatchInputTokens: 64_000,
+  maxFreshBehaviorCases: 12,
+  maxProviderCalls: 6,
+  maxEstimatedInputTokens: 200_000,
+  maxActualInputTokens: 250_000,
+  maxActualOutputTokens: 40_000,
 } as const;
 
 function group(
@@ -1257,7 +1262,7 @@ describe("contextual evidence review", () => {
   test("rejects progress that is not the exact completed group prefix", async () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const invalidProgress: ContextualReviewProgress = {
-      policy_version: "4",
+      policy_version: "5",
       prompt_version: "contextual-review-v7",
       schema_version: "contextual-assessment-v2",
       model: "configured/model:thinking",

@@ -51,7 +51,7 @@ const scanPackage = buildScanPackage({
   },
   history: { baseSha: null, commits: 1 },
   scannerVersion: "1.0.0",
-  scannerPolicyVersion: "4",
+  scannerPolicyVersion: "5",
   ruleCatalogVersion: "1",
   inventory: {
     root: "C:/scan/repository",
@@ -151,7 +151,7 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "4",
+  policy_version: "5",
   prompt_version: "contextual-review-v7",
   schema_version: "contextual-assessment-v2",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
@@ -529,7 +529,7 @@ function reportWithObservation(
 }
 
 describe("contextual V5 reports", () => {
-  test("requires JavaScript coverage on policy-4 reports", () => {
+  test("requires JavaScript coverage on current reports", () => {
     const report = validReport();
     expect(report.coverage).toHaveProperty("javascript_analysis");
     const withoutCoverage = structuredClone(report);
@@ -814,10 +814,10 @@ describe("contextual V5 reports", () => {
     expect(report.report_id).toBe(report.report_digest);
     expect(report.report_id).toBe(reportIdentity(report));
     expect(reportPath(report)).toBe(
-      `reports/github/42/${targetSha}/4/${report.report_id}`,
+      `reports/github/42/${targetSha}/5/${report.report_id}`,
     );
     expect(reportUrl(report)).toBe(
-      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/4/${report.report_id}/`,
+      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/5/${report.report_id}/`,
     );
     expect(ScanReportV5Schema.parse(report)).toEqual(report);
   });

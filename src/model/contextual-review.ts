@@ -43,7 +43,7 @@ import { validateCompletedGroupReview } from "./review-coverage.js";
 import type { ReusableReviewGroup } from "./review-cache.js";
 
 export interface ContextualReviewPolicy {
-  version: "4";
+  version: "5";
   promptVersion: typeof CONTEXTUAL_PROMPT_VERSION;
   schemaVersion: typeof CONTEXTUAL_SCHEMA_VERSION;
   maxImmediateAttempts: number;
@@ -52,6 +52,11 @@ export interface ContextualReviewPolicy {
   timeoutMs: number;
   maxBatchGroups: number;
   maxBatchInputTokens: number;
+  maxFreshBehaviorCases: number;
+  maxProviderCalls: number;
+  maxEstimatedInputTokens: number;
+  maxActualInputTokens: number;
+  maxActualOutputTokens: number;
 }
 
 type RequestCompletion = (
@@ -122,7 +127,7 @@ export type ReviewUnit = z.infer<typeof ReviewUnitSchema>;
 
 export const CompletedContextualReviewSchema = z
   .strictObject({
-    policy_version: z.literal("4"),
+    policy_version: z.literal("5"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -220,7 +225,7 @@ export type CompletedContextualReview = z.infer<
 
 export const ContextualReviewProgressSchema = z
   .strictObject({
-    policy_version: z.literal("4"),
+    policy_version: z.literal("5"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -588,7 +593,7 @@ function addUsage(total: ModelUsage, usage: ModelUsage) {
 
 function validatePolicy(policy: ContextualReviewPolicy) {
   if (
-    policy.version !== "4" ||
+    policy.version !== "5" ||
     policy.promptVersion !== CONTEXTUAL_PROMPT_VERSION ||
     policy.schemaVersion !== CONTEXTUAL_SCHEMA_VERSION ||
     !Number.isInteger(policy.maxImmediateAttempts) ||
@@ -604,7 +609,17 @@ function validatePolicy(policy: ContextualReviewPolicy) {
     policy.maxBatchGroups < 1 ||
     policy.maxBatchGroups > 5 ||
     !Number.isInteger(policy.maxBatchInputTokens) ||
-    policy.maxBatchInputTokens < 1
+    policy.maxBatchInputTokens < 1 ||
+    !Number.isInteger(policy.maxFreshBehaviorCases) ||
+    policy.maxFreshBehaviorCases < 1 ||
+    !Number.isInteger(policy.maxProviderCalls) ||
+    policy.maxProviderCalls < 1 ||
+    !Number.isInteger(policy.maxEstimatedInputTokens) ||
+    policy.maxEstimatedInputTokens < 1 ||
+    !Number.isInteger(policy.maxActualInputTokens) ||
+    policy.maxActualInputTokens < 1 ||
+    !Number.isInteger(policy.maxActualOutputTokens) ||
+    policy.maxActualOutputTokens < 1
   )
     throw new ModelRequestError(
       "MODEL_CONFIGURATION",
@@ -1405,7 +1420,7 @@ export async function reviewEvidenceGroups(
     if (spec.onProgress === undefined) return;
     await spec.onProgress(
       ContextualReviewProgressSchema.parse({
-        policy_version: "4",
+        policy_version: "5",
         prompt_version: CONTEXTUAL_PROMPT_VERSION,
         schema_version: CONTEXTUAL_SCHEMA_VERSION,
         model: spec.provider.model,
@@ -1561,7 +1576,7 @@ export async function reviewEvidenceGroups(
       "Contextual observation identities must be unique.",
     );
   return CompletedContextualReviewSchema.parse({
-    policy_version: "4",
+    policy_version: "5",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,
     schema_version: CONTEXTUAL_SCHEMA_VERSION,
     model: spec.provider.model,

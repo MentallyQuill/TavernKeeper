@@ -4,7 +4,7 @@ import {
   CURRENT_SCANNER_POLICY_PATH,
   loadScannerPins,
   loadScannerPolicy,
-  ScannerPolicyV4Schema,
+  ScannerPolicyV5Schema,
 } from "../config/policy.js";
 import { prepareTargetSession } from "../orchestrator/session.js";
 import { ProcessCommandRunner } from "../process/command-runner.js";
@@ -16,7 +16,7 @@ async function main() {
     JSON.parse(requiredEnvironment(process.env, "TAVERNKEEPER_SCAN_REQUEST")),
   );
   const repositoryRoot = process.cwd();
-  const policy = ScannerPolicyV4Schema.parse(
+  const policy = ScannerPolicyV5Schema.parse(
     await loadScannerPolicy(join(repositoryRoot, CURRENT_SCANNER_POLICY_PATH)),
   );
   const pins = await loadScannerPins(

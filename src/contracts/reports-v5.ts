@@ -395,7 +395,7 @@ export const ScanReportV5Schema = z
         });
     }
     if (
-      report.scanner_policy_version === "4" &&
+      ["4", "5"].includes(report.scanner_policy_version) &&
       report.coverage.javascript_analysis === undefined
     )
       context.addIssue({
@@ -445,12 +445,14 @@ export const ScanReportV5Schema = z
     }
     if (
       report.contextual_review_policy_version === "3" ||
-      report.contextual_review_policy_version === "4"
+      report.contextual_review_policy_version === "4" ||
+      report.contextual_review_policy_version === "5"
     ) {
-      const expectedPrompt =
-        report.contextual_review_policy_version === "4"
-          ? "contextual-review-v7"
-          : "contextual-review-v6";
+      const expectedPrompt = ["4", "5"].includes(
+        report.contextual_review_policy_version,
+      )
+        ? "contextual-review-v7"
+        : "contextual-review-v6";
       if (report.prompt_version !== expectedPrompt)
         context.addIssue({
           code: "custom",
@@ -612,7 +614,7 @@ export const ScanReportV5Schema = z
       report.coverage.tools.map((tool) => [tool.name, tool.status]),
     );
     if (
-      report.scanner_policy_version === "4" &&
+      ["4", "5"].includes(report.scanner_policy_version) &&
       completedTools.get("javascript-analysis") !== "completed"
     )
       context.addIssue({
@@ -707,7 +709,7 @@ export const ReportIndexEntryV5Schema = z
         message: "Index review coverage must be complete.",
       });
     if (
-      entry.scanner_policy_version === "4" &&
+      ["4", "5"].includes(entry.scanner_policy_version) &&
       entry.coverage.javascript_analysis_status === "legacy"
     )
       context.addIssue({

@@ -9,7 +9,7 @@ import { safeCliErrorRecord } from "../src/cli/io.js";
 import {
   loadScannerPins,
   loadScannerPolicy,
-  ScannerPolicyV4Schema,
+  ScannerPolicyV5Schema,
 } from "../src/config/policy.js";
 import { inventoryRepository } from "../src/inventory/inventory-handler.js";
 import { ProcessCommandRunner } from "../src/process/command-runner.js";
@@ -44,9 +44,9 @@ async function main() {
   const pins = await loadScannerPins(
     join(repositoryRoot, "config", "scanners.v1.json"),
   );
-  const policy = ScannerPolicyV4Schema.parse(
+  const policy = ScannerPolicyV5Schema.parse(
     await loadScannerPolicy(
-      join(repositoryRoot, "config", "scanner-policy.v4.json"),
+      join(repositoryRoot, "config", "scanner-policy.v5.json"),
     ),
   );
   const toolsDir = resolveToolsDirectory();

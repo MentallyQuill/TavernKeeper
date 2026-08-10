@@ -22,7 +22,7 @@ import {
 import {
   loadScannerPins,
   loadScannerPolicy,
-  ScannerPolicyV4Schema,
+  ScannerPolicyV5Schema,
 } from "../src/config/policy.js";
 import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
 import {
@@ -94,7 +94,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     project_kinds: ["extension"] as const,
     prepared_at: "2026-08-02T15:00:00.000Z",
     scanner_version: "1.0.0",
-    scanner_policy_version: "4",
+    scanner_policy_version: "5",
     rule_catalog_version: "1",
     report_version: 1,
     supersedes_report_id: null,
@@ -290,7 +290,7 @@ async function completeReview(root: string) {
       },
     },
     policy: {
-      version: "4",
+      version: "5",
       promptVersion: "contextual-review-v7",
       schemaVersion: "contextual-assessment-v2",
       maxImmediateAttempts: 3,
@@ -299,6 +299,11 @@ async function completeReview(root: string) {
       timeoutMs: 900_000,
       maxBatchGroups: 1,
       maxBatchInputTokens: 64_000,
+      maxFreshBehaviorCases: 12,
+      maxProviderCalls: 6,
+      maxEstimatedInputTokens: 200_000,
+      maxActualInputTokens: 250_000,
+      maxActualOutputTokens: 40_000,
     },
   });
 }
@@ -395,8 +400,8 @@ describe("three-phase contextual scan session", () => {
     roots.push(base);
     const checkoutRoot = join(base, "tavernkeeper-checkout-42");
     const sessionRoot = join(base, "tavernkeeper-session-42");
-    const policy = ScannerPolicyV4Schema.parse(
-      await loadScannerPolicy(resolve("config/scanner-policy.v4.json")),
+    const policy = ScannerPolicyV5Schema.parse(
+      await loadScannerPolicy(resolve("config/scanner-policy.v5.json")),
     );
     const pins = await loadScannerPins(resolve("config/scanners.v1.json"));
     let verified = false;
@@ -444,7 +449,7 @@ describe("three-phase contextual scan session", () => {
       scanners: async () => [
         {
           name: "tavernkeeper-static",
-          version: "4",
+          version: "5",
           status: "completed",
           findings: [],
         },
@@ -524,7 +529,7 @@ describe("three-phase contextual scan session", () => {
         previousReportShas: [],
         preparedAt: "2026-08-02T15:00:00.000Z",
         scannerVersion: "1.0.0",
-        scannerPolicyVersion: "4",
+        scannerPolicyVersion: "5",
         ruleCatalogVersion: "1",
         reportVersion: 1,
         supersedesReportId: null,
@@ -621,7 +626,7 @@ describe("three-phase contextual scan session", () => {
           session_id: prepared.session_id,
           evidence_digest: evidence.evidence_digest,
           progress: {
-            policy_version: "4",
+            policy_version: "5",
             prompt_version: "contextual-review-v7",
             schema_version: "contextual-assessment-v2",
             model: "configured/model:thinking",
@@ -694,7 +699,7 @@ describe("three-phase contextual scan session", () => {
           },
         },
         policy: {
-          version: "4",
+          version: "5",
           promptVersion: "contextual-review-v7",
           schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
@@ -703,6 +708,11 @@ describe("three-phase contextual scan session", () => {
           timeoutMs: 900_000,
           maxBatchGroups: 1,
           maxBatchInputTokens: 64_000,
+          maxFreshBehaviorCases: 12,
+          maxProviderCalls: 6,
+          maxEstimatedInputTokens: 200_000,
+          maxActualInputTokens: 250_000,
+          maxActualOutputTokens: 40_000,
         },
       }),
     ).resolves.toMatchObject({ status: "reviewed" });

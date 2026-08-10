@@ -14,7 +14,7 @@ import { z } from "zod";
 import {
   CURRENT_SCANNER_POLICY_VERSION,
   type ScannerPins,
-  type ScannerPolicyV4,
+  type ScannerPolicyV5,
 } from "../config/policy.js";
 import {
   buildScanPackage,
@@ -476,7 +476,7 @@ export async function prepareTargetSession(
     ruleCatalogVersion: string;
     reportVersion: number;
     supersedesReportId: string | null;
-    policy: ScannerPolicyV4;
+    policy: ScannerPolicyV5;
     pins: ScannerPins;
     rulesRoot: string;
     runner: CommandRunner;
@@ -488,7 +488,7 @@ export async function prepareTargetSession(
   const target = TargetSchema.parse(targetInput);
   if (
     scannerPolicyVersion !== policy.version ||
-    policy.version !== "4" ||
+    policy.version !== "5" ||
     ruleCatalogVersion !== "1" ||
     projectKinds.length === 0
   )

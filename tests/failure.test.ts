@@ -20,6 +20,14 @@ describe("operation failure domains", () => {
       },
     ],
     [
+      { code: "MODEL_REVIEW_BUDGET_EXCEEDED", scope: "system" },
+      {
+        code: "MODEL_REVIEW_BUDGET_EXCEEDED",
+        domain: "target",
+        component: "contextual-model",
+      },
+    ],
+    [
       { code: "MODEL_AUTHENTICATION", scope: "system" },
       {
         code: "MODEL_AUTHENTICATION",

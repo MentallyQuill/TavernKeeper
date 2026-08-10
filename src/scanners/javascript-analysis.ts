@@ -4,7 +4,7 @@ import { isAbsolute, join, relative, resolve, sep } from "node:path";
 
 import { AstAnalyser, type Warning } from "@nodesecure/js-x-ray";
 
-import type { ScannerPolicyV4 } from "../config/policy.js";
+import type { JavascriptScannerPolicy } from "../config/policy.js";
 import type { Finding } from "../contracts/reports.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
 import type { CommandRunner } from "../process/command-runner.js";
@@ -57,7 +57,7 @@ export interface JavascriptAnalysisSpec {
   rawOpenGrepCoverage: ScannerPathCoverage;
   runner: CommandRunner;
   rulesRoot: string;
-  policy: ScannerPolicyV4;
+  policy: JavascriptScannerPolicy;
   temporaryRoot: string;
   opengrepVersion: string;
   opengrepExecutable?: string;
