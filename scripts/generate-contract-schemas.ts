@@ -56,16 +56,21 @@ export function buildContractSchemas() {
       contract.file === "scan-report.v5.schema.json"
         ? {
             allOf: [
-              {
+              ...[
+                ["3", "contextual-review-v6"],
+                ["4", "contextual-review-v7"],
+              ].map(([policyVersion, promptVersion]) => ({
                 if: {
                   properties: {
-                    contextual_review_policy_version: { const: "3" },
+                    contextual_review_policy_version: {
+                      const: policyVersion,
+                    },
                   },
                   required: ["contextual_review_policy_version"],
                 },
                 then: {
                   properties: {
-                    prompt_version: { const: "contextual-review-v6" },
+                    prompt_version: { const: promptVersion },
                     assessment_schema_version: {
                       const: "contextual-assessment-v2",
                     },
@@ -77,7 +82,7 @@ export function buildContractSchemas() {
                     },
                   },
                 },
-              },
+              })),
             ],
           }
         : {};

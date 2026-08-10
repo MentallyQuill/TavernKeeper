@@ -290,8 +290,8 @@ async function completeReview(root: string) {
       },
     },
     policy: {
-      version: "3",
-      promptVersion: "contextual-review-v6",
+      version: "4",
+      promptVersion: "contextual-review-v7",
       schemaVersion: "contextual-assessment-v2",
       maxImmediateAttempts: 3,
       maxOutputTokens: 32_768,
@@ -563,6 +563,21 @@ describe("three-phase contextual scan session", () => {
           schema_version: 5,
           assessment_method: "deterministic-evidence-contextual-review",
           review_coverage: { required: 1, completed: 1 },
+          review_reuse: {
+            groups: { fresh: 1, reused: 0 },
+            candidates: { fresh: 1, reused: 0 },
+            source_report_ids: [],
+          },
+        },
+        review_cache: {
+          schema_version: 1,
+          repository_id: 42,
+          repository: "owner/repo",
+          entries: [
+            expect.objectContaining({
+              candidate_ids: [expect.stringMatching(/^[0-9a-f]{64}$/u)],
+            }),
+          ],
         },
       },
     });
@@ -604,8 +619,8 @@ describe("three-phase contextual scan session", () => {
           session_id: prepared.session_id,
           evidence_digest: evidence.evidence_digest,
           progress: {
-            policy_version: "3",
-            prompt_version: "contextual-review-v6",
+            policy_version: "4",
+            prompt_version: "contextual-review-v7",
             schema_version: "contextual-assessment-v2",
             model: "configured/model:thinking",
             provider: "provider.example",
@@ -677,8 +692,8 @@ describe("three-phase contextual scan session", () => {
           },
         },
         policy: {
-          version: "3",
-          promptVersion: "contextual-review-v6",
+          version: "4",
+          promptVersion: "contextual-review-v7",
           schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
@@ -714,7 +729,7 @@ describe("three-phase contextual scan session", () => {
           evidence_digest: evidence.evidence_digest,
           progress: {
             policy_version: "3",
-            prompt_version: "contextual-review-v6",
+            prompt_version: "contextual-review-v7",
             schema_version: "contextual-assessment-v2",
             model: "configured/model:thinking",
             provider: "provider.example",

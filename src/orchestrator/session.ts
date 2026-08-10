@@ -51,7 +51,14 @@ import {
   type ContextualReviewProvider,
   type ReviewEvidenceGroupsSpec,
 } from "../model/contextual-review.js";
+import {
+  buildReviewCacheManifest,
+  loadReusableReviewGroups,
+  reviewInputDigest,
+  type ReviewIdentity,
+} from "../model/review-cache.js";
 import type { JsonRepairProvider } from "../model/json-repair.js";
+import { validateModelEndpoint } from "../model/openai-compatible-client.js";
 import { sanitizeReportV5 } from "../publish/sanitize.js";
 import { buildContextualReport } from "../report/contextual-report.js";
 import {
@@ -803,12 +810,14 @@ async function writeAtomic(path: string, value: unknown) {
 
 export async function reviewPreparedSession({
   sessionRoot: sessionRootInput,
+  repositoryRoot = process.cwd(),
   provider,
   jsonRepairProvider,
   policy,
   expandContext,
 }: {
   sessionRoot: string;
+  repositoryRoot?: string;
   provider: ContextualReviewProvider;
   jsonRepairProvider?: JsonRepairProvider;
   policy: ContextualReviewPolicy;
@@ -817,6 +826,32 @@ export async function reviewPreparedSession({
   const sessionRoot = safeSessionRoot(sessionRootInput);
   const prepared = await loadPrepared(sessionRoot);
   const evidence = await loadEvidenceContext(sessionRoot, prepared);
+  const endpoint = validateModelEndpoint(provider.endpoint);
+  const reviewIdentity: ReviewIdentity = {
+    scanner_version: prepared.scanner_version,
+    scanner_policy_version: prepared.scanner_policy_version,
+    rule_catalog_version: prepared.rule_catalog_version,
+    tools: prepared.tools.map(({ name, version }) => ({ name, version })),
+    contextual_policy_version: policy.version,
+    prompt_version: policy.promptVersion,
+    assessment_schema_version: policy.schemaVersion,
+    provider: endpoint.hostname,
+    endpoint_origin: endpoint.origin,
+    model: provider.model,
+  };
+  const reviewInputDigests = new Map(
+    evidence.groups.map((group) => [
+      group.group_id,
+      reviewInputDigest(group, reviewIdentity),
+    ]),
+  );
+  const reusableGroups = await loadReusableReviewGroups({
+    repositoryRoot,
+    repositoryId: prepared.target.repository_id,
+    repository: prepared.target.repository,
+    groups: evidence.groups,
+    reviewIdentity,
+  });
   const progressPath = resolve(sessionRoot, "review-progress.json");
   const reviewPath = resolve(sessionRoot, "review.json");
   if (await pathExists(reviewPath)) {
@@ -858,6 +893,8 @@ export async function reviewPreparedSession({
       provider,
       jsonRepairProvider,
       policy,
+      reviewInputDigests,
+      reusableGroups,
       ...(checkpoint === undefined ? {} : { progress: checkpoint }),
       onProgress: async (nextProgress) =>
         writeAtomic(
@@ -903,7 +940,10 @@ export async function finalizePreparedSession({
   completedAt: string;
 }): Promise<{
   status: "completed";
-  candidate: { report: z.infer<typeof ScanReportV5Schema> };
+  candidate: {
+    report: z.infer<typeof ScanReportV5Schema>;
+    review_cache: ReturnType<typeof buildReviewCacheManifest>;
+  };
 }> {
   const sessionRoot = safeSessionRoot(sessionRootInput);
   const destination = resolve(output);
@@ -966,7 +1006,32 @@ export async function finalizePreparedSession({
         "Contextual report construction failed.",
       );
     }
-    const candidate = { report };
+    if (reviewBundle.review.review_units === undefined)
+      throw new ScanPhaseError(
+        "CONTEXTUAL_REVIEW_INVALID",
+        "system",
+        "Contextual review unit provenance is unavailable.",
+      );
+    const reviewIdentity: ReviewIdentity = {
+      scanner_version: prepared.scanner_version,
+      scanner_policy_version: prepared.scanner_policy_version,
+      rule_catalog_version: prepared.rule_catalog_version,
+      tools: prepared.tools.map(({ name, version }) => ({ name, version })),
+      contextual_policy_version: reviewBundle.review.policy_version,
+      prompt_version: reviewBundle.review.prompt_version,
+      assessment_schema_version: reviewBundle.review.schema_version,
+      provider: reviewBundle.review.provider,
+      endpoint_origin: reviewBundle.review.endpoint_origin,
+      model: reviewBundle.review.model,
+    };
+    const candidate = {
+      report,
+      review_cache: buildReviewCacheManifest({
+        report,
+        reviewIdentity,
+        reviewUnits: reviewBundle.review.review_units,
+      }),
+    };
     await writeExclusive(destination, candidate);
     return { status: "completed", candidate };
   } finally {

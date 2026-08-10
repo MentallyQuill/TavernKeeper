@@ -1,6 +1,9 @@
 import { resolve } from "node:path";
 
-import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
+import {
+  CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
+  CURRENT_SCANNER_POLICY_VERSION,
+} from "../config/policy.js";
 import {
   fetchFixedJson,
   isDirectExecution,
@@ -22,6 +25,7 @@ export function buildQueueSynchronization(input: {
   state: unknown;
   now: string;
   scannerPolicyVersion?: string;
+  contextualReviewPolicyVersion?: string;
 }) {
   const manifest = requireTargetManifestV2(parseTargetManifest(input.manifest));
   const index = parseReportIndexV5(input.index);
@@ -32,6 +36,9 @@ export function buildQueueSynchronization(input: {
     now: input.now,
     scannerPolicyVersion:
       input.scannerPolicyVersion ?? CURRENT_SCANNER_POLICY_VERSION,
+    contextualReviewPolicyVersion:
+      input.contextualReviewPolicyVersion ??
+      CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
   });
 }
 

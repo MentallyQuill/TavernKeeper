@@ -1,5 +1,9 @@
 import type { ReportIndexV5 } from "../contracts/reports-v5.js";
 import type { CurrentTargetManifest } from "../contracts/targets.js";
+import {
+  CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
+  CURRENT_SCANNER_POLICY_VERSION,
+} from "../config/policy.js";
 import { migrateOperationsState } from "../operations/migrate-state.js";
 import { parseOperationsState } from "../operations/state.js";
 import { reconcileCurrentScanQueue } from "./reconcile.js";
@@ -10,7 +14,13 @@ export function syncScanQueue(input: {
   state: unknown;
   now: string;
   scannerPolicyVersion: string;
+  contextualReviewPolicyVersion?: string;
 }) {
+  const contextualReviewPolicyVersion =
+    input.contextualReviewPolicyVersion ??
+    (input.scannerPolicyVersion === CURRENT_SCANNER_POLICY_VERSION
+      ? CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION
+      : "1");
   if (
     input.state !== null &&
     typeof input.state === "object" &&
@@ -22,6 +32,7 @@ export function syncScanQueue(input: {
       index: input.index,
       at: input.now,
       scannerPolicyVersion: input.scannerPolicyVersion,
+      contextualReviewPolicyVersion,
     });
     return { state: migrated.state, changed: true, summary: migrated.summary };
   }
@@ -31,5 +42,6 @@ export function syncScanQueue(input: {
     state: parseOperationsState(input.state),
     now: input.now,
     scannerPolicyVersion: input.scannerPolicyVersion,
+    contextualReviewPolicyVersion,
   });
 }

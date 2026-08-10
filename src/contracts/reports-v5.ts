@@ -291,6 +291,18 @@ const ReportIdentityV5Fields = {
   assessment_method: z.literal("deterministic-evidence-contextual-review"),
 };
 
+export const ReviewReuseV5Schema = z.strictObject({
+  groups: z.strictObject({
+    fresh: CountSchema,
+    reused: CountSchema,
+  }),
+  candidates: z.strictObject({
+    fresh: CountSchema,
+    reused: CountSchema,
+  }),
+  source_report_ids: z.array(DigestSchema).max(10_000),
+});
+
 export const ScanReportV5Schema = z
   .strictObject({
     schema_version: z.literal(5),
@@ -319,6 +331,7 @@ export const ScanReportV5Schema = z
       required: CountSchema,
       completed: CountSchema,
     }),
+    review_reuse: ReviewReuseV5Schema.optional(),
     candidates: z.array(CandidateV5Schema),
     assessments: z.array(PublishedContextualAssessmentSchema),
     observations: z.array(PublishedContextualObservationSchema),
@@ -326,6 +339,25 @@ export const ScanReportV5Schema = z
     limitations: z.array(SafeTextSchema(600)).min(1).max(20),
   })
   .superRefine((report, context) => {
+    if (report.review_reuse !== undefined) {
+      const sourceIds = report.review_reuse.source_report_ids;
+      if (
+        report.review_reuse.candidates.fresh +
+          report.review_reuse.candidates.reused !==
+          report.candidates.length ||
+        (report.review_reuse.groups.reused === 0) !==
+          (sourceIds.length === 0) ||
+        new Set(sourceIds).size !== sourceIds.length ||
+        sourceIds.some(
+          (sourceId, index) => index > 0 && sourceIds[index - 1]! >= sourceId,
+        )
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["review_reuse"],
+          message: "Review reuse provenance is inconsistent.",
+        });
+    }
     if (
       report.scanner_policy_version === "4" &&
       report.coverage.javascript_analysis === undefined
@@ -375,32 +407,53 @@ export const ScanReportV5Schema = z
             message: "Policy 2 observation violates immediate-danger rules.",
           });
     }
-    if (report.contextual_review_policy_version === "3") {
-      if (report.prompt_version !== "contextual-review-v6")
+    if (
+      report.contextual_review_policy_version === "3" ||
+      report.contextual_review_policy_version === "4"
+    ) {
+      const expectedPrompt =
+        report.contextual_review_policy_version === "4"
+          ? "contextual-review-v7"
+          : "contextual-review-v6";
+      if (report.prompt_version !== expectedPrompt)
         context.addIssue({
           code: "custom",
           path: ["prompt_version"],
-          message: "Policy 3 requires contextual prompt version 6.",
+          message:
+            "Policy " +
+            report.contextual_review_policy_version +
+            " requires " +
+            expectedPrompt +
+            ".",
         });
       if (report.assessment_schema_version !== "contextual-assessment-v2")
         context.addIssue({
           code: "custom",
           path: ["assessment_schema_version"],
-          message: "Policy 3 requires contextual assessment schema 2.",
+          message:
+            "Policy " +
+            report.contextual_review_policy_version +
+            " requires contextual assessment schema 2.",
         });
       for (const [index, assessment] of report.assessments.entries())
         if (!ContextualAssessmentSchema.safeParse(assessment).success)
           context.addIssue({
             code: "custom",
             path: ["assessments", index],
-            message: "Policy 3 assessment violates demonstrated-risk rules.",
+            message:
+              "Policy " +
+              report.contextual_review_policy_version +
+              " assessment violates demonstrated-risk rules.",
           });
       for (const [index, observation] of report.observations.entries())
         if (!ContextualObservationSchema.safeParse(observation).success)
           context.addIssue({
             code: "custom",
             path: ["observations", index],
-            message: "Policy 3 observation violates demonstrated-risk rules.",
+            message:
+              "Policy " +
+              report.contextual_review_policy_version +
+              " observation violates demonstrated-risk rules.",
           });
     }
     if (report.report_id !== report.report_digest)

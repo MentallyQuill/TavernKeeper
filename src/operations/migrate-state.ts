@@ -11,6 +11,10 @@ import {
   type CurrentTargetManifest,
 } from "../contracts/targets.js";
 import {
+  CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
+  CURRENT_SCANNER_POLICY_VERSION,
+} from "../config/policy.js";
+import {
   reconcileCurrentScanQueue,
   type QueueSyncSummary,
 } from "../queue/reconcile.js";
@@ -99,6 +103,7 @@ export function migrateOperationsState(
     index: ReportIndexV5;
     at: string;
     scannerPolicyVersion: string;
+    contextualReviewPolicyVersion?: string;
   },
 ): StateMigrationResult {
   if (!Number.isFinite(Date.parse(input.at)))
@@ -207,6 +212,11 @@ export function migrateOperationsState(
     state: base,
     now: input.at,
     scannerPolicyVersion: input.scannerPolicyVersion,
+    contextualReviewPolicyVersion:
+      input.contextualReviewPolicyVersion ??
+      (input.scannerPolicyVersion === CURRENT_SCANNER_POLICY_VERSION
+        ? CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION
+        : "1"),
   });
 
   const retryByRepositoryId = new Map(

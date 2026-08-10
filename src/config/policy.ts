@@ -5,6 +5,9 @@ import { z } from "zod";
 export const CURRENT_SCANNER_POLICY_VERSION = "4" as const;
 export const CURRENT_SCANNER_POLICY_PATH =
   "config/scanner-policy.v4.json" as const;
+export const CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION = "4" as const;
+export const CURRENT_CONTEXTUAL_REVIEW_POLICY_PATH =
+  "config/contextual-review.v4.json" as const;
 
 const scannerPolicyShape = {
   queue: z.strictObject({
@@ -119,8 +122,8 @@ export const ScannerPinsSchema = z.strictObject({
 export type ScannerPins = z.infer<typeof ScannerPinsSchema>;
 
 export const ContextualReviewPolicySchema = z.strictObject({
-  version: z.literal("3"),
-  promptVersion: z.literal("contextual-review-v6"),
+  version: z.literal(CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION),
+  promptVersion: z.literal("contextual-review-v7"),
   schemaVersion: z.literal("contextual-assessment-v2"),
   maxImmediateAttempts: z.literal(3),
   maxOutputTokens: z.literal(32_768),

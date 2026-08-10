@@ -151,8 +151,8 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "3",
-  prompt_version: "contextual-review-v6",
+  policy_version: "4",
+  prompt_version: "contextual-review-v7",
   schema_version: "contextual-assessment-v2",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
@@ -183,6 +183,15 @@ const review: CompletedContextualReview = {
     reasoningTokens: 10,
   },
   completion_ids: ["completion-1"],
+  review_units: [
+    {
+      group_id: group.group_id,
+      review_input_digest: "d".repeat(64),
+      candidate_ids: [finding.fingerprint],
+      reused: false,
+      origin_report_id: null,
+    },
+  ],
 };
 
 function validReport() {
@@ -199,6 +208,52 @@ function validReport() {
     },
   );
 }
+
+test("publishes complete fresh and reused review provenance", () => {
+  const fresh = validReport();
+  expect(fresh.review_reuse).toEqual({
+    groups: { fresh: 1, reused: 0 },
+    candidates: { fresh: 1, reused: 0 },
+    source_report_ids: [],
+  });
+
+  const reusedReview: CompletedContextualReview = {
+    ...review,
+    review_units: [
+      {
+        ...review.review_units![0]!,
+        reused: true,
+        origin_report_id: "e".repeat(64),
+      },
+    ],
+  };
+  const reused = buildContextualReport(
+    { scanPackage, review: reusedReview, evidenceGroups: [group] },
+    {
+      targetSha,
+      completedAt: "2026-08-02T16:00:00.000Z",
+      reportVersion: 1,
+      supersedesReportId: null,
+      limitations: [
+        "This advisory review cannot prove the absence of unknown behavior.",
+      ],
+    },
+  );
+  expect(reused.review_reuse).toEqual({
+    groups: { fresh: 0, reused: 1 },
+    candidates: { fresh: 0, reused: 1 },
+    source_report_ids: ["e".repeat(64)],
+  });
+  expect(
+    ScanReportV5Schema.safeParse({
+      ...reused,
+      review_reuse: {
+        ...reused.review_reuse,
+        candidates: { fresh: 1, reused: 1 },
+      },
+    }).success,
+  ).toBe(false);
+});
 
 function legacyImportedTemplateReport() {
   const report = structuredClone(validReport());
@@ -248,6 +303,7 @@ function legacyMultiCandidateObservationReport(
   shippedSecond = false,
 ) {
   const report = structuredClone(legacyImportedTemplateReport());
+  delete report.review_reuse;
   const firstCandidate = report.candidates[0]!;
   const firstAssessment = report.assessments[0]!;
   Object.assign(firstAssessment, {
@@ -327,7 +383,7 @@ function legacyMultiCandidateObservationReport(
   });
 }
 
-test("parses immutable policy-2 reports while requiring exposure in policy 3", () => {
+test("parses immutable policy-2 reports while requiring exposure in policy 4", () => {
   const current = validReport();
   const legacy = structuredClone(current) as unknown as {
     contextual_review_policy_version: string;
@@ -347,8 +403,8 @@ test("parses immutable policy-2 reports while requiring exposure in policy 3", (
   expect(
     ScanReportV5Schema.safeParse({
       ...legacy,
-      contextual_review_policy_version: "3",
-      prompt_version: "contextual-review-v6",
+      contextual_review_policy_version: "4",
+      prompt_version: "contextual-review-v7",
       assessment_schema_version: "contextual-assessment-v2",
     }).success,
   ).toBe(false);

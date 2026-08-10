@@ -24,6 +24,11 @@ import {
   type OperationsState,
 } from "../operations/state.js";
 import { recordSuccess } from "../operations/retry.js";
+import {
+  ReviewCacheManifestSchema,
+  reviewCachePath,
+  type ReviewCacheManifest,
+} from "../model/review-cache.js";
 import { renderHistoryHtml } from "./render-history.js";
 import { renderReportV5Html } from "./render-report.js";
 import {
@@ -37,8 +42,57 @@ import { sanitizeReportV5 } from "./sanitize.js";
 export interface PublishCandidatesInput {
   root: string;
   candidates: unknown[];
+  reviewCaches: unknown[];
   state: OperationsState;
   generatedAt: string;
+}
+
+function cacheMatchesReport(cache: ReviewCacheManifest, report: ScanReportV5) {
+  const identity = cache.review_identity;
+  const reportTools = report.coverage.tools
+    .map(({ name, version }) => ({ name, version }))
+    .sort((left, right) =>
+      (left.name + ":" + left.version).localeCompare(
+        right.name + ":" + right.version,
+      ),
+    );
+  const cacheTools = [...identity.tools].sort((left, right) =>
+    (left.name + ":" + left.version).localeCompare(
+      right.name + ":" + right.version,
+    ),
+  );
+  const reportCandidateIds = new Set(
+    report.candidates.map(({ candidate_id }) => candidate_id),
+  );
+  let endpointProviderMatches = false;
+  try {
+    endpointProviderMatches =
+      new URL(identity.endpoint_origin).hostname === identity.provider;
+  } catch {
+    endpointProviderMatches = false;
+  }
+  return (
+    cache.repository_id === report.repository_id &&
+    cache.repository === report.repository &&
+    cache.source_report.report_id === report.report_id &&
+    cache.source_report.target_sha === report.target_sha &&
+    cache.source_report.scanner_policy_version ===
+      report.scanner_policy_version &&
+    identity.scanner_version === report.scanner_version &&
+    identity.scanner_policy_version === report.scanner_policy_version &&
+    identity.rule_catalog_version === report.rule_catalog_version &&
+    identity.contextual_policy_version ===
+      report.contextual_review_policy_version &&
+    identity.prompt_version === report.prompt_version &&
+    identity.assessment_schema_version === report.assessment_schema_version &&
+    identity.provider === report.contextual_reviewer.provider &&
+    endpointProviderMatches &&
+    identity.model === report.contextual_reviewer.model &&
+    JSON.stringify(cacheTools) === JSON.stringify(reportTools) &&
+    cache.entries.every(({ candidate_ids }) =>
+      candidate_ids.every((candidateId) => reportCandidateIds.has(candidateId)),
+    )
+  );
 }
 
 function isMissing(error: unknown) {
@@ -236,17 +290,37 @@ function mergeHistory(
 export async function publishCandidates({
   root: rootInput,
   candidates,
+  reviewCaches: reviewCachesInput,
   state: stateInput,
   generatedAt,
 }: PublishCandidatesInput) {
   const root = resolve(rootInput);
   const reports = candidates.map(sanitizeReportV5);
+  const reviewCaches = reviewCachesInput.map((cache) =>
+    ReviewCacheManifestSchema.parse(cache),
+  );
+  if (reviewCaches.length !== reports.length)
+    throw new Error("Every report must have exactly one review cache.");
+  const cacheByRepositoryId = new Map(
+    reviewCaches.map((cache) => [cache.repository_id, cache]),
+  );
+  if (cacheByRepositoryId.size !== reviewCaches.length)
+    throw new Error("Duplicate review cache repository in publication batch.");
+  const orderedCaches = reports.map((report) => {
+    const cache = cacheByRepositoryId.get(report.repository_id);
+    if (cache === undefined || !cacheMatchesReport(cache, report))
+      throw new Error("Review cache does not match its report.");
+    return cache;
+  });
   const relativePaths = reports.map(reportPath);
   if (new Set(relativePaths).size !== relativePaths.length)
     throw new Error("Duplicate immutable report path in publication batch.");
 
   const destinations = relativePaths.map((path) =>
     join(root, ...path.split("/")),
+  );
+  const cacheDestinations = orderedCaches.map((cache) =>
+    join(root, ...reviewCachePath(cache.repository_id).split("/")),
   );
   for (const destination of destinations)
     if (await exists(destination))
@@ -300,6 +374,12 @@ export async function publishCandidates({
       })),
     ),
   );
+  const cacheOriginals = await Promise.all(
+    cacheDestinations.map(async (path) => ({
+      path,
+      contents: await readOptional(path),
+    })),
+  );
   const replaced: string[] = [];
   try {
     for (const [position, report] of reports.entries()) {
@@ -325,18 +405,30 @@ export async function publishCandidates({
       await atomicReplace(history.jsonPath, history.json);
       replaced.push(history.jsonPath);
     }
+    for (const [position, path] of cacheDestinations.entries()) {
+      await atomicReplace(
+        path,
+        `${JSON.stringify(orderedCaches[position], null, 2)}\n`,
+      );
+      replaced.push(path);
+    }
     await atomicReplace(statePath, stateContents);
     replaced.push(statePath);
     await atomicReplace(indexPath, indexContents);
     replaced.push(indexPath);
   } catch (error) {
     for (const path of replaced.reverse()) {
+      const historyOriginal = historyOriginals.find(
+        (item) => item.path === path,
+      );
       const original =
         path === indexPath
           ? originalIndex
           : path === statePath
             ? originalState
-            : historyOriginals.find((item) => item.path === path)!.contents;
+            : historyOriginal !== undefined
+              ? historyOriginal.contents
+              : cacheOriginals.find((item) => item.path === path)!.contents;
       await restore(path, original);
     }
     await Promise.all(

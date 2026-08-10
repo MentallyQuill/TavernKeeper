@@ -38,9 +38,10 @@ import {
 } from "./json-repair.js";
 import { redactSource } from "./redaction.js";
 import { validateCompletedGroupReview } from "./review-coverage.js";
+import type { ReusableReviewGroup } from "./review-cache.js";
 
 export interface ContextualReviewPolicy {
-  version: "3";
+  version: "4";
   promptVersion: typeof CONTEXTUAL_PROMPT_VERSION;
   schemaVersion: typeof CONTEXTUAL_SCHEMA_VERSION;
   maxImmediateAttempts: number;
@@ -72,9 +73,39 @@ const UsageSchema = z.strictObject({
 const CompletionIdSchema = z
   .string()
   .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u);
+export const ReviewUnitSchema = z
+  .strictObject({
+    group_id: z.string().regex(/^[0-9a-f]{64}$/u),
+    review_input_digest: z.string().regex(/^[0-9a-f]{64}$/u),
+    candidate_ids: z
+      .array(z.string().regex(/^[0-9a-f]{64}$/u))
+      .min(1)
+      .max(64),
+    reused: z.boolean(),
+    origin_report_id: z
+      .string()
+      .regex(/^[0-9a-f]{64}$/u)
+      .nullable(),
+  })
+  .superRefine((unit, context) => {
+    if (unit.reused !== (unit.origin_report_id !== null))
+      context.addIssue({
+        code: "custom",
+        path: ["origin_report_id"],
+        message: "Only reused review units have an origin report.",
+      });
+    if (new Set(unit.candidate_ids).size !== unit.candidate_ids.length)
+      context.addIssue({
+        code: "custom",
+        path: ["candidate_ids"],
+        message: "Review unit candidate identities must be unique.",
+      });
+  });
+export type ReviewUnit = z.infer<typeof ReviewUnitSchema>;
+
 export const CompletedContextualReviewSchema = z
   .strictObject({
-    policy_version: z.literal("3"),
+    policy_version: z.literal("4"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -85,6 +116,7 @@ export const CompletedContextualReviewSchema = z
     observations: z.array(ContextualObservationSchema),
     usage: UsageSchema,
     completion_ids: z.array(CompletionIdSchema),
+    review_units: z.array(ReviewUnitSchema).optional(),
   })
   .superRefine((review, context) => {
     let endpoint: URL;
@@ -122,6 +154,23 @@ export const CompletedContextualReviewSchema = z
         path: ["completion_ids"],
         message: "Completion identities must be unique.",
       });
+    if (review.review_units !== undefined) {
+      const unitCandidateIds = review.review_units.flatMap(
+        ({ candidate_ids }) => candidate_ids,
+      );
+      if (
+        (review.review_units.length === 0 && candidateIds.length > 0) ||
+        new Set(review.review_units.map(({ group_id }) => group_id)).size !==
+          review.review_units.length ||
+        JSON.stringify([...unitCandidateIds].sort()) !==
+          JSON.stringify([...candidateIds].sort())
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["review_units"],
+          message: "Review units must cover every completed candidate once.",
+        });
+    }
   });
 
 export type CompletedContextualReview = z.infer<
@@ -130,7 +179,7 @@ export type CompletedContextualReview = z.infer<
 
 export const ContextualReviewProgressSchema = z
   .strictObject({
-    policy_version: z.literal("3"),
+    policy_version: z.literal("4"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -141,6 +190,7 @@ export const ContextualReviewProgressSchema = z
     observations: z.array(ContextualObservationProgressSchema),
     usage: UsageSchema,
     completion_ids: z.array(CompletionIdSchema),
+    review_units: z.array(ReviewUnitSchema).optional(),
   })
   .superRefine((progress, context) => {
     let endpoint: URL;
@@ -206,6 +256,7 @@ interface ValidatedContextualReviewProgress {
   progress: ContextualReviewProgress;
   assessments: ContextualAssessment[];
   observations: ContextualObservation[];
+  reviewUnits: ReviewUnit[];
 }
 
 export interface ReviewEvidenceGroupsSpec {
@@ -214,6 +265,8 @@ export interface ReviewEvidenceGroupsSpec {
   jsonRepairProvider?: JsonRepairProvider | undefined;
   policy: ContextualReviewPolicy;
   progress?: ContextualReviewProgress | undefined;
+  reusableGroups?: ReadonlyMap<string, ReusableReviewGroup> | undefined;
+  reviewInputDigests?: ReadonlyMap<string, string> | undefined;
   onProgress?:
     ((progress: ContextualReviewProgress) => Promise<void>) | undefined;
   expandContext?: (
@@ -381,7 +434,7 @@ function addUsage(total: ModelUsage, usage: ModelUsage) {
 
 function validatePolicy(policy: ContextualReviewPolicy) {
   if (
-    policy.version !== "3" ||
+    policy.version !== "4" ||
     policy.promptVersion !== CONTEXTUAL_PROMPT_VERSION ||
     policy.schemaVersion !== CONTEXTUAL_SCHEMA_VERSION ||
     !Number.isInteger(policy.maxImmediateAttempts) ||
@@ -529,10 +582,37 @@ function validatedProgress(
     progressError(
       "Contextual review progress does not match completed evidence.",
     );
+  const reviewUnits =
+    progress.review_units ??
+    completedGroups.map((group) => ({
+      group_id: group.group_id,
+      review_input_digest:
+        spec.reviewInputDigests?.get(group.group_id) ?? group.group_id,
+      candidate_ids: group.candidates.map(({ candidate_id }) => candidate_id),
+      reused: false,
+      origin_report_id: null,
+    }));
+  if (
+    reviewUnits.length !== completedGroups.length ||
+    reviewUnits.some((unit, index) => {
+      const group = completedGroups[index]!;
+      return (
+        unit.group_id !== group.group_id ||
+        unit.review_input_digest !==
+          (spec.reviewInputDigests?.get(group.group_id) ?? group.group_id) ||
+        JSON.stringify(unit.candidate_ids) !==
+          JSON.stringify(
+            group.candidates.map(({ candidate_id }) => candidate_id),
+          )
+      );
+    })
+  )
+    progressError("Contextual review progress unit provenance changed.");
   return {
     progress,
     assessments: expectedAssessments,
     observations: expectedObservations,
+    reviewUnits,
   };
 }
 
@@ -770,6 +850,7 @@ export async function reviewEvidenceGroups(
   const observations: ContextualObservation[] = [];
   const usage = zeroUsage();
   const completionIds: string[] = [];
+  const reviewUnits: ReviewUnit[] = [];
   const validated = validatedProgress(spec.progress, spec, endpoint);
   const progress = validated?.progress;
   if (validated !== undefined) {
@@ -777,17 +858,46 @@ export async function reviewEvidenceGroups(
     observations.push(...validated.observations);
     addUsage(usage, validated.progress.usage);
     completionIds.push(...validated.progress.completion_ids);
+    reviewUnits.push(...validated.reviewUnits);
   }
   const completedGroupIds = [...(progress?.completed_group_ids ?? [])];
   for (const group of spec.groups.slice(completedGroupIds.length)) {
-    const reviewed = await reviewGroup(group, spec, usage, completionIds);
+    const reviewInputDigest =
+      spec.reviewInputDigests?.get(group.group_id) ?? group.group_id;
+    const reusable = spec.reusableGroups?.get(group.group_id);
+    if (
+      reusable !== undefined &&
+      reusable.review_input_digest !== reviewInputDigest
+    )
+      throw new ModelRequestError(
+        "MODEL_EVIDENCE_INVALID",
+        "repository",
+        "Reusable contextual review identity changed.",
+      );
+    const reviewed =
+      reusable === undefined
+        ? await reviewGroup(group, spec, usage, completionIds)
+        : validateCompletedGroupReview(
+            group,
+            reusable.response,
+            spec.groups.map(({ path }) => path),
+          );
     assessments.push(...reviewed.assessments);
     observations.push(...reviewed.observations);
     completedGroupIds.push(group.group_id);
+    reviewUnits.push(
+      ReviewUnitSchema.parse({
+        group_id: group.group_id,
+        review_input_digest: reviewInputDigest,
+        candidate_ids: group.candidates.map(({ candidate_id }) => candidate_id),
+        reused: reusable !== undefined,
+        origin_report_id: reusable?.origin_report_id ?? null,
+      }),
+    );
     if (spec.onProgress !== undefined)
       await spec.onProgress(
         ContextualReviewProgressSchema.parse({
-          policy_version: "3",
+          policy_version: "4",
           prompt_version: CONTEXTUAL_PROMPT_VERSION,
           schema_version: CONTEXTUAL_SCHEMA_VERSION,
           model: spec.provider.model,
@@ -811,6 +921,7 @@ export async function reviewEvidenceGroups(
           ),
           usage,
           completion_ids: completionIds,
+          review_units: reviewUnits,
         }),
       );
   }
@@ -824,7 +935,7 @@ export async function reviewEvidenceGroups(
       "Contextual observation identities must be unique.",
     );
   return CompletedContextualReviewSchema.parse({
-    policy_version: "3",
+    policy_version: "4",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,
     schema_version: CONTEXTUAL_SCHEMA_VERSION,
     model: spec.provider.model,
@@ -835,5 +946,6 @@ export async function reviewEvidenceGroups(
     observations,
     usage,
     completion_ids: completionIds,
+    review_units: reviewUnits,
   });
 }

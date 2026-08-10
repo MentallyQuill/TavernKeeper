@@ -62,7 +62,7 @@ describe("SillyTavern ecosystem context", () => {
     const prompt = buildContextualReviewPrompt(group);
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
-    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v6");
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v7");
     expect(prompt.systemContent).toMatch(
       /top-level object.*key named review.*status="complete"/isu,
     );
@@ -71,6 +71,12 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toMatch(/runtime reachability/iu);
     expect(prompt.systemContent).toMatch(/attacker control/iu);
     expect(prompt.systemContent).toMatch(/concrete user harm/iu);
+    expect(prompt.systemContent).toMatch(
+      /slowdown.*CPU.*memory.*frozen tab.*client crash.*unsaved generated content.*recommended_risk=low/isu,
+    );
+    expect(prompt.systemContent).toMatch(
+      /credential theft.*private-content exfiltration.*saved-data loss.*unauthorized persistence.*arbitrary code execution.*cross-user/isu,
+    );
     expect(prompt.systemContent).toMatch(
       /risk_exposure is demonstrated only when.*shipped or executable behavior.*attacker-controlled trigger/isu,
     );
@@ -85,8 +91,11 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toMatch(/do not quote code/iu);
     expect(prompt.systemContent).not.toContain(injection);
     expect(prompt.userContent).toContain(injection);
-    expect(prompt.userContent).not.toContain("// expanded");
-    expect(prompt.userContent).toContain(groupId);
+    expect(prompt.userContent).toContain("// expanded");
+    expect(prompt.userContent).not.toContain(groupId);
+    expect(prompt.userContent).not.toContain(group.target_sha);
+    expect(prompt.userContent).not.toContain(group.evidence_sha);
+    expect(prompt.userContent).not.toContain(group.source_sha256);
     expect(prompt.userContent).toContain("BEGIN_UNTRUSTED_REPOSITORY_DATA");
 
     const metadataOnlyPrompt = buildContextualReviewPrompt({

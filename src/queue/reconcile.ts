@@ -88,19 +88,6 @@ function hasActivePolicyCampaign(
   );
 }
 
-function hasActiveCoverageCampaign(
-  target: CurrentTarget,
-  state: OperationsState,
-  scannerPolicyVersion: string,
-) {
-  return state.coverage_campaigns.some(
-    (item) =>
-      item.status === "active" &&
-      item.scanner_policy_version === scannerPolicyVersion &&
-      item.remaining_repository_ids.includes(target.repository_id),
-  );
-}
-
 function advancePolicyCampaigns(
   state: OperationsState,
   manifest: CurrentTargetManifest,
@@ -130,61 +117,29 @@ function advancePolicyCampaigns(
   });
 }
 
-function advanceCoverageCampaigns(
-  state: OperationsState,
-  manifest: CurrentTargetManifest,
-  index: ReportIndexV5,
-) {
-  const targetByRepositoryId = new Map(
-    manifest.repositories.map((target) => [target.repository_id, target]),
-  );
-  return state.coverage_campaigns.map((campaign) => {
-    if (campaign.status === "completed") return campaign;
-    const remainingRepositoryIds = campaign.remaining_repository_ids.filter(
-      (repositoryId) => {
-        const target = targetByRepositoryId.get(repositoryId);
-        if (target === undefined) return false;
-        return !index.reports.some(
-          (report) =>
-            report.repository_id === repositoryId &&
-            report.target_sha === target.target_sha &&
-            report.scanner_policy_version === campaign.scanner_policy_version &&
-            Date.parse(report.completed_at) >= Date.parse(campaign.created_at),
-        );
-      },
-    );
-    return {
-      ...campaign,
-      remaining_repository_ids: remainingRepositoryIds,
-      status:
-        remainingRepositoryIds.length === 0
-          ? ("completed" as const)
-          : campaign.status,
-    };
-  });
-}
-
 function automaticRescanNotBefore(input: {
   target: CurrentTarget;
   report: ReportIndexV5["reports"][number] | undefined;
   state: OperationsState;
   scannerPolicyVersion: string;
+  contextualReviewPolicyVersion: string;
   staffRequested: boolean;
-  coverageRequested: boolean;
 }) {
   const {
     target,
     report,
     state,
     scannerPolicyVersion,
+    contextualReviewPolicyVersion,
     staffRequested,
-    coverageRequested,
   } = input;
   if (
     staffRequested ||
     hasActivePolicyCampaign(target, state, scannerPolicyVersion) ||
     report === undefined ||
-    (!coverageRequested && report.target_sha === target.target_sha)
+    report.scanner_policy_version !== scannerPolicyVersion ||
+    report.contextual_review_policy_version !== contextualReviewPolicyVersion ||
+    report.target_sha === target.target_sha
   )
     return undefined;
   return new Date(
@@ -198,6 +153,7 @@ export function reconcileCurrentScanQueue(input: {
   state: OperationsState;
   now: string;
   scannerPolicyVersion: string;
+  contextualReviewPolicyVersion: string;
 }) {
   const manifest = parseCurrentManifest(input.manifest);
   const index = ReportIndexV5Schema.parse(input.index);
@@ -206,17 +162,15 @@ export function reconcileCurrentScanQueue(input: {
     throw new Error("Queue synchronization time is invalid.");
 
   const policyCampaigns = advancePolicyCampaigns(state, manifest, index);
-  const coverageCampaigns = advanceCoverageCampaigns(state, manifest, index);
   const campaignState = OperationsStateSchema.parse({
     ...state,
     policy_campaigns: policyCampaigns,
-    coverage_campaigns: coverageCampaigns,
+    coverage_campaigns: [],
   });
   const campaignsChanged =
     JSON.stringify(policyCampaigns) !==
       JSON.stringify(state.policy_campaigns) ||
-    JSON.stringify(coverageCampaigns) !==
-      JSON.stringify(state.coverage_campaigns);
+    state.coverage_campaigns.length > 0;
   const targetByRepositoryId = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
@@ -246,25 +200,26 @@ export function reconcileCurrentScanQueue(input: {
       entry,
     ]),
   );
+  const hasCurrentCoverage = (target: CurrentTarget) =>
+    index.reports.some(
+      (report) =>
+        report.repository_id === target.repository_id &&
+        report.target_sha === target.target_sha &&
+        report.scanner_policy_version === input.scannerPolicyVersion &&
+        report.contextual_review_policy_version ===
+          input.contextualReviewPolicyVersion,
+    );
   const eligibleTargets = manifest.repositories
     .filter((target) => {
       const entry = existingEntryByRepositoryId.get(target.repository_id);
-      const report = preferredReportByRepositoryId.get(target.repository_id);
       return (
         hasActivePolicyCampaign(
           target,
           campaignState,
           input.scannerPolicyVersion,
         ) ||
-        hasActiveCoverageCampaign(
-          target,
-          campaignState,
-          input.scannerPolicyVersion,
-        ) ||
         (observationInitialized && entry?.staff_requested === true) ||
-        entry?.catalog_change !== undefined ||
-        detectedCatalogChange.has(target.repository_id) ||
-        (report !== undefined && report.target_sha !== target.target_sha)
+        !hasCurrentCoverage(target)
       );
     })
     .sort(targetOrder);
@@ -298,27 +253,29 @@ export function reconcileCurrentScanQueue(input: {
       campaignState,
       input.scannerPolicyVersion,
     );
-    const coverageRequested = hasActiveCoverageCampaign(
-      target,
-      campaignState,
-      input.scannerPolicyVersion,
-    );
+    const report = preferredReportByRepositoryId.get(target.repository_id);
+    const versionCatchup =
+      report === undefined ||
+      report.scanner_policy_version !== input.scannerPolicyVersion ||
+      report.contextual_review_policy_version !==
+        input.contextualReviewPolicyVersion;
     const clearsRescanDeadline =
-      staffRequested || campaignRequested || catalogChange === "new";
+      staffRequested ||
+      campaignRequested ||
+      catalogChange === "new" ||
+      versionCatchup;
     const durableRescanDeadline =
-      catalogChange === undefined && !coverageRequested
-        ? undefined
-        : entry.rescan_not_before;
+      catalogChange === undefined ? undefined : entry.rescan_not_before;
     const rescanNotBefore = clearsRescanDeadline
       ? undefined
       : (durableRescanDeadline ??
         automaticRescanNotBefore({
           target,
-          report: preferredReportByRepositoryId.get(target.repository_id),
+          report,
           state: campaignState,
           scannerPolicyVersion: input.scannerPolicyVersion,
+          contextualReviewPolicyVersion: input.contextualReviewPolicyVersion,
           staffRequested,
-          coverageRequested,
         }));
     if (entry.target_sha !== target.target_sha) {
       entries.push({
@@ -357,18 +314,7 @@ export function reconcileCurrentScanQueue(input: {
     if (nextTicket >= Number.MAX_SAFE_INTEGER)
       throw new Error("Scan queue ticket space is exhausted.");
     const report = preferredReportByRepositoryId.get(target.repository_id);
-    const coverageRequested = hasActiveCoverageCampaign(
-      target,
-      campaignState,
-      input.scannerPolicyVersion,
-    );
-    const catalogChange =
-      detectedCatalogChange.get(target.repository_id) ??
-      (!coverageRequested &&
-      report !== undefined &&
-      report.target_sha !== target.target_sha
-        ? "updated"
-        : undefined);
+    const catalogChange = detectedCatalogChange.get(target.repository_id);
     entries.push(
       blankEntry(
         target,
@@ -380,8 +326,9 @@ export function reconcileCurrentScanQueue(input: {
               report,
               state: campaignState,
               scannerPolicyVersion: input.scannerPolicyVersion,
+              contextualReviewPolicyVersion:
+                input.contextualReviewPolicyVersion,
               staffRequested: false,
-              coverageRequested,
             }),
         catalogChange,
       ),

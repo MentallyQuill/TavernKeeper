@@ -17,6 +17,7 @@ export async function reviewConfiguredTarget(
   const repositoryRoot = process.cwd();
   const result = await dependencies.review({
     sessionRoot: requiredEnvironment(environment, "TAVERNKEEPER_SESSION_ROOT"),
+    repositoryRoot,
     provider: {
       endpoint: requiredEnvironment(environment, "TAVERNKEEPER_API_ENDPOINT"),
       apiKey: requiredEnvironment(environment, "TAVERNKEEPER_API_KEY"),
@@ -28,7 +29,7 @@ export async function reviewConfiguredTarget(
       model: requiredEnvironment(environment, "JSONREPAIR_MODEL"),
     },
     policy: await dependencies.loadPolicy(
-      join(repositoryRoot, "config", "contextual-review.v3.json"),
+      join(repositoryRoot, "config", "contextual-review.v4.json"),
     ),
     expandContext: async (group, _request, attempt) =>
       expandEvidenceContextGroup(group, attempt),

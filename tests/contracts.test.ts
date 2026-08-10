@@ -181,10 +181,10 @@ describe("public TavernKeeper contracts", () => {
     }
   });
 
-  test("generated report schema rejects policy-3 items without exposure", async () => {
+  test("generated report schema rejects policy-4 items without exposure", async () => {
     const report = await fixture("report.v5.valid.json");
-    report.contextual_review_policy_version = "3";
-    report.prompt_version = "contextual-review-v6";
+    report.contextual_review_policy_version = "4";
+    report.prompt_version = "contextual-review-v7";
     report.assessment_schema_version = "contextual-assessment-v2";
     report.assessments = [
       {
@@ -223,20 +223,20 @@ describe("public TavernKeeper contracts", () => {
     ["prompt_version", "contextual-review-v5"],
     ["assessment_schema_version", "contextual-assessment-v1"],
   ] as const)(
-    "binds policy 3 reports to their %s",
+    "binds policy 4 reports to their %s",
     async (field, staleVersion) => {
       const report = await fixture("report.v5.valid.json");
-      const policy3 = {
+      const policy4 = {
         ...report,
-        contextual_review_policy_version: "3",
-        prompt_version: "contextual-review-v6",
+        contextual_review_policy_version: "4",
+        prompt_version: "contextual-review-v7",
         assessment_schema_version: "contextual-assessment-v2",
       };
 
-      expect(ScanReportV5Schema.safeParse(policy3).success).toBe(true);
+      expect(ScanReportV5Schema.safeParse(policy4).success).toBe(true);
       expect(
         ScanReportV5Schema.safeParse({
-          ...policy3,
+          ...policy4,
           [field]: staleVersion,
         }).success,
       ).toBe(false);

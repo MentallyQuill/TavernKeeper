@@ -547,6 +547,52 @@
       "required": ["required", "completed"],
       "additionalProperties": false
     },
+    "review_reuse": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "object",
+          "properties": {
+            "fresh": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "reused": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": ["fresh", "reused"],
+          "additionalProperties": false
+        },
+        "candidates": {
+          "type": "object",
+          "properties": {
+            "fresh": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "reused": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": ["fresh", "reused"],
+          "additionalProperties": false
+        },
+        "source_report_ids": {
+          "maxItems": 10000,
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+        }
+      },
+      "required": ["groups", "candidates", "source_report_ids"],
+      "additionalProperties": false
+    },
     "candidates": {
       "type": "array",
       "items": {
@@ -1287,6 +1333,20 @@
       "then": {
         "properties": {
           "prompt_version": { "const": "contextual-review-v6" },
+          "assessment_schema_version": { "const": "contextual-assessment-v2" },
+          "assessments": { "items": { "required": ["risk_exposure"] } },
+          "observations": { "items": { "required": ["risk_exposure"] } }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "contextual_review_policy_version": { "const": "4" } },
+        "required": ["contextual_review_policy_version"]
+      },
+      "then": {
+        "properties": {
+          "prompt_version": { "const": "contextual-review-v7" },
           "assessment_schema_version": { "const": "contextual-assessment-v2" },
           "assessments": { "items": { "required": ["risk_exposure"] } },
           "observations": { "items": { "required": ["risk_exposure"] } }

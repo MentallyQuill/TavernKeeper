@@ -9,7 +9,10 @@ import { parseTargetManifest } from "../contracts/targets.js";
 import { parseOperationsState } from "../operations/state.js";
 import { planBatch } from "../queue/backlog.js";
 import { ScanRequestSchema } from "./staff-request.js";
-import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
+import {
+  CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
+  CURRENT_SCANNER_POLICY_VERSION,
+} from "../config/policy.js";
 
 export const TARGET_MANIFEST_URL =
   "https://tavernary.org/security/tavernkeeper-targets.json";
@@ -22,6 +25,7 @@ export function buildReconcileMatrix({
   state: stateInput,
   now,
   scannerPolicyVersion = CURRENT_SCANNER_POLICY_VERSION,
+  contextualReviewPolicyVersion = CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
   forceProviderProbe = false,
 }: {
   manifest: unknown;
@@ -29,6 +33,7 @@ export function buildReconcileMatrix({
   state: unknown;
   now: string;
   scannerPolicyVersion?: string;
+  contextualReviewPolicyVersion?: string;
   forceProviderProbe?: boolean;
 }) {
   const manifest = parseTargetManifest(manifestInput);
@@ -53,6 +58,7 @@ export function buildReconcileMatrix({
     state,
     now,
     scannerPolicyVersion,
+    contextualReviewPolicyVersion,
     forceProviderProbe,
   );
   const targetMetadata = new Map(

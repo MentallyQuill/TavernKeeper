@@ -80,7 +80,78 @@ function withCoverageCampaign(
 }
 
 describe("durable backlog planning", () => {
-  test("keeps coverage work behind its 48-hour rescan deadline", () => {
+  test("orders staff, new submissions, updates, then version catch-up", () => {
+    const version = target(41, 1);
+    const updated = target(42, 2);
+    const submitted = target(43, 3);
+    const staff = target(44, 4);
+    const base = queued(version, updated, submitted, staff);
+    const state = {
+      ...base,
+      scan_queue: {
+        ...base.scan_queue,
+        entries: base.scan_queue.entries.map((entry) => ({
+          ...entry,
+          ...(entry.repository_id === updated.repository_id
+            ? { catalog_change: "updated" as const }
+            : {}),
+          ...(entry.repository_id === submitted.repository_id
+            ? { catalog_change: "new" as const }
+            : {}),
+          ...(entry.repository_id === staff.repository_id
+            ? { staff_requested: true as const }
+            : {}),
+        })),
+      },
+    };
+
+    expect(
+      planBatch(
+        manifest(version, updated, submitted, staff),
+        emptyIndex,
+        state,
+        now,
+        "4",
+        "4",
+      ).targets.map(({ target: value, reason }) => [
+        value.repository_id,
+        reason,
+      ]),
+    ).toEqual([
+      [44, "staff"],
+      [43, "new"],
+      [42, "changed"],
+      [41, "version"],
+    ]);
+  });
+
+  test("legacy coverage campaign state grants no reason or priority", () => {
+    const ordinary = target(41, 1);
+    const formerlySelected = target(42, 2);
+    const state = withCoverageCampaign(
+      queued(ordinary, formerlySelected),
+      [42],
+    );
+
+    expect(
+      planBatch(
+        manifest(ordinary, formerlySelected),
+        emptyIndex,
+        state,
+        now,
+        "4",
+        "4",
+      ).targets.map(({ target: value, reason }) => [
+        value.repository_id,
+        reason,
+      ]),
+    ).toEqual([
+      [41, "version"],
+      [42, "version"],
+    ]);
+  });
+
+  test("keeps a legacy campaign entry behind its existing deadline without special authority", () => {
     const selected = target(41, 1);
     const base = withCoverageCampaign(queued(selected), [41]);
     const state = {
@@ -109,10 +180,10 @@ describe("durable backlog planning", () => {
         "2026-08-04T13:00:00.000Z",
         "3",
       ).targets.map(({ reason }) => reason),
-    ).toEqual(["coverage"]);
+    ).toEqual(["version"]);
   });
 
-  test("uses retry, staff, policy, then coverage reason precedence", () => {
+  test("uses retry, staff, policy, then version reason precedence", () => {
     const retry = target(41, 1);
     const staff = target(42, 2);
     const policy = target(43, 3);
@@ -168,12 +239,12 @@ describe("durable backlog planning", () => {
     ).toEqual([
       [42, "staff"],
       [43, "policy"],
-      [44, "coverage"],
+      [44, "version"],
       [41, "retry"],
     ]);
   });
 
-  test("does not grant coverage work queue priority", () => {
+  test("does not grant a retired coverage campaign work queue priority", () => {
     const first = target(41, 1);
     const second = target(42, 2);
     const selected = target(43, 3);
@@ -191,9 +262,9 @@ describe("durable backlog planning", () => {
         reason,
       ]),
     ).toEqual([
-      [41, "new"],
-      [42, "new"],
-      [43, "coverage"],
+      [41, "version"],
+      [42, "version"],
+      [43, "version"],
     ]);
   });
 
@@ -604,6 +675,7 @@ describe("durable backlog planning", () => {
         held,
         "2026-08-04T12:01:00.000Z",
         "3",
+        "1",
         true,
       ),
     ).toMatchObject({
