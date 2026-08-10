@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Beeopo/Marinara-Rewrite at commit b823cdd.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Beeopo/Marinara-Rewrite</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Beeopo/Marinara-Rewrite" rel="noopener noreferrer">Beeopo/Marinara-Rewrite</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Beeopo/Marinara-Rewrite/commit/b823cdd222f9dba5636cedcd2a9a98014f8712ed" rel="noopener noreferrer">b823cdd</a></span>
+        <span>Reviewed <time datetime="2026-08-10T01:49:24.946Z">Aug 10, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>44 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported excessive-permissions</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CI workflow doesn&#39;t lock down its permissions as tightly as recommended, but it doesn&#39;t do anything dangerous that would make full permissions a real risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule excessive-permissions in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow does not set explicit GITHUB_TOKEN permissions. Default permissions vary by event (read-write on push to default branch, read-only for PRs from forks). However, the job only checks out code and runs Node scripts; it does not write to the repository, upload artifacts, or interact with any protected resources. No sensitive data flows through this job, so the missing explicit permissions do not create a practical attack surface.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Add `permissions: contents: read` at the job or workflow level to follow the principle of least privilege and satisfy security linters.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>excessive-permissions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/.github/workflows/ci.yml#L9-L26" rel="noopener noreferrer">.github/workflows/ci.yml:9-26</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (40)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that checks if the URL formatting code works correctly. The URL shown points to a local server (your own computer) and is never actually contacted.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 7 contains a static test assertion using a loopback URL (127.0.0.1:11434) as part of the URL normalization unit test. The URL is never used for actual network requests; it is only a literal string compared in an assert.equal call. The scanner flagged it as a &#39;shady-link&#39; due to the presence of an HTTP URL in source code, but in this context it is a benign test fixture.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L7" rel="noopener noreferrer">selfcheck.mjs:7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The URL at this line is part of a hardcoded preset list of localhost endpoints for common AI servers. The extension provides these as convenient defaults for configuring direct API mode per its documented feature. No exfiltration or unexpected network destination is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3380" rel="noopener noreferrer">extension.js:3380</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code builds a test function from a piece of the extension&#39;s own code to check that it works correctly. It doesn&#39;t run any outside commands or user input, so it&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate flags a dynamic execution (new Function) at line 904 in selfcheck.mjs. The context shows this is a test file that constructs functions from hardcoded slices of the shipped extension source to verify internal logic. No attacker-controlled input reaches the constructed function; all source slices are pre-extracted from the extension&#39;s own code. This is a standard testing pattern and does not introduce runtime risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L904" rel="noopener noreferrer">selfcheck.mjs:904</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses a technique called &#39;dynamic function creation&#39; to check if a certain feature works correctly. It only runs during development and does not process any data from outside the project. There is no security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The new Function call at line 447 is part of a self-check test harness that dynamically creates a function from source code extracted from file to test legacy namespace adoption logic. The code string is derived from the project&#39;s own source at build time, not from any external or attacker-controlled input. This is a standard testing pattern and does not introduce a runtime security risk in the shipped extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L447" rel="noopener noreferrer">selfcheck.mjs:447</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a default URL for the extension&#39;s extender feature, pointing to a local server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The URL at this line is a placeholder in the extender server URL input field, defaulting to a local address. This is part of the extension&#39;s configuration UI for connecting to a local sidecar service. No threat evidence exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3460" rel="noopener noreferrer">extension.js:3460</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another test that builds a function from the extension&#39;s own code to make sure it behaves properly. No harmful code is injected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Lines 1034-1037 contain a new Function call that constructs guardedPatch from a pre-extracted source slice _gpSrc. This is part of the self-check test suite, not production code. The source slice is derived from the shipped extension and no external data flows into the function construction.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1034-L1037" rel="noopener noreferrer">selfcheck.mjs:1034-1037</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the extension&#39;s default setting to connect to a local helper program on your own computer, not to an external server. It&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L1925" rel="noopener noreferrer">extension.js:1925</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a preset URL for connecting to a local LM Studio server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3378" rel="noopener noreferrer">extension.js:3378</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code runs tests by creating functions from strings, but only developers running the test suite see it. It doesn&#39;t affect users because it&#39;s not part of the extension they install.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dynamic execution (new Function) at lines 1222–1226 is part of a self-check test harness that extracts shipped extension source from an embedded string and creates functions for assertion-driven testing. The arguments passed to new Function are developer-controlled strings from the test&#39;s own source, never user or external input. This pattern is standard for inline unit testing of private functions and does not execute untrusted code. No evidence indicates this test file is shipped or executed in production deployments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1222-L1226" rel="noopener noreferrer">selfcheck.mjs:1222-1226</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that builds undo/redo functions from the extension&#39;s code to verify they work. It doesn&#39;t let anyone inject commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Lines 1055-1058 contain a new Function call building doUndo/doRedo logic from a pre-extracted source slice. The source is from the extension&#39;s own code and is used only in the self-check test. No attacker-controlled input influences the constructed function.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1055-L1058" rel="noopener noreferrer">selfcheck.mjs:1055-1058</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Code that builds a function from text in a test file, used only by developers to check the extension&#39;s behavior. Not part of the user-facing extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dynamic execution (new Function) at lines 1166–1167 is part of a self-check test harness that constructs a module from extracted source strings for unit testing review-then-patch logic. The source and callback arguments are test constants; no external or user-controlled data reaches the call. This is a development-only test pattern with no production execution risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1166-L1167" rel="noopener noreferrer">selfcheck.mjs:1166-1167</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension&#39;s code is written in plain, readable JavaScript. There is no hidden or scrambled code, so this alert is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged this file for obfuscation, but the supplied source is readable JavaScript with clear structure, comments, and standard patterns. No actual obfuscation, encoding, or concealed logic is present. The scanner signal is a false positive likely triggered by the file&#39;s minor compression or non-standard formatting. No malicious intent or hidden behavior is indicated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L1" rel="noopener noreferrer">extension.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is part of a built-in test that checks the extension&#39;s own code for bugs. It runs functions the extension uses internally, but only during the test — never when you&#39;re using the rewrite feature.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The `new Function()` call on line 1442 is used within a self-test script to extract and execute internal functions (`windowText`, `assembleLedgerText`) from the extension&#39;s own source code for regression testing. The source string (`_ledgerSrc`) is derived via `_SRC.slice()` from the same extension file being tested — no external or untrusted data reaches this constructor. This is a standard test-harness pattern and is never invoked during normal extension usage.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1442-L1444" rel="noopener noreferrer">selfcheck.mjs:1442-1444</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 736 contains a new Function call that constructs a function escFence from a pre-extracted source slice _escFence. This is part of the self-check test suite. No user input or external data is passed into the construction; the slice is from the extension&#39;s own code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L736" rel="noopener noreferrer">selfcheck.mjs:736</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a preset URL for connecting to a local Ollama server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3373" rel="noopener noreferrer">extension.js:3373</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension uses fetch to securely talk to the AI server&#39;s API, which is exactly what it&#39;s supposed to do. It does not download and run any external code, so this alert is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains a network retrieval primitive (fetch) and an API response handler, but there is no dynamic code execution sink (eval, Function, setTimeout with string) in the examined lines. The apiFetch function fetches from `/api` paths and returns JSON—a standard, necessary operation for an extension that communicates with the Marinara server and external AI APIs. The scanner correlation is a false positive because no executable code path downloads and then executes external content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L2-L47" rel="noopener noreferrer">extension.js:2-47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Part of a test suite that runs the extension&#39;s internal functions in a sandbox. Only used during development, not by end users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dynamic execution (new Function) at lines 1295–1298 is part of a self-check test harness that extracts and tests the doCommit function using fixed test data. The new Function call is supplied with developer-controlled strings from the test&#39;s own source, and the resulting function is invoked with test-only arguments. No untrusted input flows into the dynamic execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1295-L1298" rel="noopener noreferrer">selfcheck.mjs:1295-1298</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a preset URL for connecting to a local vLLM server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3381" rel="noopener noreferrer">extension.js:3381</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a preset URL for connecting to a local llama.cpp server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3379" rel="noopener noreferrer">extension.js:3379</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a default setting pointing to a local helper program on your own computer. It is not suspicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The string at line 242 is a default configuration value for the extenderUrl key, set to a localhost address. The extension connects to a local sidecar service for memory and inference; this default is expected and disclosed in the project documentation. No evidence of exfiltration or concealed network access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L242" rel="noopener noreferrer">extension.js:242</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Test code that dynamically creates functions to verify undo/redo behavior. Only developers run this; it does not affect user installations.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The dynamic execution (new Function) at lines 1120–1123 is part of a self-check test harness that builds undo/redo functions from extracted shipped source. The strings passed to new Function are literals from the test file, not from external sources. This is a standard unit-testing pattern with no production deployment risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1120-L1123" rel="noopener noreferrer">selfcheck.mjs:1120-1123</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just an automated test that runs a small piece of the extension&#39;s own code to check for bugs. It doesn&#39;t introduce any security risk because the code being tested is part of the extension itself, not from an outside source.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The new Function on line 116 constructs a test helper that evaluates a substring of the extension&#39;s own shipped source code. This is used only within the selfcheck drift-guard assertions to verify that the file header logic (CSRF, content-type) behaves correctly. The source string is derived from the shipped artifact, not from any external or user-controlled input. This is a test-only utility and is not present in the runtime extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L116" rel="noopener noreferrer">selfcheck.mjs:116</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses a version tag like &quot;v4&quot; instead of a specific exact version number. This is common for simple CI checks and poses very low risk here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> actions/setup-node@v4 is pinned to a mutable major version tag rather than an immutable commit SHA. In this CI-only workflow with no sensitive data, deployment, or artifact handling, the supply chain risk of an unpinned action is minimal. The action is widely used and maintained by GitHub. No attacker-controlled inputs reach the action in a way that could trigger compromise.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line sets a temporary flag during the build process so the self-check knows not to complain. It is not reading, storing, or sending any private information like passwords or API keys.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code sets process.env.RWA_BUILDING = &#39;1&#39; solely as a build-time flag to signal to the selfcheck module that the build is in progress, allowing it to skip a bundle-is-in-sync assertion. This is a temporary environment variable set during the build script execution (node file) and is not used to read, store, or exfiltrate any credential or sensitive environment variable. The scanner pattern &#39;serialize-environment&#39; is triggered by any assignment to process.env, but in this context the assignment is to a hardcoded constant unrelated to secrets and serves a benign coordination purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/build.mjs#L18" rel="noopener noreferrer">build.mjs:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Another test that builds functions from the extension&#39;s code to verify merge logic. No outside commands are run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Lines 835-838 contain a new Function call constructing applyMerged/mergeChainSummary from a pre-extracted source slice. This is part of the self-check test suite. No external data flows into the function construction; only hardcoded source slices.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L835-L838" rel="noopener noreferrer">selfcheck.mjs:835-838</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is a safety check that tests the extension&#39;s own code, not a part of the extension that runs in your browser. The flagged lines are just checking that certain code patterns exist, not actually doing anything dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a correlation between a network retrieval substring and a code execution sink, but the file is a test-only selfcheck script. The fetch string is merely a text-match assertion to verify the shipped source contains a specific call, and the new Function is used on a known substring of the extension source to test header logic. No actual network retrieval occurs in this file, and no untrusted input reaches the dynamic function. This is a false positive from static analysis.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L104-L116" rel="noopener noreferrer">selfcheck.mjs:104-116</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that builds a guarding function from the extension&#39;s code to check that it prevents overwrites correctly. It&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Lines 949-952 contain a new Function call constructing guardedPatch from a pre-extracted source slice _gpSrc. This is part of the self-check test suite evaluating the guard behavior. No attacker-controlled input reaches the constructed function.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L949-L952" rel="noopener noreferrer">selfcheck.mjs:949-952</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Lines 771-774 contain a new Function call constructing escFence from a pre-extracted source slice. This is part of the self-check test suite verifying fence escaping. No external data is injected; the source is from the extension&#39;s own code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L771-L774" rel="noopener noreferrer">selfcheck.mjs:771-774</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another automated test that runs parts of the extension&#39;s own code to make sure they still work after changes. It&#39;s like a sanity check for developers and doesn&#39;t expose users to any risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The new Function on lines 174-178 extracts alignment functions (spanIsBalanced, alignExact, windowMap, etc.) from the shipped file source and constructs them at runtime for drift-guard assertions. The extracted code is entirely from the project&#39;s own artifact, not from any untrusted input. This pattern exists solely to verify that the shipped functions behave correctly and that no regressions have occurred during development. No user data or attacker-controlled strings are involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L174-L178" rel="noopener noreferrer">selfcheck.mjs:174-178</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a default address for a local AI service running on your own computer. It is normal and expected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The string at line 237 is a default configuration value for the apiUrl key, set to a localhost endpoint for Ollama or similar local AI server. The extension allows direct connection to local OpenAI-compatible APIs, and this default is a common local address. No evidence of malicious network behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L237" rel="noopener noreferrer">extension.js:237</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This part of the test file builds a small test from the extension&#39;s own code to check whether importing profiles with duplicate IDs works correctly. It only uses test data from inside the test file, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The `new Function` call at lines 632-640 is in a self-check test file. It constructs a function from a controlled slice of the extension&#39;s own source code (`_SRC.slice(...)`) to test duplicate profile-id handling. The input to the constructed function is a fixed test array defined earlier in the same test block. No user or external input reaches the dynamic function constructor. This is a standard test isolation pattern with no security exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L632-L640" rel="noopener noreferrer">selfcheck.mjs:632-640</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unpinned-uses</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses a version tag like &quot;v4&quot; instead of a specific exact version number. This is common for simple CI checks and poses very low risk here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unpinned-uses in this repository.</p>
+      <p><strong>Contextual assessment:</strong> actions/checkout@v4 is pinned to a mutable major version tag rather than an immutable commit SHA. In this CI-only workflow with no sensitive data, deployment, or artifact handling, the supply chain risk is minimal. The action is widely used and maintained by GitHub. No attacker-controlled inputs reach the action in a way that could trigger compromise.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unpinned-uses</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/.github/workflows/ci.yml#L12" rel="noopener noreferrer">.github/workflows/ci.yml:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another test that checks how the extension handles URLs that end with a slash. It uses a local address and is never actually contacted.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 8 contains a static test assertion using a loopback URL with a trailing slash as part of the URL normalization unit test. The URL is never used for actual network requests; it is only a literal string compared in an assert.equal call. The scanner flagged it as &#39;shady-link&#39; due to the HTTP URL literal, but this is a standard test fixture with no network activity.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L8" rel="noopener noreferrer">selfcheck.mjs:8</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that checks the extension&#39;s security features. The flagged line contains a harmless local address used for testing. It poses no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a test-only default configuration containing a localhost Ollama API URL. This file is a self-check module that verifies connection settings are never exported or imported, consistent with the extension&#39;s stated security design. The URL is hardcoded and used only in assertions; no runtime attacker-controlled data flow or exfiltration path exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L677" rel="noopener noreferrer">selfcheck.mjs:677</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test makes a tiny function from the extension&#39;s code to see whether old broken profile data causes errors. It only uses test data written inside the test file, so it is safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The `new Function` call at lines 603-608 is in a self-check test file. It constructs a function from a controlled substring of the extension&#39;s own source to test malformed legacy profile handling. The argument `raw` is a fixed string literal defined in the same test block. No untrusted or external data influences the constructed function&#39;s source or its input. This is a legitimate test harness pattern without security implications.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L603-L608" rel="noopener noreferrer">selfcheck.mjs:603-608</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>A security scanner mistakenly thought this workflow might store credentials in build artifacts, but the workflow doesn&#39;t create any artifacts at all. There&#39;s no actual risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged potential credential persistence through GitHub Actions artifacts, but this workflow does not use any artifact upload or download actions. No artifacts are created or consumed. The scanner&#39;s confidence is low, and manual review confirms no artifact exposure exists. This is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/.github/workflows/ci.yml#L12" rel="noopener noreferrer">.github/workflows/ci.yml:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that builds a function from the extension&#39;s code to check read-before-write behavior. It doesn&#39;t execute any outside commands.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Lines 1012-1015 contain a new Function call constructing guardedPatch from a pre-extracted source slice. This is part of the self-check test suite. The constructed function is not influenced by user input; it uses only hardcoded source from the extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1012-L1015" rel="noopener noreferrer">selfcheck.mjs:1012-1015</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that the URL formatting code doesn&#39;t accidentally add &#39;/chat/completions&#39; twice. The URL shown is only used for testing and is never accessed over the network.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 9 contains a static test assertion using a fully qualified URL (with /chat/completions path) as part of the URL normalization unit test. This verifies that the normalizer does not double the path. The URL is never used for actual network requests; it is only a literal string compared in an assert.equal call. The scanner flagged it as &#39;shady-link&#39; due to the HTTP URL literal, but this is a standard test fixture with no network activity.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L9" rel="noopener noreferrer">selfcheck.mjs:9</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is part of a built-in test that checks how the extension handles settings migration. It runs a tiny piece of the extension&#39;s own code, but only in the test environment, not when you&#39;re using the rewrite tool.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The `new Function()` call on line 1392 is used within a self-test script to execute the extension&#39;s configuration loader IIFE (extracted via `_SRC.slice()`) and verify its `connMode` migration logic. The source string (`_CFG_SRC`) is taken from the same extension file&#39;s source — no attacker-controlled or external input is involved. This is a test-only construct and is never present during production use of the extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L1392" rel="noopener noreferrer">selfcheck.mjs:1392</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line simply checks if the project is being built, to avoid a confusing error. It is a normal part of the build process and does not touch any secrets or sensitive data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner signal for serialize-environment flagged a process.env access at line 156. This is a Node.js environment variable check used by the build system to skip bundle comparison during a rebuild, preventing a deadlock. No serialization, credential access, or exfiltration occurs. The signal is a known false positive for benign environment variable reads in Node.js scripts.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L156" rel="noopener noreferrer">selfcheck.mjs:156</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Scanner signal false positive for localhost default URL</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner thought a link looked suspicious, but it&#39;s just the default address for a local helper program on your own computer.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L1925" rel="noopener noreferrer">extension.js:1925</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Flagged URLs are expected localhost presets</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged items are default addresses for common local AI programs, not suspicious links. The extension needs these to connect to your local AI server.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All six scanner candidates flagged by the &#39;shady-link&#39; rule correspond to hardcoded localhost URLs used as presets for the extension&#39;s direct API configuration feature, and a placeholder for the extender server URL. These are well-documented defaults that point to common local AI servers (Ollama, LM Studio, llama.cpp, KoboldCpp, Jan, text-gen-webui, vLLM). No evidence of exfiltration or unexpected network destinations was found. The scanner&#39;s heuristics do not account for the context of local development tools.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3373" rel="noopener noreferrer">extension.js:3373</a></li><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3378" rel="noopener noreferrer">extension.js:3378</a></li><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3379" rel="noopener noreferrer">extension.js:3379</a></li><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3380" rel="noopener noreferrer">extension.js:3380</a></li><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3381" rel="noopener noreferrer">extension.js:3381</a></li><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/extension.js#L3460" rel="noopener noreferrer">extension.js:3460</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>new Function used in selfcheck for drift-guard assertions</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The selfcheck file is a developer testing tool that runs bits of the extension&#39;s own code to catch bugs. It doesn&#39;t affect users and doesn&#39;t create any security issue.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file file uses new Function to dynamically construct test functions from the extension&#39;s own source code (file). This is a legitimate pattern for testing that the shipped code behaves correctly without code duplication. The evaluated code originates from the project&#39;s own artifact, not from external input, and the file is not shipped to users. The project&#39;s README explicitly warns about full page access and encourages source review, and the selfcheck is part of the developer workflow to prevent regressions.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L116" rel="noopener noreferrer">selfcheck.mjs:116</a></li><li><a href="https://github.com/Beeopo/Marinara-Rewrite/blob/b823cdd222f9dba5636cedcd2a9a98014f8712ed/selfcheck.mjs#L174-L178" rel="noopener noreferrer">selfcheck.mjs:174-178</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>16 files &middot; 993144 bytes</dd>
+      <dt>Contextual coverage</dt><dd>41 of 41 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>3 files &middot; 322575 bytes</dd>
+        <dt>Representations</dt><dd>3 raw &middot; 32 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>3 raw signatures &middot; 3 raw AST &middot; 3 raw OpenGrep &middot; 32 derived signatures &middot; 0 derived AST &middot; 32 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>extension.js</code> &mdash; derived-ast / parse</li><li><code>extension.js</code> &mdash; normalize / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Beeopo/Marinara-Rewrite/commit/b823cdd222f9dba5636cedcd2a9a98014f8712ed" rel="noopener noreferrer">b823cdd222f9dba5636cedcd2a9a98014f8712ed</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-10T01:49:24.946Z">Aug 10, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>3</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v6</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review usage</dt><dd>237196 input &middot; 44016 output &middot; 14690 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>6e706fdab725b3eee0c1bed3fb020142fb7852bc9cd634778a1ac099eddfc83a</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1275807674/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
