@@ -11,7 +11,7 @@ normative in [`development-rules.md`](development-rules.md).
 Configure these secrets in `tavernkeeper-scanner`:
 
 - `TAVERNKEEPER_ARTIFACT_KEY`: canonical base64 encoding of exactly 32 random
-  bytes, used only for the authenticated matrix-to-publisher handoff.
+  bytes, used only for the authenticated review-to-publisher handoff.
 - `TAVERNKEEPER_API_ENDPOINT`: the configured provider's complete
   OpenAI-compatible chat-completions endpoint.
 - `TAVERNKEEPER_API_KEY`: provider credential sent as an
@@ -86,20 +86,19 @@ persist them.
 
 `reconcile.yml` runs every six hours and accepts input-free workflow and
 repository dispatches. `retry.yml` also reconciles every five minutes so due
-recovery work does not wait for the safety-net schedule. Reconciliation first
+recovery work does not wait for the safety-net schedule. One claim job
 synchronizes Tavernary's live V2 or V3 target manifest and TavernKeeper's V5
-preferred current reports into committed schema-3 queue state. It then selects
-at most five due tickets and calls `scan-and-publish.yml`, which runs at most two
-credential-free prepare jobs and two fresh review jobs concurrently. Standard,
-retry, targeted, and policy-campaign scans
-converge on the same automatic V5 publication path. Committed queue work starts
-the next input-free batch independently of Pages deployment.
+preferred reports into committed schema-3 state, expires claims older than two
+hours, and fills at most two globally available slots. Each claimed target calls
+`scan-and-publish.yml` independently and publishes immediately after it
+finishes. Standard, retry, targeted, coverage, and policy-campaign scans
+converge on this same V5 publication path. A completed target dispatches fresh
+reconciliation independently of Pages deployment.
 
-Every synchronization queues each Tavernary target that lacks a preferred
-report for the exact target SHA, scanner policy, and contextual-review policy.
-The catalog observation records whether a mismatch is a new submission or an
-updated project; it classifies priority but never blocks legacy or policy-stale
-work.
+Synchronization admits targets only when they are newly submitted, newly
+updated, members of the active frozen coverage campaign, or explicitly queued
+by protected staff or policy work. A preferred-report version mismatch alone
+does not make the rest of the catalog eligible.
 
 The queue is a durable monotonic ticket ledger reconciled against current
 eligibility. A target that advances before acquisition keeps its ticket while
@@ -111,25 +110,24 @@ created after a prior completed report is appended as an intentional forced
 rescan, and a same-SHA replacement may become preferred without erasing
 history.
 
-Changed-SHA automatic rescans under the already-current policy tuple enter the
-durable queue immediately, but cannot run until 48 hours after the latest
-completed report. Further pushes replace the queued SHA without moving that
-deadline. A scanner- or contextual-policy catch-up bypasses this cooldown once;
-after an exact current-policy report exists, later SHA changes use the ordinary
-deadline. Initial scans, protected staff scans, retry deadlines, and active
-policy campaigns keep their existing authority.
+Changed-SHA automatic rescans and coverage rescans enter the durable queue
+immediately, but cannot run until 48 hours after the latest completed report.
+Further pushes replace the queued SHA without moving that deadline. Initial
+scans, protected staff scans, retry deadlines, and active policy campaigns keep
+their existing authority.
 
-The former top-20/latest-20 coverage workflow is retired. Reconciliation clears
-its legacy state field, which remains only as an empty schema-3 compatibility
-tombstone.
+`coverage-campaign.yml` recalculates the current top 20 projects by popularity
+plus latest 20 stable GitHub releases exactly once for campaign V2. It commits
+the deduplicated membership, up to 40 repositories, so later catalog changes do
+not move the campaign boundary.
 
-Selection order is protected staff, new submissions, updated projects, then all
-remaining out-of-version work. Any
+Selection order is protected staff and policy work, new submissions, updated
+projects, then coverage. Any
 failure removes that target from its old position and assigns it the next tail
 ticket behind every project currently assigned to be scanned. Later catalog
 deltas retain their priority class without bypassing an emergency stop,
-automatic hold, retry cooldown, exact-SHA validation, batch size, or concurrency
-limit.
+automatic hold, retry cooldown, exact-SHA validation, claim capacity, or
+concurrency limit.
 
 ## Scan lifecycle
 
@@ -154,8 +152,8 @@ For every exact target, TavernKeeper:
 10. transports the sanitized report and replacement review-cache manifest
     through authenticated encryption; and
 11. atomically publishes immutable JSON/HTML, history, the preferred index, and
-    `reports/github/<repository-id>/review-cache.json` for every complete
-    successful outcome in the batch.
+    `reports/github/<repository-id>/review-cache.json` for that complete
+    successful target.
 
 Policy 4 starts cold: policy-3 reports cannot seed its cache. On subsequent
 scans, a cache hit requires an identical evidence-group digest, exact candidate
@@ -207,13 +205,13 @@ state concurrently with publication.
 - Only a deliberate `pause` through the protected staff workflow creates an
   emergency stop. Common runtime failures cannot invoke it.
 
-Every selected matrix target still finishes independently. The serialized
-publisher retains complete reports from peer repositories and applies all queue
-transitions in request order. Ordinary continuation uses only persisted queue
-work and does not wait for deployment. `pages-reconcile.yml` independently
-checks the committed main SHA against the deployed source marker every fifteen minutes and
-repairs drift. External project owners receive no operational-failure
-notification.
+Every claimed target finishes independently and clears only its own committed
+claim. The claim job and per-target publisher both replay their deterministic
+transition after a push conflict. Ordinary continuation uses only persisted
+queue and claim state and does not wait for deployment. `pages-reconcile.yml`
+independently checks the committed main SHA against the deployed source marker
+every fifteen minutes and repairs drift. External project owners receive no
+operational-failure notification.
 
 Provider exhaustion, context insufficiency, invalid model output, and missing
 review coverage are failures, never permission to skip finding candidates,
@@ -256,7 +254,7 @@ and preferred-index entries, prove Tavernary has imported the empty state, and
 then scan each canary once under the new policy. Do not reset other repository
 history as part of this release gate.
 
-Batch scheduling, retention, or deployment-routing changes that do not alter
+Queue scheduling, retention, or deployment-routing changes that do not alter
 scanner behavior or report output do not trigger the Wandlight and Recursion
 reset gate.
 
@@ -270,6 +268,8 @@ reset gate.
   reconciliation. Staff begin this flow through Tavernary's exact-GitHub-URL
   Action.
 - `policy-rescan.yml` schedules a campaign under the current reviewed policy.
+- `coverage-campaign.yml` freezes the one-time top-20-popular plus
+  latest-20-stable-release cohort and dispatches reconciliation.
 - `staff-operations.yml` sets or clears the explicit emergency stop, makes one
   target immediately due, or performs a protected legacy-to-V3 state migration.
 - `deploy-pages.yml` deploys only an exact commit proven to be on `main`;

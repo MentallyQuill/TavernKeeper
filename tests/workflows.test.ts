@@ -32,6 +32,7 @@ const downloadArtifactAction =
   "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c";
 const workflowNames = [
   "ci.yml",
+  "coverage-campaign.yml",
   "delayed-wake.yml",
   "deploy-pages.yml",
   "pages-reconcile.yml",
@@ -102,10 +103,11 @@ describe("GitHub workflow security policy", () => {
     const prepare = value.jobs.prepare;
     const review = value.jobs.scan;
 
-    expect(prepare.strategy["max-parallel"]).toBe(2);
-    expect(prepare.strategy["fail-fast"]).toBe(false);
+    expect(prepare.strategy).toBeUndefined();
+    expect(prepare["timeout-minutes"]).toBe(30);
     expect(review.needs).toBe("prepare");
-    expect(review.strategy.matrix).toEqual(prepare.strategy.matrix);
+    expect(review.strategy).toBeUndefined();
+    expect(review["timeout-minutes"]).toBe(90);
     expect(JSON.stringify(prepare)).not.toMatch(
       /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|JSONREPAIR_|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
     );
@@ -123,13 +125,15 @@ describe("GitHub workflow security policy", () => {
       uses: uploadArtifactAction,
       if: "always()",
       with: {
-        name: "prepared-${{ matrix.request.repository_id }}",
+        name: "prepared-${{ fromJSON(inputs.request_json).repository_id }}",
         "retention-days": 1,
       },
     });
     expect(reviewDownload).toMatchObject({
       uses: downloadArtifactAction,
-      with: { name: "prepared-${{ matrix.request.repository_id }}" },
+      with: {
+        name: "prepared-${{ fromJSON(inputs.request_json).repository_id }}",
+      },
     });
   });
 
@@ -241,20 +245,23 @@ describe("GitHub workflow security policy", () => {
     expect(reconcile.jobs.run.uses).toBe(
       "./.github/workflows/scan-and-publish.yml",
     );
-    expect(reconcile.jobs.plan.permissions).toEqual({
+    expect(reconcile.jobs.claim.permissions).toEqual({
       contents: "read",
       actions: "write",
     });
-    const scheduleWake = reconcile.jobs.plan.steps.find(
+    expect(reconcile.jobs.run.strategy["max-parallel"]).toBe(2);
+    const scheduleWake = reconcile.jobs.claim.steps.find(
       (step: Workflow) => step.name === "Schedule deterministic delayed wake",
     );
     expect(scheduleWake?.if).toContain(
-      "fromJSON(steps.plan.outputs.requests_json)[0] == null",
+      "fromJSON(steps.claim.outputs.requests_json)[0] == null",
     );
     expect(scheduleWake?.if).toContain(
-      "steps.plan.outputs.total_remaining != '0'",
+      "steps.claim.outputs.total_remaining != '0'",
     );
-    expect(scheduleWake?.if).toContain("steps.plan.outputs.next_wake_at != ''");
+    expect(scheduleWake?.if).toContain(
+      "steps.claim.outputs.next_wake_at != ''",
+    );
     expect(scheduleWake?.run).toBe(
       'gh workflow run delayed-wake.yml --repo "$GITHUB_REPOSITORY" --ref main -f wake_at="$TAVERNKEEPER_WAKE_AT"',
     );
@@ -349,8 +356,8 @@ describe("GitHub workflow security policy", () => {
       ),
     ) as { timeoutMs: number };
 
-    expect(value.jobs.scan.strategy["max-parallel"]).toBe(1);
-    expect(value.jobs.scan.strategy["fail-fast"]).toBe(false);
+    expect(value.jobs.scan.strategy).toBeUndefined();
+    expect(value.jobs.scan["timeout-minutes"]).toBe(90);
     expect(prepareIndex).toBeGreaterThan(-1);
     expect(finalizeIndex).toBe(reviewIndex + 1);
     expect(prepareSteps[prepareIndex]?.run).toBe(
@@ -442,10 +449,10 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
-  test("publisher-authoritative mixed batches deploy and continue safely", async () => {
+  test("publisher-authoritative targets deploy and continue safely", async () => {
     const value = await workflow("scan-and-publish.yml");
     const publish = (value.jobs.publish.steps as Workflow[]).find(
-      (step) => step.name === "Publish serialized batch",
+      (step) => step.name === "Publish serialized target",
     );
 
     expect(value.jobs.publish.outputs).toMatchObject({
@@ -485,7 +492,7 @@ describe("GitHub workflow security policy", () => {
       /needs\.scan\.result|system_failure/u,
     );
     expect(Object.keys(value.on.workflow_call.inputs)).toEqual([
-      "requests_json",
+      "request_json",
     ]);
   });
 
@@ -529,20 +536,19 @@ describe("GitHub workflow security policy", () => {
 
   test("reconcile exposes rich queue state to the reusable scanner", async () => {
     const value = await workflow("reconcile.yml");
-    expect(value.jobs.sync.environment).toBe("tavernkeeper-scanner");
-    expect(JSON.stringify(value.jobs.sync)).toContain("queue:sync");
-    expect(value.jobs.plan.needs).toBe("sync");
-    expect(value.jobs.plan.outputs).toMatchObject({
-      total_remaining: "${{ steps.plan.outputs.total_remaining }}",
-      runnable_remaining: "${{ steps.plan.outputs.runnable_remaining }}",
-      delayed_entries: "${{ steps.plan.outputs.delayed_entries }}",
-      next_wake_at: "${{ steps.plan.outputs.next_wake_at }}",
-      emergency_stopped: "${{ steps.plan.outputs.emergency_stopped }}",
-      automatic_holds: "${{ steps.plan.outputs.automatic_holds }}",
-      recovery_probes: "${{ steps.plan.outputs.recovery_probes }}",
+    expect(value.jobs.claim.environment).toBe("tavernkeeper-scanner");
+    expect(JSON.stringify(value.jobs.claim)).toContain("queue:claim");
+    expect(value.jobs.claim.outputs).toMatchObject({
+      total_remaining: "${{ steps.claim.outputs.total_remaining }}",
+      runnable_remaining: "${{ steps.claim.outputs.runnable_remaining }}",
+      delayed_entries: "${{ steps.claim.outputs.delayed_entries }}",
+      next_wake_at: "${{ steps.claim.outputs.next_wake_at }}",
+      emergency_stopped: "${{ steps.claim.outputs.emergency_stopped }}",
+      automatic_holds: "${{ steps.claim.outputs.automatic_holds }}",
+      recovery_probes: "${{ steps.claim.outputs.recovery_probes }}",
     });
     expect(value.jobs.run.with).toEqual({
-      requests_json: "${{ needs.plan.outputs.requests_json }}",
+      request_json: "${{ toJSON(matrix.request) }}",
     });
     expect(JSON.stringify(value)).not.toMatch(
       /deploy_required|recover-pages|shared_holds|security_holds|continuation_blocked/u,
@@ -595,25 +601,23 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
-  test("publisher authenticates every decrypted outcome against the requested batch", async () => {
+  test("publisher authenticates its decrypted outcome against the requested target", async () => {
     const value = await workflow("scan-and-publish.yml");
     const decrypt = (value.jobs.publish.steps as Workflow[]).find(
-      (step) => step.name === "Decrypt sanitized outcomes",
+      (step) => step.name === "Decrypt sanitized outcome",
     );
     const publish = (value.jobs.publish.steps as Workflow[]).find(
-      (step) => step.name === "Publish serialized batch",
+      (step) => step.name === "Publish serialized target",
     );
 
     expect(decrypt?.env).toEqual({
       TAVERNKEEPER_ARTIFACT_KEY: "${{ secrets.TAVERNKEEPER_ARTIFACT_KEY }}",
-      TAVERNKEEPER_SCAN_REQUESTS: "${{ inputs.requests_json }}",
     });
     expect(decrypt?.run).toContain(
-      "find encrypted-artifacts -type f -name 'tavernkeeper-outcome-*.enc' -print0",
+      "encrypted-artifact/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc",
     );
-    expect(decrypt?.run).toContain('test "$position" -eq "$expected"');
     expect(publish?.env).toEqual({
-      TAVERNKEEPER_SCAN_REQUESTS: "${{ inputs.requests_json }}",
+      TAVERNKEEPER_SCAN_REQUEST: "${{ inputs.request_json }}",
     });
   });
 
@@ -649,9 +653,9 @@ describe("GitHub workflow security policy", () => {
 
   test("reconcile probes a due provider hold without selecting a repository", async () => {
     const value = await workflow("reconcile.yml");
-    const planSteps = value.jobs.plan.steps as Workflow[];
-    const plan = planSteps.find(
-      (step) => step.name === "Plan bounded ticket batch",
+    const claimSteps = value.jobs.claim.steps as Workflow[];
+    const claim = claimSteps.find(
+      (step) => step.name === "Claim and commit available scan slots",
     );
     const probe = value.jobs["probe-provider"];
     const steps = probe.steps as Workflow[];
@@ -668,18 +672,18 @@ describe("GitHub workflow security policy", () => {
       (step) => step.name === "Dispatch backlog reconciliation",
     );
 
-    expect(value.jobs.plan.outputs.provider_probe_fingerprint).toBe(
-      "${{ steps.plan.outputs.provider_probe_fingerprint }}",
+    expect(value.jobs.claim.outputs.provider_probe_fingerprint).toBe(
+      "${{ steps.claim.outputs.provider_probe_fingerprint }}",
     );
     expect(
       value.on.workflow_dispatch.inputs.force_provider_probe,
     ).toMatchObject({ type: "boolean", required: false, default: false });
-    expect(plan?.env).toEqual({
+    expect(claim?.env).toMatchObject({
       TAVERNKEEPER_FORCE_PROVIDER_PROBE:
         "${{ github.event.inputs.force_provider_probe || 'false' }}",
     });
-    expect(plan?.run).toContain("provider_probe_fingerprint");
-    expect(probe.needs).toBe("plan");
+    expect(claim?.run).toContain("provider_probe_fingerprint");
+    expect(probe.needs).toBe("claim");
     expect(probe.if).toContain("provider_probe_fingerprint != ''");
     expect(probe.environment).toBe("tavernkeeper-scanner");
     expect(check).toMatchObject({
@@ -743,7 +747,7 @@ describe("GitHub workflow security policy", () => {
       uses: uploadArtifactAction,
       if: "always()",
       with: {
-        path: "${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc",
+        path: "${{ runner.temp }}/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc",
         "retention-days": 1,
       },
     });
@@ -754,13 +758,14 @@ describe("GitHub workflow security policy", () => {
     expect(transportKeySteps.map((step) => step.name)).toEqual([
       "Initialize encrypted bootstrap failure",
       "Encrypt sanitized outcome",
-      "Decrypt sanitized outcomes",
+      "Decrypt sanitized outcome",
     ]);
   });
 
   test("each Publisher App token has one reviewed bounded push consumer", async () => {
     for (const [workflowName, jobName] of [
-      ["reconcile.yml", "sync"],
+      ["coverage-campaign.yml", "create"],
+      ["reconcile.yml", "claim"],
       ["reconcile.yml", "probe-provider"],
       ["scan-and-publish.yml", "publish"],
     ] as const) {
@@ -810,8 +815,8 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}",
-          "          JSONREPAIR_API_KEY: ${{ secrets.JSONREPAIR_API_KEY }}\n          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}",
+          "          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}",
+          "          JSONREPAIR_API_KEY: ${{ secrets.JSONREPAIR_API_KEY }}\n          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}",
         ),
       /JSON repair secret appears outside a repair-only step/u,
     );
@@ -870,21 +875,21 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
-  test("workflow policy rejects fail-fast batch cancellation", async () => {
+  test("workflow policy rejects unbounded single-target jobs", async () => {
     await expectPolicyFailure(
-      (text) => text.replace("fail-fast: false", "fail-fast: true"),
-      /prepare matrix must finish every selected repository/u,
+      (text) => text.replace("    timeout-minutes: 30\n", ""),
+      /single-target child jobs must retain bounded timeouts/u,
     );
   });
 
-  test("workflow policy rejects removal of requested-batch authentication", async () => {
+  test("workflow policy rejects removal of requested-target authentication", async () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "        env:\n          TAVERNKEEPER_SCAN_REQUESTS: ${{ inputs.requests_json }}\n",
-          "",
+          /(      - name: Publish serialized target[\s\S]*?        env:\n)          TAVERNKEEPER_SCAN_REQUEST: \$\{\{ inputs\.request_json \}\}\n/u,
+          "$1",
         ),
-      /publisher must authenticate every decrypted outcome against the requested batch/u,
+      /publisher must authenticate its decrypted target and expose typed routing outputs/u,
     );
   });
 
@@ -911,7 +916,7 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "path: ${{ runner.temp }}/tavernkeeper-outcome-${{ matrix.request.repository_id }}.enc",
+          "path: ${{ runner.temp }}/tavernkeeper-outcome-${{ fromJSON(inputs.request_json).repository_id }}.enc",
           "path: candidate.json",
         ),
       /scan artifact upload must always retain only outcome\.enc for one day/u,
@@ -948,8 +953,8 @@ describe("GitHub workflow security policy", () => {
     await expectPolicyFailure(
       (text) =>
         text.replace(
-          "      - name: Commit reports and state\n",
-          "      - name: Extra token consumer\n        env:\n          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}\n        run: gh api user\n      - name: Commit reports and state\n",
+          "      - name: Commit report and state\n",
+          "      - name: Extra token consumer\n        env:\n          GH_TOKEN: ${{ steps.publisher-token.outputs.token }}\n        run: gh api user\n      - name: Commit report and state\n",
         ),
       /Publisher App token is consumed outside the reviewed commit step/u,
     );
@@ -1085,7 +1090,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 12 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 13 workflows/u),
     });
   });
 });

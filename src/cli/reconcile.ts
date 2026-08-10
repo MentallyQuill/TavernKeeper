@@ -4,10 +4,16 @@ import {
   isDirectExecution,
   runJsonCli,
 } from "./io.js";
-import { parseReportIndexV5 } from "../contracts/reports-v5.js";
-import { parseTargetManifest } from "../contracts/targets.js";
+import {
+  parseReportIndexV5,
+  type ReportIndexV5,
+} from "../contracts/reports-v5.js";
+import {
+  parseTargetManifest,
+  type CurrentTargetManifest,
+} from "../contracts/targets.js";
 import { parseOperationsState } from "../operations/state.js";
-import { planBatch } from "../queue/backlog.js";
+import { planBatch, type PlannedTarget } from "../queue/backlog.js";
 import { ScanRequestSchema } from "./staff-request.js";
 import {
   CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
@@ -18,6 +24,42 @@ export const TARGET_MANIFEST_URL =
   "https://tavernary.org/security/tavernkeeper-targets.json";
 export const REPORT_INDEX_URL =
   "https://mentallyquill.github.io/TavernKeeper/reports/index.json";
+
+export function buildRequestsForPlannedTargets(input: {
+  manifest: CurrentTargetManifest;
+  index: ReportIndexV5;
+  plannedTargets: PlannedTarget[];
+  scannerPolicyVersion: string;
+}) {
+  const targetMetadata = new Map(
+    input.manifest.repositories.map((target) => [target.repository_id, target]),
+  );
+  return input.plannedTargets.map(({ target, reason, recoveryFingerprint }) => {
+    const repositoryReports = input.index.reports.filter(
+      ({ repository_id }) => repository_id === target.repository_id,
+    );
+    const prior = repositoryReports
+      .filter(
+        ({ target_sha, scanner_policy_version }) =>
+          target_sha === target.target_sha &&
+          scanner_policy_version === input.scannerPolicyVersion,
+      )
+      .sort((left, right) => right.report_version - left.report_version)[0];
+    const previousShas = [
+      ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
+    ].slice(0, 20);
+    return ScanRequestSchema.parse({
+      ...targetMetadata.get(target.repository_id),
+      reason,
+      report_version: (prior?.report_version ?? 0) + 1,
+      supersedes_report_id: prior?.report_id ?? null,
+      previous_report_shas: previousShas,
+      ...(recoveryFingerprint === undefined
+        ? {}
+        : { recovery_fingerprint: recoveryFingerprint }),
+    });
+  });
+}
 
 export function buildReconcileMatrix({
   manifest: manifestInput,
@@ -61,36 +103,12 @@ export function buildReconcileMatrix({
     contextualReviewPolicyVersion,
     forceProviderProbe,
   );
-  const targetMetadata = new Map(
-    manifest.repositories.map((target) => [target.repository_id, target]),
-  );
-  const include = plan.targets.map(
-    ({ target, reason, recoveryFingerprint }) => {
-      const repositoryReports = index.reports.filter(
-        ({ repository_id }) => repository_id === target.repository_id,
-      );
-      const prior = repositoryReports
-        .filter(
-          ({ target_sha, scanner_policy_version }) =>
-            target_sha === target.target_sha &&
-            scanner_policy_version === scannerPolicyVersion,
-        )
-        .sort((left, right) => right.report_version - left.report_version)[0];
-      const previousShas = [
-        ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
-      ].slice(0, 20);
-      return ScanRequestSchema.parse({
-        ...targetMetadata.get(target.repository_id),
-        reason,
-        report_version: (prior?.report_version ?? 0) + 1,
-        supersedes_report_id: prior?.report_id ?? null,
-        previous_report_shas: previousShas,
-        ...(recoveryFingerprint === undefined
-          ? {}
-          : { recovery_fingerprint: recoveryFingerprint }),
-      });
-    },
-  );
+  const include = buildRequestsForPlannedTargets({
+    manifest,
+    index,
+    plannedTargets: plan.targets,
+    scannerPolicyVersion,
+  });
   return {
     include,
     total_remaining: plan.totalRemaining,

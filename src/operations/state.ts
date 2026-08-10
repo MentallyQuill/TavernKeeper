@@ -266,7 +266,7 @@ export const PolicyCampaignSchema = z.strictObject({
 });
 
 export const COVERAGE_CAMPAIGN_ID =
-  "one-time-top20-popular-latest-release-v1" as const;
+  "one-time-top20-popular-latest-release-v2" as const;
 
 const SortedRepositoryIdsSchema = z
   .array(SafePositiveIntegerSchema)
