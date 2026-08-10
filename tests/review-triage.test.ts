@@ -254,6 +254,30 @@ describe("policy v5 deterministic review triage", () => {
       expect(plan.decisions[0]?.reason_code).toBe("unknown-execution-scope");
   });
 
+  test("keeps unresolved encoded literals deterministic only in proven inert scopes", () => {
+    const inert = triageEvidenceGroups([
+      group({
+        execution_scope: "tooling-only",
+        candidates: [candidate("javascript.xray.encoded-literal")],
+      }),
+    ]);
+    const runtime = triageEvidenceGroups([
+      group({
+        execution_scope: "runtime",
+        candidates: [candidate("javascript.xray.encoded-literal")],
+      }),
+    ]);
+
+    expect(inert.decisions[0]).toMatchObject({
+      destination: "deterministic",
+      reason_code: "javascript-xray-inert-tooling",
+    });
+    expect(runtime.decisions[0]).toMatchObject({
+      destination: "contextual",
+      reason_code: "javascript-encoded-literal-unresolved",
+    });
+  });
+
   test.each([
     "runtime",
     "install-update",
@@ -392,6 +416,49 @@ describe("policy v5 deterministic review triage", () => {
       });
     },
   );
+
+  test("distinguishes incomplete test key markers from complete private keys", () => {
+    const incomplete = triageEvidenceGroups([
+      group({
+        path: "tools/scripts/test-cards.mjs",
+        execution_scope: "tooling-only",
+        candidates: [
+          candidate("private-key", {
+            origin: "gitleaks",
+            category: "credential-exposure",
+          }),
+        ],
+        source:
+          '    10 | const marker = "-----BEGIN PRIVATE KEY----- TESTKEY";',
+      }),
+    ]);
+    const complete = triageEvidenceGroups([
+      group({
+        path: "tools/scripts/test-cards.mjs",
+        execution_scope: "tooling-only",
+        candidates: [
+          candidate("private-key", {
+            origin: "gitleaks",
+            category: "credential-exposure",
+          }),
+        ],
+        source: [
+          '    10 | const key = "-----BEGIN PRIVATE KEY-----',
+          "    11 | MIIEvQIBADANBgkqhkiG9w0BAQEFAASC",
+          '    12 | -----END PRIVATE KEY-----";',
+        ].join("\n"),
+      }),
+    ]);
+
+    expect(incomplete.decisions[0]).toMatchObject({
+      destination: "deterministic",
+      reason_code: "gitleaks-inert-placeholder",
+    });
+    expect(complete.decisions[0]).toMatchObject({
+      destination: "contextual",
+      reason_code: "gitleaks-credential-ambiguity",
+    });
+  });
 
   test("correlates active dynamic execution and network signals before benign rules", () => {
     const plan = triageEvidenceGroups([

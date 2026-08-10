@@ -163,4 +163,36 @@ describe("execution scope analysis", () => {
 
     expect(scopes.get("scripts/setup.mjs")).toBe("install-update");
   });
+
+  test("follows a SillyTavern manifest JavaScript entrypoint", async () => {
+    const input = await fixture({
+      "manifest.json": JSON.stringify({
+        display_name: "Runtime fixture",
+        js: "src/extension/index.js",
+      }),
+      "src/extension/index.js": 'import "../runtime.mjs";\n',
+      "src/runtime.mjs": ["import {", "  cards,", '} from "./cards.mjs";'].join(
+        "\n",
+      ),
+      "src/cards.mjs": "export const cards = true;\n",
+      "tools/unreferenced.mjs": "export const tool = true;\n",
+    });
+
+    const scopes = await analyzeExecutionScopes({
+      root: input.root,
+      files: input.inventory,
+      limits: {
+        maxFiles: 10_000,
+        maxTotalBytes: 67_108_864,
+        maxFileBytes: 2_097_152,
+      },
+    });
+
+    expect(Object.fromEntries(scopes)).toMatchObject({
+      "src/extension/index.js": "runtime",
+      "src/runtime.mjs": "runtime",
+      "src/cards.mjs": "runtime",
+      "tools/unreferenced.mjs": "tooling-only",
+    });
+  });
 });
