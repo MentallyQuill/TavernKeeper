@@ -35,7 +35,7 @@ import {
 } from "./types.js";
 
 export const JAVASCRIPT_ANALYSIS_VERSION =
-  "webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1";
+  "webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1";
 
 interface AstAnalysisResult {
   warnings: Warning[];
@@ -192,46 +192,74 @@ function scanAst(
   );
   const findings: Finding[] = [];
   const evidenceHints: JavaScriptEvidenceHint[] = [];
+  const warningFamilies = new Map<string, Warning[]>();
   for (const warning of report.warnings) {
     if (warning.kind === "parsing-error") continue;
-    const location = warningLocation(warning.location);
-    const ruleId = safeWarningRule(warning.kind);
+    const family = warningFamilies.get(warning.kind) ?? [];
+    family.push(warning);
+    warningFamilies.set(warning.kind, family);
+  }
+  for (const [kind, warnings] of warningFamilies) {
+    const locations = warnings.map(({ location }) => warningLocation(location));
+    const location = locations
+      .filter((value): value is NonNullable<typeof value> => value !== null)
+      .sort(
+        (left, right) =>
+          left.lineStart - right.lineStart ||
+          left.columnStart - right.columnStart ||
+          left.lineEnd - right.lineEnd ||
+          left.columnEnd - right.columnEnd,
+      )[0];
+    const ruleId = safeWarningRule(kind);
+    const severity = warnings.some(({ severity }) => severity === "Critical")
+      ? "high"
+      : warnings.some(({ severity }) => severity === "Warning")
+        ? "medium"
+        : "low";
     const finding = normalizeFinding({
       origin: "javascript-analysis",
       ruleId,
-      category: warningCategory(warning.kind),
-      severity:
-        warning.severity === "Critical"
-          ? "high"
-          : warning.severity === "Warning"
-            ? "medium"
-            : "low",
-      confidence: warning.experimental === true ? "low" : "medium",
+      category: warningCategory(kind),
+      severity,
+      confidence: warnings.some(({ experimental }) => experimental === true)
+        ? "low"
+        : "medium",
       path: queued.candidate.path,
       lineStart: location?.lineStart ?? null,
       lineEnd: location?.lineEnd ?? null,
       evidenceSha: null,
-      title: `Static JavaScript signal: ${warning.kind}`,
+      title: `Static JavaScript signal: ${kind}`,
       explanation:
-        "JS-X-Ray identified a fixed security signal in this JavaScript representation; matched literal values were not retained.",
+        warnings.length === 1
+          ? "JS-X-Ray identified a fixed security signal in this JavaScript representation; matched literal values were not retained."
+          : `JS-X-Ray identified ${warnings.length} occurrences of the same fixed security signal in this JavaScript representation; matched literal values were not retained.`,
       remediation:
         "Review the affected behavior and remove unsafe or unnecessary dynamic capabilities.",
     });
     findings.push(finding);
-    evidenceHints.push({
-      finding_fingerprint: finding.fingerprint,
-      original_path: queued.candidate.path,
-      stage: queued.representation.stage,
-      representation_sha256: queued.representation.sha256,
-      transform_depth: queued.representation.depth,
-      line_start: location?.lineStart ?? null,
-      line_end: location?.lineEnd ?? null,
-      column_start: location?.columnStart ?? null,
-      column_end: location?.columnEnd ?? null,
-      source: queued.content,
-    });
+    for (const occurrence of locations.length === 0 ? [null] : locations) {
+      evidenceHints.push({
+        finding_fingerprint: finding.fingerprint,
+        original_path: queued.candidate.path,
+        stage: queued.representation.stage,
+        representation_sha256: queued.representation.sha256,
+        transform_depth: queued.representation.depth,
+        line_start: occurrence?.lineStart ?? null,
+        line_end: occurrence?.lineEnd ?? null,
+        column_start: occurrence?.columnStart ?? null,
+        column_end: occurrence?.columnEnd ?? null,
+        source: queued.content,
+      });
+    }
   }
-  return { parseFailed, findings, evidenceHints };
+  return {
+    parseFailed,
+    findings,
+    evidenceHints,
+    warningOccurrences: report.warnings.filter(
+      ({ kind: warningKind }) => warningKind !== "parsing-error",
+    ).length,
+  };
 }
 
 function mapNormalizationReason(
@@ -249,7 +277,7 @@ function addUniqueHint(
   hint: JavaScriptEvidenceHint,
 ) {
   target.set(
-    `${hint.finding_fingerprint}\u0000${hint.representation_sha256}`,
+    `${hint.finding_fingerprint}\u0000${hint.representation_sha256}\u0000${hint.line_start ?? ""}\u0000${hint.line_end ?? ""}\u0000${hint.column_start ?? ""}\u0000${hint.column_end ?? ""}`,
     hint,
   );
 }
@@ -299,6 +327,7 @@ export async function runJavascriptAnalysis(
   const derivativeCountByPath = new Map<string, number>();
   const derivativeBytesByPath = new Map<string, number>();
   let totalDerivativeBytes = 0;
+  let warningOccurrences = 0;
   const startedAt = Date.now();
   const representationCounts = {
     raw: candidates.length,
@@ -497,6 +526,7 @@ export async function runJavascriptAnalysis(
     if (astApplicable)
       try {
         const ast = scanAst(current, dependencies);
+        warningOccurrences += ast.warningOccurrences;
         for (const finding of ast.findings) addUniqueFinding(findings, finding);
         for (const hint of ast.evidenceHints)
           addUniqueHint(evidenceHints, hint);
@@ -712,11 +742,16 @@ export async function runJavascriptAnalysis(
   const unresolvedValues = [...unresolved.values()].sort((left, right) =>
     unresolvedIdentity(left).localeCompare(unresolvedIdentity(right)),
   );
+  const warningFamilies = [...findings.values()].filter(({ rule_id }) =>
+    rule_id.startsWith("javascript.xray."),
+  ).length;
   const coverage: JavascriptAnalysisCoverage =
     JavascriptAnalysisCoverageSchema.parse({
       status: unresolvedValues.length === 0 ? "complete" : "incomplete",
       candidates: candidates.length,
       candidate_bytes: candidateBytes,
+      warning_occurrences: warningOccurrences,
+      warning_families: warningFamilies,
       representations: representationCounts,
       stages: stageCounts,
       unresolved: unresolvedValues,
@@ -733,8 +768,8 @@ export async function runJavascriptAnalysis(
     ),
     javascriptAnalysis: coverage,
     evidenceHints: [...evidenceHints.values()].sort((left, right) =>
-      `${left.finding_fingerprint}\u0000${left.representation_sha256}`.localeCompare(
-        `${right.finding_fingerprint}\u0000${right.representation_sha256}`,
+      `${left.finding_fingerprint}\u0000${left.representation_sha256}\u0000${String(left.line_start ?? 0).padStart(10, "0")}\u0000${String(left.column_start ?? 0).padStart(10, "0")}`.localeCompare(
+        `${right.finding_fingerprint}\u0000${right.representation_sha256}\u0000${String(right.line_start ?? 0).padStart(10, "0")}\u0000${String(right.column_start ?? 0).padStart(10, "0")}`,
       ),
     ),
     derivativeAncestry: [...ancestry.values()].sort((left, right) =>

@@ -687,16 +687,28 @@ export async function buildEvidenceContextGroups({
         line_start: finding.line_start,
         line_end: finding.line_end,
       }));
-      const locations = orderedFindings.map((finding) => {
+      const locations = orderedFindings.flatMap<EvidenceLocation>((finding) => {
         const evidenceHint = selectedHint.get(finding.fingerprint);
-        return evidenceHint === undefined
-          ? finding
-          : {
-              line_start: evidenceHint.line_start,
-              line_end: evidenceHint.line_end,
-              column_start: evidenceHint.column_start,
-              column_end: evidenceHint.column_end,
-            };
+        if (evidenceHint === undefined)
+          return [
+            {
+              line_start: finding.line_start,
+              line_end: finding.line_end,
+              column_start: null,
+              column_end: null,
+            },
+          ];
+        return (hintsByFingerprint.get(finding.fingerprint) ?? [])
+          .filter(
+            ({ representation_sha256 }) =>
+              representation_sha256 === evidenceHint.representation_sha256,
+          )
+          .map((occurrence) => ({
+            line_start: occurrence.line_start,
+            line_end: occurrence.line_end,
+            column_start: occurrence.column_start,
+            column_end: occurrence.column_end,
+          }));
       });
       const representations = [
         ...new Map(

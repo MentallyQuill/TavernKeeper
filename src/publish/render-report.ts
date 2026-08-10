@@ -259,10 +259,16 @@ function javascriptCoverage(report: ScanReportV5) {
               `<li><code>${escapeHtml(item.path)}</code> &mdash; ${escapeHtml(item.stage)} / ${escapeHtml(item.reason)}${item.recovered ? " (recovered elsewhere)" : ""}</li>`,
           )
           .join("")}</ul>`;
+  const warningFamilies =
+    coverage.warning_occurrences === undefined ||
+    coverage.warning_families === undefined
+      ? ""
+      : `<dt>X-Ray review families</dt><dd>${escapeHtml(coverage.warning_occurrences)} warning occurrences compacted to ${escapeHtml(coverage.warning_families)} evidence-preserving review families</dd>`;
   return `<h3>JavaScript coverage</h3>
       <dl class="metadata coverage-summary">
         <dt>Status</dt><dd>${escapeHtml(coverage.status === "complete" ? "Complete" : "Incomplete")}</dd>
         <dt>Candidates</dt><dd>${escapeHtml(coverage.candidates)} files &middot; ${escapeHtml(coverage.candidate_bytes)} bytes</dd>
+        ${warningFamilies}
         <dt>Representations</dt><dd>${escapeHtml(coverage.representations.raw)} raw &middot; ${escapeHtml(coverage.representations.decoded)} decoded &middot; ${escapeHtml(coverage.representations.normalized)} normalized &middot; ${escapeHtml(coverage.representations.bundle_modules)} bundle modules</dd>
         <dt>Stage scans</dt><dd>${escapeHtml(coverage.stages.raw_signatures)} raw signatures &middot; ${escapeHtml(coverage.stages.raw_ast)} raw AST &middot; ${escapeHtml(coverage.stages.raw_opengrep)} raw OpenGrep &middot; ${escapeHtml(coverage.stages.derived_signatures)} derived signatures &middot; ${escapeHtml(coverage.stages.derived_ast)} derived AST &middot; ${escapeHtml(coverage.stages.derived_opengrep)} derived OpenGrep</dd>
       </dl>

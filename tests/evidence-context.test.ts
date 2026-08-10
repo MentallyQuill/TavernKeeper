@@ -378,6 +378,92 @@ describe("evidence context builder", () => {
     ]);
   });
 
+  test("includes every occurrence window for a compacted JavaScript family", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-family-"));
+    roots.push(root);
+    const source = Array.from({ length: 120 }, (_, index) =>
+      index === 4
+        ? "const firstOccurrence = JSON.stringify(process.env);"
+        : index === 99
+          ? "const secondOccurrence = JSON.stringify(process.env);"
+          : `const line${index + 1} = ${index + 1};`,
+    ).join("\n");
+    await writeFile(join(root, "family.js"), source);
+    const finding = normalizeFinding({
+      origin: "javascript-analysis",
+      ruleId: "javascript.xray.serialize-environment",
+      category: "credential-theft",
+      severity: "medium",
+      confidence: "medium",
+      path: "family.js",
+      lineStart: 5,
+      lineEnd: 5,
+      evidenceSha: null,
+      title: "Static JavaScript signal: serialize-environment",
+      explanation:
+        "JS-X-Ray identified 2 occurrences of the same fixed security signal in this JavaScript representation; matched literal values were not retained.",
+    });
+    const sha256 = createHash("sha256").update(source).digest("hex");
+
+    const groups = await buildEvidenceContextGroups({
+      checkoutRoot: root,
+      target: {
+        source_id: "github-47",
+        provider: "github",
+        repository_id: 47,
+        repository: "owner/family",
+        canonical_url: "https://github.com/owner/family",
+        target_sha: "a".repeat(40),
+      },
+      projectKinds: ["extension"],
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "family.js",
+            bytes: Buffer.byteLength(source),
+            sha256,
+            kind: "text",
+          },
+        ],
+        totals: { files: 1, bytes: Buffer.byteLength(source) },
+        totalBytes: Buffer.byteLength(source),
+      },
+      javascriptEvidenceHints: [
+        {
+          finding_fingerprint: finding.fingerprint,
+          original_path: finding.path,
+          stage: "raw",
+          representation_sha256: sha256,
+          transform_depth: 0,
+          line_start: 5,
+          line_end: 5,
+          column_start: 1,
+          column_end: 50,
+          source,
+        },
+        {
+          finding_fingerprint: finding.fingerprint,
+          original_path: finding.path,
+          stage: "raw",
+          representation_sha256: sha256,
+          transform_depth: 0,
+          line_start: 100,
+          line_end: 100,
+          column_start: 1,
+          column_end: 51,
+          source,
+        },
+      ],
+    });
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.candidates).toHaveLength(1);
+    expect(groups[0]?.context.source).toContain("firstOccurrence");
+    expect(groups[0]?.context.source).toContain("secondOccurrence");
+  });
+
   test("rejects a JavaScript-analysis finding without bound representation evidence", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-js-hint-"));
     roots.push(root);

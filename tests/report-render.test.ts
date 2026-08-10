@@ -50,6 +50,8 @@ describe("V5 technical report HTML", () => {
           status: "incomplete",
           candidates: 1,
           candidate_bytes: 123,
+          warning_occurrences: 12,
+          warning_families: 3,
           representations: {
             raw: 1,
             decoded: 1,
@@ -82,6 +84,9 @@ describe("V5 technical report HTML", () => {
     const html = renderReportV5Html(report);
 
     expect(html).toMatch(/JavaScript coverage.*Incomplete/isu);
+    expect(html).toContain(
+      "12 warning occurrences compacted to 3 evidence-preserving review families",
+    );
     expect(html).toMatch(/no clean conclusion/iu);
     expect(html).toContain("dist/app.min.js");
     expect(html).not.toContain("derived/000001-");
