@@ -44,7 +44,6 @@ import type { CommandRunner } from "../process/command-runner.js";
 import { JavascriptAnalysisCoverageSchema } from "../scanners/javascript-analysis-types.js";
 import { JAVASCRIPT_ANALYSIS_VERSION } from "../scanners/javascript-analysis.js";
 import {
-  CompletedContextualReviewSchema,
   ContextualReviewProgressError,
   ContextualReviewProgressSchema,
   reviewEvidenceGroups,
@@ -61,7 +60,12 @@ import {
 import type { JsonRepairProvider } from "../model/json-repair.js";
 import { validateModelEndpoint } from "../model/openai-compatible-client.js";
 import { sanitizeReportV5 } from "../publish/sanitize.js";
-import { buildContextualReport } from "../report/contextual-report.js";
+import {
+  buildContextualReport,
+  CompletedReviewV5Schema,
+  mergePolicyV5Review,
+} from "../report/contextual-report.js";
+import { triageEvidenceGroups } from "../triage/review-triage.js";
 import {
   runApplicableScanners,
   type ScannerExecutables,
@@ -180,7 +184,7 @@ const ReviewBundleSchema = z.strictObject({
   schema_version: z.literal(1),
   session_id: DigestSchema,
   evidence_digest: DigestSchema,
-  review: CompletedContextualReviewSchema,
+  review: CompletedReviewV5Schema,
 });
 
 const ReviewProgressBundleSchema = z.strictObject({
@@ -835,32 +839,7 @@ export async function reviewPreparedSession({
   const sessionRoot = safeSessionRoot(sessionRootInput);
   const prepared = await loadPrepared(sessionRoot);
   const evidence = await loadEvidenceContext(sessionRoot, prepared);
-  const endpoint = validateModelEndpoint(provider.endpoint);
-  const reviewIdentity: ReviewIdentity = {
-    scanner_version: prepared.scanner_version,
-    scanner_policy_version: prepared.scanner_policy_version,
-    rule_catalog_version: prepared.rule_catalog_version,
-    tools: prepared.tools.map(({ name, version }) => ({ name, version })),
-    contextual_policy_version: policy.version,
-    prompt_version: policy.promptVersion,
-    assessment_schema_version: policy.schemaVersion,
-    provider: endpoint.hostname,
-    endpoint_origin: endpoint.origin,
-    model: provider.model,
-  };
-  const reviewInputDigests = new Map(
-    evidence.groups.map((group) => [
-      group.group_id,
-      reviewInputDigest(group, reviewIdentity),
-    ]),
-  );
-  const reusableGroups = await loadReusableReviewGroups({
-    repositoryRoot,
-    repositoryId: prepared.target.repository_id,
-    repository: prepared.target.repository,
-    groups: evidence.groups,
-    reviewIdentity,
-  });
+  const triage = triageEvidenceGroups(evidence.groups);
   const progressPath = resolve(sessionRoot, "review-progress.json");
   const reviewPath = resolve(sessionRoot, "review.json");
   if (await pathExists(reviewPath)) {
@@ -878,6 +857,43 @@ export async function reviewPreparedSession({
       );
     return { status: "reviewed" as const, review: existing.review };
   }
+  if (triage.contextualGroups.length === 0) {
+    const review = mergePolicyV5Review({ triage, policy });
+    const bundle = ReviewBundleSchema.parse({
+      schema_version: 1,
+      session_id: prepared.session_id,
+      evidence_digest: evidence.evidence_digest,
+      review,
+    });
+    await writeExclusive(reviewPath, bundle);
+    return { status: "reviewed" as const, review };
+  }
+  const endpoint = validateModelEndpoint(provider.endpoint);
+  const reviewIdentity: ReviewIdentity = {
+    scanner_version: prepared.scanner_version,
+    scanner_policy_version: prepared.scanner_policy_version,
+    rule_catalog_version: prepared.rule_catalog_version,
+    tools: prepared.tools.map(({ name, version }) => ({ name, version })),
+    contextual_policy_version: policy.version,
+    prompt_version: policy.promptVersion,
+    assessment_schema_version: policy.schemaVersion,
+    provider: endpoint.hostname,
+    endpoint_origin: endpoint.origin,
+    model: provider.model,
+  };
+  const reviewInputDigests = new Map(
+    triage.contextualGroups.map((group) => [
+      group.group_id,
+      reviewInputDigest(group, reviewIdentity),
+    ]),
+  );
+  const reusableGroups = await loadReusableReviewGroups({
+    repositoryRoot,
+    repositoryId: prepared.target.repository_id,
+    repository: prepared.target.repository,
+    groups: triage.contextualGroups,
+    reviewIdentity,
+  });
   let progress: z.infer<typeof ContextualReviewProgressSchema> | undefined;
   if (await pathExists(progressPath)) {
     let decodedProgress: unknown;
@@ -898,7 +914,7 @@ export async function reviewPreparedSession({
   }
   const reviewFrom = (checkpoint?: typeof progress) =>
     reviewEvidenceGroups({
-      groups: evidence.groups,
+      groups: triage.contextualGroups,
       provider,
       jsonRepairProvider,
       policy,
@@ -917,9 +933,9 @@ export async function reviewPreparedSession({
         ),
       ...(expandContext === undefined ? {} : { expandContext }),
     });
-  let review;
+  let contextualReview;
   try {
-    review = await reviewFrom(progress);
+    contextualReview = await reviewFrom(progress);
   } catch (error) {
     if (
       progress === undefined ||
@@ -927,8 +943,9 @@ export async function reviewPreparedSession({
     )
       throw error;
     await rm(progressPath, { force: true });
-    review = await reviewFrom();
+    contextualReview = await reviewFrom();
   }
+  const review = mergePolicyV5Review({ triage, contextualReview, policy });
   const bundle = ReviewBundleSchema.parse({
     schema_version: 1,
     session_id: prepared.session_id,
@@ -1015,24 +1032,25 @@ export async function finalizePreparedSession({
         "Contextual report construction failed.",
       );
     }
-    if (reviewBundle.review.review_units === undefined)
-      throw new ScanPhaseError(
-        "CONTEXTUAL_REVIEW_INVALID",
-        "system",
-        "Contextual review unit provenance is unavailable.",
-      );
-    const reviewIdentity: ReviewIdentity = {
-      scanner_version: prepared.scanner_version,
-      scanner_policy_version: prepared.scanner_policy_version,
-      rule_catalog_version: prepared.rule_catalog_version,
-      tools: prepared.tools.map(({ name, version }) => ({ name, version })),
-      contextual_policy_version: reviewBundle.review.policy_version,
-      prompt_version: reviewBundle.review.prompt_version,
-      assessment_schema_version: reviewBundle.review.schema_version,
-      provider: reviewBundle.review.provider,
-      endpoint_origin: reviewBundle.review.endpoint_origin,
-      model: reviewBundle.review.model,
-    };
+    const reviewer = reviewBundle.review.reviewer;
+    const reviewIdentity: ReviewIdentity | undefined =
+      reviewer === undefined
+        ? undefined
+        : {
+            scanner_version: prepared.scanner_version,
+            scanner_policy_version: prepared.scanner_policy_version,
+            rule_catalog_version: prepared.rule_catalog_version,
+            tools: prepared.tools.map(({ name, version }) => ({
+              name,
+              version,
+            })),
+            contextual_policy_version: reviewBundle.review.policy_version,
+            prompt_version: reviewBundle.review.prompt_version,
+            assessment_schema_version: reviewBundle.review.schema_version,
+            provider: reviewer.provider,
+            endpoint_origin: reviewer.endpoint_origin,
+            model: reviewer.model,
+          };
     const candidate = {
       report,
       review_cache: buildReviewCacheManifest({

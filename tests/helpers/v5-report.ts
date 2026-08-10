@@ -34,6 +34,8 @@ export async function fixtureReportV5(
 }
 
 export function fixtureReviewCache(report: ScanReportV5): ReviewCacheManifest {
+  if (report.contextual_reviewer === undefined)
+    throw new Error("A contextual reviewer is required for a review cache.");
   return ReviewCacheManifestSchema.parse({
     schema_version: 1,
     repository_id: report.repository_id,

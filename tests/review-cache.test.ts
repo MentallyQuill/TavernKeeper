@@ -10,6 +10,7 @@ import {
 } from "../src/contracts/reports-v5.js";
 import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
 import {
+  buildReviewCacheManifest,
   canonicalReviewInput,
   loadReusableReviewGroups,
   ReviewCacheManifestSchema,
@@ -296,9 +297,9 @@ async function cacheFixture() {
     contextual_policy_version: report.contextual_review_policy_version,
     prompt_version: report.prompt_version,
     assessment_schema_version: report.assessment_schema_version,
-    provider: report.contextual_reviewer.provider,
-    endpoint_origin: `https://${report.contextual_reviewer.provider}`,
-    model: report.contextual_reviewer.model,
+    provider: report.contextual_reviewer!.provider,
+    endpoint_origin: `https://${report.contextual_reviewer!.provider}`,
+    model: report.contextual_reviewer!.model,
   };
   const digest = reviewInputDigest(currentGroup, currentIdentity);
   const manifest = ReviewCacheManifestSchema.parse({
@@ -340,7 +341,64 @@ async function cacheFixture() {
   };
 }
 
+async function deterministicPolicy5Fixture() {
+  const fixture = JSON.parse(
+    await readFile(
+      new URL(
+        "fixtures/contracts/report.v5.policy5.valid.json",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  );
+  const body = {
+    ...fixture,
+    report_id: "0".repeat(64),
+    report_digest: "0".repeat(64),
+  };
+  const id = reportIdentity(body);
+  return ScanReportV5Schema.parse({
+    ...body,
+    report_id: id,
+    report_digest: id,
+  });
+}
+
 describe("contextual review cache validation", () => {
+  test("publishes an empty identity-free cache for all-deterministic reports", async () => {
+    const report = await deterministicPolicy5Fixture();
+
+    expect(buildReviewCacheManifest({ report, reviewUnits: [] })).toMatchObject(
+      { entries: [] },
+    );
+    expect(
+      buildReviewCacheManifest({ report, reviewUnits: [] }),
+    ).not.toHaveProperty("review_identity");
+  });
+
+  test("never caches deterministic policy assessments as model review", async () => {
+    const report = await deterministicPolicy5Fixture();
+    const candidateId = report.assessments[0]!.candidate_id;
+
+    expect(
+      buildReviewCacheManifest({
+        report,
+        reviewIdentity: {
+          ...identity,
+          scanner_policy_version: "5",
+          rule_catalog_version: "2",
+          contextual_policy_version: "5",
+        },
+        reviewUnits: [
+          {
+            review_input_digest: "e".repeat(64),
+            candidate_ids: [candidateId],
+          },
+        ],
+      }).entries,
+    ).toEqual([]);
+  });
+
   test("loads only an exact low and not-demonstrated review unit", async () => {
     const fixture = await cacheFixture();
     try {

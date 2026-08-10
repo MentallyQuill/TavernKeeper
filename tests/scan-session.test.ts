@@ -9,7 +9,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
 import {
@@ -25,6 +25,7 @@ import {
   ScannerPolicyV5Schema,
 } from "../src/config/policy.js";
 import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
+import { CompletedContextualReviewSchema } from "../src/model/contextual-review.js";
 import {
   buildBoundedEvidenceContext,
   finalizePreparedSession,
@@ -38,7 +39,9 @@ import {
 import type { CommandRunner } from "../src/process/command-runner.js";
 import { findingFingerprint } from "../src/scanners/types.js";
 import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
+import { mergePolicyV5Review } from "../src/report/contextual-report.js";
 import { analyzeExecutionScopes } from "../src/triage/execution-scope.js";
+import { triageEvidenceGroups } from "../src/triage/review-triage.js";
 
 const roots: string[] = [];
 const targetSha = "a".repeat(40);
@@ -49,12 +52,16 @@ afterEach(async () => {
   );
 });
 
-async function preparedSession(options: { omitTool?: boolean } = {}) {
+async function preparedSession(
+  options: { omitTool?: boolean; deterministic?: boolean } = {},
+) {
   const root = await mkdtemp(join(tmpdir(), "tavernkeeper-session-"));
   roots.push(root);
   const findingIdentity = {
     origin: "tavernkeeper",
-    ruleId: "credential-exfiltration",
+    ruleId: options.deterministic
+      ? "unicode-bidi-control"
+      : "credential-exfiltration",
     path: "src/index.ts",
     lineStart: 1,
     lineEnd: 1,
@@ -154,8 +161,12 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
       {
         origin: "tavernkeeper",
         rule_id: findingIdentity.ruleId,
-        category: "credential-theft",
-        severity: "high" as const,
+        category: options.deterministic
+          ? "source-integrity"
+          : "credential-theft",
+        severity: options.deterministic
+          ? ("medium" as const)
+          : ("high" as const),
         confidence: "high" as const,
         path: findingIdentity.path,
         line_start: 1,
@@ -311,6 +322,51 @@ async function completeReview(root: string) {
 }
 
 describe("three-phase contextual scan session", () => {
+  test("completes deterministic evidence with zero provider validation or calls", async () => {
+    const { root } = await preparedSession({ deterministic: true });
+    const requestCompletion = vi.fn();
+
+    const reviewed = await reviewPreparedSession({
+      sessionRoot: root,
+      provider: {
+        endpoint: "not-a-provider-url",
+        apiKey: "",
+        model: "",
+        requestCompletion,
+      },
+      policy: {
+        version: "5",
+        promptVersion: "contextual-review-v7",
+        schemaVersion: "contextual-assessment-v2",
+        maxImmediateAttempts: 3,
+        maxOutputTokens: 32_768,
+        maxResponseBytes: 5_000_000,
+        timeoutMs: 900_000,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 64_000,
+        maxFreshBehaviorCases: 12,
+        maxProviderCalls: 6,
+        maxEstimatedInputTokens: 200_000,
+        maxActualInputTokens: 250_000,
+        maxActualOutputTokens: 40_000,
+      },
+    });
+
+    expect(requestCompletion).not.toHaveBeenCalled();
+    expect(reviewed.review.review_triage.candidates).toEqual({
+      total: 1,
+      deterministic: 1,
+      contextual: 0,
+      reused_contextual: 0,
+    });
+    expect(reviewed.review.assessments).toHaveLength(1);
+    expect(reviewed.review.assessments[0]).toMatchObject({
+      assessment_source: "deterministic-policy",
+      triage_reason_code: "owned-structured-weakness",
+    });
+    expect(reviewed.review).not.toHaveProperty("reviewer");
+  });
+
   test("shrinks contextual windows until a large prepared handoff fits its artifact ceiling", async () => {
     const { root, prepared } = await preparedSession();
     const stored = JSON.parse(
@@ -603,7 +659,7 @@ describe("three-phase contextual scan session", () => {
       finalized.status === "completed" &&
         ScanReportV5Schema.safeParse(finalized.candidate.report).success,
     ).toBe(true);
-    expect(finalized.candidate.report.contextual_reviewer.model).toBe(
+    expect(finalized.candidate.report.contextual_reviewer?.model).toBe(
       "configured/model:thinking",
     );
     expect(JSON.stringify(prepared)).not.toMatch(
@@ -627,7 +683,9 @@ describe("three-phase contextual scan session", () => {
         candidates: Array<{ candidate_id: string; evidence_id: string }>;
       }>;
     };
-    const current = evidence.groups[0]!;
+    const current = triageEvidenceGroups(
+      evidence.groups as EvidenceContextGroup[],
+    ).contextualGroups[0]!;
     const candidate = current.candidates[0]!;
     await writeFile(
       join(root, "review-progress.json"),
@@ -674,11 +732,59 @@ describe("three-phase contextual scan session", () => {
         2,
       )}\n`,
     );
+    const policy = {
+      version: "5" as const,
+      promptVersion: "contextual-review-v7" as const,
+      schemaVersion: "contextual-assessment-v2" as const,
+      maxImmediateAttempts: 3,
+      maxOutputTokens: 32_768,
+      maxResponseBytes: 5_000_000,
+      timeoutMs: 900_000,
+      maxBatchGroups: 1,
+      maxBatchInputTokens: 64_000,
+      maxFreshBehaviorCases: 12,
+      maxProviderCalls: 6,
+      maxEstimatedInputTokens: 200_000,
+      maxActualInputTokens: 250_000,
+      maxActualOutputTokens: 40_000,
+    };
     const progressBundle = JSON.parse(
       await readFile(join(root, "review-progress.json"), "utf8"),
     ) as Record<string, any>;
     const { completed_group_ids: _completedGroups, ...persistedReview } =
       progressBundle.progress;
+    const contextualReview = CompletedContextualReviewSchema.parse({
+      ...persistedReview,
+      coverage: { required: 1, completed: 1 },
+      review_units: [
+        {
+          group_id: current.group_id,
+          review_input_digest: "d".repeat(64),
+          candidate_ids: [candidate.candidate_id],
+          reused: false,
+          origin_report_id: null,
+        },
+      ],
+      review_batches: [
+        {
+          kind: "contextual_review",
+          attempt: 1,
+          group_count: 1,
+          candidate_count: 1,
+          estimated_input_tokens: 4_000,
+          over_budget: false,
+          input_tokens: 100,
+          output_tokens: 50,
+          cache_read_tokens: 0,
+          reasoning_tokens: 10,
+        },
+      ],
+    });
+    const mergedReview = mergePolicyV5Review({
+      triage: triageEvidenceGroups(evidence.groups as EvidenceContextGroup[]),
+      contextualReview,
+      policy,
+    });
     await writeFile(
       join(root, "review.json"),
       `${JSON.stringify(
@@ -686,10 +792,7 @@ describe("three-phase contextual scan session", () => {
           schema_version: 1,
           session_id: prepared.session_id,
           evidence_digest: evidence.evidence_digest,
-          review: {
-            ...persistedReview,
-            coverage: { required: 1, completed: 1 },
-          },
+          review: mergedReview,
         },
         null,
         2,
@@ -709,22 +812,7 @@ describe("three-phase contextual scan session", () => {
             throw new Error("Completed progress must not be repeated.");
           },
         },
-        policy: {
-          version: "5",
-          promptVersion: "contextual-review-v7",
-          schemaVersion: "contextual-assessment-v2",
-          maxImmediateAttempts: 3,
-          maxOutputTokens: 32_768,
-          maxResponseBytes: 5_000_000,
-          timeoutMs: 900_000,
-          maxBatchGroups: 1,
-          maxBatchInputTokens: 64_000,
-          maxFreshBehaviorCases: 12,
-          maxProviderCalls: 6,
-          maxEstimatedInputTokens: 200_000,
-          maxActualInputTokens: 250_000,
-          maxActualOutputTokens: 40_000,
-        },
+        policy,
       }),
     ).resolves.toMatchObject({ status: "reviewed" });
     expect(requests).toBe(0);
@@ -796,7 +884,10 @@ describe("three-phase contextual scan session", () => {
     });
     await expect(
       readFile(join(root, "review-progress.json"), "utf8"),
-    ).resolves.toContain(evidence.groups[0]!.group_id);
+    ).resolves.toContain(
+      triageEvidenceGroups(evidence.groups as EvidenceContextGroup[])
+        .contextualGroups[0]!.group_id,
+    );
   });
 
   test("discards a schema-invalid internal checkpoint and restarts the review", async () => {
