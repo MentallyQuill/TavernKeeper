@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ZDOSt/Story-Engine at commit 3bab20b.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ZDOSt/Story-Engine</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ZDOSt/Story-Engine" rel="noopener noreferrer">ZDOSt/Story-Engine</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ZDOSt/Story-Engine/commit/3bab20b97b719445b32c68e39b6ec3fe3ae50623" rel="noopener noreferrer">3bab20b</a></span>
+        <span>Reviewed <time datetime="2026-08-10T06:58:24.394Z">Aug 10, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>48 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A specially crafted height measurement could slow down or freeze your browser, but no data is stolen or leaked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 710 in parseMetricHeightCentimeters contains nested optional groups and alternations that may cause catastrophic backtracking on crafted input, leading to client-side denial of service. The input is user-supplied height text from character sheet fields.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Simplify the regex, add input length limits, or implement a timeout for regex execution to mitigate ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L710" rel="noopener noreferrer">character-sheet-generation.js:710</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A pattern used to check character sheet text for an &#39;isekai&#39; origin has a complex regular expression that might run slowly if someone feeds it a specially crafted string. This could cause the browser to lag temporarily, but it won&#39;t steal data or break anything permanently.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 108 contains complex alternatives with optional groups (e.g., `lost\s+(?:(?:his|her|their|its|the)\s+)?life`) that could, under adversarial crafted input, cause excessive backtracking and client-side performance degradation. This is a static pattern applied to LLM-generated character sheet text, not dynamically constructed. No actual exploit or ReDoS is demonstrated in the supplied evidence. The impact is limited to recoverable local slowdown or tab freezing, which is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider simplifying the regex by splitting into multiple simpler checks or using a non-backtracking approach. Alternatively, add a timeout or input length limit to mitigate potential ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-validation.js#L108" rel="noopener noreferrer">character-sheet-validation.js:108</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This is a minor code quality note where a regular expression could potentially be slow with very carefully crafted input. Since you control your own character sheet, the risk is only to yourself and unlikely to be a problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 4363 is used to parse bold-markdown ability names from persona text. JS-X-Ray flagged it as potentially unsafe, but the pattern uses a lazy quantifier (.+?) and no nested quantifiers, so catastrophic backtracking is not evident. The input originates from the user&#39;s own persona description, which is self-controlled and limited in size. Any ReDoS exploit would only affect the user&#39;s own session and cause a temporary local slowdown, not data exposure or code execution. The risk is not demonstrated in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider adding a length limit on persona text or using a simpler string method (e.g., .startsWith) if feasible to avoid any theoretical ReDoS risk, though the current pattern is not known to be vulnerable.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L4363" rel="noopener noreferrer">index.js:4363</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A line of code that splits text into sentences uses a pattern that might be slow on weird input. If someone fed it a specially-crafted long sentence, it could temporarily freeze your browser tab until you refresh. No one has shown this happening in practice, and it&#39;s a low-severity quality issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 292 contains a regular expression /[^.!?\r\n]+(?:[.!?]+(?=(?:[&quot;&#39;\u2019\u201d\u00bb)\]]+)?(?:\s|$))|$)/g used for sentence splitting. Static analysis flagged it as potentially unsafe due to nested quantifiers that could cause catastrophic backtracking on crafted input. However, the regex is applied to narration text generated by the LLM or user, which is not attacker-controlled in a meaningful way; the worst-case impact is a local slowdown or frozen tab that is resolved by refreshing. No concrete exploit is demonstrated in the supplied evidence, and the regex has been present in the codebase without reported issues.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider reviewing the regex at line 292 and simplifying it if possible (e.g., avoid nested optional groups and alternation inside lookaheads) to reduce the risk of catastrophic backtracking. Alternatively, add a length or complexity check on the input before applying the regex.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/prose-guard-edits.js#L292" rel="noopener noreferrer">prose-guard-edits.js:292</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A specially crafted height measurement could slow down or freeze your browser, but no data is stolen or leaked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 722 in parseImperialHeightInches contains nested optional groups and alternations that may cause catastrophic backtracking on crafted input, leading to client-side denial of service. The input is user-supplied height text from character sheet fields.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Simplify the regex, add input length limits, or implement a timeout for regex execution to mitigate ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L722" rel="noopener noreferrer">character-sheet-generation.js:722</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The code uses a complex pattern to find a character&#39;s age in text. This pattern could slow down the browser if someone writes a very tricky character description, but since it only applies to your own characters, it&#39;s not a security problem for others.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 1194 in resolveIsekaiCharacterAge contains nested optional quantifiers and alternation that may cause catastrophic backtracking (ReDoS) on crafted input. However, the regex is only applied to the user&#39;s own character text during story seed generation, which is bounded in size and not exposed to external attacker control. No evidence of actual exploitation or performance impact was provided; the scanner signal is a static warning. The practical risk is low because the attacker would need to supply a malicious character card to their own client, which is a self-targeted action with no cross-user harm.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider simplifying the regex or splitting it into multiple simpler checks to reduce the risk of catastrophic backtracking. Alternatively, use a parser-based approach or impose a reasonable input length limit on character text before applying the regex.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/pre-flight.js#L1194" rel="noopener noreferrer">pre-flight.js:1194</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This code uses a pattern to find a character&#39;s name from a description. If someone creates a very long weird description that doesn&#39;t match the expected format, it could slow down your browser for a moment. It&#39;s not a security risk but could be improved to run faster.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex in parsePersonaName() (line 9195) uses a greedy quantifier ([^\n\r]+) after a fixed prefix. On a long non-matching input, the engine may backtrack character-by-character, producing O(n) worst-case time. While not a classic catastrophic ReDoS, this could cause a momentary slowdown if a maliciously crafted character card field is parsed. The scanner correctly identifies a potential weak pattern, but no concrete exploit path or exposure is demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider anchoring the regex to the end of the line (e.g., adding $) or using a non-greedy quantifier ([^\n\r]+?) to limit backtracking. If the intended match is always a single line, the pattern could be made more specific.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L9195" rel="noopener noreferrer">deterministic-runner.js:9195</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This is a slow regular expression that could make your browser freeze if someone sends a specially crafted message, but it wouldn&#39;t steal any data or break your game.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 5923 is complex with many alternations and optional groups, which can cause catastrophic backtracking (ReDoS) when applied to untrusted user input. While it only operates client-side on narrative text and the impact is limited to local performance degradation, it is a quality issue that should be addressed.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Simplify or restructure the regex to avoid nested optional groups and alternations that cause backtracking. Use a regex debugger to verify performance or replace with simpler pattern matching.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L5993" rel="noopener noreferrer">deterministic-runner.js:5993</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A complex pattern used to rewrite item names might cause the browser to slow down or freeze if someone sends a very carefully crafted name, but there&#39;s no evidence this can actually happen or be exploited in practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal flags a potentially vulnerable regular expression at line 6570 used in formatTrackerItemDisplayName for text normalization. The regex /^(?:one|two|three|four|five|six|seven|eight|nine|ten|\d+)\s+(?:leather\s+)?bootlaces\s+and\s+(?:a|an|one)\s+whetstone$/i could exhibit catastrophic backtracking on crafted input, but the input is a short string from user-provided tracker item names or game content. No attacker-controlled path is demonstrated; the function is called with sanitized or game-generated strings. Impact is limited to a potential local browser tab unresponsiveness, which is recoverable and not a security breach.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider simplifying the regex or using a non-backtracking approach (e.g., replace with a plain string match or a less complex pattern) to eliminate the theoretical ReDoS risk.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L6570" rel="noopener noreferrer">index.js:6570</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This line uses a search pattern that might slow down or freeze your browser if the AI&#39;s response contains many partial matches of the markers. This is unlikely to happen normally, but someone could intentionally cause it. A simple browser refresh fixes it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 67 uses `[\s\S]*?` non-greedily, which can cause catastrophic backtracking when the input contains many incomplete matches of BEGIN_PROSE_GUARD_EDITS without the terminating END_PROSE_GUARD_EDITS. This is a client-side operation on AI-generated text; a malicious input crafted to trigger the backtracking could freeze the browser tab temporarily. No evidence of exploitation exists, and the impact is limited to local, recoverable denial of service. The pattern is consistent with the file&#39;s purpose of stripping structured markers from narration output.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider hardening the regex by limiting input length before processing, or using a non-regex approach (e.g., indexOf and slice) for these specific markers. If regex is retained, use atomic groups or possessive quantifiers to prevent backtracking, or split and rejoin on known markers.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/narration-sanitizer.js#L67" rel="noopener noreferrer">narration-sanitizer.js:67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This line uses a pattern to find dice-roll results in text. Under certain unusual inputs, it could cause the browser to slow down briefly, but no actual attack or data theft is possible from this alone.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 2588 contains a lazy quantifier `.*?` and optional groups that could, in theory, cause excessive backtracking on crafted input. However, the regex is highly specific to a fixed dice-roll format, and the `.*?` is lazy, limiting backtracking risk. No ReDoS exploit is demonstrated, and the worst-case impact is a temporary client-side slowdown or unresponsiveness, which is recoverable by reloading the tab. This is a code-quality issue rather than a material vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider adding a length limit on the input string before applying the regex, or reworking the regex to eliminate the lazy quantifier if performance becomes a concern. For example, replace `.*?` with a more constrained pattern like `\s*` or a character class.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/pre-flight.js#L2588" rel="noopener noreferrer">pre-flight.js:2588</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This line uses a pattern to find dice-roll margins in text. While flagged as potentially unsafe, it&#39;s actually quite safe in practice and no harm has been shown.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 2587 uses optional non-capturing groups and alternation, but does not contain nested quantifiers or ambiguous alternations that typically lead to catastrophic backtracking. The pattern is well-constrained to a specific dice-roll format. No ReDoS exploit is demonstrated, and the worst-case impact is a minor temporary slowdown, recoverable by the user. This is a code-quality signal, not a material vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/pre-flight.js#L2587" rel="noopener noreferrer">pre-flight.js:2587</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A regular expression used to detect helpful actions in the Story Engine could be abused to slow down or freeze your browser if someone sends a specially crafted message. Because the extension runs only on your own computer, this would only affect you, and the problem is limited to a temporary slowdown or freeze. It&#39;s a quality issue rather than a security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray scanner flagged a regular expression on line 6383 of file as potentially vulnerable to ReDoS (Regular Expression Denial of Service). The regex is part of the isCooperativeAidAction function and contains nested alternations, optional groups, and variable-length patterns (e.g., &#39;pull\s+(?:him|her|them|[a-z]+)\s+(?:clear|free|out)&#39;) that could cause catastrophic backtracking on crafted inputs. The source text originates from user messages or LLM output, so an attacker who can influence that input might trigger excessive CPU consumption. However, the extension runs entirely client-side in the browser; the worst-case outcome is a frozen tab or UI unresponsiveness, which is a recoverable local denial of service. No actual exploitation is demonstrated in the supplied evidence, and the pattern is a legitimate NLP heuristic for detecting aid-related actions. The technical risk is limited to self-DoS with low impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider refactoring the regex to avoid exponential backtracking. Break the pattern into simpler checks, use word-boundary-anchored literal alternations without nested optional quantifiers, or pre-validate input length. Tools like regex101 or recheck can help identify problematic patterns. While not urgent, this would improve robustness against crafted inputs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L6383" rel="noopener noreferrer">deterministic-runner.js:6383</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A pattern used to figure out if a vessel name refers to the player might be slow on some unusual inputs, but there&#39;s no proof it can be used to cause harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal at line 6631 flags the regex /^(?:the\s+)?(?:\{\{user\}\}|user|player|player character|you|your|his|her|their|body|mind|head|vessel)(?:&#39;s)?(?:\s+(?:body|mind|head|vessel|soul|spirit))?$/i used in formatBoundCompanionVessel to detect a user reference. This regex could cause backtracking if fed a long string with many alternatives, but the input is a short vessel description from game state. No demonstrated attack path; the function is called with bearer data under normal extension operation. Impact is limited to local unresponsiveness.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace this regex with a simpler string check or an anchored prefix/suffix test to avoid any backtracking issues.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L6631" rel="noopener noreferrer">index.js:6631</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This long pattern-matching rule could potentially slow down the extension if someone sends a weirdly long message, but it&#39;s not a serious security risk. It&#39;s just a text-detection tool for the game rules.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 9289 in `hasDirectBodilyAggression` is a large static alternation pattern used to classify text for game mechanic resolution. While the regex is complex and could theoretically cause performance degradation on specially crafted long inputs (ReDoS), it does not contain nested quantifiers or backtracking patterns typical of catastrophic backtracking. The input is user-provided text in a single-player local environment, so any denial of service would be self-inflicted and recoverable. No evidence of an actual exploit or external exposure is present.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider adding a maximum input length guard before applying the regex, or refactor the pattern into multiple simpler checks to reduce complexity. However, the current risk is low and no immediate change is required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L9289" rel="noopener noreferrer">deterministic-runner.js:9289</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A regular expression used to clean up AI-generated text might be able to cause a brief slowdown if a specially crafted line were fed to it. However, the lines it processes are short and come from the AI model, so the chance of harmful performance issues is very low.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 230 of file (/^(?:[*_~]{1,3})?\s*(?:CONCLUSION|VALIDATION CONCLUSION|FINAL CHECK|RENDER CHECK)\s*:/i) was flagged as an unsafe-regex by JS-X-Ray. While the pattern contains optional quantifiers and whitespace, the subpatterns are bounded and the regex is tested against short, trimmed lines from LLM output. There is no evidence of actual catastrophic backtracking, and the worst-case impact is a brief client-side slowdown during narration sanitization. This is a minor weakness with low risk in the SillyTavern extension context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Review the regex for potential ReDoS patterns and consider anchoring the whitespace more tightly (e.g., using \s{0,10} instead of \s*) to further reduce any backtracking risk. The current pattern is likely safe but a conservative hardening would improve robustness.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/narration-sanitizer.js#L230" rel="noopener noreferrer">narration-sanitizer.js:230</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A pattern used to rename &#39;bandage roll of linen&#39; might be slow on some inputs, but it&#39;s not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal at line 6568 flags the regex /^bandage\s+roll\s+of\s+(?:boiled\s+)?linen$/i used in formatTrackerItemDisplayName. This regex has nested quantifiers that could cause backtracking, but the input is always short (item names). No attacker-controlled path demonstrated; the function processes game-generated or user-provided item names. Impact is low (potential temporary UI slowdown).</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using a simple string comparison or a less nested regex pattern.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L6568" rel="noopener noreferrer">index.js:6568</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A pattern used to find words like &#39;rope&#39; or &#39;chain&#39; might be slow on some inputs, but it&#39;s not a real danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal at line 6544 flags the regex /\b(?:[a-z][a-z-]*\s+)?(?:rope|cord|cable|chain|wire)\b/ig used in formatTrackerItemDisplayName to extract material names. This regex uses alternation with a quantifier, which could be slow on crafted input, but the input is a short item name. No demonstrated exploitation path; the function is only called with game data. Impact is low (local tab unresponsiveness).</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Simplify the regex or use a fixed list of words with a single alternation without the optional prefix to reduce backtracking risk.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L6544" rel="noopener noreferrer">index.js:6544</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The extension uses a large, complicated regular expression to check if a description contains game-like numbers or terms. This could, in theory, make your browser slow or freeze if the AI generates a very tricky sentence, but the risk is low because the text is short and the attacker would need to trick the AI first.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The function hasProgressionMechanicalLanguage at line 12070 combines three complex regular expressions with many alternations, optional quantifiers, and lookarounds. In principle, this pattern could cause catastrophic backtracking on adversarial input, leading to a temporary browser freeze. However, the input is limited to AI-generated descriptions clipped to 520 characters, and the attacker would need to control the LLM&#39;s output to produce a pathological string. No actual ReDoS exploit is demonstrated, and any potential denial of service is local and recoverable (browser tab freeze).</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider simplifying the regex by removing unnecessary alternations or using a more bounded approach (e.g., split into smaller tests or use a parser). Test with known ReDoS patterns to confirm vulnerability. If performance is a concern, add a timeout or input length limit (already present via clipText).</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L12070" rel="noopener noreferrer">index.js:12070</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Similar to the other finding, this regex could theoretically be slow with oddly crafted text, but since it&#39;s your own character sheet, there&#39;s no real security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 4365 parses plain text ability names with a bounded quantifier {1,60} and no nested quantifiers, making catastrophic backtracking highly unlikely. Input again comes from the user&#39;s own persona content, self-controlled and size-limited. Any theoretical performance impact would be localized and temporary.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> No change required for security. If desired, an input length cap on persona text would add defense in depth.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L4365" rel="noopener noreferrer">index.js:4365</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A specially crafted height measurement could slow down or freeze your browser, but no data is stolen or leaked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 716 in parseMetricHeightCentimeters contains nested optional groups and alternations that may cause catastrophic backtracking on crafted input, leading to client-side denial of service. The input is user-supplied height text from character sheet fields.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Simplify the regex, add input length limits, or implement a timeout for regex execution to mitigate ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L716" rel="noopener noreferrer">character-sheet-generation.js:716</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A pattern used to detect phrases like &#39;coil of&#39; might be slow, but there&#39;s no evidence it can be used to cause any real problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal at line 6543 flags the regex /^(?:a\s+)?(?:coil|length)\s+of\b/i used in formatTrackerItemDisplayName. This regex is part of a conditional check and could cause backtracking if combined with adversarially chosen input, but the input is short and game-controlled. No demonstrated attack path; impact is low (potential minor slowdown).</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using a simple starts-with check or a non-regex approach for this pattern.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L6543" rel="noopener noreferrer">index.js:6543</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This is a slow regular expression that could cause a temporary freeze if someone types a tricky sentence, but it won&#39;t harm your data or privacy.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 5993 is large with many alternations and optional whitespace groups, making it susceptible to ReDoS. It is used on user-supplied narrative text and can cause local client slowdown. The impact is limited to denial of service for the user&#39;s own session.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Refactor the regex to reduce backtracking: split into multiple simpler checks, use string includes, or employ a regex engine safe against ReDoS. Test with adversarial inputs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L5923" rel="noopener noreferrer">deterministic-runner.js:5923</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A security scanner thought a pattern in the code might cause the browser to slow down or freeze, but looking at the actual code, the pattern is well-written and won&#39;t cause problems. There&#39;s no evidence of a real risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a regex at line 183 used to detect tool-related error messages. The regex uses alternation and optional groups but does not contain nested quantifiers or overlapping alternations that would cause catastrophic backtracking. Input is a concatenation of LLM error message and body, which is bounded and not attacker-controlled beyond normal LLM output. No ReDoS (Regular Expression Denial of Service) vector is demonstrated in the supplied evidence. The flag is a heuristic false positive from JS-X-Ray.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> No change required. The regex is safe as written. If desired, consider adding a length limit on the input string as defense-in-depth, but it is not necessary for security.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L183" rel="noopener noreferrer">character-sheet-generation.js:183</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A specially crafted height measurement could slow down or freeze your browser, but no data is stolen or leaked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 730 in parseImperialHeightInches contains nested optional groups and alternations that may cause catastrophic backtracking on crafted input, leading to client-side denial of service. The input is user-supplied height text from character sheet fields.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Simplify the regex, add input length limits, or implement a timeout for regex execution to mitigate ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L730" rel="noopener noreferrer">character-sheet-generation.js:730</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A specially crafted height measurement could slow down or freeze your browser, but no data is stolen or leaked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 713 in parseMetricHeightCentimeters contains nested optional groups and alternations that may cause catastrophic backtracking on crafted input, leading to client-side denial of service. The input is user-supplied height text from character sheet fields.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Simplify the regex, add input length limits, or implement a timeout for regex execution to mitigate ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L713" rel="noopener noreferrer">character-sheet-generation.js:713</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (18)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner flagged a long word-matching pattern used to detect when a character&#39;s injury is healed or resolved. This pattern is built into the code and doesn&#39;t change based on anything you type. It&#39;s not dangerous; the warning is just a cautious signal about the pattern&#39;s length.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regex at line 4544 is a static, hardcoded pattern used to match resolved injury evidence in narration text. It is not dynamically constructed from user or external input. While the pattern is long, it does not contain nested quantifiers or overlapping alternations known to cause catastrophic backtracking under typical input. The scanner signal &#39;unsafe-regex&#39; is a generic heuristic that does not account for the real-world usage context or the pattern&#39;s structure. No attacker-controlled input reaches the regex construction; it operates on pre-existing narrative strings. Even if pathological input were crafted, the worst outcome would be a temporary CPU spike in the user&#39;s own browser, a self-denial-of-service with no external harm.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L4544" rel="noopener noreferrer">semantic-extractor.js:4544</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner flagged a long pattern used to figure out if a player is accepting an item in a roleplay. This pattern is fixed (not built from user input) and doesn&#39;t have the dangerous nested loops that could slow down or crash the game. It works as intended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner rule &#39;javascript.xray.unsafe-regex&#39; flagged a static regex literal on line 3584. This regex is used to detect user acceptance of an offered object. It is a fixed pattern with no user-controlled dynamic construction. The input is normalized via normalizeItemPossessionClaimText before being tested. The pattern contains alternations and optional groups but no nested quantifiers or overlapping alternations that would cause catastrophic backtracking (ReDoS). The same file contains other similarly long static regex patterns, all proportionate to the project&#39;s game mechanic parsing needs. No ReDoS vulnerability is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L3584" rel="noopener noreferrer">deterministic-runner.js:3584</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a harmless pattern that extracts names and paths from a string. It does not slow down or crash and is not dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex /^relationshipEngine\[([^\]]+)\](?:\.(.*))?$/ at line 44 is used to parse a structured path string. It contains no nested quantifiers, alternation, or overlapping groups that would cause catastrophic backtracking. The pattern is simple and safely bounded by literal anchors and character class negation. No ReDoS vulnerability is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-golden-evaluator.mjs#L44" rel="noopener noreferrer">semantic-golden-evaluator.mjs:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses a programming technique to isolate and check internal parts of the extension&#39;s code. It does this by taking snippets of the extension&#39;s own source and running them in a controlled test environment. This is a standard testing practice and does not affect the safety of the extension for users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate matches a use of `new Function` inside a test file (file) that extracts source code from the project&#39;s own file to test internal functions. The function body is constructed from a controlled slice of the project source, not from user or external input. The test code is not loaded during normal extension execution; it only runs during development testing. There is no attacker-controlled data path, and the dynamic execution poses no risk to users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L16322-L16330" rel="noopener noreferrer">test-behavior.mjs:16322-16330</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought it found a secret key, but it&#39;s actually a test that checks that the extension properly hides secret information in error messages. The test intentionally includes fake secrets to make sure the hiding code works correctly.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Gitleaks match on line 16893 of file corresponds to a test fixture that deliberately constructs an Error object containing placeholder secret tokens (e.g., [REDACTED_SECRET:b80965ff4cbf]) to verify that the formatSemanticDiagnostic function correctly redacts credential-like strings. The subsequent assertions confirm that the redacted output does not contain the original placeholder values. This is a defensive test of a security-sensitive redaction feature, not an actual credential exposure. No real API keys, bearer tokens, or secrets are present in the shipped or executable code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L16893" rel="noopener noreferrer">test-behavior.mjs:16893</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses a regular expression to detect relationship-related phrases like &#39;start a romance&#39;. This pattern is safe and does not have performance problems or security issues.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regex at line 4928 is a simple alternation pattern with fixed word boundaries and no nested quantifiers or overlapping alternations that could cause catastrophic backtracking. JS-X-Ray&#39;s &#39;unsafe-regex&#39; signal is a false positive in this context; the pattern is safe against ReDoS attacks and operates on user-provided chat text as expected for a relationship-detection function.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L4928" rel="noopener noreferrer">deterministic-runner.js:4928</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code uses a regular expression to fix formatting in text coming from the AI, changing single quotes to double quotes. The flagged pattern is a normal way to handle quotes and is not dangerous because the text being processed comes from the AI itself, not from a user who might try to cause problems.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regex at line 1868 is used within the function `repairToolArgumentJson` to convert single-quoted strings to double-quoted strings, escaping internal double quotes. This function processes tool-call argument JSON produced by an LLM semantic ledger, not arbitrary user-controlled input. The regex pattern `/:\s*&#39;([^&#39;\\]*(?:\\.[^&#39;\\]*)*)&#39;/g` is a standard pattern for matching single-quoted strings with escape sequences. While static analysis flags it as potentially vulnerable to ReDoS, the input source (LLM output) is not attacker-controlled, and the regex does not exhibit catastrophic backtracking patterns with nested quantifiers on the same token; the quantifier `*` operates on alternates that are mutually exclusive. Therefore, there is no practical security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L1868" rel="noopener noreferrer">semantic-extractor.js:1868</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test creates a temporary function from a part of the extension&#39;s code to check if settings migration works correctly. It&#39;s like taking a piece of the extension and running it in a testing sandbox. Since this only happens during testing and doesn&#39;t involve your data, it is not a security concern for users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate matches a `new Function` call in file that constructs a function from source code extracted from index.js. The purpose is to test the settings migration logic of the extension. The source used is controlled and derived from the project&#39;s own code, and the test receives only static predefined arguments. There is no user-influence or external untrusted data involved. The test file is not executed during normal use of the extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L16278-L16292" rel="noopener noreferrer">test-behavior.mjs:16278-16292</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that creates a temporary function to check that some layout code works correctly. It only runs during development, never when you use the extension, so it&#39;s harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The call to new Function appears inside a test file (file) and constructs a function from a slice of the production source code solely for the purpose of unit testing the layout and display logic of the tracker widget. The function is never shipped or executed in the runtime extension. No untrusted input reaches this code; the source is read from the project&#39;s own file file, which is static at test time. There is no data exfiltration, hidden execution, or malicious intent.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L11200-L11203" rel="noopener noreferrer">test-behavior.mjs:11200-11203</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code is checking for sensitive info like passwords or API keys in error messages and replacing them with &#39;[REDACTED]&#39; so that private keys don&#39;t accidentally get shown to users or logged. The security scanner flagged this pattern as potentially dangerous, but actually it&#39;s a safety feature—it helps protect your credentials from leaking.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex flagged by JS-X-Ray as &#39;unsafe-regex&#39; is used inside `sanitizeDiagnosticText` to redact credentials (API keys, authorization tokens, secrets) from diagnostic error messages before they are logged or displayed. The pattern is well-structured, does not exhibit catastrophic backtracking risks due to its limited alternatives and use of negated character classes, and its only purpose is to protect sensitive data from leaking in error output. The rule is a false positive in this context because the regex is a defensive security measure, not a vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L345" rel="noopener noreferrer">semantic-extractor.js:345</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code uses a regular expression to parse error messages and extract details. The pattern is safe and does not cause performance issues, even with unexpected input.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 1780 (`/^(\$(?:\.[^\s.\[\]]+|\[\d+\])*)/`) is used to extract a JSON path from an error message. The pattern is well-structured with safe character classes and bounded nesting; it does not exhibit catastrophic backtracking. Input is limited to short error messages. The scanner&#39;s &#39;unsafe-regex&#39; signal is a false positive for this use case.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L1783" rel="noopener noreferrer">semantic-extractor.js:1783</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This regular expression checks error messages to see what data type was expected. It is simple and safe; it cannot be tricked into slowing down the system.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 1783 (`/must be (?:an? |a )?(boolean|string|integer|array|object)/i`) matches a type description in error messages. It uses a simple optional group and a flat alternation of fixed words. No nested quantifiers or overlapping alternatives exist that could cause ReDoS. Input is bounded. The scanner alert is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L1780" rel="noopener noreferrer">semantic-extractor.js:1780</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test creates a temporary function to verify that old widget settings can be updated. It only runs during development, not when you use the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The new Function call is within the same test file and constructs a migration helper from a trusted slice of the production source. It is used to validate that tracker widget settings migration works correctly. No attacker-controlled input is involved, and the function is not shipped to users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L11193-L11199" rel="noopener noreferrer">test-behavior.mjs:11193-11199</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code pattern simply checks for words related to short-lived injuries, like &#39;hit&#39; or &#39;pain&#39;. It comes pre-written and doesn&#39;t change based on user input. The warning is not actionable.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regex at line 4488 is a static, hardcoded pattern used to identify transient injury language like &#39;hit&#39;, &#39;blow&#39;, &#39;pain&#39;. It is not dynamically constructed from untrusted input. The pattern&#39;s structure is a flat alternation of fixed strings and simple optional groups without problematic nesting. No concrete ReDoS vulnerability is demonstrated. The regex operates on user-provided narrative strings within the extension&#39;s intended text-analysis role. The resource impact of any pathological input is limited to the user&#39;s own client.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L4488" rel="noopener noreferrer">semantic-extractor.js:4488</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code uses a regular expression to check if a line of text looks like a money amount (like &#39;5 silver&#39; or &#39;$10&#39;). The pattern is simple and does not have any security risk—it just matches common currency formats. The scanner warning is unnecessary.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regular expression at line 3689 is used to validate currency strings extracted from user persona text. It matches either a dollar sign followed by a digit, or a numeric amount followed by currency abbreviations (e.g., silver, credits, dollars). The pattern has no nested quantifiers or ambiguous alternations that could cause catastrophic backtracking. The input is a single trimmed line from the user&#39;s own persona data, which is not attacker-controlled in a cross-user context. The scanner alert for &#39;unsafe-regex&#39; is a false positive; the regex is safe and performs a simple validation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/index.js#L3689" rel="noopener noreferrer">index.js:3689</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code uses regular expressions to help figure out a character&#39;s name from their description. The patterns are safe and won&#39;t cause slowdowns or crashes.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The three regex patterns at line 2309-2311 are used by getPersonaIdentityHints() to extract name-like fields from character persona text. Each regex uses bounded character classes with max length constraints and no nested quantifiers, making them resistant to catastrophic backtracking. The input is a local string from character card fields, not untrusted external input. The scanner&#39;s &#39;unsafe-regex&#39; signal is a false positive; no ReDoS or other security vulnerability is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L2309" rel="noopener noreferrer">semantic-extractor.js:2309</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line checks for words related to medical treatment, like &#39;bandage&#39; or &#39;stitch&#39;. It&#39;s a fixed list of words built into the extension, not something that can be tricked. No danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regex at line 4500 is a static, hardcoded pattern used to detect treatment language like &#39;bandage&#39;, &#39;splint&#39;, &#39;stitch&#39;. It is not dynamically assembled from user input. The pattern is a flat alternation with simple optional groups; it does not exhibit ReDoS-prone constructs. The signal from the static analyzer is a generic heuristic. The regex operates on narrative text within the extension&#39;s domain of semantic analysis. No evidence of exploitability or harm beyond trivial client-side slowdown exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/semantic-extractor.js#L4500" rel="noopener noreferrer">semantic-extractor.js:4500</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test creates a temporary function to check that the tracker widget stays on the screen. It only runs during development, never when you use the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The new Function call is in the same test file and creates a function container for clamping math used in widget positioning. The source is a trusted slice of the production index.js. The function is only invoked during test assertions to verify correct coordinate calculation. No attacker input reaches this path, and the code is never present in the shipped extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L11182-L11192" rel="noopener noreferrer">test-behavior.mjs:11182-11192</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Multiple ReDoS-vulnerable regex patterns in height parsing</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>There are several complex patterns used to read height measurements. A specially written height could make the browser slow or freeze temporarily, but no personal data is at risk.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file file contains five regex patterns in the height parsing functions (parseMetricHeightCentimeters and parseImperialHeightInches) that are flagged as potentially vulnerable to catastrophic backtracking. All operate on user-supplied text from the character sheet appearance height field. While no data exfiltration or credential access is possible, a crafted input could cause client-side denial of service (browser freeze or slowdown).</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Review all regex patterns in the height parsing functions and refactor them to avoid nested optional quantifiers and overlapping alternations. Consider adding input length validation and a regex execution timeout as defense-in-depth.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L710" rel="noopener noreferrer">character-sheet-generation.js:710</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L722" rel="noopener noreferrer">character-sheet-generation.js:722</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L716" rel="noopener noreferrer">character-sheet-generation.js:716</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L730" rel="noopener noreferrer">character-sheet-generation.js:730</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/character-sheet-generation.js#L713" rel="noopener noreferrer">character-sheet-generation.js:713</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>False positive unsafe-regex signal on safe pattern</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The scanner warning about an unsafe regular expression is not accurate for this particular pattern. The regex works correctly and doesn&#39;t have the dangerous structure that could cause slowdowns or crashes.</p>
+    <details><summary>Technical assessment</summary>
+      <p>JS-X-Ray flagged this regex as unsafe, but analysis of the actual pattern confirms it is a straightforward alternation with no quantifier nesting or overlapping that could cause exponential backtracking. The regex contains only simple word boundaries, a non-capturing group with three literals, optional word &#39;a&#39;, and another alternation. It is safe for use on any input.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/deterministic-runner.js#L4928" rel="noopener noreferrer">deterministic-runner.js:4928</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Multiple regex patterns with potential backtracking in file</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>Several search patterns in this file could cause the browser to slow down if the AI writes a message with many partial matches. The patterns are used to clean up the AI&#39;s responses, but they are not perfectly safe from performance issues.</p>
+    <details><summary>Technical assessment</summary>
+      <p>In addition to line 67, the file contains many other regex patterns using `[\s\S]*?` (e.g., lines 56–80, 149, 161, 228–229, etc.) that could be vulnerable to catastrophic backtracking under crafted input. These are all used for legitimate sanitization of AI output, but collectively they increase the surface for a potential client-side DoS.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review all regex patterns using `[\s\S]*?` and consider using alternatives like split/join or anchored patterns with possessive quantifiers. Benchmark with large inputs to ensure no catastrophic backtracking occurs.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/narration-sanitizer.js#L56-L80" rel="noopener noreferrer">narration-sanitizer.js:56-80</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Test verifies secret redaction from diagnostics</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The extension includes a test to make sure that if something goes wrong, the error messages won&#39;t accidentally show your private API keys. The test uses fake keys to confirm the hiding mechanism works.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The surrounding code in file (lines 16892-16900) tests that secrets embedded in error messages are redacted before being printed or exposed. The test constructs an error containing a bearer token, an API key, and a query parameter key, then asserts that none of the original values appear in the formatted diagnostic output. This demonstrates proactive security testing rather than an actual vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ZDOSt/Story-Engine/blob/3bab20b97b719445b32c68e39b6ec3fe3ae50623/test-behavior.mjs#L16892-L16900" rel="noopener noreferrer">test-behavior.mjs:16892-16900</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>30 files &middot; 3182283 bytes</dd>
+      <dt>Contextual coverage</dt><dd>44 of 44 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>24 files &middot; 3157672 bytes</dd>
+        <dt>Representations</dt><dd>24 raw &middot; 35 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>24 raw signatures &middot; 24 raw AST &middot; 23 raw OpenGrep &middot; 35 derived signatures &middot; 0 derived AST &middot; 34 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>deterministic-runner.js</code> &mdash; derived-ast / parse</li><li><code>deterministic-runner.js</code> &mdash; normalize / parse</li><li><code>index.js</code> &mdash; derived-opengrep / parse</li><li><code>index.js</code> &mdash; raw-opengrep / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/commit/3bab20b97b719445b32c68e39b6ec3fe3ae50623" rel="noopener noreferrer">3bab20b97b719445b32c68e39b6ec3fe3ae50623</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-10T06:58:24.394Z">Aug 10, 2026</time></dd>
+        <dt>History depth</dt><dd>1 commit</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>4</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>27 fresh / 0 reused groups &middot; 44 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Review usage</dt><dd>566194 input &middot; 42835 output &middot; 43484 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>9353e6927972a2f50aa99760e88d2a4bb5fe291248a578307fd251ce62844355</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1225640741/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
