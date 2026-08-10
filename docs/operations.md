@@ -134,31 +134,35 @@ concurrency limit.
 For every exact target, TavernKeeper:
 
 1. acquires and inventories the repository without executing target code;
-2. runs all required deterministic scanners, including policy-4 raw, decoded,
+2. runs all required deterministic scanners, including policy-5 raw, decoded,
    normalized, and bundle-module JavaScript analysis;
 3. validates and groups every candidate with bounded evidence context;
 4. revalidates exact HEAD, deletes the target checkout, and validates a bounded
    secret-free GitHub artifact on a fresh runner;
-5. calculates the canonical review-input digest for every evidence group and
-   reuses only exact, validated low-risk/not-demonstrated matches from the
-   current repository cache;
-6. packs cache misses in source order into input- and output-token-bounded
+5. classifies execution scope and applies conservative deterministic triage,
+   escalating unknown, ambiguous runtime, cross-boundary, and dangerous
+   correlated behavior;
+6. calculates the canonical review-input digest only for contextual groups and
+   reuses exact, validated low-risk/not-demonstrated matches from the current
+   repository cache;
+7. packs contextual cache misses in source order into input- and output-token-bounded
    calls of at most five evidence groups and asks the configured model to
    assess each independently under the versioned ecosystem prompt and strict
    response schema;
-7. rejects missing context, invented citations, invalid structured output,
+8. rejects missing context, invented citations, invalid structured output,
    provider errors, and hard scanner or evidence-integrity failures;
-8. publishes bounded unresolved JavaScript coverage as `incomplete`, without
+9. publishes bounded unresolved JavaScript coverage as `incomplete`, without
    changing advisory color or concern counts;
-9. constructs the complete Technical Report V5 with fresh/reused provenance;
-10. transports the sanitized report and replacement review-cache manifest
+10. constructs the complete Technical Report V5 with triage, budget, and
+    fresh/reused provenance;
+11. transports the sanitized report and replacement review-cache manifest
     through authenticated encryption; and
-11. atomically publishes immutable JSON/HTML, history, the preferred index, and
+12. atomically publishes immutable JSON/HTML, history, the preferred index, and
     `reports/github/<repository-id>/review-cache.json` for that complete
     successful target.
 
-Policy 4 starts cold: policy-3 reports cannot seed its cache. On subsequent
-scans, a cache hit requires an identical evidence-group digest, exact candidate
+Policy 5 starts cold: earlier-policy reports cannot seed its cache. On
+subsequent scans, a contextual cache hit requires an identical evidence-group digest, exact candidate
 IDs, an exact scanner/tool/reviewer identity, and a valid immutable source
 report. Only groups whose assessments and related observations are all low with
 exposure not demonstrated are reusable. Any missing, malformed, stale,
@@ -168,8 +172,15 @@ Operators can audit reuse through the report's `review_reuse` counts and source
 report IDs and through the repository cache manifest. Reports also publish
 `review_batches`, including each call's group/candidate counts, conservative
 input estimate, over-budget singleton flag, and actual provider token usage.
-Valid groups from a partially invalid response are retained in memory and only
+Deterministic assessments never enter the model-review cache. Valid contextual
+groups from a partially invalid response are retained in memory and only
 missing or invalid groups are retried.
+
+Fresh contextual work is capped at 12 behavior cases, 6 provider calls
+including repairs, 200,000 estimated input tokens, 250,000 actual input tokens,
+and 40,000 output tokens per target. The planner rejects an oversized target
+before the first request; cumulative overflow stops before the next request.
+Either outcome publishes no report and enters the target retry path.
 
 Before contextual grouping, repeated JS-X-Ray warnings of the same kind in one
 immutable JavaScript representation become one evidence-preserving review
@@ -241,9 +252,9 @@ its response stream. A timed-out step still reaches the always-run sanitized
 transition, encrypted publication, queue rotation, and continuation path; it
 cannot retain the global scan concurrency slot indefinitely.
 
-OpenGrep policy 4 treats only warning-level code 2 `Other syntax error` and
+OpenGrep policy 5 treats only warning-level code 2 `Other syntax error` and
 warning-level code 3 `PartialParsing` tuple diagnostics as bounded parser
-limitations. Valid findings remain eligible for contextual review when those
+limitations. Valid findings remain eligible for deterministic triage when those
 warnings occur. Unknown warnings, error-level diagnostics, malformed output,
 nonzero exits, and process failures remain target-local scanner failures unless
 the pinned tool itself is unavailable, which is a shared transient failure.
@@ -298,7 +309,7 @@ targets.
 
 No production candidate waits for review, dismissal, or recoloring. Context,
 model, schema, evidence, sanitizer, tool-integrity, or hard scanner failure
-publishes nothing and enters the classified retry path. Bounded policy-4
+publishes nothing and enters the classified retry path. Bounded policy-5
 JavaScript and metadata-only contextual coverage limitations publish visibly
 without changing advisory color or concern counts.
 Complete high/immediate-danger reports are published through the same path as
@@ -321,8 +332,9 @@ actionlint .github/workflows/*.yml
 Run `provider-check.yml` after configuring or changing the endpoint, key, or
 model. Confirm hostile fixture markers, raw model output, hidden reasoning, and
 credentials do not appear in reports or site output; the public report-index
-digest equals the deployed source digest; contextual review covers every
-candidate; and Tavernary imports only matching repository IDs and SHAs.
+digest equals the deployed source digest; deterministic and contextual
+assessments together cover every candidate; and Tavernary imports only matching
+repository IDs and SHAs.
 
 `npm run test:e2e` uses controlled doubles for Git history, external binary
 adapters, model transport, and exact-HEAD verification while exercising the

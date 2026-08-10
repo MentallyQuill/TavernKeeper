@@ -191,6 +191,9 @@ provider_review_failure() {
 quota_review_failure() {
   jq -e '.code == "MODEL_QUOTA" and .domain == "shared" and .component == "contextual-model"' phase-error.json >/dev/null
 }
+budget_review_failure() {
+  jq -e '.code == "MODEL_REVIEW_BUDGET_EXCEEDED" and .domain == "target" and .component == "contextual-model"' phase-error.json >/dev/null
+}
 provider_no_progress_retries="0"
 for pass in 1 2 3; do
   progress_before="$(progress_count)"
@@ -198,6 +201,9 @@ for pass in 1 2 3; do
     exit 0
   fi
   progress_after="$(progress_count)"
+  if budget_review_failure; then
+    exit 1
+  fi
   if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then
     exit 1
   fi
@@ -1129,9 +1135,9 @@ for (const file of names) {
   checkDelayedWake(file, workflow);
 }
 
-const policyFile = "config/scanner-policy.v4.json";
+const policyFile = "config/scanner-policy.v5.json";
 const policy = JSON.parse(await readFile(join(root, policyFile), "utf8"));
-if (policy.version !== "4") fail(policyFile, "policy version must remain 4");
+if (policy.version !== "5") fail(policyFile, "policy version must remain 5");
 if (policy.queue?.batchSize !== 5)
   fail(policyFile, "queue batchSize must remain exactly 5");
 if (policy.queue?.maxParallel !== 2)

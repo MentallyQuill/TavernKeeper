@@ -6,11 +6,13 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, test } from "vitest";
 
 import {
+  loadContextualReviewPolicy,
   loadScannerPins,
   loadScannerPolicy,
   ScannerPolicyV5Schema,
   type ScannerPolicyV5,
 } from "../../src/config/policy.js";
+import { EvidenceContextGroupSchema } from "../../src/context/evidence-context.js";
 import type { Finding } from "../../src/contracts/reports.js";
 import { classifyInventory } from "../../src/inventory/classify.js";
 import { inventoryRepository } from "../../src/inventory/inventory-handler.js";
@@ -32,6 +34,9 @@ import {
 } from "../../src/scanners/javascript-analysis.js";
 import { selectJavascriptCandidates } from "../../src/scanners/javascript-candidates.js";
 import type { InventoryFile } from "../../src/inventory/inventory-handler.js";
+import { planContextualReview } from "../../src/model/contextual-review-budget.js";
+import { ModelRequestError } from "../../src/model/openai-compatible-client.js";
+import { triageEvidenceGroups } from "../../src/triage/review-triage.js";
 import { fixtureReportV5, fixtureReviewCache } from "../helpers/v5-report.js";
 
 const repositoryRoot = dirname(
@@ -158,6 +163,154 @@ async function v5Policy() {
     ),
   );
 }
+
+async function triageRegressionFixture(name: string) {
+  const fixture = JSON.parse(
+    await readFile(
+      join(fixtureRoot, "triage", `${name}-candidates.json`),
+      "utf8",
+    ),
+  ) as {
+    repository: string;
+    target_sha: string;
+    candidates: Array<{
+      candidate_id: string;
+      evidence_id: string;
+      origin: string;
+      rule_id: string;
+      category: string;
+      scanner_severity: "critical" | "high" | "medium" | "low" | "info";
+      scanner_confidence: "high" | "medium" | "low";
+      path: string;
+      line_start: number | null;
+      line_end: number | null;
+      evidence_sha: string;
+      file_role:
+        | "production"
+        | "test"
+        | "fixture"
+        | "documentation"
+        | "tooling"
+        | "generated"
+        | "vendored"
+        | "unknown";
+      execution_scope:
+        | "runtime"
+        | "install-update"
+        | "automation"
+        | "tooling-only"
+        | "test-documentation-data"
+        | "unknown";
+      placeholder: boolean;
+    }>;
+  };
+  const groups = fixture.candidates.map((candidate) => {
+    const safeContext = candidate.placeholder
+      ? "Sanitized placeholder fixture metadata."
+      : "Sanitized public candidate metadata.";
+    return EvidenceContextGroupSchema.parse({
+      group_id: candidate.candidate_id,
+      repository: fixture.repository,
+      project_kinds: ["extension"],
+      path: candidate.path,
+      file_role: candidate.file_role,
+      execution_scope: candidate.execution_scope,
+      target_sha: fixture.target_sha,
+      evidence_sha: candidate.evidence_sha,
+      source_kind: "text",
+      source_bytes: 0,
+      source_sha256: candidate.evidence_id,
+      ecosystem_context_version: "sillytavern-community-v1",
+      ecosystem_context: "Sanitized SillyTavern community scan fixture.",
+      candidates: [
+        {
+          candidate_id: candidate.candidate_id,
+          evidence_id: candidate.evidence_id,
+          origin: candidate.origin,
+          rule_id: candidate.rule_id,
+          category: candidate.category,
+          scanner_severity: candidate.scanner_severity,
+          scanner_confidence: candidate.scanner_confidence,
+          title: "Sanitized scanner finding",
+          explanation: "Sanitized public candidate metadata.",
+          line_start: candidate.line_start,
+          line_end: candidate.line_end,
+        },
+      ],
+      context: {
+        imports: "",
+        source: safeContext,
+        expansions: [safeContext],
+        representations: [
+          {
+            stage: "raw",
+            sha256: candidate.evidence_id,
+            transform_depth: 0,
+          },
+        ],
+        project_purpose: "Sanitized public canary candidate fixture.",
+      },
+    });
+  });
+  const triage = triageEvidenceGroups(groups);
+  const policy = await loadContextualReviewPolicy(
+    join(repositoryRoot, "config", "contextual-review.v5.json"),
+  );
+  try {
+    const plan = planContextualReview(
+      triage.contextualGroups,
+      new Map(),
+      undefined,
+      policy,
+    );
+    return {
+      total: triage.counts.candidates.total,
+      deterministic: triage.counts.candidates.deterministic,
+      contextual: triage.counts.candidates.contextual,
+      initialBatches: plan.batches.length,
+      estimatedInputTokens: plan.estimatedInputTokens,
+      budgetError: false,
+    };
+  } catch (error) {
+    if (
+      error instanceof ModelRequestError &&
+      error.code === "MODEL_REVIEW_BUDGET_EXCEEDED"
+    )
+      return {
+        total: triage.counts.candidates.total,
+        deterministic: triage.counts.candidates.deterministic,
+        contextual: triage.counts.candidates.contextual,
+        initialBatches: 0,
+        estimatedInputTokens: 0,
+        budgetError: true,
+      };
+    throw error;
+  }
+}
+
+describe("sanitized policy-v5 canary triage regressions", () => {
+  test("keeps Recursion and Wandlight inside the contextual budget", async () => {
+    const recursion = await triageRegressionFixture("recursion");
+    const wandlight = await triageRegressionFixture("wandlight");
+
+    expect(recursion.total).toBe(64);
+    expect(recursion.contextual).toBeLessThanOrEqual(6);
+    expect(recursion.initialBatches).toBeLessThanOrEqual(2);
+    expect(recursion.budgetError).toBe(false);
+    expect(wandlight.total).toBe(5);
+    expect(wandlight.contextual).toBeLessThanOrEqual(1);
+    expect(wandlight.budgetError).toBe(false);
+  });
+
+  test("keeps Directive mostly deterministic and fails oversized review preflight", async () => {
+    const directive = await triageRegressionFixture("directive");
+
+    expect(directive.deterministic / directive.total).toBeGreaterThanOrEqual(
+      0.8,
+    );
+    expect(directive.budgetError).toBe(true);
+  });
+});
 
 async function fixtureScan(fixture: string, policyInput?: ScannerPolicyV5) {
   const policy = policyInput ?? (await v5Policy());
