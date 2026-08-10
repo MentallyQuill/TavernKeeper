@@ -451,6 +451,7 @@ export async function checkJsonRepairProvider(provider: JsonRepairProvider) {
     project_kinds: ["extension"],
     path: "synthetic.js",
     file_role: "production",
+    execution_scope: "runtime",
     target_sha: "4".repeat(40),
     evidence_sha: "4".repeat(40),
     source_kind: "text",

@@ -25,6 +25,7 @@ const group: EvidenceContextGroup = {
   project_kinds: ["extension"],
   path: "src/index.ts",
   file_role: "production",
+  execution_scope: "runtime",
   target_sha: "b".repeat(40),
   evidence_sha: "b".repeat(40),
   source_kind: "text",
@@ -113,6 +114,7 @@ describe("contextual review input identity", () => {
     ["repository", { ...group, repository: "owner/other" }],
     ["path", { ...group, path: "src/other.ts" }],
     ["file role", { ...group, file_role: "tooling" as const }],
+    ["execution scope", { ...group, execution_scope: "tooling-only" as const }],
     [
       "candidate evidence",
       {
@@ -250,6 +252,7 @@ async function cacheFixture() {
     project_kinds: ["extension"],
     path: candidate.path,
     file_role: candidate.file_role,
+    execution_scope: "runtime",
     target_sha: "f".repeat(40),
     evidence_sha: "f".repeat(40),
     source_kind: "text",

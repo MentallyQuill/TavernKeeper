@@ -116,6 +116,7 @@ const group: EvidenceContextGroup = {
   project_kinds: ["extension"],
   path: finding.path,
   file_role: "production",
+  execution_scope: "runtime",
   target_sha: targetSha,
   evidence_sha: targetSha,
   source_kind: "text",

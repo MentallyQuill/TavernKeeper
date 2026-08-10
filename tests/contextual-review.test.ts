@@ -40,6 +40,7 @@ function group(
     project_kinds: ["extension"],
     path,
     file_role: "production",
+    execution_scope: "runtime",
     target_sha: "d".repeat(40),
     evidence_sha: "d".repeat(40),
     source_kind: "text",

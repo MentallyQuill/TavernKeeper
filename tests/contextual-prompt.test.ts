@@ -27,6 +27,7 @@ describe("SillyTavern ecosystem context", () => {
       project_kinds: ["extension"],
       path: "src/client.ts",
       file_role: "production",
+      execution_scope: "runtime",
       target_sha: "b".repeat(40),
       evidence_sha: "b".repeat(40),
       source_kind: "text",
@@ -92,6 +93,7 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).not.toContain(injection);
     expect(prompt.userContent).toContain(injection);
     expect(prompt.userContent).toContain("// expanded");
+    expect(prompt.userContent).toContain('"execution_scope": "runtime"');
     expect(prompt.userContent).not.toContain(groupId);
     expect(prompt.userContent).not.toContain(group.target_sha);
     expect(prompt.userContent).not.toContain(group.evidence_sha);

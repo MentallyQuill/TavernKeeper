@@ -22,6 +22,10 @@ import {
   ECOSYSTEM_CONTEXT_VERSION,
   ecosystemContext,
 } from "./ecosystem-context.js";
+import {
+  ExecutionScopeSchema,
+  type ExecutionScope,
+} from "../triage/execution-scope.js";
 
 type ProjectKind = "extension" | "frontend" | "preset";
 export type FileRole =
@@ -84,6 +88,7 @@ export const EvidenceContextGroupSchema = z.strictObject({
   project_kinds: z.array(z.enum(["extension", "frontend", "preset"])).min(1),
   path: RepositoryPathSchema,
   file_role: FileRoleSchema,
+  execution_scope: ExecutionScopeSchema,
   target_sha: FullShaSchema,
   evidence_sha: FullShaSchema,
   source_kind: EvidenceSourceKindSchema,
@@ -113,6 +118,7 @@ interface BuildEvidenceContextGroupsInput {
   inventory: Inventory;
   historicalSources?: readonly HistoricalEvidenceSource[];
   javascriptEvidenceHints?: readonly JavaScriptEvidenceHint[];
+  executionScopes?: ReadonlyMap<string, ExecutionScope>;
   maxEvidenceCharactersPerFinding?: number;
 }
 
@@ -553,6 +559,7 @@ export async function buildEvidenceContextGroups({
   inventory,
   historicalSources = [],
   javascriptEvidenceHints = [],
+  executionScopes = new Map(),
   maxEvidenceCharactersPerFinding = DEFAULT_MAX_EVIDENCE_CHARACTERS,
 }: BuildEvidenceContextGroupsInput): Promise<EvidenceContextGroup[]> {
   if (
@@ -756,6 +763,7 @@ export async function buildEvidenceContextGroups({
                 maxEvidenceCharactersPerFinding,
               ),
             );
+      const executionScope = executionScopes.get(path) ?? "unknown";
       groups.push({
         group_id: digest([
           target.source_id,
@@ -764,12 +772,14 @@ export async function buildEvidenceContextGroups({
           path,
           sourceKind,
           sourceSha256,
+          executionScope,
           candidates.map((candidate) => candidate.candidate_id),
         ]),
         repository: target.repository,
         project_kinds: [...projectKinds].sort(),
         path,
         file_role: classifyFileRole(path),
+        execution_scope: executionScope,
         target_sha: target.target_sha,
         evidence_sha: evidenceSha ?? target.target_sha,
         source_kind: sourceKind,

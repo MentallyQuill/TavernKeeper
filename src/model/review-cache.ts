@@ -109,6 +109,7 @@ export function canonicalReviewInput(group: EvidenceContextGroup) {
     project_kinds: [...group.project_kinds].sort(),
     path: group.path,
     file_role: group.file_role,
+    execution_scope: group.execution_scope,
     source_kind: group.source_kind,
     ecosystem_context_version: group.ecosystem_context_version,
     ecosystem_context: group.ecosystem_context,

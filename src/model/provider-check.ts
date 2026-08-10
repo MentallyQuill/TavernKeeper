@@ -91,6 +91,7 @@ export async function checkModelProviderCompatibility(
     project_kinds: ["extension"],
     path: "README.md",
     file_role: "documentation",
+    execution_scope: "test-documentation-data",
     target_sha: "0".repeat(40),
     evidence_sha: "0".repeat(40),
     source_kind: "text",

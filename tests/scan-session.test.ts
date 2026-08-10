@@ -38,6 +38,7 @@ import {
 import type { CommandRunner } from "../src/process/command-runner.js";
 import { findingFingerprint } from "../src/scanners/types.js";
 import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
+import { analyzeExecutionScopes } from "../src/triage/execution-scope.js";
 
 const roots: string[] = [];
 const targetSha = "a".repeat(40);
@@ -181,6 +182,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
       project_kinds: [...prepared.project_kinds],
       path: findingIdentity.path,
       file_role: "production" as const,
+      execution_scope: "runtime" as const,
       target_sha: targetSha,
       evidence_sha: targetSha,
       source_kind: "text" as const,
@@ -405,7 +407,10 @@ describe("three-phase contextual scan session", () => {
     );
     const pins = await loadScannerPins(resolve("config/scanners.v1.json"));
     let verified = false;
-    const dependencies: PrepareTargetSessionDependencies = {
+    let executionScopeAnalyzed = false;
+    const dependencies: PrepareTargetSessionDependencies & {
+      executionScopes: typeof analyzeExecutionScopes;
+    } = {
       checkout: async ({ destination }) => {
         await mkdir(destination, { recursive: true });
         return {
@@ -506,6 +511,11 @@ describe("three-phase contextual scan session", () => {
         })),
       ],
       extractHistorical: async () => [],
+      executionScopes: async ({ limits }) => {
+        executionScopeAnalyzed = true;
+        expect(limits).toEqual(policy.executionScope);
+        return new Map();
+      },
       buildEvidence: async () => [],
       verifyHead: async (_root, expectedSha) => {
         verified = true;
@@ -543,6 +553,7 @@ describe("three-phase contextual scan session", () => {
     );
 
     expect(verified).toBe(true);
+    expect(executionScopeAnalyzed).toBe(true);
     expect(result).not.toHaveProperty("checkoutRoot");
     await expect(access(checkoutRoot)).rejects.toMatchObject({
       code: "ENOENT",

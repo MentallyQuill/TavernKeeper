@@ -35,6 +35,7 @@ import {
   extractHistoricalEvidenceSources,
   type EvidenceContextGroup,
 } from "../context/evidence-context.js";
+import { analyzeExecutionScopes } from "../triage/execution-scope.js";
 import { checkoutExactTarget, verifyExactHead } from "../git/checkout.js";
 import { planHistory } from "../git/history.js";
 import { classifyInventory } from "../inventory/classify.js";
@@ -302,6 +303,7 @@ export interface PrepareTargetSessionDependencies {
   structuralScan: typeof scanStructuralFiles;
   scanners: typeof runApplicableScanners;
   extractHistorical: typeof extractHistoricalEvidenceSources;
+  executionScopes: typeof analyzeExecutionScopes;
   buildEvidence: typeof buildEvidenceContextGroups;
   verifyHead: typeof verifyExactHead;
 }
@@ -314,6 +316,7 @@ const defaultPrepareDependencies: PrepareTargetSessionDependencies = {
   structuralScan: scanStructuralFiles,
   scanners: runApplicableScanners,
   extractHistorical: extractHistoricalEvidenceSources,
+  executionScopes: analyzeExecutionScopes,
   buildEvidence: buildEvidenceContextGroups,
   verifyHead: verifyExactHead,
 };
@@ -671,6 +674,11 @@ export async function prepareTargetSession(
       runner,
       maxFileBytes: policy.inventory.maxFileBytes,
     });
+    const executionScopes = await dependencies.executionScopes({
+      root: checkoutRoot,
+      files: inventory.files,
+      limits: policy.executionScope,
+    });
     const evidenceBundle = await buildBoundedEvidenceContext({
       prepared,
       maxEvidenceCharacters:
@@ -683,6 +691,7 @@ export async function prepareTargetSession(
           findings,
           inventory,
           historicalSources,
+          executionScopes,
           javascriptEvidenceHints: orderedRuns.flatMap(
             ({ evidenceHints }) => evidenceHints ?? [],
           ),
