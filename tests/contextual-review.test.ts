@@ -1161,6 +1161,315 @@ describe("contextual evidence review", () => {
     );
   });
 
+  test("uses one Luna binding patch only after DeepSeek exhausts evidence repair", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    let primaryCalls = 0;
+    const requestCompletion = vi.fn(async () => {
+      primaryCalls += 1;
+      return {
+        completionId: `completion-primary-${primaryCalls}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments: [assessment(ids[0]!, current.path, 2)],
+          observations: [
+            {
+              related_candidate_ids: [ids[0]!],
+              evidence_ids: [ids[0]!],
+              disposition: "minor_weakness",
+              impact: "low",
+              exploitability: "unlikely",
+              confidence: "medium",
+              risk_exposure: "not_demonstrated",
+              recommended_risk: "low",
+              title: "Bounded observation",
+              technical_explanation: "The behavior should remain bounded.",
+              layman_explanation: "This deserves a small caution.",
+              developer_action: "Document the intended boundary.",
+              locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+            },
+          ],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+    const requestRepair = vi.fn(async () => ({
+      completionId: "completion-luna-repair",
+      endpointOrigin: "https://api.openai.com",
+      provider: "api.openai.com",
+      content: JSON.stringify({
+        repair: {
+          assessment_evidence_ids: [],
+          observations: [
+            {
+              index: 0,
+              action: "drop",
+            },
+          ],
+        },
+      }),
+      usage: {
+        inputTokens: 25,
+        outputTokens: 10,
+        cacheReadTokens: 0,
+        reasoningTokens: 0,
+      },
+    }));
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "deepseek-v4-flash",
+        requestCompletion,
+      },
+      jsonRepairProvider: {
+        endpoint: "https://api.openai.com/v1/chat/completions",
+        apiKey: "repair-key",
+        model: "gpt-5.6-luna",
+        requestCompletion: requestRepair,
+      },
+      policy,
+    });
+
+    expect(primaryCalls).toBe(3);
+    expect(requestRepair).toHaveBeenCalledOnce();
+    expect(result.model).toBe("deepseek-v4-flash");
+    expect(result.observations).toEqual([]);
+    expect(result.usage).toEqual({
+      inputTokens: 325,
+      outputTokens: 130,
+      cacheReadTokens: 0,
+      reasoningTokens: 30,
+    });
+    expect(result.completion_ids).toEqual([
+      "completion-primary-1",
+      "completion-primary-2",
+      "completion-primary-3",
+      "jsonrepair:completion-luna-repair",
+    ]);
+  });
+
+  test("does not send malformed or semantically invalid output to Luna", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestRepair = vi.fn();
+    const malformedPrimary = vi.fn(async () => ({
+      completionId: `malformed-${malformedPrimary.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: "not-json",
+      usage: {
+        inputTokens: 10,
+        outputTokens: 2,
+        cacheReadTokens: 0,
+        reasoningTokens: 0,
+      },
+    }));
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "deepseek-v4-flash",
+          requestCompletion: malformedPrimary,
+        },
+        jsonRepairProvider: {
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: "repair-key",
+          model: "gpt-5.6-luna",
+          requestCompletion: requestRepair,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_INVALID_RESPONSE" });
+    expect(requestRepair).not.toHaveBeenCalled();
+
+    const metadata = { ...current, source_kind: "metadata-only" as const };
+    const semanticPrimary = vi.fn(async () => ({
+      completionId: `semantic-${semanticPrimary.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: reviewContent({
+        status: "complete",
+        assessments: [
+          {
+            ...assessment(ids[0]!, current.path, 2),
+            risk_exposure: "demonstrated",
+            disposition: "material_vulnerability",
+            impact: "medium",
+            exploitability: "plausible",
+            confidence: "high",
+            recommended_risk: "material",
+          },
+        ],
+        observations: [],
+      }),
+      usage: {
+        inputTokens: 10,
+        outputTokens: 2,
+        cacheReadTokens: 0,
+        reasoningTokens: 0,
+      },
+    }));
+    await expect(
+      reviewEvidenceGroups({
+        groups: [metadata],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "deepseek-v4-flash",
+          requestCompletion: semanticPrimary,
+        },
+        jsonRepairProvider: {
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: "repair-key",
+          model: "gpt-5.6-luna",
+          requestCompletion: requestRepair,
+        },
+        policy,
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      diagnostic: "assessment_risk_exposure",
+    });
+    expect(requestRepair).not.toHaveBeenCalled();
+  });
+
+  test("preserves the final DeepSeek failure when Luna repair fails", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-primary-invalid-location",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: reviewContent({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [
+          {
+            related_candidate_ids: [ids[0]!],
+            evidence_ids: [ids[0]!],
+            disposition: "minor_weakness",
+            impact: "low",
+            exploitability: "unlikely",
+            confidence: "medium",
+            risk_exposure: "not_demonstrated",
+            recommended_risk: "low",
+            title: "Bounded observation",
+            technical_explanation: "The behavior should remain bounded.",
+            layman_explanation: "This deserves a small caution.",
+            developer_action: "Document the intended boundary.",
+            locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+          },
+        ],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+    const requestRepair = vi.fn(async () => {
+      throw new ModelRequestError(
+        "MODEL_PROVIDER",
+        "system",
+        "Repair provider unavailable.",
+      );
+    });
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "deepseek-v4-flash",
+          requestCompletion,
+        },
+        jsonRepairProvider: {
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: "repair-key",
+          model: "gpt-5.6-luna",
+          requestCompletion: requestRepair,
+        },
+        policy: { ...policy, maxImmediateAttempts: 1 },
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      diagnostic: "observation_locations",
+    });
+    expect(requestRepair).toHaveBeenCalledOnce();
+  });
+
+  test("never applies the Luna patch path to a non-DeepSeek reviewer", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-other-reviewer",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: reviewContent({
+        status: "complete",
+        assessments: [assessment(ids[0]!, current.path, 2)],
+        observations: [
+          {
+            related_candidate_ids: [ids[0]!],
+            evidence_ids: [ids[0]!],
+            disposition: "minor_weakness",
+            impact: "low",
+            exploitability: "unlikely",
+            confidence: "medium",
+            risk_exposure: "not_demonstrated",
+            recommended_risk: "low",
+            title: "Bounded observation",
+            technical_explanation: "The behavior should remain bounded.",
+            layman_explanation: "This deserves a small caution.",
+            developer_action: "Document the intended boundary.",
+            locations: [{ path: current.path, line_start: 99, line_end: 99 }],
+          },
+        ],
+      }),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+    const requestRepair = vi.fn();
+
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "some-other-reviewer",
+          requestCompletion,
+        },
+        jsonRepairProvider: {
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: "repair-key",
+          model: "gpt-5.6-luna",
+          requestCompletion: requestRepair,
+        },
+        policy: { ...policy, maxImmediateAttempts: 1 },
+      }),
+    ).rejects.toMatchObject({
+      code: "MODEL_EVIDENCE_INVALID",
+      diagnostic: "observation_locations",
+    });
+    expect(requestRepair).not.toHaveBeenCalled();
+  });
+
   test("refuses secret-shaped text in otherwise valid model output", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const unsafe = {

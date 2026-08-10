@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import { buildReconcileMatrix } from "../src/cli/reconcile.js";
+import { checkConfiguredJsonRepair } from "../src/cli/jsonrepair-check.js";
 import { runCoverageCampaign } from "../src/cli/coverage-campaign.js";
 import { buildQueueSynchronization } from "../src/cli/sync-queue.js";
 import { probeFailureProvesSharedRecovery } from "../src/cli/probe-outcome.js";
@@ -740,7 +741,7 @@ describe("JSON-only orchestration CLIs", () => {
     );
 
     expect(texts.join("\n")).not.toMatch(
-      /TAVERNKEEPER_API_ENDPOINT|TAVERNKEEPER_API_KEY|TAVERNKEEPER_MODEL/u,
+      /TAVERNKEEPER_API_ENDPOINT|TAVERNKEEPER_API_KEY|TAVERNKEEPER_MODEL|JSONREPAIR_/u,
     );
   });
 
@@ -752,6 +753,9 @@ describe("JSON-only orchestration CLIs", () => {
           "https://provider.example/v1/chat/completions",
         TAVERNKEEPER_API_KEY: "test-key",
         TAVERNKEEPER_MODEL: "configured/model",
+        JSONREPAIR_API_ENDPOINT: "https://api.openai.com/v1/chat/completions",
+        JSONREPAIR_API_KEY: "repair-key",
+        JSONREPAIR_MODEL: "gpt-5.6-luna",
       },
       {
         loadPolicy: async () => ({
@@ -766,12 +770,25 @@ describe("JSON-only orchestration CLIs", () => {
         review: async (spec) => {
           expect(spec.sessionRoot).toBe("C:/runner/tavernkeeper-session-42");
           expect(spec.expandContext).toBeTypeOf("function");
-          return { status: "reviewed", review: {} as never };
+          expect(spec.jsonRepairProvider).toEqual({
+            endpoint: "https://api.openai.com/v1/chat/completions",
+            apiKey: "repair-key",
+            model: "gpt-5.6-luna",
+          });
+          return {
+            status: "reviewed",
+            review: {
+              completion_ids: [
+                "deepseek-completion",
+                "jsonrepair:luna-completion",
+              ],
+            } as never,
+          };
         },
       },
     );
 
-    expect(result).toEqual({ status: "reviewed" });
+    expect(result).toEqual({ status: "reviewed", json_repairs: 1 });
     const source = await readFile(
       new URL("../src/cli/review-target.ts", import.meta.url),
       "utf8",
@@ -779,6 +796,31 @@ describe("JSON-only orchestration CLIs", () => {
     expect(source).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
     expect(source).toContain("contextual-review.v3.json");
     expect(source).not.toContain("contextual-review.v2.json");
+  });
+
+  test("checks only the configured JSON repair provider", async () => {
+    let calls = 0;
+    const result = await checkConfiguredJsonRepair(
+      {
+        JSONREPAIR_API_ENDPOINT: "https://api.openai.com/v1/chat/completions",
+        JSONREPAIR_API_KEY: "repair-key",
+        JSONREPAIR_MODEL: "gpt-5.6-luna",
+      },
+      {
+        check: async (provider) => {
+          calls += 1;
+          expect(provider).toEqual({
+            endpoint: "https://api.openai.com/v1/chat/completions",
+            apiKey: "repair-key",
+            model: "gpt-5.6-luna",
+          });
+          return { status: "passed" as const };
+        },
+      },
+    );
+
+    expect(result).toEqual({ status: "passed" });
+    expect(calls).toBe(1);
   });
 
   test("a completed fixed coverage campaign is an idempotent file no-op", async () => {

@@ -11,9 +11,10 @@ generated distributions that older first-party-only classification could omit.
 The production path uses GitHub-hosted Actions, repository state, one-day
 GitHub artifacts, GitHub release assets for pinned scanner binaries, and GitHub
 Pages. JavaScript analysis uses exact locked npm packages installed inside the
-Action. The only non-GitHub runtime call is the already configured contextual
-model. TavernKeeper has no scan server, database, daemon, persistent worker,
-source cache, or separately hosted deobfuscation service.
+Action. TavernKeeper has no scan server, database, daemon, persistent worker,
+source cache, or separately hosted deobfuscation service. The only non-GitHub
+runtime calls are the configured contextual reviewer and, only after a final
+allowlisted binding failure, one minimal GPT-5.6 Luna JSON patch request.
 
 The existing `scan-and-publish.yml` workflow is divided at a credential
 boundary:
@@ -28,9 +29,14 @@ boundary:
    evidence digest, and restores only `prepared.json` and
    `evidence-context.json`. It never receives a target checkout path or complete
    derived source. A sanitized preparation failure bypasses the model.
-3. Successful evidence receives contextual model review. The finalized public
-   report and sanitized transition then use the existing authenticated,
-   encrypted `scan-${repository_id}` artifact and serialized publisher.
+3. Successful evidence receives contextual model review. Luna may see only
+   failed hash bindings or locally proven invalid observation indices after the
+   primary reviewer exhausts its own repair attempts; it never sees source,
+   file paths, line numbers, scanner finding prose, or report narratives and
+   cannot replace review or summary generation. The finalized public report and
+   sanitized transition then use
+   the existing authenticated, encrypted `scan-${repository_id}` artifact and
+   serialized publisher.
 
 GitHub artifact transport is the only prepare-to-review handoff. The prepared
 artifact is capped at 20,000,000 bytes and contains fixed scanner descriptions,

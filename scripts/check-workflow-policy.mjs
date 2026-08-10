@@ -342,6 +342,9 @@ const mutationJobs = {
   ],
 };
 const approvedWorkflowSecretNames = new Set([
+  "JSONREPAIR_API_ENDPOINT",
+  "JSONREPAIR_API_KEY",
+  "JSONREPAIR_MODEL",
   "TAVERNKEEPER_ARTIFACT_KEY",
   "TAVERNKEEPER_API_ENDPOINT",
   "TAVERNKEEPER_API_KEY",
@@ -356,6 +359,7 @@ const publisherSecretPattern =
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
 const providerSecretPattern =
   /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
+const jsonRepairSecretPattern = /JSONREPAIR_(?:API_ENDPOINT|API_KEY|MODEL)\b/u;
 const sensitiveInputPattern =
   /clone_url|repository_url|endpoint|branch|sha|model|mode|priority|token|budget|command/iu;
 const forbiddenRuntimePattern =
@@ -542,6 +546,19 @@ function checkSecretPlacement(file, workflow) {
     if (!approved)
       fail(file, "model provider secret appears outside a review-only step");
   }
+  for (const location of locationsMatching(workflow, jsonRepairSecretPattern)) {
+    const stepIndex = location.path[3];
+    const step = Number.isInteger(stepIndex)
+      ? workflow.jobs?.[location.path[1]]?.steps?.[stepIndex]
+      : undefined;
+    const approved =
+      (file === "scan-and-publish.yml" &&
+        step?.name === "Contextually assess scanner evidence") ||
+      (file === "provider-check.yml" &&
+        step?.name === "Check one synthetic JSON repair");
+    if (!approved)
+      fail(file, "JSON repair secret appears outside a repair-only step");
+  }
 }
 
 function checkContextualRuntime(file, workflow) {
@@ -582,13 +599,19 @@ function checkContextualRuntime(file, workflow) {
         step?.name === "Check one benign contextual review" &&
         step?.run === "npm run --silent provider:check",
     );
+    const repair = steps.filter(
+      (step) =>
+        step?.name === "Check one synthetic JSON repair" &&
+        step?.run === "npm run --silent jsonrepair:check",
+    );
     if (
       check.length !== 1 ||
+      repair.length !== 1 ||
       /publish|candidate\.json|git push/iu.test(JSON.stringify(workflow))
     )
       fail(
         file,
-        "provider check must make one non-publishing contextual request",
+        "provider check must make one contextual and one JSON-repair-only request",
       );
   }
   if (file === "reconcile.yml") {
@@ -747,7 +770,7 @@ function checkEncryptedHandoff(file, workflow) {
     fail(file, "review matrix must wait for preparation");
   if (
     JSON.stringify(workflow.jobs?.prepare).match(
-      /secrets\.|TAVERNKEEPER_API_|TAVERNKEEPER_MODEL|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
+      /secrets\.|TAVERNKEEPER_API_|TAVERNKEEPER_MODEL|JSONREPAIR_|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
     )
   )
     fail(file, "prepare matrix must remain credential-free");

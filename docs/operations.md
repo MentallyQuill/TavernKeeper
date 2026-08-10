@@ -18,6 +18,11 @@ Configure these secrets in `tavernkeeper-scanner`:
   `Authorization: Bearer` header.
 - `TAVERNKEEPER_MODEL`: provider model identifier. Model selection is runtime
   configuration and is not hardcoded into scan policy.
+- `JSONREPAIR_API_ENDPOINT`: the OpenAI-compatible chat-completions endpoint
+  used only to repair a final invalid DeepSeek binding response.
+- `JSONREPAIR_API_KEY`: Bearer credential for the JSON repair endpoint.
+- `JSONREPAIR_MODEL`: the GPT-5.6 Luna model identifier used only by the
+  bounded repair protocol.
 
 Provider credentials are exposed only to the fresh contextual-review job and
 the protected provider compatibility check. They are absent from acquisition,
@@ -30,7 +35,20 @@ then independently validates the exact local schema, evidence identity, and
 complete candidate coverage. A provider that explicitly rejects JSON Schema
 with HTTP 400 or 422 receives one compatibility retry in `json_object` mode;
 authentication, quota, and other provider failures never trigger that retry.
-Do not add automatic model fallback.
+There is no automatic reviewer or summary-model fallback. After the configured
+reviewer exhausts all immediate attempts, one parsed completed response may
+receive one Luna JSON binding patch only for invalid assessment evidence IDs,
+observation evidence IDs, or observation locations. The repair request contains
+only failed hash bindings or locally proven invalid observation indices: it
+contains no source, file paths, line numbers, scanner finding text, repository
+identity, narratives, or project summary.
+Luna cannot change a disposition, impact, exploitability, confidence, exposure,
+risk, title, explanation, action, or candidate identity. The patched response
+may only replace an assessment's evidence hashes or drop an optional observation
+with invalid evidence or locations; it never relocates or rewrites an
+observation. It must pass the ordinary authoritative evidence validator. Malformed or
+semantically invalid responses, provider failures, and failed Luna patches keep
+the original target-local failure.
 
 The credential-free prepare job first uploads one bounded
 `prepared-${repository_id}` artifact for one day. It contains only validated
@@ -196,7 +214,8 @@ notification.
 
 Provider exhaustion, context insufficiency, invalid model output, and missing
 review coverage are failures, never permission to skip finding candidates,
-reduce the policy, switch models automatically, or infer a low result. A
+reduce the policy, switch reviewers automatically, or infer a low result. The
+bounded JSON binding repair described above is not a review fallback. A
 bounded deterministic JavaScript parser or transform limitation is different:
 it is published as explicit incomplete coverage and remains visible without
 changing advisory color or concern counts. See [`SCANNING.md`](SCANNING.md).
@@ -221,10 +240,12 @@ scanner metadata without exposing raw binary to the model. The report publishes
 `completed-with-limitations` contextual coverage and cannot appear low solely
 because the model could not inspect the raw contents.
 
-Invalid contextual-model responses receive one corrective prompt that names
-only the rejected schema field category. If the next response fails in the
-same category, TavernKeeper stops the immediate loop and rotates the target;
-it never copies the rejected response back into a prompt or queue state.
+Invalid contextual-model responses use every configured immediate attempt with
+corrective guidance naming only the rejected field category. The rejected prose
+is never copied into another review prompt or persisted. After the last attempt,
+only a parsed completed response with an allowlisted evidence-binding diagnostic
+may use the one-call Luna patch protocol; all other invalid output rotates the
+target unchanged.
 
 Any change to scanner behavior or output requires a clean canary baseline.
 Before reactivation, remove the existing Wandlight and Recursion report trees

@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import type { EvidenceContextGroup } from "../context/evidence-context.js";
 import { z } from "zod";
 import {
@@ -23,11 +25,17 @@ import {
 import {
   ModelRequestError,
   type ModelCompletionResult,
+  type ModelResponseDiagnostic,
   type ModelUsage,
   requestTextCompletion,
   type TextCompletionRequest,
   validateModelEndpoint,
 } from "./openai-compatible-client.js";
+import {
+  isJsonRepairDiagnostic,
+  type JsonRepairProvider,
+  repairCompletedReviewBindings,
+} from "./json-repair.js";
 import { redactSource } from "./redaction.js";
 import { validateCompletedGroupReview } from "./review-coverage.js";
 
@@ -203,6 +211,7 @@ interface ValidatedContextualReviewProgress {
 export interface ReviewEvidenceGroupsSpec {
   groups: readonly EvidenceContextGroup[];
   provider: ContextualReviewProvider;
+  jsonRepairProvider?: JsonRepairProvider | undefined;
   policy: ContextualReviewPolicy;
   progress?: ContextualReviewProgress | undefined;
   onProgress?:
@@ -400,6 +409,10 @@ function retryable(error: unknown) {
   );
 }
 
+function isDeepSeekV4FlashModel(model: string) {
+  return /(?:^|\/)deepseek-v4-flash(?:[-:./]|$)/iu.test(model);
+}
+
 function progressError(message: string): never {
   throw new ContextualReviewProgressError(message);
 }
@@ -532,11 +545,24 @@ async function reviewGroup(
   let group = initialGroup;
   let repair: ContextualReviewRepair | undefined;
   let lastError: unknown;
+  let repairCandidate:
+    | {
+        review: Extract<ContextualReviewResponse, { status: "complete" }>;
+        diagnostic: Extract<
+          ModelResponseDiagnostic,
+          | "assessment_evidence_ids"
+          | "observation_evidence_ids"
+          | "observation_locations"
+        >;
+      }
+    | undefined;
   for (
     let attempt = 1;
     attempt <= spec.policy.maxImmediateAttempts;
     attempt += 1
   ) {
+    let completedResponse:
+      Extract<ContextualReviewResponse, { status: "complete" }> | undefined;
     try {
       const finalAttempt = attempt === spec.policy.maxImmediateAttempts;
       const prompt = buildContextualReviewPrompt(group, repair, finalAttempt);
@@ -641,6 +667,7 @@ async function reviewGroup(
         repair = undefined;
         continue;
       }
+      completedResponse = response;
       return validateCompletedGroupReview(
         group,
         response,
@@ -648,8 +675,19 @@ async function reviewGroup(
       );
     } catch (error) {
       lastError = error;
-      if (!retryable(error) || attempt === spec.policy.maxImmediateAttempts)
-        throw error;
+      if (!retryable(error)) throw error;
+      if (attempt === spec.policy.maxImmediateAttempts) {
+        if (
+          completedResponse !== undefined &&
+          error instanceof ModelRequestError &&
+          isJsonRepairDiagnostic(error.diagnostic)
+        )
+          repairCandidate = {
+            review: completedResponse,
+            diagnostic: error.diagnostic,
+          };
+        break;
+      }
       const nextRepair: ContextualReviewRepair = {
         diagnostic:
           error instanceof ModelRequestError && error.diagnostic !== undefined
@@ -659,6 +697,37 @@ async function reviewGroup(
       repair = nextRepair;
     }
   }
+  if (
+    repairCandidate !== undefined &&
+    spec.jsonRepairProvider !== undefined &&
+    isDeepSeekV4FlashModel(spec.provider.model)
+  )
+    try {
+      const repaired = await repairCompletedReviewBindings({
+        group,
+        review: repairCandidate.review,
+        diagnostic: repairCandidate.diagnostic,
+        provider: spec.jsonRepairProvider,
+      });
+      const validated = validateCompletedGroupReview(
+        group,
+        repaired.review,
+        spec.groups.map(({ path }) => path),
+      );
+      addUsage(usage, repaired.usage);
+      const repairCompletionId = `jsonrepair:${repaired.completionId}`;
+      completionIds.push(
+        repairCompletionId.length <= 200
+          ? repairCompletionId
+          : `jsonrepair:${createHash("sha256")
+              .update(repaired.completionId)
+              .digest("hex")}`,
+      );
+      return validated;
+    } catch {
+      // JSON repair is optional and cannot replace the authoritative primary
+      // failure with a repair-provider or patch error.
+    }
   throw lastError;
 }
 
