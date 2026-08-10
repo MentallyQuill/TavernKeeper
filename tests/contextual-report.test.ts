@@ -52,7 +52,7 @@ const scanPackage = buildScanPackage({
   history: { baseSha: null, commits: 1 },
   scannerVersion: "1.0.0",
   scannerPolicyVersion: "5",
-  ruleCatalogVersion: "1",
+  ruleCatalogVersion: "2",
   inventory: {
     root: "C:/scan/repository",
     files: [sourceFile],

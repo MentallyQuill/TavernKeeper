@@ -60,7 +60,7 @@ function indexedReport(
     supersedes_report_id: null,
     scanner_version: "1.0.0",
     scanner_policy_version: "2",
-    rule_catalog_version: "1",
+    rule_catalog_version: "2",
     package_schema_version: 1,
     contextual_review_policy_version: "1",
     ecosystem_context_version: "sillytavern-community-v1",

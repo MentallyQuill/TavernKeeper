@@ -96,7 +96,7 @@ async function preparedSession(options: { omitTool?: boolean } = {}) {
     prepared_at: "2026-08-02T15:00:00.000Z",
     scanner_version: "1.0.0",
     scanner_policy_version: "5",
-    rule_catalog_version: "1",
+    rule_catalog_version: "2",
     report_version: 1,
     supersedes_report_id: null,
     history: { base_sha: null, commits: 1 },

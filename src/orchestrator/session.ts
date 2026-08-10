@@ -125,7 +125,7 @@ const PreparedSessionObjectSchema = z.strictObject({
   prepared_at: z.iso.datetime(),
   scanner_version: VersionSchema,
   scanner_policy_version: z.literal(CURRENT_SCANNER_POLICY_VERSION),
-  rule_catalog_version: z.literal("1"),
+  rule_catalog_version: z.literal("2"),
   report_version: z.number().int().positive(),
   supersedes_report_id: DigestSchema.nullable(),
   history: z.strictObject({
@@ -608,7 +608,7 @@ export async function prepareTargetSession(
       prepared_at: preparedAt,
       scanner_version: scannerVersion,
       scanner_policy_version: CURRENT_SCANNER_POLICY_VERSION,
-      rule_catalog_version: "1" as const,
+      rule_catalog_version: "2" as const,
       report_version: reportVersion,
       supersedes_report_id: supersedesReportId,
       history: {

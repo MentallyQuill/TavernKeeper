@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   classifyFinding,
   describeFinding,
+  OWNED_RULE_TRIAGE,
   RULE_CATALOG_VERSION,
 } from "../src/policy/rule-descriptions.js";
 
@@ -33,7 +34,7 @@ describe("deterministic finding policy", () => {
   });
 
   test("uses exact static descriptions and versioned external fallbacks", () => {
-    expect(RULE_CATALOG_VERSION).toBe("1");
+    expect(RULE_CATALOG_VERSION).toBe("2");
     expect(describeFinding(finding)).toEqual({
       title: "Credential access and network transmission in one file",
       explanation:
@@ -69,6 +70,32 @@ describe("deterministic finding policy", () => {
       remediation:
         "Review the correlated source behavior and remove unsafe execution, credential access, persistence, or network activity that is not required.",
     });
+  });
+
+  test("declares triage behavior for every owned scanner rule", () => {
+    expect(OWNED_RULE_TRIAGE).toMatchObject({
+      "credential-exfiltration": "correlation-only",
+      "network-install-hook": "correlation-only",
+      "unicode-bidi-control": "deterministic",
+      "tavernkeeper.encoded-payload.javascript-decode-to-execution":
+        "correlation-only",
+      "tavernkeeper.encoded-payload.powershell-command": "contextual",
+      "tavernkeeper.download-and-execute.shell-pipeline": "correlation-only",
+      "tavernkeeper.install-hook.network-capable-command": "correlation-only",
+      "tavernkeeper.persistence.startup-modification": "correlation-only",
+      "tavernkeeper.dynamic-execution.javascript-eval": "contextual",
+      "tavernkeeper.dynamic-execution.node-shell": "contextual",
+      "tavernkeeper.dynamic-execution.python-eval-or-shell": "contextual",
+      "tavernkeeper.credential-exfiltration.javascript-secret-to-network":
+        "correlation-only",
+      "tavernkeeper.credential-exfiltration.python-secret-to-network":
+        "correlation-only",
+      "tavernkeeper.reconnaissance-transmission.javascript-host-data-to-network":
+        "contextual",
+      "tavernkeeper.reconnaissance-transmission.python-host-data-to-network":
+        "contextual",
+    });
+    expect(Object.keys(OWNED_RULE_TRIAGE)).toHaveLength(15);
   });
 
   test("rejects unsupported origins and unsafe dynamic identifiers", () => {
