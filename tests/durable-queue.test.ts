@@ -38,8 +38,8 @@ describe("durable scan ticket operations", () => {
       ...state,
       policy_campaigns: [
         {
-          id: "policy-4-canary",
-          scanner_policy_version: "4",
+          id: "policy-5-canary",
+          scanner_policy_version: "5",
           repository_ids: [42],
           created_at: at,
           status: "active",

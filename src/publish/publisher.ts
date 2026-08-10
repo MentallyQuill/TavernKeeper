@@ -49,6 +49,19 @@ export interface PublishCandidatesInput {
 
 function cacheMatchesReport(cache: ReviewCacheManifest, report: ScanReportV5) {
   const identity = cache.review_identity;
+  const baseMatches =
+    cache.repository_id === report.repository_id &&
+    cache.repository === report.repository &&
+    cache.source_report.report_id === report.report_id &&
+    cache.source_report.target_sha === report.target_sha &&
+    cache.source_report.scanner_policy_version ===
+      report.scanner_policy_version;
+  if (identity === undefined)
+    return (
+      baseMatches &&
+      cache.entries.length === 0 &&
+      report.review_triage?.candidates.contextual === 0
+    );
   const reportTools = report.coverage.tools
     .map(({ name, version }) => ({ name, version }))
     .sort((left, right) =>
@@ -72,12 +85,7 @@ function cacheMatchesReport(cache: ReviewCacheManifest, report: ScanReportV5) {
     endpointProviderMatches = false;
   }
   return (
-    cache.repository_id === report.repository_id &&
-    cache.repository === report.repository &&
-    cache.source_report.report_id === report.report_id &&
-    cache.source_report.target_sha === report.target_sha &&
-    cache.source_report.scanner_policy_version ===
-      report.scanner_policy_version &&
+    baseMatches &&
     identity.scanner_version === report.scanner_version &&
     identity.scanner_policy_version === report.scanner_policy_version &&
     identity.rule_catalog_version === report.rule_catalog_version &&
@@ -85,6 +93,7 @@ function cacheMatchesReport(cache: ReviewCacheManifest, report: ScanReportV5) {
       report.contextual_review_policy_version &&
     identity.prompt_version === report.prompt_version &&
     identity.assessment_schema_version === report.assessment_schema_version &&
+    report.contextual_reviewer !== undefined &&
     identity.provider === report.contextual_reviewer.provider &&
     endpointProviderMatches &&
     identity.model === report.contextual_reviewer.model &&

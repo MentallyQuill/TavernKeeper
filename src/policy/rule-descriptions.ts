@@ -1,6 +1,39 @@
 import type { Confidence, Severity } from "../contracts/reports.js";
 
-export const RULE_CATALOG_VERSION = "1";
+export const RULE_CATALOG_VERSION = "2";
+
+export type RuleTriageBehavior =
+  "deterministic" | "contextual" | "correlation-only";
+
+export const OWNED_RULE_TRIAGE = {
+  "credential-exfiltration": "correlation-only",
+  "network-install-hook": "correlation-only",
+  "unicode-bidi-control": "deterministic",
+  "tavernkeeper.encoded-payload.javascript-decode-to-execution":
+    "correlation-only",
+  "tavernkeeper.encoded-payload.powershell-command": "contextual",
+  "tavernkeeper.download-and-execute.shell-pipeline": "correlation-only",
+  "tavernkeeper.install-hook.network-capable-command": "correlation-only",
+  "tavernkeeper.persistence.startup-modification": "correlation-only",
+  "tavernkeeper.dynamic-execution.javascript-eval": "contextual",
+  "tavernkeeper.dynamic-execution.node-shell": "contextual",
+  "tavernkeeper.dynamic-execution.python-eval-or-shell": "contextual",
+  "tavernkeeper.credential-exfiltration.javascript-secret-to-network":
+    "correlation-only",
+  "tavernkeeper.credential-exfiltration.python-secret-to-network":
+    "correlation-only",
+  "tavernkeeper.reconnaissance-transmission.javascript-host-data-to-network":
+    "contextual",
+  "tavernkeeper.reconnaissance-transmission.python-host-data-to-network":
+    "contextual",
+} as const satisfies Record<string, RuleTriageBehavior>;
+
+export function ownedRuleTriage(
+  ruleId: string,
+): RuleTriageBehavior | undefined {
+  const normalized = ruleId.replace(/^javascript\.opengrep\./u, "");
+  return OWNED_RULE_TRIAGE[normalized as keyof typeof OWNED_RULE_TRIAGE];
+}
 
 export type FindingPolicyStatus = "reportable" | "informational";
 

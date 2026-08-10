@@ -48,6 +48,7 @@ export type ModelRequestErrorCode =
   | "MODEL_IDENTITY_MISMATCH"
   | "MODEL_RESPONSE_ORIGIN"
   | "MODEL_EVIDENCE_INVALID"
+  | "MODEL_REVIEW_BUDGET_EXCEEDED"
   | "MODEL_CONTEXT_INCOMPLETE";
 
 export type ModelResponseDiagnostic =

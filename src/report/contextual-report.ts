@@ -2,12 +2,14 @@ import type {
   EvidenceContextGroup,
   FileRole,
 } from "../context/evidence-context.js";
+import { z } from "zod";
 import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
 import {
   buildContextualCountsV5,
   INCOMPLETE_JAVASCRIPT_LIMITATION,
   METADATA_ONLY_EVIDENCE_LIMITATION,
   publicJavascriptAnalysisCoverage,
+  ReviewTriageV5Schema,
   ScanReportV5Schema,
   type CandidateV5,
   type ScanReportV5,
@@ -18,14 +20,177 @@ import {
 } from "../contracts/scan-package.js";
 import type { CompletedContextualReview } from "../model/contextual-review.js";
 import {
+  ReviewBatchUsageSchema,
+  ReviewUnitSchema,
+} from "../model/contextual-review.js";
+import {
+  ContextualObservationSchema,
+  PolicyV5AssessmentSchema,
+} from "../model/contextual-review-contract.js";
+import {
   describeFinding,
   RULE_CATALOG_VERSION,
 } from "../policy/rule-descriptions.js";
 import { reportIdentity } from "../publish/report-path.js";
+import type { ContextualReviewPolicy } from "../model/contextual-review.js";
+import type { ReviewTriagePlan } from "../triage/review-triage.js";
+
+const CountSchema = z.number().int().nonnegative();
+const UsageSchema = z.strictObject({
+  inputTokens: CountSchema,
+  outputTokens: CountSchema,
+  cacheReadTokens: CountSchema,
+  reasoningTokens: CountSchema,
+});
+
+export const CompletedReviewV5Schema = z.strictObject({
+  policy_version: z.literal("5"),
+  prompt_version: z.literal("contextual-review-v7"),
+  schema_version: z.literal("contextual-assessment-v2"),
+  reviewer: z
+    .strictObject({
+      provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
+      endpoint_origin: z.url(),
+      model: z.string().trim().min(1).max(200),
+    })
+    .optional(),
+  coverage: z.strictObject({ required: CountSchema, completed: CountSchema }),
+  assessments: z.array(PolicyV5AssessmentSchema),
+  observations: z.array(ContextualObservationSchema),
+  usage: UsageSchema,
+  completion_ids: z.array(z.string().min(1).max(200)),
+  review_units: z.array(ReviewUnitSchema),
+  review_batches: z.array(ReviewBatchUsageSchema).optional(),
+  review_triage: ReviewTriageV5Schema,
+});
+
+export type CompletedReviewV5 = z.infer<typeof CompletedReviewV5Schema>;
+
+function zeroUsage() {
+  return {
+    inputTokens: 0,
+    outputTokens: 0,
+    cacheReadTokens: 0,
+    reasoningTokens: 0,
+  };
+}
+
+export function mergePolicyV5Review(input: {
+  triage: ReviewTriagePlan;
+  contextualReview?: CompletedContextualReview | undefined;
+  policy: ContextualReviewPolicy;
+}): CompletedReviewV5 {
+  const contextualCandidates = input.triage.decisions.filter(
+    ({ destination }) => destination === "contextual",
+  );
+  if (
+    contextualCandidates.length > 0 !==
+    (input.contextualReview !== undefined)
+  )
+    throw new Error("Contextual review does not match the triage partition.");
+  const contextual = input.contextualReview;
+  if (
+    contextual !== undefined &&
+    (contextual.coverage.required !== contextualCandidates.length ||
+      contextual.coverage.completed !== contextualCandidates.length ||
+      contextual.review_units === undefined)
+  )
+    throw new Error("Contextual review coverage is incomplete.");
+  const decisionByCandidate = new Map(
+    input.triage.decisions.map((decision) => [decision.candidate_id, decision]),
+  );
+  const assessments = [
+    ...input.triage.deterministicAssessments.map((assessment) => ({
+      ...assessment,
+      assessment_source: "deterministic-policy" as const,
+      triage_reason_code: decisionByCandidate.get(assessment.candidate_id)!
+        .reason_code,
+    })),
+    ...(contextual?.assessments ?? []).map((assessment) => ({
+      ...assessment,
+      assessment_source: "contextual-model" as const,
+      triage_reason_code: decisionByCandidate.get(assessment.candidate_id)!
+        .reason_code,
+    })),
+  ]
+    .map((assessment) => PolicyV5AssessmentSchema.parse(assessment))
+    .sort((left, right) => left.candidate_id.localeCompare(right.candidate_id));
+  if (assessments.length !== input.triage.decisions.length)
+    throw new Error("Merged review coverage is incomplete.");
+  const reviewUnits = contextual?.review_units ?? [];
+  const reviewBatches = contextual?.review_batches;
+  const reusedUnits = reviewUnits.filter(({ reused }) => reused);
+  const freshUnits = reviewUnits.filter(({ reused }) => !reused);
+  const usage = contextual?.usage ?? zeroUsage();
+  const completionIds = contextual?.completion_ids ?? [];
+  return CompletedReviewV5Schema.parse({
+    policy_version: "5",
+    prompt_version: input.policy.promptVersion,
+    schema_version: input.policy.schemaVersion,
+    ...(contextual === undefined
+      ? {}
+      : {
+          reviewer: {
+            provider: contextual.provider,
+            endpoint_origin: contextual.endpoint_origin,
+            model: contextual.model,
+          },
+        }),
+    coverage: {
+      required: input.triage.decisions.length,
+      completed: assessments.length,
+    },
+    assessments,
+    observations: contextual?.observations ?? [],
+    usage,
+    completion_ids: completionIds,
+    review_units: reviewUnits,
+    ...(reviewBatches === undefined || reviewBatches.length === 0
+      ? {}
+      : { review_batches: reviewBatches }),
+    review_triage: {
+      policy_version: "1",
+      candidates: {
+        total: input.triage.counts.candidates.total,
+        deterministic: input.triage.counts.candidates.deterministic,
+        contextual: input.triage.counts.candidates.contextual,
+        reused_contextual: reusedUnits.reduce(
+          (total, unit) => total + unit.candidate_ids.length,
+          0,
+        ),
+      },
+      cases: {
+        total: input.triage.counts.cases.total,
+        contextual: input.triage.counts.cases.contextual,
+        reused_contextual: reusedUnits.length,
+      },
+      reasons: input.triage.counts.reasons,
+      model_budget: {
+        configured: {
+          max_fresh_behavior_cases: input.policy.maxFreshBehaviorCases,
+          max_provider_calls: input.policy.maxProviderCalls,
+          max_estimated_input_tokens: input.policy.maxEstimatedInputTokens,
+          max_actual_input_tokens: input.policy.maxActualInputTokens,
+          max_actual_output_tokens: input.policy.maxActualOutputTokens,
+        },
+        actual: {
+          fresh_behavior_cases: freshUnits.length,
+          provider_calls: completionIds.length,
+          estimated_input_tokens: (reviewBatches ?? []).reduce(
+            (total, batch) => total + (batch.estimated_input_tokens ?? 0),
+            0,
+          ),
+          input_tokens: usage.inputTokens,
+          output_tokens: usage.outputTokens,
+        },
+      },
+    },
+  });
+}
 
 export interface ContextualReportInput {
   scanPackage: unknown;
-  review: CompletedContextualReview;
+  review: CompletedReviewV5;
   evidenceGroups: readonly EvidenceContextGroup[];
 }
 
@@ -87,7 +252,14 @@ function candidateRoles(
   groups: readonly EvidenceContextGroup[],
   scanPackage: ScanPackageV1,
 ) {
-  const roles = new Map<string, { role: FileRole; evidenceId: string }>();
+  const roles = new Map<
+    string,
+    {
+      role: FileRole;
+      executionScope: EvidenceContextGroup["execution_scope"];
+      evidenceId: string;
+    }
+  >();
   for (const group of groups) {
     if (
       group.repository !== scanPackage.target.repository ||
@@ -102,6 +274,7 @@ function candidateRoles(
         throw new Error("Evidence candidate identities must be unique.");
       roles.set(candidate.candidate_id, {
         role: group.file_role,
+        executionScope: group.execution_scope,
         evidenceId: candidate.evidence_id,
       });
     }
@@ -143,6 +316,7 @@ function publicCandidates(
       line_end: finding.line_end,
       evidence_sha: finding.evidence_sha ?? scanPackage.target.target_sha,
       file_role: role.role,
+      execution_scope: role.executionScope,
       title: description.title,
       explanation: description.explanation,
       remediation: description.remediation,
@@ -234,10 +408,14 @@ export function buildContextualReport(
     target_sha: scanPackage.target.target_sha,
     completed_at: options.completedAt,
     assessment_method: "deterministic-evidence-contextual-review" as const,
-    contextual_reviewer: {
-      provider: input.review.provider,
-      model: input.review.model,
-    },
+    ...(input.review.reviewer === undefined
+      ? {}
+      : {
+          contextual_reviewer: {
+            provider: input.review.reviewer.provider,
+            model: input.review.reviewer.model,
+          },
+        }),
     review_usage: {
       input_tokens: input.review.usage.inputTokens,
       output_tokens: input.review.usage.outputTokens,
@@ -247,6 +425,7 @@ export function buildContextualReport(
     ...(input.review.review_batches === undefined
       ? {}
       : { review_batches: input.review.review_batches }),
+    review_triage: input.review.review_triage,
     history: scanPackage.history,
     coverage: {
       inventory: {

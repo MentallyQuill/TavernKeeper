@@ -1,10 +1,10 @@
 # Scanning policy
 
-TavernKeeper policy 4 is an automated, exact-SHA, static security scan. It is a
+TavernKeeper policy 5 is an automated, exact-SHA, static security scan. It is a
 first filter for Tavernary, not a full audit and never a certification that a
-project is safe. Its main improvement over policy 3 is explicit analysis of
-minified, encoded, and bundled JavaScript, including committed dependencies and
-generated distributions that older first-party-only classification could omit.
+project is safe. It retains policy 4's explicit analysis of minified, encoded,
+and bundled JavaScript while deterministically resolving bounded known evidence
+and reserving contextual model review for ambiguous behavior.
 
 ## GitHub-only automation boundary
 
@@ -29,8 +29,10 @@ boundary:
    evidence digest, and restores only `prepared.json` and
    `evidence-context.json`. It never receives a target checkout path or complete
    derived source. A sanitized preparation failure bypasses the model.
-3. Successful evidence receives contextual model review. Exact cache hits are
-   removed first; remaining groups are packed in source order into conservative
+3. Successful evidence is conservatively partitioned by deterministic policy.
+   Known bounded evidence is assessed locally, while ambiguous runtime,
+   cross-boundary, and correlated behavior receives contextual model review.
+   Exact contextual cache hits are removed first; remaining groups are packed in source order into conservative
    input- and output-token-bounded calls of at most five groups. Each group has
    its own response identity and authoritative replay validation, so valid
    entries are retained while only missing or invalid entries retry. Luna may
@@ -129,7 +131,7 @@ code.
 
 ## Policy ceilings
 
-Policy 4 currently bounds JavaScript analysis to:
+Policy 5 currently bounds JavaScript analysis to:
 
 - 10,000 candidates and 536,870,912 aggregate candidate bytes;
 - 16,777,216 bytes per transform input and derivative;

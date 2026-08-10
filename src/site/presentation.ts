@@ -323,7 +323,7 @@ export function deriveIndexedProjectAdvisory(
   entry: ReportIndexEntryV5,
 ): ProjectAdvisory {
   const published = entry.counts.recommended_risk;
-  if (!["2", "3", "4"].includes(entry.contextual_review_policy_version))
+  if (!["2", "3", "4", "5"].includes(entry.contextual_review_policy_version))
     return {
       risk: published.high + published.material > 0 ? "material" : "low",
       dangerBasis: null,

@@ -23,6 +23,7 @@ const group: EvidenceContextGroup = {
   project_kinds: ["extension"],
   path: "src/a.ts",
   file_role: "production",
+  execution_scope: "runtime",
   target_sha: "1".repeat(40),
   evidence_sha: "2".repeat(40),
   source_kind: "text",

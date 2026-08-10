@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import type { ScannerPolicyV4 } from "../src/config/policy.js";
+import type { ScannerPolicyV5 } from "../src/config/policy.js";
 import { ScanPackageV1Schema } from "../src/contracts/scan-package.js";
 import type { Inventory } from "../src/inventory/inventory-handler.js";
 import {
@@ -29,8 +29,8 @@ const inventory: Inventory = {
   totals: { files: 1, bytes: 6 },
   totalBytes: 6,
 };
-const policy: ScannerPolicyV4 = {
-  version: "4",
+const policy: ScannerPolicyV5 = {
+  version: "5",
   queue: { batchSize: 5, maxParallel: 2 },
   history: { maxCommits: 20 },
   inventory: {
@@ -57,6 +57,11 @@ const policy: ScannerPolicyV4 = {
     maxEvidenceCharactersPerFinding: 24_000,
     maxPreparedEvidenceBytes: 20_000_000,
     analysisTimeoutMs: 1_200_000,
+  },
+  executionScope: {
+    maxFiles: 10_000,
+    maxTotalBytes: 67_108_864,
+    maxFileBytes: 2_097_152,
   },
   retry: {
     modelReplyMinutesFromInitialFailure: [5, 10, 15],
@@ -88,7 +93,7 @@ function finding() {
 function scannerRuns(withFinding = false): ScannerRun[] {
   return (
     [
-      ["tavernkeeper-static", "4"],
+      ["tavernkeeper-static", "5"],
       ["gitleaks", "8.30.1"],
       ["opengrep", "1.26.0"],
       ["javascript-analysis", JAVASCRIPT_ANALYSIS_VERSION],
@@ -144,7 +149,7 @@ function spec(): ScanRepositorySpec {
     root: inventory.root,
     previousReportShas: [],
     scannerVersion: "1.0.0",
-    scannerPolicyVersion: "4",
+    scannerPolicyVersion: "5",
     ruleCatalogVersion: "1",
     policy,
     pins: {

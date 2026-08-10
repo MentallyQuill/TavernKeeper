@@ -53,7 +53,7 @@ export const ReviewCacheManifestSchema = z
       target_sha: FullShaSchema,
       scanner_policy_version: VersionSchema,
     }),
-    review_identity: ReviewIdentitySchema,
+    review_identity: ReviewIdentitySchema.optional(),
     entries: z
       .array(
         z.strictObject({
@@ -64,6 +64,12 @@ export const ReviewCacheManifestSchema = z
       .max(10_000),
   })
   .superRefine((manifest, context) => {
+    if (manifest.entries.length > 0 && manifest.review_identity === undefined)
+      context.addIssue({
+        code: "custom",
+        path: ["review_identity"],
+        message: "Reusable entries require a contextual review identity.",
+      });
     const digests = manifest.entries.map(
       ({ review_input_digest }) => review_input_digest,
     );
@@ -109,6 +115,7 @@ export function canonicalReviewInput(group: EvidenceContextGroup) {
     project_kinds: [...group.project_kinds].sort(),
     path: group.path,
     file_role: group.file_role,
+    execution_scope: group.execution_scope,
     source_kind: group.source_kind,
     ecosystem_context_version: group.ecosystem_context_version,
     ecosystem_context: group.ecosystem_context,
@@ -198,6 +205,7 @@ function reportMatchesManifest(
       identity.contextual_policy_version &&
     report.prompt_version === identity.prompt_version &&
     report.assessment_schema_version === identity.assessment_schema_version &&
+    report.contextual_reviewer !== undefined &&
     report.contextual_reviewer.provider === identity.provider &&
     report.contextual_reviewer.model === identity.model &&
     JSON.stringify(
@@ -217,7 +225,18 @@ function responseForCandidates(
   const candidateSet = new Set(candidateIds);
   const assessments = report.assessments
     .filter(({ candidate_id }) => candidateSet.has(candidate_id))
-    .map(({ locations: _locations, ...assessment }) => assessment);
+    .map((published) => {
+      const { locations: _locations, ...assessment } = published;
+      if ("assessment_source" in assessment) {
+        const {
+          assessment_source: _assessmentSource,
+          triage_reason_code: _triageReasonCode,
+          ...contextual
+        } = assessment;
+        return contextual;
+      }
+      return assessment;
+    });
   const observations = report.observations
     .filter(
       ({ related_candidate_ids }) =>
@@ -265,6 +284,7 @@ export async function loadReusableReviewGroups(input: {
     if (
       manifest.repository_id !== input.repositoryId ||
       manifest.repository !== input.repository ||
+      manifest.review_identity === undefined ||
       !sameIdentity(manifest.review_identity, identity)
     )
       return new Map();
@@ -329,14 +349,19 @@ export async function loadReusableReviewGroups(input: {
 
 export function buildReviewCacheManifest(input: {
   report: ScanReportV5;
-  reviewIdentity: ReviewIdentity;
+  reviewIdentity?: ReviewIdentity | undefined;
   reviewUnits: readonly {
     review_input_digest: string;
     candidate_ids: readonly string[];
   }[];
 }) {
   const report = sanitizeReportV5(input.report);
-  const identity = ReviewIdentitySchema.parse(input.reviewIdentity);
+  const identity =
+    input.reviewIdentity === undefined
+      ? undefined
+      : ReviewIdentitySchema.parse(input.reviewIdentity);
+  if (input.reviewUnits.length > 0 && identity === undefined)
+    throw new Error("Contextual review units require a review identity.");
   const assessmentByCandidate = new Map(
     report.assessments.map((assessment) => [
       assessment.candidate_id,
@@ -360,6 +385,9 @@ export function buildReviewCacheManifest(input: {
         assessments.every(
           (assessment) =>
             assessment !== undefined &&
+            (report.contextual_review_policy_version !== "5" ||
+              ("assessment_source" in assessment &&
+                assessment.assessment_source === "contextual-model")) &&
             "risk_exposure" in assessment &&
             assessment.recommended_risk === "low" &&
             assessment.risk_exposure === "not_demonstrated",
@@ -388,7 +416,7 @@ export function buildReviewCacheManifest(input: {
       target_sha: report.target_sha,
       scanner_policy_version: report.scanner_policy_version,
     },
-    review_identity: identity,
+    ...(identity === undefined ? {} : { review_identity: identity }),
     entries,
   });
 }

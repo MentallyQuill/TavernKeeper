@@ -85,6 +85,41 @@ describe("public site presentation", () => {
     });
   });
 
+  test("keeps a deterministic unsafe-regex weakness low", () => {
+    expect(
+      deriveProjectAdvisory([
+        {
+          disposition: "minor_weakness",
+          impact: "low",
+          exploitability: "plausible",
+          confidence: "medium",
+          risk_exposure: "not_demonstrated",
+          recommended_risk: "low",
+          origin: "javascript-analysis",
+          rule_id: "javascript.xray.unsafe-regex",
+          file_role: "production",
+        },
+      ]),
+    ).toMatchObject({ risk: "low", dangerBasis: null });
+  });
+
+  test("preserves policy-5 immediate-danger counts on indexed reports", () => {
+    expect(
+      deriveIndexedProjectAdvisory({
+        contextual_review_policy_version: "5",
+        counts: {
+          recommended_risk: { high: 1, material: 0, low: 2 },
+          disposition: { credible_malicious_behavior: 1 },
+        },
+        coverage: { javascript_analysis_status: "complete" },
+      } as never),
+    ).toMatchObject({
+      risk: "high",
+      dangerBasis: "malicious_or_compromised",
+      counts: { high: 1, material: 0, low: 2 },
+    });
+  });
+
   test("keeps a legacy imported-template execution vulnerability yellow", () => {
     expect(
       deriveProjectAdvisory([

@@ -1,6 +1,6 @@
 import { tmpdir } from "node:os";
 
-import type { ScannerPins, ScannerPolicyV4 } from "../config/policy.js";
+import type { JavascriptScannerPolicy, ScannerPins } from "../config/policy.js";
 import type { Finding } from "../contracts/reports.js";
 import type { InventoryClassification } from "../inventory/classify.js";
 import type { InventoryFile } from "../inventory/inventory-handler.js";
@@ -39,7 +39,7 @@ export interface ApplicableScannerSpec {
   structuralFiles: StaticSourceFile[];
   structuralFindings?: Finding[];
   runner: CommandRunner;
-  policy: ScannerPolicyV4;
+  policy: JavascriptScannerPolicy;
   pins: ScannerVersionPins;
   rulesRoot: string;
   executables?: Partial<ScannerExecutables>;

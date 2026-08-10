@@ -41,9 +41,13 @@ import {
 import { redactSource } from "./redaction.js";
 import { validateCompletedGroupReview } from "./review-coverage.js";
 import type { ReusableReviewGroup } from "./review-cache.js";
+import {
+  planContextualReview,
+  ReviewBudgetLedger,
+} from "./contextual-review-budget.js";
 
 export interface ContextualReviewPolicy {
-  version: "4";
+  version: "5";
   promptVersion: typeof CONTEXTUAL_PROMPT_VERSION;
   schemaVersion: typeof CONTEXTUAL_SCHEMA_VERSION;
   maxImmediateAttempts: number;
@@ -52,6 +56,11 @@ export interface ContextualReviewPolicy {
   timeoutMs: number;
   maxBatchGroups: number;
   maxBatchInputTokens: number;
+  maxFreshBehaviorCases: number;
+  maxProviderCalls: number;
+  maxEstimatedInputTokens: number;
+  maxActualInputTokens: number;
+  maxActualOutputTokens: number;
 }
 
 type RequestCompletion = (
@@ -122,7 +131,7 @@ export type ReviewUnit = z.infer<typeof ReviewUnitSchema>;
 
 export const CompletedContextualReviewSchema = z
   .strictObject({
-    policy_version: z.literal("4"),
+    policy_version: z.literal("5"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -220,7 +229,7 @@ export type CompletedContextualReview = z.infer<
 
 export const ContextualReviewProgressSchema = z
   .strictObject({
-    policy_version: z.literal("4"),
+    policy_version: z.literal("5"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -588,7 +597,7 @@ function addUsage(total: ModelUsage, usage: ModelUsage) {
 
 function validatePolicy(policy: ContextualReviewPolicy) {
   if (
-    policy.version !== "4" ||
+    policy.version !== "5" ||
     policy.promptVersion !== CONTEXTUAL_PROMPT_VERSION ||
     policy.schemaVersion !== CONTEXTUAL_SCHEMA_VERSION ||
     !Number.isInteger(policy.maxImmediateAttempts) ||
@@ -604,7 +613,17 @@ function validatePolicy(policy: ContextualReviewPolicy) {
     policy.maxBatchGroups < 1 ||
     policy.maxBatchGroups > 5 ||
     !Number.isInteger(policy.maxBatchInputTokens) ||
-    policy.maxBatchInputTokens < 1
+    policy.maxBatchInputTokens < 1 ||
+    !Number.isInteger(policy.maxFreshBehaviorCases) ||
+    policy.maxFreshBehaviorCases < 1 ||
+    !Number.isInteger(policy.maxProviderCalls) ||
+    policy.maxProviderCalls < 1 ||
+    !Number.isInteger(policy.maxEstimatedInputTokens) ||
+    policy.maxEstimatedInputTokens < 1 ||
+    !Number.isInteger(policy.maxActualInputTokens) ||
+    policy.maxActualInputTokens < 1 ||
+    !Number.isInteger(policy.maxActualOutputTokens) ||
+    policy.maxActualOutputTokens < 1
   )
     throw new ModelRequestError(
       "MODEL_CONFIGURATION",
@@ -781,6 +800,8 @@ async function reviewGroup(
   spec: ReviewEvidenceGroupsSpec,
   usage: ModelUsage,
   completionIds: string[],
+  reviewBatches: ReviewBatchUsage[],
+  budgetLedger: ReviewBudgetLedger,
 ) {
   let group = initialGroup;
   let repair: ContextualReviewRepair | undefined;
@@ -806,7 +827,17 @@ async function reviewGroup(
     try {
       const finalAttempt = attempt === spec.policy.maxImmediateAttempts;
       const prompt = buildContextualReviewPrompt(group, repair, finalAttempt);
+      const responseSchema = contextualReviewResponseJsonSchemaForGroup(
+        group,
+        finalAttempt,
+      );
+      const estimatedInputTokens =
+        Math.ceil(
+          Buffer.byteLength(prompt.systemContent, "utf8") / 3 +
+            Buffer.byteLength(prompt.userContent, "utf8") / 3,
+        ) + estimatedStructuredOutputTokens(responseSchema);
       const request = spec.provider.requestCompletion ?? requestTextCompletion;
+      budgetLedger.assertBeforeProviderCall();
       const completion = await request({
         endpoint: spec.provider.endpoint,
         apiKey: spec.provider.apiKey,
@@ -818,10 +849,7 @@ async function reviewGroup(
         userContent: prompt.userContent,
         responseJsonSchema: {
           name: "tavernkeeper_contextual_review",
-          schema: contextualReviewResponseJsonSchemaForGroup(
-            group,
-            finalAttempt,
-          ),
+          schema: responseSchema,
         },
         ...(spec.provider.fetchImpl === undefined
           ? {}
@@ -843,6 +871,17 @@ async function reviewGroup(
         );
       addUsage(usage, completion.usage);
       completionIds.push(completion.completionId);
+      reviewBatches.push(
+        batchUsage(
+          "contextual_review",
+          attempt,
+          [group],
+          estimatedInputTokens,
+          spec.policy.maxBatchInputTokens,
+          completion.usage,
+        ),
+      );
+      budgetLedger.recordCompletion(completion.usage);
       const response = parseReviewResponse(
         completion.content,
         // Keep corrective feedback authoritative until the bounded final
@@ -943,6 +982,7 @@ async function reviewGroup(
     isDeepSeekV4FlashModel(spec.provider.model)
   )
     try {
+      budgetLedger.assertBeforeProviderCall();
       const repaired = await repairCompletedReviewBindings({
         group,
         review: repairCandidate.review,
@@ -963,8 +1003,24 @@ async function reviewGroup(
               .update(repaired.completionId)
               .digest("hex")}`,
       );
+      reviewBatches.push(
+        batchUsage(
+          "json_repair",
+          1,
+          [group],
+          null,
+          spec.policy.maxBatchInputTokens,
+          repaired.usage,
+        ),
+      );
+      budgetLedger.recordCompletion(repaired.usage);
       return validated;
-    } catch {
+    } catch (error) {
+      if (
+        error instanceof ModelRequestError &&
+        error.code === "MODEL_REVIEW_BUDGET_EXCEEDED"
+      )
+        throw error;
       // JSON repair is optional and cannot replace the authoritative primary
       // failure with a repair-provider or patch error.
     }
@@ -1047,6 +1103,7 @@ async function reviewBatch(
   usage: ModelUsage,
   completionIds: string[],
   reviewBatches: ReviewBatchUsage[],
+  budgetLedger: ReviewBudgetLedger,
 ) {
   const states = new Map<string, BatchGroupState>(
     initialGroups.map(
@@ -1091,6 +1148,7 @@ async function reviewBatch(
     let responses: Map<string, ContextualReviewResponse | Error> | undefined;
     try {
       const request = spec.provider.requestCompletion ?? requestTextCompletion;
+      budgetLedger.assertBeforeProviderCall();
       const completion = await request({
         endpoint: spec.provider.endpoint,
         apiKey: spec.provider.apiKey,
@@ -1134,6 +1192,7 @@ async function reviewBatch(
           completion.usage,
         ),
       );
+      budgetLedger.recordCompletion(completion.usage);
       responses = parseBatchResponse(
         completion.content,
         currentGroups,
@@ -1259,6 +1318,7 @@ async function reviewBatch(
         isDeepSeekV4FlashModel(spec.provider.model)
       )
         try {
+          budgetLedger.assertBeforeProviderCall();
           const repaired = await repairCompletedReviewBindings({
             group: state.group,
             review: state.repairCandidate.review,
@@ -1285,64 +1345,21 @@ async function reviewBatch(
               repaired.usage,
             ),
           );
+          budgetLedger.recordCompletion(repaired.usage);
           states.delete(state.initialGroup.group_id);
           continue;
-        } catch {
+        } catch (error) {
+          if (
+            error instanceof ModelRequestError &&
+            error.code === "MODEL_REVIEW_BUDGET_EXCEEDED"
+          )
+            throw error;
           // Preserve the authoritative primary failure below.
         }
       throw state.lastError;
     }
   }
   return reviewed;
-}
-
-function takeReviewBatch(
-  groups: readonly EvidenceContextGroup[],
-  start: number,
-  policy: ContextualReviewPolicy,
-) {
-  const batch: EvidenceContextGroup[] = [];
-  const maximumEstimatedCandidates = Math.max(
-    1,
-    Math.floor(policy.maxOutputTokens / 2_048),
-  );
-  for (
-    let index = start;
-    index < groups.length && batch.length < policy.maxBatchGroups;
-    index += 1
-  ) {
-    const next = [...batch, groups[index]!];
-    const worstCaseRepairs = new Map(
-      next.map((group) => [
-        group.group_id,
-        { diagnostic: "assessment_developer_action" } as const,
-      ]),
-    );
-    const prompt = buildContextualReviewBatchPrompt(
-      next,
-      worstCaseRepairs,
-      true,
-    );
-    const responseSchema = contextualReviewResponseJsonSchemaForBatch(
-      next,
-      true,
-    );
-    const estimate =
-      prompt.estimatedInputTokens +
-      estimatedStructuredOutputTokens(responseSchema);
-    const candidateCount = next.reduce(
-      (total, group) => total + group.candidates.length,
-      0,
-    );
-    if (
-      batch.length > 0 &&
-      (estimate > policy.maxBatchInputTokens ||
-        candidateCount > maximumEstimatedCandidates)
-    )
-      break;
-    batch.push(groups[index]!);
-  }
-  return batch;
 }
 
 export async function reviewEvidenceGroups(
@@ -1388,10 +1405,16 @@ export async function reviewEvidenceGroups(
   const reviewBatches: ReviewBatchUsage[] = [];
   const validated = validatedProgress(spec.progress, spec, endpoint);
   const progress = validated?.progress;
+  const contextualPlan = planContextualReview(
+    spec.groups,
+    spec.reusableGroups,
+    progress,
+    spec.policy,
+  );
+  const budgetLedger = new ReviewBudgetLedger(spec.policy, progress);
   const batchUsageComplete =
     progress === undefined || progress.review_batches !== undefined;
-  const publishBatchUsage =
-    spec.policy.maxBatchGroups > 1 && batchUsageComplete;
+  const publishBatchUsage = batchUsageComplete;
   if (validated !== undefined) {
     assessments.push(...validated.assessments);
     observations.push(...validated.observations);
@@ -1405,7 +1428,7 @@ export async function reviewEvidenceGroups(
     if (spec.onProgress === undefined) return;
     await spec.onProgress(
       ContextualReviewProgressSchema.parse({
-        policy_version: "4",
+        policy_version: "5",
         prompt_version: CONTEXTUAL_PROMPT_VERSION,
         schema_version: CONTEXTUAL_SCHEMA_VERSION,
         model: spec.provider.model,
@@ -1447,7 +1470,14 @@ export async function reviewEvidenceGroups(
         );
       const reviewed =
         reusable === undefined
-          ? await reviewGroup(group, spec, usage, completionIds)
+          ? await reviewGroup(
+              group,
+              spec,
+              usage,
+              completionIds,
+              reviewBatches,
+              budgetLedger,
+            )
           : validateCompletedGroupReview(
               group,
               reusable.response,
@@ -1532,21 +1562,30 @@ export async function reviewEvidenceGroups(
       if (changed) await checkpoint();
     };
     await flushResolvedPrefix();
-    for (let start = 0; start < freshGroups.length;) {
-      const batch = takeReviewBatch(freshGroups, start, spec.policy);
+    if (
+      JSON.stringify(freshGroups.map(({ group_id }) => group_id)) !==
+      JSON.stringify(contextualPlan.freshGroups.map(({ group_id }) => group_id))
+    )
+      throw new ModelRequestError(
+        "MODEL_EVIDENCE_INVALID",
+        "repository",
+        "Contextual review planning identity changed.",
+      );
+    for (const plannedBatch of contextualPlan.batches) {
+      const batch = plannedBatch.groups;
       const batchReviewed = await reviewBatch(
         batch,
         spec,
         usage,
         completionIds,
         reviewBatches,
+        budgetLedger,
       );
       for (const group of batch)
         resolved.set(group.group_id, {
           reviewed: batchReviewed.get(group.group_id)!,
           reusable: undefined,
         });
-      start += batch.length;
       await flushResolvedPrefix();
     }
     await flushResolvedPrefix();
@@ -1561,7 +1600,7 @@ export async function reviewEvidenceGroups(
       "Contextual observation identities must be unique.",
     );
   return CompletedContextualReviewSchema.parse({
-    policy_version: "4",
+    policy_version: "5",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,
     schema_version: CONTEXTUAL_SCHEMA_VERSION,
     model: spec.provider.model,

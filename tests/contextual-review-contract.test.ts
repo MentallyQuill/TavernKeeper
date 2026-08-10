@@ -3,6 +3,7 @@ import { describe, expect, test } from "vitest";
 import {
   ContextualAssessmentSchema,
   ContextualCompletedReviewResponseJsonSchema,
+  PolicyV5AssessmentSchema,
   PublishedContextualAssessmentSchema,
   ContextualReviewResponseJsonSchema,
   ContextualReviewResponseSchema,
@@ -73,6 +74,28 @@ describe("contextual review contract", () => {
       disposition: "expected_behavior",
       recommended_risk: "low",
     });
+  });
+
+  test("requires bounded triage provenance on policy v5 assessments", () => {
+    const assessment = {
+      ...materialAssessment,
+      assessment_source: "deterministic-policy",
+      triage_reason_code: "osv-structured-advisory",
+    };
+
+    expect(PolicyV5AssessmentSchema.parse(assessment)).toEqual(assessment);
+    expect(
+      PolicyV5AssessmentSchema.safeParse({
+        ...assessment,
+        assessment_source: "unknown",
+      }).success,
+    ).toBe(false);
+    expect(
+      PolicyV5AssessmentSchema.safeParse({
+        ...assessment,
+        triage_reason_code: "Unsafe Reason",
+      }).success,
+    ).toBe(false);
   });
 
   test("rejects a risk recommendation that contradicts the disposition", () => {

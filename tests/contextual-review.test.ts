@@ -14,7 +14,7 @@ import {
 
 const ids = ["a", "b", "c"].map((character) => character.repeat(64));
 const policy = {
-  version: "4",
+  version: "5",
   promptVersion: "contextual-review-v7",
   schemaVersion: "contextual-assessment-v2",
   maxImmediateAttempts: 3,
@@ -23,6 +23,11 @@ const policy = {
   timeoutMs: 600_000,
   maxBatchGroups: 1,
   maxBatchInputTokens: 64_000,
+  maxFreshBehaviorCases: 12,
+  maxProviderCalls: 6,
+  maxEstimatedInputTokens: 200_000,
+  maxActualInputTokens: 250_000,
+  maxActualOutputTokens: 40_000,
 } as const;
 
 function group(
@@ -35,6 +40,7 @@ function group(
     project_kinds: ["extension"],
     path,
     file_role: "production",
+    execution_scope: "runtime",
     target_sha: "d".repeat(40),
     evidence_sha: "d".repeat(40),
     source_kind: "text",
@@ -1257,7 +1263,7 @@ describe("contextual evidence review", () => {
   test("rejects progress that is not the exact completed group prefix", async () => {
     const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
     const invalidProgress: ContextualReviewProgress = {
-      policy_version: "4",
+      policy_version: "5",
       prompt_version: "contextual-review-v7",
       schema_version: "contextual-assessment-v2",
       model: "configured/model:thinking",
@@ -1739,6 +1745,35 @@ describe("contextual evidence review", () => {
       "contextual_review",
       "json_repair",
     ]);
+
+    primaryCalls = 0;
+    requestCompletion.mockClear();
+    requestRepair.mockClear();
+    await expect(
+      reviewEvidenceGroups({
+        groups: [current],
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "deepseek-v4-flash",
+          requestCompletion,
+        },
+        jsonRepairProvider: {
+          endpoint: "https://api.openai.com/v1/chat/completions",
+          apiKey: "repair-key",
+          model: "gpt-5.6-luna",
+          requestCompletion: requestRepair,
+        },
+        policy: {
+          ...policy,
+          maxBatchGroups: 5,
+          maxBatchInputTokens: 1_000_000,
+          maxProviderCalls: 3,
+        },
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_REVIEW_BUDGET_EXCEEDED" });
+    expect(primaryCalls).toBe(3);
+    expect(requestRepair).not.toHaveBeenCalled();
   });
 
   test("does not send malformed or semantically invalid output to Luna", async () => {

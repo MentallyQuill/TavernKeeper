@@ -10,12 +10,13 @@ import {
 } from "../../src/model/review-cache.js";
 import { reportIdentity } from "../../src/publish/report-path.js";
 
-export async function fixtureReportV5(
+async function fixtureReport(
+  name: string,
   overrides: Partial<ScanReportV5> = {},
 ): Promise<ScanReportV5> {
   const fixture = JSON.parse(
     await readFile(
-      new URL("../fixtures/contracts/report.v5.valid.json", import.meta.url),
+      new URL(`../fixtures/contracts/${name}`, import.meta.url),
       "utf8",
     ),
   ) as ScanReportV5;
@@ -33,7 +34,19 @@ export async function fixtureReportV5(
   });
 }
 
+export async function fixtureReportV5(overrides: Partial<ScanReportV5> = {}) {
+  return fixtureReport("report.v5.valid.json", overrides);
+}
+
+export async function fixturePolicy5ReportV5(
+  overrides: Partial<ScanReportV5> = {},
+) {
+  return fixtureReport("report.v5.policy5.valid.json", overrides);
+}
+
 export function fixtureReviewCache(report: ScanReportV5): ReviewCacheManifest {
+  if (report.contextual_reviewer === undefined)
+    throw new Error("A contextual reviewer is required for a review cache.");
   return ReviewCacheManifestSchema.parse({
     schema_version: 1,
     repository_id: report.repository_id,

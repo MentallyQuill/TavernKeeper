@@ -27,14 +27,16 @@ Target repositories are hostile data:
   paths.
 - It runs TavernKeeper-owned rules plus digest-pinned Gitleaks, Opengrep,
   OSV-Scanner, zizmor, and Malcontent adapters when applicable.
-- Policy 4 inventories every committed JavaScript/TypeScript candidate,
+- Policy 5 inventories every committed JavaScript/TypeScript candidate,
   including minified distributions and vendored packages, then safely decodes,
   normalizes, unpacks, and rescans bounded derivative representations without
   executing target code.
 - Scanner output locates review candidates; a keyword or scanner severity is
   not treated as a security conclusion.
-- Every finding candidate receives one schema-validated contextual assessment
-  bound to immutable evidence and locations. Hard scan failures produce no
+- Every finding candidate receives one schema-validated assessment bound to
+  immutable evidence and locations. Known bounded cases are decided by local
+  policy; only ambiguous runtime or cross-boundary behavior reaches the model.
+  Hard scan failures produce no
   report; bounded incomplete JavaScript coverage is published explicitly and
   remains visible without changing advisory color or concern counts.
 - Published JSON and HTML exclude raw source excerpts, raw tool or model
@@ -102,13 +104,15 @@ authoritative. See
 [operations](docs/operations.md), [architecture](docs/architecture.md),
 [scanning policy](docs/SCANNING.md), and [rule documentation](docs/rules.md).
 
-Every scan reruns the complete deterministic scanner suite. Contextual policy 4
-starts with a cold model-review baseline; later scans may reuse a prior model
-decision only when the full evidence group and review identity have the same
-content digest and every reused assessment remains low-risk with exposure not
-demonstrated. Material, high-risk, demonstrated, changed, or unverifiable
-groups always receive fresh model review. A missing, stale, malformed, or
-mismatched cache is only a cache miss and cannot suppress scanning or review.
+Every scan reruns the complete deterministic scanner suite. Policy 5 first
+classifies execution scope and resolves bounded advisories, known workflow
+rules, inert tooling signals, and low local robustness issues without a model.
+Only contextual-model groups are cacheable, and only when the full evidence
+group and review identity have the same content digest and every reused
+assessment remains low-risk with exposure not demonstrated. Material,
+high-risk, demonstrated, changed, or unverifiable groups always receive fresh
+model review. A missing, stale, malformed, or mismatched cache is only a cache
+miss and cannot suppress scanning or review.
 Reports publish fresh/reused group and candidate counts plus source report IDs,
 while each repository's atomically replaced `review-cache.json` points back to
 the immutable source report. Fresh misses are reviewed in conservative input-
@@ -116,6 +120,11 @@ and output-token-bounded calls of at most five evidence groups. Every group
 keeps an independent response identity and validator, only failed group entries
 retry, and reports expose estimated and actual token usage for each model
 batch.
+
+Fresh contextual work is capped per target at 12 behavior cases, 6 provider
+calls including repairs, 200,000 estimated input tokens, 250,000 actual input
+tokens, and 40,000 output tokens. Preflight or cumulative overflow fails the
+target before another provider request and publishes no report.
 
 Every complete report remains public regardless of risk. An immediate-danger
 report is an awareness signal, never an automatic hide, quarantine, ranking,

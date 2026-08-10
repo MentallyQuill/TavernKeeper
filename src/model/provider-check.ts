@@ -91,6 +91,7 @@ export async function checkModelProviderCompatibility(
     project_kinds: ["extension"],
     path: "README.md",
     file_role: "documentation",
+    execution_scope: "test-documentation-data",
     target_sha: "0".repeat(40),
     evidence_sha: "0".repeat(40),
     source_kind: "text",
@@ -156,7 +157,7 @@ export async function checkModelProviderCompatibility(
             : { resolveAddresses: request.resolveAddresses }),
         },
         policy: {
-          version: "4",
+          version: "5",
           promptVersion: "contextual-review-v7",
           schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts,
@@ -165,6 +166,11 @@ export async function checkModelProviderCompatibility(
           timeoutMs: request.timeoutMs ?? 60_000,
           maxBatchGroups: 5,
           maxBatchInputTokens: 64_000,
+          maxFreshBehaviorCases: 12,
+          maxProviderCalls: 6,
+          maxEstimatedInputTokens: 200_000,
+          maxActualInputTokens: 250_000,
+          maxActualOutputTokens: 40_000,
         },
       });
     } catch (error) {

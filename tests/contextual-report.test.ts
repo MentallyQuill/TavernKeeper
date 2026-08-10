@@ -16,9 +16,15 @@ import {
 } from "../src/publish/report-path.js";
 import { sanitizeReportV5 } from "../src/publish/sanitize.js";
 import { renderReportV5Html } from "../src/publish/render-report.js";
-import { buildContextualReport } from "../src/report/contextual-report.js";
+import {
+  buildContextualReport,
+  CompletedReviewV5Schema,
+  mergePolicyV5Review,
+  type CompletedReviewV5,
+} from "../src/report/contextual-report.js";
 import { normalizeFinding } from "../src/scanners/types.js";
 import { JAVASCRIPT_ANALYSIS_VERSION } from "../src/scanners/javascript-analysis.js";
+import { triageEvidenceGroups } from "../src/triage/review-triage.js";
 
 const targetSha = "a".repeat(40);
 const finding = normalizeFinding({
@@ -51,8 +57,8 @@ const scanPackage = buildScanPackage({
   },
   history: { baseSha: null, commits: 1 },
   scannerVersion: "1.0.0",
-  scannerPolicyVersion: "4",
-  ruleCatalogVersion: "1",
+  scannerPolicyVersion: "5",
+  ruleCatalogVersion: "2",
   inventory: {
     root: "C:/scan/repository",
     files: [sourceFile],
@@ -116,6 +122,7 @@ const group: EvidenceContextGroup = {
   project_kinds: ["extension"],
   path: finding.path,
   file_role: "production",
+  execution_scope: "runtime",
   target_sha: targetSha,
   evidence_sha: targetSha,
   source_kind: "text",
@@ -151,7 +158,7 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "4",
+  policy_version: "5",
   prompt_version: "contextual-review-v7",
   schema_version: "contextual-assessment-v2",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
@@ -194,9 +201,97 @@ const review: CompletedContextualReview = {
   ],
 };
 
+function asPolicyV5Review(
+  contextualReview: CompletedContextualReview,
+): CompletedReviewV5 {
+  const reviewUnits = contextualReview.review_units ?? [];
+  const reviewBatches =
+    contextualReview.review_batches ??
+    contextualReview.completion_ids.map((_, index) => ({
+      kind: "contextual_review" as const,
+      attempt: 1,
+      group_count: index === 0 ? Math.max(1, reviewUnits.length) : 1,
+      candidate_count:
+        index === 0 ? Math.max(1, contextualReview.assessments.length) : 1,
+      estimated_input_tokens: index === 0 ? 100 : 0,
+      over_budget: false,
+      input_tokens: index === 0 ? contextualReview.usage.inputTokens : 0,
+      output_tokens: index === 0 ? contextualReview.usage.outputTokens : 0,
+      cache_read_tokens:
+        index === 0 ? contextualReview.usage.cacheReadTokens : 0,
+      reasoning_tokens:
+        index === 0 ? contextualReview.usage.reasoningTokens : 0,
+    }));
+  const reusedUnits = reviewUnits.filter(({ reused }) => reused);
+  const reasonCode = "test-contextual-signal";
+  return CompletedReviewV5Schema.parse({
+    policy_version: "5",
+    prompt_version: "contextual-review-v7",
+    schema_version: "contextual-assessment-v2",
+    reviewer: {
+      provider: contextualReview.provider,
+      endpoint_origin: contextualReview.endpoint_origin,
+      model: contextualReview.model,
+    },
+    coverage: contextualReview.coverage,
+    assessments: contextualReview.assessments.map((assessment) => ({
+      ...assessment,
+      assessment_source: "contextual-model" as const,
+      triage_reason_code: reasonCode,
+    })),
+    observations: contextualReview.observations,
+    usage: contextualReview.usage,
+    completion_ids: contextualReview.completion_ids,
+    review_units: reviewUnits,
+    ...(reviewBatches.length === 0 ? {} : { review_batches: reviewBatches }),
+    review_triage: {
+      policy_version: "1",
+      candidates: {
+        total: contextualReview.assessments.length,
+        deterministic: 0,
+        contextual: contextualReview.assessments.length,
+        reused_contextual: reusedUnits.reduce(
+          (total, unit) => total + unit.candidate_ids.length,
+          0,
+        ),
+      },
+      cases: {
+        total: reviewUnits.length,
+        contextual: reviewUnits.length,
+        reused_contextual: reusedUnits.length,
+      },
+      reasons: [
+        {
+          reason_code: reasonCode,
+          count: contextualReview.assessments.length,
+        },
+      ],
+      model_budget: {
+        configured: {
+          max_fresh_behavior_cases: 12,
+          max_provider_calls: 6,
+          max_estimated_input_tokens: 200_000,
+          max_actual_input_tokens: 250_000,
+          max_actual_output_tokens: 40_000,
+        },
+        actual: {
+          fresh_behavior_cases: reviewUnits.length - reusedUnits.length,
+          provider_calls: contextualReview.completion_ids.length,
+          estimated_input_tokens: reviewBatches.reduce(
+            (total, batch) => total + (batch.estimated_input_tokens ?? 0),
+            0,
+          ),
+          input_tokens: contextualReview.usage.inputTokens,
+          output_tokens: contextualReview.usage.outputTokens,
+        },
+      },
+    },
+  });
+}
+
 function validReport() {
   return buildContextualReport(
-    { scanPackage, review, evidenceGroups: [group] },
+    { scanPackage, review: asPolicyV5Review(review), evidenceGroups: [group] },
     {
       targetSha,
       completedAt: "2026-08-02T12:00:00.000Z",
@@ -208,6 +303,127 @@ function validReport() {
     },
   );
 }
+
+test("merges deterministic and contextual partitions with exact provenance", () => {
+  const deterministicGroups: EvidenceContextGroup[] = [
+    {
+      ...structuredClone(group),
+      group_id: "1".repeat(64),
+      path: "Cargo.lock",
+      candidates: [
+        {
+          ...group.candidates[0]!,
+          candidate_id: "1".repeat(64),
+          evidence_id: "1".repeat(64),
+          origin: "osv-scanner",
+          rule_id: "RUSTSEC-2024-0414:package",
+          category: "dependency-advisory",
+        },
+      ],
+    },
+    {
+      ...structuredClone(group),
+      group_id: "2".repeat(64),
+      path: "src/filter.ts",
+      candidates: [
+        {
+          ...group.candidates[0]!,
+          candidate_id: "2".repeat(64),
+          evidence_id: "2".repeat(64),
+          origin: "javascript-analysis",
+          rule_id: "javascript.xray.unsafe-regex",
+          category: "denial-of-service",
+        },
+      ],
+    },
+  ];
+  const triage = triageEvidenceGroups([...deterministicGroups, group]);
+  const contextualGroup = triage.contextualGroups[0]!;
+  const contextualReview: CompletedContextualReview = {
+    ...review,
+    review_units: [
+      {
+        ...review.review_units![0]!,
+        group_id: contextualGroup.group_id,
+      },
+    ],
+    review_batches: [
+      {
+        kind: "contextual_review",
+        attempt: 1,
+        group_count: 1,
+        candidate_count: 1,
+        estimated_input_tokens: 4_000,
+        over_budget: false,
+        input_tokens: 100,
+        output_tokens: 40,
+        cache_read_tokens: 0,
+        reasoning_tokens: 10,
+      },
+    ],
+  };
+
+  const merged = mergePolicyV5Review({
+    triage,
+    contextualReview,
+    policy: {
+      version: "5",
+      promptVersion: "contextual-review-v7",
+      schemaVersion: "contextual-assessment-v2",
+      maxImmediateAttempts: 3,
+      maxOutputTokens: 32_768,
+      maxResponseBytes: 5_000_000,
+      timeoutMs: 900_000,
+      maxBatchGroups: 5,
+      maxBatchInputTokens: 64_000,
+      maxFreshBehaviorCases: 12,
+      maxProviderCalls: 6,
+      maxEstimatedInputTokens: 200_000,
+      maxActualInputTokens: 250_000,
+      maxActualOutputTokens: 40_000,
+    },
+  });
+
+  expect(merged.coverage).toEqual({ required: 3, completed: 3 });
+  expect(merged.review_units).toHaveLength(1);
+  expect(merged.review_units[0]!.group_id).toBe(contextualGroup.group_id);
+  expect(merged.review_triage.candidates).toMatchObject({
+    total: 3,
+    deterministic: 2,
+    contextual: 1,
+  });
+  expect(
+    merged.assessments.map(
+      ({ candidate_id, assessment_source, triage_reason_code }) => ({
+        candidate_id,
+        assessment_source,
+        triage_reason_code,
+      }),
+    ),
+  ).toEqual([
+    {
+      candidate_id: "1".repeat(64),
+      assessment_source: "deterministic-policy",
+      triage_reason_code: "osv-structured-advisory",
+    },
+    {
+      candidate_id: "2".repeat(64),
+      assessment_source: "deterministic-policy",
+      triage_reason_code: "javascript-unsafe-regex-runtime-low",
+    },
+    {
+      candidate_id: finding.fingerprint,
+      assessment_source: "contextual-model",
+      triage_reason_code: "unknown-rule",
+    },
+  ]);
+  expect(
+    merged.review_triage.reasons.reduce(
+      (total, reason) => total + reason.count,
+      0,
+    ),
+  ).toBe(3);
+});
 
 test("publishes complete fresh and reused review provenance", () => {
   const fresh = validReport();
@@ -228,7 +444,11 @@ test("publishes complete fresh and reused review provenance", () => {
     ],
   };
   const reused = buildContextualReport(
-    { scanPackage, review: reusedReview, evidenceGroups: [group] },
+    {
+      scanPackage,
+      review: asPolicyV5Review(reusedReview),
+      evidenceGroups: [group],
+    },
     {
       targetSha,
       completedAt: "2026-08-02T16:00:00.000Z",
@@ -274,7 +494,11 @@ test("publishes per-batch token usage and rejects totals that do not reconcile",
     ],
   };
   const report = buildContextualReport(
-    { scanPackage, review: batchedReview, evidenceGroups: [group] },
+    {
+      scanPackage,
+      review: asPolicyV5Review(batchedReview),
+      evidenceGroups: [group],
+    },
     {
       targetSha,
       completedAt: "2026-08-02T16:00:00.000Z",
@@ -297,9 +521,11 @@ test("publishes per-batch token usage and rejects totals that do not reconcile",
 
 function legacyImportedTemplateReport() {
   const report = structuredClone(validReport());
+  report.scanner_policy_version = "4";
   report.contextual_review_policy_version = "2";
   report.prompt_version = "contextual-review-v5";
   report.assessment_schema_version = "contextual-assessment-v1";
+  delete report.review_triage;
   Object.assign(report.candidates[0]!, {
     origin: "opengrep",
     rule_id: "tavernkeeper.dynamic-execution.javascript-eval",
@@ -322,7 +548,15 @@ function legacyImportedTemplateReport() {
   const assessment = report.assessments[0]!;
   if (!("risk_exposure" in assessment))
     throw new Error("Expected a current assessment fixture.");
-  const { risk_exposure: _riskExposure, ...legacyAssessment } = assessment;
+  const {
+    risk_exposure: _riskExposure,
+    assessment_source: _assessmentSource,
+    triage_reason_code: _triageReasonCode,
+    ...legacyAssessment
+  } = assessment as typeof assessment & {
+    assessment_source?: string;
+    triage_reason_code?: string;
+  };
   report.assessments = [legacyAssessment];
   report.counts = buildContextualCountsV5(
     report.candidates.length,
@@ -426,16 +660,28 @@ function legacyMultiCandidateObservationReport(
 test("parses immutable policy-2 reports while requiring exposure in policy 4", () => {
   const current = validReport();
   const legacy = structuredClone(current) as unknown as {
+    scanner_policy_version: string;
     contextual_review_policy_version: string;
     prompt_version: string;
     assessment_schema_version: string;
-    assessments: Array<{ risk_exposure?: string }>;
+    review_triage?: unknown;
+    assessments: Array<{
+      risk_exposure?: string;
+      assessment_source?: string;
+      triage_reason_code?: string;
+    }>;
     observations: Array<{ risk_exposure?: string }>;
   };
+  legacy.scanner_policy_version = "4";
   legacy.contextual_review_policy_version = "2";
   legacy.prompt_version = "contextual-review-v5";
   legacy.assessment_schema_version = "contextual-assessment-v1";
-  for (const assessment of legacy.assessments) delete assessment.risk_exposure;
+  delete legacy.review_triage;
+  for (const assessment of legacy.assessments) {
+    delete assessment.risk_exposure;
+    delete assessment.assessment_source;
+    delete assessment.triage_reason_code;
+  }
   for (const observation of legacy.observations)
     delete observation.risk_exposure;
 
@@ -485,7 +731,7 @@ function reportWithObservation(
     {
       scanPackage,
       evidenceGroups: [group],
-      review: {
+      review: asPolicyV5Review({
         ...review,
         assessments,
         observations: [
@@ -514,7 +760,7 @@ function reportWithObservation(
             locations: [{ path: finding.path, line_start: 2, line_end: 2 }],
           },
         ],
-      },
+      }),
     },
     {
       targetSha,
@@ -529,7 +775,7 @@ function reportWithObservation(
 }
 
 describe("contextual V5 reports", () => {
-  test("requires JavaScript coverage on policy-4 reports", () => {
+  test("requires JavaScript coverage on current reports", () => {
     const report = validReport();
     expect(report.coverage).toHaveProperty("javascript_analysis");
     const withoutCoverage = structuredClone(report);
@@ -537,12 +783,24 @@ describe("contextual V5 reports", () => {
       .javascript_analysis;
 
     expect(ScanReportV5Schema.safeParse(withoutCoverage).success).toBe(false);
-    expect(
-      ScanReportV5Schema.safeParse({
-        ...withoutCoverage,
-        scanner_policy_version: "3",
-      }).success,
-    ).toBe(true);
+    const historical = {
+      ...withoutCoverage,
+      scanner_policy_version: "3",
+      contextual_review_policy_version: "4",
+      review_triage: undefined,
+      assessments: withoutCoverage.assessments.map((assessment) => {
+        const {
+          assessment_source: _assessmentSource,
+          triage_reason_code: _triageReasonCode,
+          ...legacyAssessment
+        } = assessment as typeof assessment & {
+          assessment_source?: string;
+          triage_reason_code?: string;
+        };
+        return legacyAssessment;
+      }),
+    };
+    expect(ScanReportV5Schema.safeParse(historical).success).toBe(true);
   });
 
   test("publishes bounded incomplete JavaScript coverage and a fixed warning", () => {
@@ -566,7 +824,7 @@ describe("contextual V5 reports", () => {
     const report = buildContextualReport(
       {
         scanPackage: incompletePackage,
-        review,
+        review: asPolicyV5Review(review),
         evidenceGroups: [group],
       },
       {
@@ -620,7 +878,7 @@ describe("contextual V5 reports", () => {
     const report = buildContextualReport(
       {
         scanPackage,
-        review,
+        review: asPolicyV5Review(review),
         evidenceGroups: [metadataOnlyGroup],
       },
       {
@@ -738,7 +996,7 @@ describe("contextual V5 reports", () => {
     const report = buildContextualReport(
       {
         scanPackage: javascriptPackage,
-        review: javascriptReview,
+        review: asPolicyV5Review(javascriptReview),
         evidenceGroups: [javascriptGroup],
       },
       {
@@ -767,7 +1025,11 @@ describe("contextual V5 reports", () => {
     openGrep.limitations = ["parser_syntax", "rule_timeout"];
 
     const report = buildContextualReport(
-      { scanPackage: limitedPackage, review, evidenceGroups: [group] },
+      {
+        scanPackage: limitedPackage,
+        review: asPolicyV5Review(review),
+        evidenceGroups: [group],
+      },
       {
         targetSha,
         completedAt: "2026-08-02T12:00:00.000Z",
@@ -814,10 +1076,10 @@ describe("contextual V5 reports", () => {
     expect(report.report_id).toBe(report.report_digest);
     expect(report.report_id).toBe(reportIdentity(report));
     expect(reportPath(report)).toBe(
-      `reports/github/42/${targetSha}/4/${report.report_id}`,
+      `reports/github/42/${targetSha}/5/${report.report_id}`,
     );
     expect(reportUrl(report)).toBe(
-      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/4/${report.report_id}/`,
+      `https://mentallyquill.github.io/TavernKeeper/reports/github/42/${targetSha}/5/${report.report_id}/`,
     );
     expect(ScanReportV5Schema.parse(report)).toEqual(report);
   });
@@ -873,7 +1135,7 @@ describe("contextual V5 reports", () => {
 
     expect(html).toContain("What this review found");
     expect(html).toContain("This request appears to be expected.");
-    expect(html).toContain("Expected scanner matches");
+    expect(html).toContain("Contextual expected matches");
     expect(html).toContain("Related contextual observations");
     expect(html.indexOf("Related contextual observations")).toBeLessThan(
       html.indexOf("Related request handling"),

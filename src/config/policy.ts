@@ -2,12 +2,12 @@ import { readFile } from "node:fs/promises";
 
 import { z } from "zod";
 
-export const CURRENT_SCANNER_POLICY_VERSION = "4" as const;
+export const CURRENT_SCANNER_POLICY_VERSION = "5" as const;
 export const CURRENT_SCANNER_POLICY_PATH =
-  "config/scanner-policy.v4.json" as const;
-export const CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION = "4" as const;
+  "config/scanner-policy.v5.json" as const;
+export const CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION = "5" as const;
 export const CURRENT_CONTEXTUAL_REVIEW_POLICY_PATH =
-  "config/contextual-review.v4.json" as const;
+  "config/contextual-review.v5.json" as const;
 
 const scannerPolicyShape = {
   queue: z.strictObject({
@@ -72,7 +72,23 @@ export const ScannerPolicyV4Schema = z.strictObject({
 });
 
 export type ScannerPolicyV4 = z.infer<typeof ScannerPolicyV4Schema>;
-export type ScannerPolicy = ScannerPolicyV3 | ScannerPolicyV4;
+
+export const ExecutionScopePolicySchema = z.strictObject({
+  maxFiles: z.literal(10_000),
+  maxTotalBytes: z.literal(67_108_864),
+  maxFileBytes: z.literal(2_097_152),
+});
+
+export const ScannerPolicyV5Schema = z.strictObject({
+  version: z.literal("5"),
+  ...scannerPolicyShape,
+  javascriptAnalysis: JavascriptAnalysisPolicySchema,
+  executionScope: ExecutionScopePolicySchema,
+});
+
+export type ScannerPolicyV5 = z.infer<typeof ScannerPolicyV5Schema>;
+export type JavascriptScannerPolicy = ScannerPolicyV4 | ScannerPolicyV5;
+export type ScannerPolicy = ScannerPolicyV3 | ScannerPolicyV4 | ScannerPolicyV5;
 
 export const ScannerPinsSchema = z.strictObject({
   gitleaks: z.strictObject({
@@ -131,6 +147,11 @@ export const ContextualReviewPolicySchema = z.strictObject({
   timeoutMs: z.literal(300_000),
   maxBatchGroups: z.literal(5),
   maxBatchInputTokens: z.literal(64_000),
+  maxFreshBehaviorCases: z.literal(12),
+  maxProviderCalls: z.literal(6),
+  maxEstimatedInputTokens: z.literal(200_000),
+  maxActualInputTokens: z.literal(250_000),
+  maxActualOutputTokens: z.literal(40_000),
 });
 
 export type ContextualReviewPolicy = z.infer<
@@ -139,7 +160,11 @@ export type ContextualReviewPolicy = z.infer<
 
 export async function loadScannerPolicy(path: string): Promise<ScannerPolicy> {
   return z
-    .union([ScannerPolicyV4Schema, ScannerPolicyV3Schema])
+    .union([
+      ScannerPolicyV5Schema,
+      ScannerPolicyV4Schema,
+      ScannerPolicyV3Schema,
+    ])
     .parse(JSON.parse(await readFile(path, "utf8")));
 }
 

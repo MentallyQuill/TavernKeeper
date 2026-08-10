@@ -33,12 +33,13 @@ Tavernary target manifest (repository ID + exact SHA)
   -> TavernKeeper selects at most 5 due targets in ticket order
   -> at most 2 credential-free prepare jobs run concurrently
   -> exact checkout and portable-path inventory
-  -> history, pinned scanners, and policy-4 JavaScript derivative analysis
+  -> history, pinned scanners, and policy-5 JavaScript derivative analysis
   -> normalized candidates and deterministic Scan Package digest
-  -> bounded file context for every candidate
+  -> bounded file context and conservative execution scope for every candidate
   -> target checkout deleted; prepared-${repository_id} GitHub artifact
   -> fresh review job validates the artifact without target source
-  -> configured model returns schema-validated contextual assessments
+  -> deterministic policy resolves bounded known cases
+  -> configured model reviews only ambiguous contextual behavior within hard budgets
   -> exact-HEAD, evidence, coverage, schema, and sanitizer validation
   -> authenticated encrypted candidate handoff
   -> serialized V5 validation and immutable publication/history
@@ -65,7 +66,7 @@ Malcontent image is digest-pinned, network-disabled, read-only, capability-free,
 and receives only a read-only target mount. Raw target data remains in
 disposable runner storage.
 
-Policy 4 treats every inventoried JavaScript and TypeScript path as a scan
+Policy 5 retains policy 4's treatment of every inventoried JavaScript and TypeScript path as a scan
 candidate, including committed dependencies, generated bundles, and minified
 distributions. Repository OpenGrep must account for the exact raw path set.
 Literal-only decoders and trusted, non-executing webcrack normalization produce
@@ -93,8 +94,9 @@ published.
 ## Atomic reporting
 
 Every required scanner must produce a validated result, and every finding
-candidate must receive exactly one valid contextual assessment. Bounded
-policy-4 JavaScript limitations publish as explicit `incomplete` coverage.
+candidate must receive exactly one valid deterministic-policy or contextual-model
+assessment. Bounded policy-5 JavaScript limitations publish as explicit
+`incomplete` coverage.
 Findings on non-text artifacts publish verified scanner metadata as
 `completed-with-limitations` contextual evidence without sending raw binary to
 the model. Both limitations remain visible without altering advisory color or
@@ -162,7 +164,7 @@ evidence group and the scanner, tool, contextual-policy, prompt, assessment,
 provider, endpoint-origin, and model identity. Group IDs, target SHA, raw source
 bytes, and representation hashes are excluded only where the canonical input
 already binds their relevant semantic content. Candidate IDs must still match
-exactly. Only complete groups whose assessments and observations are all
+exactly. Only complete contextual-model groups whose assessments and observations are all
 `low` with `risk_exposure: not_demonstrated` enter the cache; material, high,
 demonstrated, partial, or invalid results never do.
 
@@ -173,8 +175,8 @@ assessment replaces repetitive per-occurrence prose. Public JavaScript
 coverage reports both raw warning occurrences and resulting review-family
 counts. Other scanner origins are never folded into these families.
 
-The policy-4 migration intentionally has no policy-3 cache compatibility, so
-the first policy-4 pass is cold. Cache absence, corruption, identity drift,
+The policy-5 migration intentionally has no earlier-policy cache compatibility,
+so the first policy-5 contextual pass is cold. Cache absence, corruption, identity drift,
 source-report mismatch, or per-group validation failure becomes a miss and
 sends the group to the model. It never removes a scanner result. Technical
 Report V5 records fresh and reused group/candidate counts and all immutable

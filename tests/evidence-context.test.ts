@@ -21,6 +21,65 @@ afterEach(async () => {
 });
 
 describe("evidence context builder", () => {
+  test("binds execution scope into evidence identity", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-scope-context-"));
+    roots.push(root);
+    const source = "export const value = 1;\n";
+    await writeFile(join(root, "index.js"), source);
+    const finding = normalizeFinding({
+      origin: "opengrep",
+      ruleId: "tavernkeeper.dynamic-execution.javascript-eval",
+      category: "supply-chain-risk",
+      severity: "medium",
+      confidence: "medium",
+      path: "index.js",
+      lineStart: 1,
+      lineEnd: 1,
+      evidenceSha: null,
+      title: "Unsafe regex",
+      explanation: "A regular expression may backtrack.",
+    });
+    const base = {
+      checkoutRoot: root,
+      target: {
+        source_id: "github-41",
+        provider: "github" as const,
+        repository_id: 41,
+        repository: "owner/scope",
+        canonical_url: "https://github.com/owner/scope",
+        target_sha: "a".repeat(40),
+      },
+      projectKinds: ["extension"] as const,
+      findings: [finding],
+      inventory: {
+        root,
+        files: [
+          {
+            path: "index.js",
+            bytes: Buffer.byteLength(source),
+            sha256: createHash("sha256").update(source).digest("hex"),
+            kind: "text" as const,
+          },
+        ],
+        totals: { files: 1, bytes: Buffer.byteLength(source) },
+        totalBytes: Buffer.byteLength(source),
+      },
+    };
+
+    const runtime = await buildEvidenceContextGroups({
+      ...base,
+      executionScopes: new Map([["index.js", "runtime" as const]]),
+    });
+    const tooling = await buildEvidenceContextGroups({
+      ...base,
+      executionScopes: new Map([["index.js", "tooling-only" as const]]),
+    });
+
+    expect(runtime[0]?.execution_scope).toBe("runtime");
+    expect(tooling[0]?.execution_scope).toBe("tooling-only");
+    expect(runtime[0]?.group_id).not.toBe(tooling[0]?.group_id);
+  });
+
   test("preserves a non-text scanner finding as verified metadata-only evidence", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-binary-context-"));
     roots.push(root);

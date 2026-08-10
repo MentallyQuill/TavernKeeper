@@ -5,8 +5,10 @@ import {
   ContextualAssessmentV2Schema,
   ContextualObservationSchema,
   ContextualObservationV2Schema,
+  PolicyV5AssessmentSchema,
   PublishedContextualAssessmentSchema,
   PublishedContextualObservationSchema,
+  TriageReasonCodeSchema,
 } from "../model/contextual-review-contract.js";
 import {
   ConfidenceSchema,
@@ -19,6 +21,7 @@ import {
   JavascriptUnresolvedSchema,
   type JavascriptAnalysisCoverage,
 } from "../scanners/javascript-analysis-types.js";
+import { ExecutionScopeSchema } from "../triage/execution-scope.js";
 
 const CountSchema = z.number().int().nonnegative();
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
@@ -149,6 +152,7 @@ export const CandidateV5Schema = z
     line_end: z.number().int().positive().nullable(),
     evidence_sha: FullShaSchema,
     file_role: FileRoleSchema,
+    execution_scope: ExecutionScopeSchema.optional(),
     title: SafeTextSchema(200),
     explanation: SafeTextSchema(1_000),
     remediation: SafeTextSchema(1_000).optional(),
@@ -207,11 +211,15 @@ export const ContextualCountsV5Schema = z.strictObject({
 
 type ReviewItem =
   | z.infer<typeof PublishedContextualAssessmentSchema>
+  | z.infer<typeof PolicyV5AssessmentSchema>
   | z.infer<typeof PublishedContextualObservationSchema>;
 
 export function buildContextualCountsV5(
   candidates: number,
-  assessments: readonly z.infer<typeof PublishedContextualAssessmentSchema>[],
+  assessments: readonly (
+    | z.infer<typeof PublishedContextualAssessmentSchema>
+    | z.infer<typeof PolicyV5AssessmentSchema>
+  )[],
   observations: readonly z.infer<typeof PublishedContextualObservationSchema>[],
 ) {
   const counts = {
@@ -316,14 +324,55 @@ export const ReviewBatchUsageV5Schema = z.strictObject({
   reasoning_tokens: CountSchema,
 });
 
+export const ReviewTriageV5Schema = z.strictObject({
+  policy_version: z.literal("1"),
+  candidates: z.strictObject({
+    total: CountSchema,
+    deterministic: CountSchema,
+    contextual: CountSchema,
+    reused_contextual: CountSchema,
+  }),
+  cases: z.strictObject({
+    total: CountSchema,
+    contextual: CountSchema,
+    reused_contextual: CountSchema,
+  }),
+  reasons: z
+    .array(
+      z.strictObject({
+        reason_code: TriageReasonCodeSchema,
+        count: z.number().int().positive(),
+      }),
+    )
+    .max(10_000),
+  model_budget: z.strictObject({
+    configured: z.strictObject({
+      max_fresh_behavior_cases: z.literal(12),
+      max_provider_calls: z.literal(6),
+      max_estimated_input_tokens: z.literal(200_000),
+      max_actual_input_tokens: z.literal(250_000),
+      max_actual_output_tokens: z.literal(40_000),
+    }),
+    actual: z.strictObject({
+      fresh_behavior_cases: CountSchema,
+      provider_calls: CountSchema,
+      estimated_input_tokens: CountSchema,
+      input_tokens: CountSchema,
+      output_tokens: CountSchema,
+    }),
+  }),
+});
+
 export const ScanReportV5Schema = z
   .strictObject({
     schema_version: z.literal(5),
     ...ReportIdentityV5Fields,
-    contextual_reviewer: z.strictObject({
-      provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
-      model: z.string().trim().min(1).max(200),
-    }),
+    contextual_reviewer: z
+      .strictObject({
+        provider: z.string().regex(/^[A-Za-z0-9.-]{1,253}$/u),
+        model: z.string().trim().min(1).max(200),
+      })
+      .optional(),
     review_usage: z.strictObject({
       input_tokens: CountSchema,
       output_tokens: CountSchema,
@@ -331,6 +380,7 @@ export const ScanReportV5Schema = z
       reasoning_tokens: CountSchema,
     }),
     review_batches: z.array(ReviewBatchUsageV5Schema).max(10_000).optional(),
+    review_triage: ReviewTriageV5Schema.optional(),
     history: z.strictObject({
       base_sha: FullShaSchema.nullable(),
       commits: z.number().int().min(1).max(20),
@@ -347,12 +397,38 @@ export const ScanReportV5Schema = z
     }),
     review_reuse: ReviewReuseV5Schema.optional(),
     candidates: z.array(CandidateV5Schema),
-    assessments: z.array(PublishedContextualAssessmentSchema),
+    assessments: z.array(
+      z.union([PublishedContextualAssessmentSchema, PolicyV5AssessmentSchema]),
+    ),
     observations: z.array(PublishedContextualObservationSchema),
     counts: ContextualCountsV5Schema,
     limitations: z.array(SafeTextSchema(600)).min(1).max(20),
   })
   .superRefine((report, context) => {
+    const policy5 =
+      report.scanner_policy_version === "5" &&
+      report.contextual_review_policy_version === "5";
+    if (
+      (report.scanner_policy_version === "5") !==
+      (report.contextual_review_policy_version === "5")
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["contextual_review_policy_version"],
+        message: "Scanner policy 5 requires contextual review policy 5.",
+      });
+    if (!policy5 && report.contextual_reviewer === undefined)
+      context.addIssue({
+        code: "custom",
+        path: ["contextual_reviewer"],
+        message: "Historical reports require a contextual reviewer.",
+      });
+    if (!policy5 && report.review_triage !== undefined)
+      context.addIssue({
+        code: "custom",
+        path: ["review_triage"],
+        message: "Review triage provenance requires policy 5.",
+      });
     if (
       report.review_batches !== undefined &&
       (
@@ -377,10 +453,13 @@ export const ScanReportV5Schema = z
       });
     if (report.review_reuse !== undefined) {
       const sourceIds = report.review_reuse.source_report_ids;
+      const expectedCandidates = policy5
+        ? report.review_triage?.candidates.contextual
+        : report.candidates.length;
       if (
         report.review_reuse.candidates.fresh +
           report.review_reuse.candidates.reused !==
-          report.candidates.length ||
+          expectedCandidates ||
         (report.review_reuse.groups.reused === 0) !==
           (sourceIds.length === 0) ||
         new Set(sourceIds).size !== sourceIds.length ||
@@ -395,7 +474,7 @@ export const ScanReportV5Schema = z
         });
     }
     if (
-      report.scanner_policy_version === "4" &&
+      ["4", "5"].includes(report.scanner_policy_version) &&
       report.coverage.javascript_analysis === undefined
     )
       context.addIssue({
@@ -427,6 +506,148 @@ export const ScanReportV5Schema = z
         path: ["limitations"],
         message: "Metadata-only evidence requires its fixed public limitation.",
       });
+    if (policy5) {
+      const triage = report.review_triage;
+      if (
+        report.rule_catalog_version !== "2" ||
+        report.prompt_version !== "contextual-review-v7" ||
+        report.assessment_schema_version !== "contextual-assessment-v2"
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["contextual_review_policy_version"],
+          message:
+            "Policy 5 requires current rule, prompt, and schema versions.",
+        });
+      if (triage === undefined)
+        context.addIssue({
+          code: "custom",
+          path: ["review_triage"],
+          message: "Policy 5 requires deterministic triage provenance.",
+        });
+      for (const [index, candidate] of report.candidates.entries())
+        if (candidate.execution_scope === undefined)
+          context.addIssue({
+            code: "custom",
+            path: ["candidates", index, "execution_scope"],
+            message: "Policy 5 candidates require execution scope.",
+          });
+      for (const [index, assessment] of report.assessments.entries())
+        if (!PolicyV5AssessmentSchema.safeParse(assessment).success)
+          context.addIssue({
+            code: "custom",
+            path: ["assessments", index],
+            message: "Policy 5 assessments require triage provenance.",
+          });
+      if (triage !== undefined) {
+        const reasonCounts = new Map<string, number>();
+        let deterministic = 0;
+        let contextual = 0;
+        for (const assessment of report.assessments)
+          if ("assessment_source" in assessment) {
+            if (assessment.assessment_source === "deterministic-policy")
+              deterministic += 1;
+            else contextual += 1;
+            reasonCounts.set(
+              assessment.triage_reason_code,
+              (reasonCounts.get(assessment.triage_reason_code) ?? 0) + 1,
+            );
+          }
+        const publishedReasons = triage.reasons.map(
+          ({ reason_code, count }) => [reason_code, count] as const,
+        );
+        const expectedReasons = [...reasonCounts].sort(([left], [right]) =>
+          left.localeCompare(right),
+        );
+        const reuseCandidates = report.review_reuse?.candidates.reused ?? 0;
+        const reuseCases = report.review_reuse?.groups.reused ?? 0;
+        const batches = report.review_batches ?? [];
+        const actual = triage.model_budget.actual;
+        const configured = triage.model_budget.configured;
+        const estimatedInputTokens = batches.reduce(
+          (total, batch) => total + (batch.estimated_input_tokens ?? 0),
+          0,
+        );
+        if (
+          triage.candidates.total !== report.candidates.length ||
+          triage.candidates.deterministic + triage.candidates.contextual !==
+            triage.candidates.total ||
+          triage.candidates.deterministic !== deterministic ||
+          triage.candidates.contextual !== contextual ||
+          triage.candidates.reused_contextual > triage.candidates.contextual ||
+          triage.candidates.reused_contextual !== reuseCandidates
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["review_triage", "candidates"],
+            message: "Policy 5 triage candidate counts are inconsistent.",
+          });
+        if (
+          triage.cases.contextual > triage.cases.total ||
+          triage.cases.reused_contextual > triage.cases.contextual ||
+          triage.cases.reused_contextual !== reuseCases ||
+          (triage.candidates.total > 0 && triage.cases.total === 0)
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["review_triage", "cases"],
+            message: "Policy 5 triage case counts are inconsistent.",
+          });
+        if (
+          JSON.stringify(publishedReasons) !==
+            JSON.stringify(expectedReasons) ||
+          publishedReasons.reduce((total, [, count]) => total + count, 0) !==
+            triage.candidates.total
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["review_triage", "reasons"],
+            message: "Policy 5 triage reason counts are inconsistent.",
+          });
+        if (
+          actual.fresh_behavior_cases !==
+            triage.cases.contextual - triage.cases.reused_contextual ||
+          actual.provider_calls !== batches.length ||
+          actual.estimated_input_tokens !== estimatedInputTokens ||
+          actual.input_tokens !== report.review_usage.input_tokens ||
+          actual.output_tokens !== report.review_usage.output_tokens ||
+          actual.fresh_behavior_cases > configured.max_fresh_behavior_cases ||
+          actual.provider_calls > configured.max_provider_calls ||
+          actual.estimated_input_tokens >
+            configured.max_estimated_input_tokens ||
+          actual.input_tokens > configured.max_actual_input_tokens ||
+          actual.output_tokens > configured.max_actual_output_tokens
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["review_triage", "model_budget"],
+            message: "Policy 5 model budget usage is inconsistent.",
+          });
+        if (
+          (contextual > 0 || actual.provider_calls > 0) &&
+          report.contextual_reviewer === undefined
+        )
+          context.addIssue({
+            code: "custom",
+            path: ["contextual_reviewer"],
+            message: "Contextual candidates require a reviewer identity.",
+          });
+        if (contextual === 0 && report.observations.length > 0)
+          context.addIssue({
+            code: "custom",
+            path: ["observations"],
+            message:
+              "All-deterministic reports cannot contain model observations.",
+          });
+      }
+    } else if (
+      report.assessments.some((assessment) => "assessment_source" in assessment)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["assessments"],
+        message: "Assessment triage provenance requires policy 5.",
+      });
     if (report.contextual_review_policy_version === "2") {
       for (const [index, assessment] of report.assessments.entries())
         if (!ContextualAssessmentV2Schema.safeParse(assessment).success)
@@ -447,10 +668,11 @@ export const ScanReportV5Schema = z
       report.contextual_review_policy_version === "3" ||
       report.contextual_review_policy_version === "4"
     ) {
-      const expectedPrompt =
-        report.contextual_review_policy_version === "4"
-          ? "contextual-review-v7"
-          : "contextual-review-v6";
+      const expectedPrompt = ["4", "5"].includes(
+        report.contextual_review_policy_version,
+      )
+        ? "contextual-review-v7"
+        : "contextual-review-v6";
       if (report.prompt_version !== expectedPrompt)
         context.addIssue({
           code: "custom",
@@ -612,7 +834,7 @@ export const ScanReportV5Schema = z
       report.coverage.tools.map((tool) => [tool.name, tool.status]),
     );
     if (
-      report.scanner_policy_version === "4" &&
+      ["4", "5"].includes(report.scanner_policy_version) &&
       completedTools.get("javascript-analysis") !== "completed"
     )
       context.addIssue({
@@ -707,7 +929,7 @@ export const ReportIndexEntryV5Schema = z
         message: "Index review coverage must be complete.",
       });
     if (
-      entry.scanner_policy_version === "4" &&
+      ["4", "5"].includes(entry.scanner_policy_version) &&
       entry.coverage.javascript_analysis_status === "legacy"
     )
       context.addIssue({

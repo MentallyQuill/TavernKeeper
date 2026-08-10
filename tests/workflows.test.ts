@@ -83,9 +83,9 @@ async function expectPolicyFailure(
       ),
     );
     await writeFile(
-      join(root, "config", "scanner-policy.v4.json"),
+      join(root, "config", "scanner-policy.v5.json"),
       await readFile(
-        new URL("../config/scanner-policy.v4.json", import.meta.url),
+        new URL("../config/scanner-policy.v5.json", import.meta.url),
         "utf8",
       ),
     );
@@ -351,7 +351,7 @@ describe("GitHub workflow security policy", () => {
     );
     const reviewConfig = JSON.parse(
       await readFile(
-        new URL("../config/contextual-review.v4.json", import.meta.url),
+        new URL("../config/contextual-review.v5.json", import.meta.url),
         "utf8",
       ),
     ) as { timeoutMs: number };
@@ -369,6 +369,9 @@ describe("GitHub workflow security policy", () => {
     expect(steps[reviewIndex]?.run).toContain("npm run --silent review-target");
     expect(steps[reviewIndex]?.run).toContain('code == "MODEL_PROVIDER"');
     expect(steps[reviewIndex]?.run).toContain('code == "MODEL_QUOTA"');
+    expect(steps[reviewIndex]?.run).toContain(
+      'code == "MODEL_REVIEW_BUDGET_EXCEEDED"',
+    );
     expect(steps[reviewIndex]?.run).toContain('code:"MODEL_REVIEW_TIMEOUT"');
     expect(steps[reviewIndex]?.run).toContain(
       "timeout --signal=TERM --kill-after=5s 20m",
@@ -1051,7 +1054,7 @@ describe("GitHub workflow security policy", () => {
     expect(text).not.toMatch(/token_budget|priority|mode:/iu);
   });
 
-  test("documents the GitHub-only policy-4 JavaScript boundary", async () => {
+  test("documents the GitHub-only policy-5 JavaScript boundary", async () => {
     const scanning = await readFile(
       new URL("../docs/SCANNING.md", import.meta.url),
       "utf8",
@@ -1066,7 +1069,7 @@ describe("GitHub workflow security policy", () => {
       ),
     ].join("\n");
 
-    expect(scanning).toMatch(/policy 4/iu);
+    expect(scanning).toMatch(/policy 5/iu);
     expect(scanning).toMatch(/minified.*encoded.*bundle/isu);
     expect(scanning).toMatch(/never.*(?:execute|run).*target/isu);
     expect(scanning).toMatch(/first filter/iu);
