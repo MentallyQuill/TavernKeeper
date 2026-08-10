@@ -66,10 +66,15 @@ an emergency stop, automatic recovery hold, retry cooldown, exact-SHA checks,
 batch limit, or concurrency limit.
 
 Provider configuration is model-agnostic. `TAVERNKEEPER_MODEL` selects the
-configured OpenAI-compatible model without changing the report contract or
-policy. A provider, token, context, validation, or required-scanner failure
-cannot fall back to a degraded report. Failed projects cool down for 5 minutes,
-30 minutes, 2 hours, and then 6 hours capped indefinitely. The fifth
+configured OpenAI-compatible reviewer without changing the report contract or
+policy. `JSONREPAIR_*` configures GPT-5.6 Luna for one binding-patch request
+only after the primary reviewer returns an otherwise complete response that
+still fails evidence-ID or location validation. Luna receives no source, file
+paths, line numbers, or narrative fields and cannot perform review, create
+findings, change risk, or write summaries. A provider, token, context,
+validation, or required-scanner
+failure cannot fall back to a degraded report. Failed projects cool down for 5
+minutes, 30 minutes, 2 hours, and then 6 hours capped indefinitely. The fifth
 consecutive failure marks a chronic operational incident but the project stays
 in the current queue and continues retrying automatically. Queue state retains
 only the latest four sanitized failure categories, never raw scanner or model
@@ -77,10 +82,13 @@ output. Chronic Issues use repository ID plus exact commit as their stable
 identity, so a changing failure category updates one incident instead of
 creating duplicates.
 
-When a contextual model response violates the bounded schema, its next
+When a contextual model response violates the bounded schema, every configured
 immediate attempt receives only the rejected field category as corrective
-feedback. Repeated identical violations stop early; rejected prose is never
-echoed into the prompt or persisted.
+feedback. Rejected prose is never echoed into the review prompt or persisted.
+After those attempts, the optional one-call Luna path can replace only a
+candidate's evidence hashes or drop an optional observation whose evidence or
+location is invalid; deterministic validation still decides whether the
+original review is accepted.
 
 Initial V3 catalog coverage follows Tavernary's complete popularity rank.
 TavernKeeper temporarily accepts V2 manifests with the legacy Top-30/new/old

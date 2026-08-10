@@ -108,9 +108,10 @@ describe("GitHub workflow security policy", () => {
     expect(review.needs).toBe("prepare");
     expect(review.strategy.matrix).toEqual(prepare.strategy.matrix);
     expect(JSON.stringify(prepare)).not.toMatch(
-      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
+      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|JSONREPAIR_|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER/iu,
     );
     expect(JSON.stringify(review)).toContain("TAVERNKEEPER_API_KEY");
+    expect(JSON.stringify(review)).toContain("JSONREPAIR_API_KEY");
     expect(JSON.stringify(review)).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
 
     const prepareUpload = (prepare.steps as Workflow[]).find(
@@ -461,12 +462,15 @@ describe("GitHub workflow security policy", () => {
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
       TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
       TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
+      JSONREPAIR_API_ENDPOINT: "${{ secrets.JSONREPAIR_API_ENDPOINT }}",
+      JSONREPAIR_API_KEY: "${{ secrets.JSONREPAIR_API_KEY }}",
+      JSONREPAIR_MODEL: "${{ secrets.JSONREPAIR_MODEL }}",
     });
     expect(`${source}\n${packageSource}`).not.toMatch(
       /deep-scan|tavernkeeper-model-cache/iu,
     );
     const providerSecretSteps = steps.filter((step) =>
-      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL/u.test(
+      /TAVERNKEEPER_API_(?:ENDPOINT|KEY)|TAVERNKEEPER_MODEL|JSONREPAIR_/u.test(
         JSON.stringify(step),
       ),
     );
@@ -680,7 +684,7 @@ describe("GitHub workflow security policy", () => {
     });
   });
 
-  test("the protected provider check makes one non-publishing contextual request", async () => {
+  test("the protected provider check makes isolated non-publishing provider requests", async () => {
     const value = await workflow("provider-check.yml");
     expect(value.jobs.authorize.environment).toBe("tavernkeeper-staff");
     expect(value.jobs.check.environment).toBe("tavernkeeper-scanner");
@@ -688,12 +692,23 @@ describe("GitHub workflow security policy", () => {
     const check = steps.find(
       (step) => step.name === "Check one benign contextual review",
     );
+    const repair = steps.find(
+      (step) => step.name === "Check one synthetic JSON repair",
+    );
     expect(check?.run).toBe("npm run --silent provider:check");
     expect(check?.env).toEqual({
       TAVERNKEEPER_API_ENDPOINT: "${{ secrets.TAVERNKEEPER_API_ENDPOINT }}",
       TAVERNKEEPER_API_KEY: "${{ secrets.TAVERNKEEPER_API_KEY }}",
       TAVERNKEEPER_MODEL: "${{ secrets.TAVERNKEEPER_MODEL }}",
     });
+    expect(repair?.run).toBe("npm run --silent jsonrepair:check");
+    expect(repair?.env).toEqual({
+      JSONREPAIR_API_ENDPOINT: "${{ secrets.JSONREPAIR_API_ENDPOINT }}",
+      JSONREPAIR_API_KEY: "${{ secrets.JSONREPAIR_API_KEY }}",
+      JSONREPAIR_MODEL: "${{ secrets.JSONREPAIR_MODEL }}",
+    });
+    expect(JSON.stringify(check)).not.toContain("JSONREPAIR_");
+    expect(JSON.stringify(repair)).not.toContain("TAVERNKEEPER_API_");
     expect(JSON.stringify(value)).not.toMatch(
       /publish|candidate\.json|git push/iu,
     );
@@ -855,6 +870,29 @@ describe("GitHub workflow security policy", () => {
           "",
         ),
       /contextual review must remain bounded between preparation and V5 finalization/u,
+    );
+  });
+
+  test("workflow policy rejects JSON repair credentials in preparation", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}",
+          "          JSONREPAIR_API_KEY: ${{ secrets.JSONREPAIR_API_KEY }}\n          TAVERNKEEPER_SCAN_REQUEST: ${{ toJSON(matrix.request) }}",
+        ),
+      /JSON repair secret appears outside a repair-only step/u,
+    );
+  });
+
+  test("workflow policy requires the synthetic JSON repair check", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          /      - name: Check one synthetic JSON repair[\s\S]*$/u,
+          "",
+        ),
+      /provider check must make one contextual and one JSON-repair-only request/u,
+      "provider-check.yml",
     );
   });
 

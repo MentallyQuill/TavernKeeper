@@ -51,6 +51,7 @@ import {
   type ContextualReviewProvider,
   type ReviewEvidenceGroupsSpec,
 } from "../model/contextual-review.js";
+import type { JsonRepairProvider } from "../model/json-repair.js";
 import { sanitizeReportV5 } from "../publish/sanitize.js";
 import { buildContextualReport } from "../report/contextual-report.js";
 import {
@@ -803,11 +804,13 @@ async function writeAtomic(path: string, value: unknown) {
 export async function reviewPreparedSession({
   sessionRoot: sessionRootInput,
   provider,
+  jsonRepairProvider,
   policy,
   expandContext,
 }: {
   sessionRoot: string;
   provider: ContextualReviewProvider;
+  jsonRepairProvider?: JsonRepairProvider;
   policy: ContextualReviewPolicy;
   expandContext?: ReviewEvidenceGroupsSpec["expandContext"];
 }) {
@@ -853,6 +856,7 @@ export async function reviewPreparedSession({
     reviewEvidenceGroups({
       groups: evidence.groups,
       provider,
+      jsonRepairProvider,
       policy,
       ...(checkpoint === undefined ? {} : { progress: checkpoint }),
       onProgress: async (nextProgress) =>

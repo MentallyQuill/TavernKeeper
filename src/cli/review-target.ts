@@ -22,13 +22,23 @@ export async function reviewConfiguredTarget(
       apiKey: requiredEnvironment(environment, "TAVERNKEEPER_API_KEY"),
       model: requiredEnvironment(environment, "TAVERNKEEPER_MODEL"),
     },
+    jsonRepairProvider: {
+      endpoint: requiredEnvironment(environment, "JSONREPAIR_API_ENDPOINT"),
+      apiKey: requiredEnvironment(environment, "JSONREPAIR_API_KEY"),
+      model: requiredEnvironment(environment, "JSONREPAIR_MODEL"),
+    },
     policy: await dependencies.loadPolicy(
       join(repositoryRoot, "config", "contextual-review.v3.json"),
     ),
     expandContext: async (group, _request, attempt) =>
       expandEvidenceContextGroup(group, attempt),
   });
-  return { status: result.status };
+  return {
+    status: result.status,
+    json_repairs: result.review.completion_ids.filter((completionId) =>
+      completionId.startsWith("jsonrepair:"),
+    ).length,
+  };
 }
 
 if (isDirectExecution(import.meta.url))
