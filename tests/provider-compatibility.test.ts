@@ -22,25 +22,30 @@ describe("model provider contextual compatibility check", () => {
   test("validates a multi-assessment contextual review using Bearer authentication", async () => {
     const candidateIds = ["c", "d", "e", "f"].map((value) => value.repeat(64));
     const content = JSON.stringify({
-      review: {
-        status: "complete",
-        assessments: candidateIds.map((candidateId) => ({
-          candidate_id: candidateId,
-          evidence_ids: [candidateId],
-          disposition: "expected_behavior",
-          impact: "none",
-          exploitability: "unlikely",
-          confidence: "high",
-          risk_exposure: "not_demonstrated",
-          recommended_risk: "low",
-          technical_explanation:
-            "The credential-like word appears only in explanatory documentation.",
-          layman_explanation:
-            "This is documentation, not code handling a real credential.",
-          developer_action: "none",
-        })),
-        observations: [],
-      },
+      reviews: [
+        {
+          group_id: "b".repeat(64),
+          review: {
+            status: "complete",
+            assessments: candidateIds.map((candidateId) => ({
+              candidate_id: candidateId,
+              evidence_ids: [candidateId],
+              disposition: "expected_behavior",
+              impact: "none",
+              exploitability: "unlikely",
+              confidence: "high",
+              risk_exposure: "not_demonstrated",
+              recommended_risk: "low",
+              technical_explanation:
+                "The credential-like word appears only in explanatory documentation.",
+              layman_explanation:
+                "This is documentation, not code handling a real credential.",
+              developer_action: "none",
+            })),
+            observations: [],
+          },
+        },
+      ],
     });
     const fetchImpl = vi
       .fn<typeof fetch>()
@@ -98,12 +103,12 @@ describe("model provider contextual compatibility check", () => {
     expect(unionBody.response_format).toMatchObject({
       type: "json_schema",
       json_schema: {
-        name: "tavernkeeper_contextual_review",
+        name: "tavernkeeper_contextual_review_batch",
         strict: true,
         schema: {
           type: "object",
-          properties: { review: { anyOf: expect.any(Array) } },
-          required: ["review"],
+          properties: { reviews: { items: { anyOf: expect.any(Array) } } },
+          required: ["reviews"],
           additionalProperties: false,
         },
       },

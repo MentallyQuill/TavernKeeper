@@ -244,6 +244,9 @@ export function buildContextualReport(
       cache_read_tokens: input.review.usage.cacheReadTokens,
       reasoning_tokens: input.review.usage.reasoningTokens,
     },
+    ...(input.review.review_batches === undefined
+      ? {}
+      : { review_batches: input.review.review_batches }),
     history: scanPackage.history,
     coverage: {
       inventory: {

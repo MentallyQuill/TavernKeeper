@@ -129,6 +129,8 @@ export const ContextualReviewPolicySchema = z.strictObject({
   maxOutputTokens: z.literal(32_768),
   maxResponseBytes: z.literal(5_000_000),
   timeoutMs: z.literal(300_000),
+  maxBatchGroups: z.literal(5),
+  maxBatchInputTokens: z.literal(64_000),
 });
 
 export type ContextualReviewPolicy = z.infer<

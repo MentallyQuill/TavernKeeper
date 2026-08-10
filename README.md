@@ -111,7 +111,11 @@ groups always receive fresh model review. A missing, stale, malformed, or
 mismatched cache is only a cache miss and cannot suppress scanning or review.
 Reports publish fresh/reused group and candidate counts plus source report IDs,
 while each repository's atomically replaced `review-cache.json` points back to
-the immutable source report.
+the immutable source report. Fresh misses are reviewed in conservative input-
+and output-token-bounded calls of at most five evidence groups. Every group
+keeps an independent response identity and validator, only failed group entries
+retry, and reports expose estimated and actual token usage for each model
+batch.
 
 Every complete report remains public regardless of risk. An immediate-danger
 report is an awareness signal, never an automatic hide, quarantine, ranking,

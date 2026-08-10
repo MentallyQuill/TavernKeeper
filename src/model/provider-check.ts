@@ -163,6 +163,8 @@ export async function checkModelProviderCompatibility(
           maxOutputTokens: 8_192,
           maxResponseBytes: 1_000_000,
           timeoutMs: request.timeoutMs ?? 60_000,
+          maxBatchGroups: 5,
+          maxBatchInputTokens: 64_000,
         },
       });
     } catch (error) {

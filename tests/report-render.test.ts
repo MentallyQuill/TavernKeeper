@@ -102,4 +102,29 @@ describe("V5 technical report HTML", () => {
     expect(html).toContain("0 fresh / 0 reused candidates");
     expect(html).toContain(sourceReportId);
   });
+
+  test("renders the model-call count and batch density", async () => {
+    const base = await fixtureReportV5();
+    const report = await fixtureReportV5({
+      review_batches: [
+        {
+          kind: "contextual_review",
+          attempt: 1,
+          group_count: 5,
+          candidate_count: 8,
+          estimated_input_tokens: 900,
+          over_budget: false,
+          input_tokens: base.review_usage.input_tokens,
+          output_tokens: base.review_usage.output_tokens,
+          cache_read_tokens: base.review_usage.cache_read_tokens,
+          reasoning_tokens: base.review_usage.reasoning_tokens,
+        },
+      ],
+    });
+    const html = renderReportV5Html(report);
+
+    expect(html).toContain("1 model call");
+    expect(html).toContain("up to 5 groups and 8 candidates per call");
+    expect(html).toContain("0 retry calls");
+  });
 });

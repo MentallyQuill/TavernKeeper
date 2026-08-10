@@ -142,8 +142,10 @@ For every exact target, TavernKeeper:
 5. calculates the canonical review-input digest for every evidence group and
    reuses only exact, validated low-risk/not-demonstrated matches from the
    current repository cache;
-6. asks the configured model to assess every cache miss under the versioned
-   ecosystem prompt and strict response schema;
+6. packs cache misses in source order into input- and output-token-bounded
+   calls of at most five evidence groups and asks the configured model to
+   assess each independently under the versioned ecosystem prompt and strict
+   response schema;
 7. rejects missing context, invented citations, invalid structured output,
    provider errors, and hard scanner or evidence-integrity failures;
 8. publishes bounded unresolved JavaScript coverage as `incomplete`, without
@@ -163,7 +165,11 @@ exposure not demonstrated are reusable. Any missing, malformed, stale,
 mismatched, material, high-risk, or demonstrated entry is treated as a miss and
 reviewed fresh. All deterministic scanners still rerun regardless of reuse.
 Operators can audit reuse through the report's `review_reuse` counts and source
-report IDs and through the repository cache manifest.
+report IDs and through the repository cache manifest. Reports also publish
+`review_batches`, including each call's group/candidate counts, conservative
+input estimate, over-budget singleton flag, and actual provider token usage.
+Valid groups from a partially invalid response are retained in memory and only
+missing or invalid groups are retried.
 
 The model may classify candidate evidence as expected behavior, a minor
 weakness, a material vulnerability, or credible malicious behavior. It does

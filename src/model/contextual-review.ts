@@ -8,6 +8,7 @@ import {
   ContextualObservationProgressSchema,
   ContextualObservationSchema,
   ContextualReviewResponseSchema,
+  contextualReviewResponseJsonSchemaForBatch,
   contextualReviewResponseJsonSchemaForGroup,
   sanitizeContextualReviewNarratives,
   type ContextualAssessment,
@@ -18,6 +19,7 @@ import {
 } from "./contextual-review-contract.js";
 import {
   buildContextualReviewPrompt,
+  buildContextualReviewBatchPrompt,
   CONTEXTUAL_PROMPT_VERSION,
   CONTEXTUAL_SCHEMA_VERSION,
   type ContextualReviewRepair,
@@ -48,6 +50,8 @@ export interface ContextualReviewPolicy {
   maxOutputTokens: number;
   maxResponseBytes: number;
   timeoutMs: number;
+  maxBatchGroups: number;
+  maxBatchInputTokens: number;
 }
 
 type RequestCompletion = (
@@ -73,6 +77,19 @@ const UsageSchema = z.strictObject({
 const CompletionIdSchema = z
   .string()
   .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u);
+export const ReviewBatchUsageSchema = z.strictObject({
+  kind: z.enum(["contextual_review", "json_repair"]),
+  attempt: z.number().int().min(1).max(5),
+  group_count: z.number().int().min(1).max(5),
+  candidate_count: z.number().int().min(1).max(320),
+  estimated_input_tokens: CountSchema.nullable(),
+  over_budget: z.boolean(),
+  input_tokens: CountSchema,
+  output_tokens: CountSchema,
+  cache_read_tokens: CountSchema,
+  reasoning_tokens: CountSchema,
+});
+export type ReviewBatchUsage = z.infer<typeof ReviewBatchUsageSchema>;
 export const ReviewUnitSchema = z
   .strictObject({
     group_id: z.string().regex(/^[0-9a-f]{64}$/u),
@@ -117,6 +134,7 @@ export const CompletedContextualReviewSchema = z
     usage: UsageSchema,
     completion_ids: z.array(CompletionIdSchema),
     review_units: z.array(ReviewUnitSchema).optional(),
+    review_batches: z.array(ReviewBatchUsageSchema).optional(),
   })
   .superRefine((review, context) => {
     let endpoint: URL;
@@ -153,6 +171,29 @@ export const CompletedContextualReviewSchema = z
         code: "custom",
         path: ["completion_ids"],
         message: "Completion identities must be unique.",
+      });
+    if (
+      review.review_batches !== undefined &&
+      (review.review_batches.length !== review.completion_ids.length ||
+        (
+          [
+            ["input_tokens", review.usage.inputTokens],
+            ["output_tokens", review.usage.outputTokens],
+            ["cache_read_tokens", review.usage.cacheReadTokens],
+            ["reasoning_tokens", review.usage.reasoningTokens],
+          ] as const
+        ).some(
+          ([field, total]) =>
+            review.review_batches!.reduce(
+              (sum, batch) => sum + batch[field],
+              0,
+            ) !== total,
+        ))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["review_batches"],
+        message: "Review batch usage must reconcile with total usage.",
       });
     if (review.review_units !== undefined) {
       const unitCandidateIds = review.review_units.flatMap(
@@ -191,6 +232,7 @@ export const ContextualReviewProgressSchema = z
     usage: UsageSchema,
     completion_ids: z.array(CompletionIdSchema),
     review_units: z.array(ReviewUnitSchema).optional(),
+    review_batches: z.array(ReviewBatchUsageSchema).optional(),
   })
   .superRefine((progress, context) => {
     let endpoint: URL;
@@ -246,6 +288,29 @@ export const ContextualReviewProgressSchema = z
         path: ["completion_ids"],
         message: "Progress completion identities must be unique.",
       });
+    if (
+      progress.review_batches !== undefined &&
+      (progress.review_batches.length !== progress.completion_ids.length ||
+        (
+          [
+            ["input_tokens", progress.usage.inputTokens],
+            ["output_tokens", progress.usage.outputTokens],
+            ["cache_read_tokens", progress.usage.cacheReadTokens],
+            ["reasoning_tokens", progress.usage.reasoningTokens],
+          ] as const
+        ).some(
+          ([field, total]) =>
+            progress.review_batches!.reduce(
+              (sum, batch) => sum + batch[field],
+              0,
+            ) !== total,
+        ))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["review_batches"],
+        message: "Progress review batch usage must reconcile with totals.",
+      });
   });
 
 export type ContextualReviewProgress = z.infer<
@@ -257,6 +322,7 @@ interface ValidatedContextualReviewProgress {
   assessments: ContextualAssessment[];
   observations: ContextualObservation[];
   reviewUnits: ReviewUnit[];
+  reviewBatches: ReviewBatchUsage[];
 }
 
 export interface ReviewEvidenceGroupsSpec {
@@ -345,40 +411,11 @@ function extractSingleJsonObject(content: string): unknown {
   }
 }
 
-function parseReviewResponse(
-  content: string,
-  sanitizeUnsafeNarratives = false,
-) {
-  if (redactSource(content) !== content)
-    throw new ModelRequestError(
-      "MODEL_EVIDENCE_INVALID",
-      "repository",
-      "Contextual reviewer returned secret-shaped text.",
-      "response_content",
-    );
-  const extracted = extractSingleJsonObject(content);
-  const decodedContent = JSON.stringify(extracted);
-  if (redactSource(decodedContent) !== decodedContent)
-    throw new ModelRequestError(
-      "MODEL_EVIDENCE_INVALID",
-      "repository",
-      "Contextual reviewer returned encoded secret-shaped text.",
-      "response_content",
-    );
-  const wireEnvelope = z
-    .strictObject({ review: z.unknown() })
-    .safeParse(extracted);
-  if (!wireEnvelope.success)
-    throw new ModelRequestError(
-      "MODEL_INVALID_RESPONSE",
-      "repository",
-      "Contextual reviewer returned an invalid response envelope.",
-      "review_schema",
-    );
+function parseReviewValue(value: unknown, sanitizeUnsafeNarratives = false) {
   const parsed = ContextualReviewResponseSchema.safeParse(
     sanitizeUnsafeNarratives
-      ? sanitizeContextualReviewNarratives(wireEnvelope.data.review)
-      : wireEnvelope.data.review,
+      ? sanitizeContextualReviewNarratives(value)
+      : value,
   );
   if (!parsed.success) {
     const path = parsed.error.issues[0]?.path ?? [];
@@ -416,6 +453,123 @@ function parseReviewResponse(
   return parsed.data;
 }
 
+function parseCheckedReviewValue(
+  value: unknown,
+  sanitizeUnsafeNarratives = false,
+) {
+  const decodedContent = JSON.stringify(value);
+  if (
+    decodedContent === undefined ||
+    redactSource(decodedContent) !== decodedContent
+  )
+    throw new ModelRequestError(
+      "MODEL_EVIDENCE_INVALID",
+      "repository",
+      "Contextual reviewer returned secret-shaped text in a review entry.",
+      "response_content",
+    );
+  return parseReviewValue(value, sanitizeUnsafeNarratives);
+}
+
+function extractedResponse(content: string) {
+  if (redactSource(content) !== content)
+    throw new ModelRequestError(
+      "MODEL_EVIDENCE_INVALID",
+      "repository",
+      "Contextual reviewer returned secret-shaped text.",
+      "response_content",
+    );
+  const extracted = extractSingleJsonObject(content);
+  const decodedContent = JSON.stringify(extracted);
+  if (redactSource(decodedContent) !== decodedContent)
+    throw new ModelRequestError(
+      "MODEL_EVIDENCE_INVALID",
+      "repository",
+      "Contextual reviewer returned encoded secret-shaped text.",
+      "response_content",
+    );
+  return extracted;
+}
+
+function parseReviewResponse(
+  content: string,
+  sanitizeUnsafeNarratives = false,
+) {
+  const wireEnvelope = z
+    .strictObject({ review: z.unknown() })
+    .safeParse(extractedResponse(content));
+  if (!wireEnvelope.success)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "repository",
+      "Contextual reviewer returned an invalid response envelope.",
+      "review_schema",
+    );
+  return parseReviewValue(wireEnvelope.data.review, sanitizeUnsafeNarratives);
+}
+
+function parseBatchResponse(
+  content: string,
+  groups: readonly EvidenceContextGroup[],
+  sanitizeUnsafeNarratives = false,
+) {
+  const wireEnvelope = z
+    .strictObject({ reviews: z.array(z.unknown()).min(1).max(5) })
+    .safeParse(extractSingleJsonObject(content));
+  if (!wireEnvelope.success)
+    throw new ModelRequestError(
+      "MODEL_INVALID_RESPONSE",
+      "repository",
+      "Contextual reviewer returned an invalid batch envelope.",
+      "review_schema",
+    );
+  const expectedIds = new Set(groups.map(({ group_id }) => group_id));
+  const entries = new Map<string, unknown[]>();
+  for (const value of wireEnvelope.data.reviews) {
+    const entry = z
+      .strictObject({ group_id: z.string(), review: z.unknown() })
+      .safeParse(value);
+    if (!entry.success || !expectedIds.has(entry.data.group_id)) continue;
+    entries.set(entry.data.group_id, [
+      ...(entries.get(entry.data.group_id) ?? []),
+      entry.data.review,
+    ]);
+  }
+  return new Map<string, ContextualReviewResponse | Error>(
+    groups.map((group) => {
+      const matching = entries.get(group.group_id) ?? [];
+      if (matching.length !== 1)
+        return [
+          group.group_id,
+          new ModelRequestError(
+            "MODEL_INVALID_RESPONSE",
+            "repository",
+            "Contextual reviewer omitted or duplicated a batch group.",
+            "review_schema",
+          ),
+        ] as const;
+      try {
+        return [
+          group.group_id,
+          parseCheckedReviewValue(matching[0], sanitizeUnsafeNarratives),
+        ] as const;
+      } catch (error) {
+        return [
+          group.group_id,
+          error instanceof Error
+            ? error
+            : new ModelRequestError(
+                "MODEL_INVALID_RESPONSE",
+                "repository",
+                "Contextual reviewer returned an invalid batch group.",
+                "review_schema",
+              ),
+        ] as const;
+      }
+    }),
+  );
+}
+
 function zeroUsage(): ModelUsage {
   return {
     inputTokens: 0,
@@ -445,7 +599,12 @@ function validatePolicy(policy: ContextualReviewPolicy) {
     !Number.isInteger(policy.maxResponseBytes) ||
     policy.maxResponseBytes < 1 ||
     !Number.isInteger(policy.timeoutMs) ||
-    policy.timeoutMs < 1
+    policy.timeoutMs < 1 ||
+    !Number.isInteger(policy.maxBatchGroups) ||
+    policy.maxBatchGroups < 1 ||
+    policy.maxBatchGroups > 5 ||
+    !Number.isInteger(policy.maxBatchInputTokens) ||
+    policy.maxBatchInputTokens < 1
   )
     throw new ModelRequestError(
       "MODEL_CONFIGURATION",
@@ -613,6 +772,7 @@ function validatedProgress(
     assessments: expectedAssessments,
     observations: expectedObservations,
     reviewUnits,
+    reviewBatches: progress.review_batches ?? [],
   };
 }
 
@@ -811,6 +971,380 @@ async function reviewGroup(
   throw lastError;
 }
 
+type ValidatedGroupReview = ReturnType<typeof validateCompletedGroupReview>;
+
+interface BatchGroupState {
+  initialGroup: EvidenceContextGroup;
+  group: EvidenceContextGroup;
+  attempt: number;
+  repair?: ContextualReviewRepair | undefined;
+  lastError?: unknown;
+  repairCandidate?:
+    | {
+        review: Extract<ContextualReviewResponse, { status: "complete" }>;
+        diagnostic: Extract<
+          ModelResponseDiagnostic,
+          | "assessment_evidence_ids"
+          | "observation_evidence_ids"
+          | "observation_locations"
+        >;
+      }
+    | undefined;
+}
+
+function batchUsage(
+  kind: ReviewBatchUsage["kind"],
+  attempt: number,
+  groups: readonly EvidenceContextGroup[],
+  estimatedInputTokens: number | null,
+  maximumInputTokens: number,
+  usage: ModelUsage,
+): ReviewBatchUsage {
+  return ReviewBatchUsageSchema.parse({
+    kind,
+    attempt,
+    group_count: groups.length,
+    candidate_count: groups.reduce(
+      (total, group) => total + group.candidates.length,
+      0,
+    ),
+    estimated_input_tokens: estimatedInputTokens,
+    over_budget:
+      estimatedInputTokens !== null &&
+      estimatedInputTokens > maximumInputTokens,
+    input_tokens: usage.inputTokens,
+    output_tokens: usage.outputTokens,
+    cache_read_tokens: usage.cacheReadTokens,
+    reasoning_tokens: usage.reasoningTokens,
+  });
+}
+
+function repairCompletionIdentity(completionId: string) {
+  const value = `jsonrepair:${completionId}`;
+  return value.length <= 200
+    ? value
+    : `jsonrepair:${createHash("sha256").update(completionId).digest("hex")}`;
+}
+
+function nextBatchAttempt(state: BatchGroupState, error: unknown) {
+  state.lastError = error;
+  state.repair = {
+    diagnostic:
+      error instanceof ModelRequestError && error.diagnostic !== undefined
+        ? error.diagnostic
+        : "review_schema",
+  };
+  state.attempt += 1;
+}
+
+function estimatedStructuredOutputTokens(schema: Record<string, unknown>) {
+  return Math.ceil(Buffer.byteLength(JSON.stringify(schema), "utf8") / 3);
+}
+
+async function reviewBatch(
+  initialGroups: readonly EvidenceContextGroup[],
+  spec: ReviewEvidenceGroupsSpec,
+  usage: ModelUsage,
+  completionIds: string[],
+  reviewBatches: ReviewBatchUsage[],
+) {
+  const states = new Map<string, BatchGroupState>(
+    initialGroups.map(
+      (group) =>
+        [
+          group.group_id,
+          {
+            initialGroup: group,
+            group,
+            attempt: 1,
+          },
+        ] as [string, BatchGroupState],
+    ),
+  );
+  const reviewed = new Map<string, ValidatedGroupReview>();
+  while (states.size > 0) {
+    const currentStates = [...states.values()];
+    const attempt = currentStates[0]!.attempt;
+    if (currentStates.some((state) => state.attempt !== attempt))
+      throw new Error("Contextual batch attempts diverged unexpectedly.");
+    const finalAttempt = attempt === spec.policy.maxImmediateAttempts;
+    const currentGroups = currentStates.map(({ group }) => group);
+    const repairs = new Map(
+      currentStates.flatMap((state) =>
+        state.repair === undefined
+          ? []
+          : [[state.group.group_id, state.repair] as const],
+      ),
+    );
+    const prompt = buildContextualReviewBatchPrompt(
+      currentGroups,
+      repairs,
+      finalAttempt,
+    );
+    const responseSchema = contextualReviewResponseJsonSchemaForBatch(
+      currentGroups,
+      finalAttempt,
+    );
+    const estimatedInputTokens =
+      prompt.estimatedInputTokens +
+      estimatedStructuredOutputTokens(responseSchema);
+    let responses: Map<string, ContextualReviewResponse | Error> | undefined;
+    try {
+      const request = spec.provider.requestCompletion ?? requestTextCompletion;
+      const completion = await request({
+        endpoint: spec.provider.endpoint,
+        apiKey: spec.provider.apiKey,
+        model: spec.provider.model,
+        maxOutputTokens: spec.policy.maxOutputTokens,
+        maxResponseBytes: spec.policy.maxResponseBytes,
+        timeoutMs: spec.policy.timeoutMs,
+        systemContent: prompt.systemContent,
+        userContent: prompt.userContent,
+        responseJsonSchema: {
+          name: "tavernkeeper_contextual_review_batch",
+          schema: responseSchema,
+        },
+        ...(spec.provider.fetchImpl === undefined
+          ? {}
+          : { fetchImpl: spec.provider.fetchImpl }),
+        ...(spec.provider.resolveAddresses === undefined
+          ? {}
+          : { resolveAddresses: spec.provider.resolveAddresses }),
+      });
+      const endpoint = new URL(spec.provider.endpoint);
+      if (
+        completion.endpointOrigin !== endpoint.origin ||
+        completion.provider !== endpoint.hostname
+      )
+        throw new ModelRequestError(
+          "MODEL_INVALID_RESPONSE",
+          "system",
+          "Contextual reviewer returned a mismatched provider identity.",
+          "response_envelope",
+        );
+      addUsage(usage, completion.usage);
+      completionIds.push(completion.completionId);
+      reviewBatches.push(
+        batchUsage(
+          "contextual_review",
+          attempt,
+          currentGroups,
+          estimatedInputTokens,
+          spec.policy.maxBatchInputTokens,
+          completion.usage,
+        ),
+      );
+      responses = parseBatchResponse(
+        completion.content,
+        currentGroups,
+        finalAttempt,
+      );
+    } catch (error) {
+      if (!retryable(error)) throw error;
+      for (const state of currentStates) {
+        if (finalAttempt) state.lastError = error;
+        else nextBatchAttempt(state, error);
+      }
+    }
+
+    if (responses !== undefined)
+      for (const state of currentStates) {
+        const response = responses.get(state.group.group_id);
+        let completedResponse:
+          Extract<ContextualReviewResponse, { status: "complete" }> | undefined;
+        try {
+          if (response instanceof Error) throw response;
+          if (response === undefined)
+            throw new ModelRequestError(
+              "MODEL_INVALID_RESPONSE",
+              "repository",
+              "Contextual reviewer omitted a batch group.",
+              "review_schema",
+            );
+          if (response.status === "needs_more_context") {
+            const candidateIds = new Set(
+              state.group.candidates.map(({ candidate_id }) => candidate_id),
+            );
+            if (
+              new Set(response.candidate_ids).size !==
+                response.candidate_ids.length ||
+              response.candidate_ids.some(
+                (candidateId) => !candidateIds.has(candidateId),
+              )
+            )
+              throw new ModelRequestError(
+                "MODEL_EVIDENCE_INVALID",
+                "repository",
+                "Contextual reviewer requested context for an unknown candidate.",
+                "assessment_candidate_id",
+              );
+            if (!spec.expandContext)
+              throw new ModelRequestError(
+                "MODEL_CONTEXT_INCOMPLETE",
+                "repository",
+                "Contextual review requires more source context.",
+              );
+            if (finalAttempt)
+              throw new ModelRequestError(
+                "MODEL_CONTEXT_INCOMPLETE",
+                "repository",
+                "Contextual review remained unresolved after context expansion.",
+              );
+            const expanded = await spec.expandContext(
+              state.group,
+              response,
+              attempt,
+            );
+            if (
+              expanded.group_id !== state.group.group_id ||
+              expanded.repository !== state.group.repository ||
+              expanded.path !== state.group.path ||
+              expanded.target_sha !== state.group.target_sha ||
+              expanded.evidence_sha !== state.group.evidence_sha ||
+              JSON.stringify(
+                expanded.candidates.map((candidate) => [
+                  candidate.candidate_id,
+                  candidate.evidence_id,
+                ]),
+              ) !==
+                JSON.stringify(
+                  state.group.candidates.map((candidate) => [
+                    candidate.candidate_id,
+                    candidate.evidence_id,
+                  ]),
+                )
+            )
+              throw new ModelRequestError(
+                "MODEL_EVIDENCE_INVALID",
+                "repository",
+                "Expanded context changed immutable evidence identity.",
+              );
+            state.group = expanded;
+            state.repair = undefined;
+            state.attempt += 1;
+            continue;
+          }
+          completedResponse = response;
+          reviewed.set(
+            state.initialGroup.group_id,
+            validateCompletedGroupReview(
+              state.group,
+              response,
+              spec.groups.map(({ path }) => path),
+            ),
+          );
+          states.delete(state.initialGroup.group_id);
+        } catch (error) {
+          if (!retryable(error)) throw error;
+          if (finalAttempt) {
+            state.lastError = error;
+            if (
+              completedResponse !== undefined &&
+              error instanceof ModelRequestError &&
+              isJsonRepairDiagnostic(error.diagnostic)
+            )
+              state.repairCandidate = {
+                review: completedResponse,
+                diagnostic: error.diagnostic,
+              };
+          } else nextBatchAttempt(state, error);
+        }
+      }
+
+    const exhausted = finalAttempt ? [...states.values()] : [];
+    for (const state of exhausted) {
+      if (
+        state.repairCandidate !== undefined &&
+        spec.jsonRepairProvider !== undefined &&
+        isDeepSeekV4FlashModel(spec.provider.model)
+      )
+        try {
+          const repaired = await repairCompletedReviewBindings({
+            group: state.group,
+            review: state.repairCandidate.review,
+            diagnostic: state.repairCandidate.diagnostic,
+            provider: spec.jsonRepairProvider,
+          });
+          reviewed.set(
+            state.initialGroup.group_id,
+            validateCompletedGroupReview(
+              state.group,
+              repaired.review,
+              spec.groups.map(({ path }) => path),
+            ),
+          );
+          addUsage(usage, repaired.usage);
+          completionIds.push(repairCompletionIdentity(repaired.completionId));
+          reviewBatches.push(
+            batchUsage(
+              "json_repair",
+              1,
+              [state.group],
+              null,
+              spec.policy.maxBatchInputTokens,
+              repaired.usage,
+            ),
+          );
+          states.delete(state.initialGroup.group_id);
+          continue;
+        } catch {
+          // Preserve the authoritative primary failure below.
+        }
+      throw state.lastError;
+    }
+  }
+  return reviewed;
+}
+
+function takeReviewBatch(
+  groups: readonly EvidenceContextGroup[],
+  start: number,
+  policy: ContextualReviewPolicy,
+) {
+  const batch: EvidenceContextGroup[] = [];
+  const maximumEstimatedCandidates = Math.max(
+    1,
+    Math.floor(policy.maxOutputTokens / 2_048),
+  );
+  for (
+    let index = start;
+    index < groups.length && batch.length < policy.maxBatchGroups;
+    index += 1
+  ) {
+    const next = [...batch, groups[index]!];
+    const worstCaseRepairs = new Map(
+      next.map((group) => [
+        group.group_id,
+        { diagnostic: "assessment_developer_action" } as const,
+      ]),
+    );
+    const prompt = buildContextualReviewBatchPrompt(
+      next,
+      worstCaseRepairs,
+      true,
+    );
+    const responseSchema = contextualReviewResponseJsonSchemaForBatch(
+      next,
+      true,
+    );
+    const estimate =
+      prompt.estimatedInputTokens +
+      estimatedStructuredOutputTokens(responseSchema);
+    const candidateCount = next.reduce(
+      (total, group) => total + group.candidates.length,
+      0,
+    );
+    if (
+      batch.length > 0 &&
+      (estimate > policy.maxBatchInputTokens ||
+        candidateCount > maximumEstimatedCandidates)
+    )
+      break;
+    batch.push(groups[index]!);
+  }
+  return batch;
+}
+
 export async function reviewEvidenceGroups(
   spec: ReviewEvidenceGroupsSpec,
 ): Promise<CompletedContextualReview> {
@@ -851,79 +1385,171 @@ export async function reviewEvidenceGroups(
   const usage = zeroUsage();
   const completionIds: string[] = [];
   const reviewUnits: ReviewUnit[] = [];
+  const reviewBatches: ReviewBatchUsage[] = [];
   const validated = validatedProgress(spec.progress, spec, endpoint);
   const progress = validated?.progress;
+  const batchUsageComplete =
+    progress === undefined || progress.review_batches !== undefined;
+  const publishBatchUsage =
+    spec.policy.maxBatchGroups > 1 && batchUsageComplete;
   if (validated !== undefined) {
     assessments.push(...validated.assessments);
     observations.push(...validated.observations);
     addUsage(usage, validated.progress.usage);
     completionIds.push(...validated.progress.completion_ids);
     reviewUnits.push(...validated.reviewUnits);
+    reviewBatches.push(...validated.reviewBatches);
   }
   const completedGroupIds = [...(progress?.completed_group_ids ?? [])];
-  for (const group of spec.groups.slice(completedGroupIds.length)) {
-    const reviewInputDigest =
-      spec.reviewInputDigests?.get(group.group_id) ?? group.group_id;
-    const reusable = spec.reusableGroups?.get(group.group_id);
-    if (
-      reusable !== undefined &&
-      reusable.review_input_digest !== reviewInputDigest
-    )
-      throw new ModelRequestError(
-        "MODEL_EVIDENCE_INVALID",
-        "repository",
-        "Reusable contextual review identity changed.",
+  const checkpoint = async () => {
+    if (spec.onProgress === undefined) return;
+    await spec.onProgress(
+      ContextualReviewProgressSchema.parse({
+        policy_version: "4",
+        prompt_version: CONTEXTUAL_PROMPT_VERSION,
+        schema_version: CONTEXTUAL_SCHEMA_VERSION,
+        model: spec.provider.model,
+        provider: endpoint.hostname,
+        endpoint_origin: endpoint.origin,
+        completed_group_ids: completedGroupIds,
+        assessments: assessments.map(
+          ({ locations: _locations, ...assessment }) => assessment,
+        ),
+        observations: observations.map(
+          ({ observation_id: _observationId, locations, ...observation }) => ({
+            ...observation,
+            locations: locations.map(
+              ({ path: _path, ...location }) => location,
+            ),
+          }),
+        ),
+        usage,
+        completion_ids: completionIds,
+        review_units: reviewUnits,
+        ...(publishBatchUsage ? { review_batches: reviewBatches } : {}),
+      }),
+    );
+  };
+  const remainingGroups = spec.groups.slice(completedGroupIds.length);
+  if (spec.policy.maxBatchGroups === 1)
+    for (const group of remainingGroups) {
+      const reviewInputDigest =
+        spec.reviewInputDigests?.get(group.group_id) ?? group.group_id;
+      const reusable = spec.reusableGroups?.get(group.group_id);
+      if (
+        reusable !== undefined &&
+        reusable.review_input_digest !== reviewInputDigest
+      )
+        throw new ModelRequestError(
+          "MODEL_EVIDENCE_INVALID",
+          "repository",
+          "Reusable contextual review identity changed.",
+        );
+      const reviewed =
+        reusable === undefined
+          ? await reviewGroup(group, spec, usage, completionIds)
+          : validateCompletedGroupReview(
+              group,
+              reusable.response,
+              spec.groups.map(({ path }) => path),
+            );
+      assessments.push(...reviewed.assessments);
+      observations.push(...reviewed.observations);
+      completedGroupIds.push(group.group_id);
+      reviewUnits.push(
+        ReviewUnitSchema.parse({
+          group_id: group.group_id,
+          review_input_digest: reviewInputDigest,
+          candidate_ids: group.candidates.map(
+            ({ candidate_id }) => candidate_id,
+          ),
+          reused: reusable !== undefined,
+          origin_report_id: reusable?.origin_report_id ?? null,
+        }),
       );
-    const reviewed =
-      reusable === undefined
-        ? await reviewGroup(group, spec, usage, completionIds)
-        : validateCompletedGroupReview(
+      await checkpoint();
+    }
+  else {
+    const resolved = new Map<
+      string,
+      {
+        reviewed: ValidatedGroupReview;
+        reusable: ReusableReviewGroup | undefined;
+      }
+    >();
+    const freshGroups: EvidenceContextGroup[] = [];
+    for (const group of remainingGroups) {
+      const reviewInputDigest =
+        spec.reviewInputDigests?.get(group.group_id) ?? group.group_id;
+      const reusable = spec.reusableGroups?.get(group.group_id);
+      if (
+        reusable !== undefined &&
+        reusable.review_input_digest !== reviewInputDigest
+      )
+        throw new ModelRequestError(
+          "MODEL_EVIDENCE_INVALID",
+          "repository",
+          "Reusable contextual review identity changed.",
+        );
+      if (reusable === undefined) freshGroups.push(group);
+      else
+        resolved.set(group.group_id, {
+          reviewed: validateCompletedGroupReview(
             group,
             reusable.response,
             spec.groups.map(({ path }) => path),
-          );
-    assessments.push(...reviewed.assessments);
-    observations.push(...reviewed.observations);
-    completedGroupIds.push(group.group_id);
-    reviewUnits.push(
-      ReviewUnitSchema.parse({
-        group_id: group.group_id,
-        review_input_digest: reviewInputDigest,
-        candidate_ids: group.candidates.map(({ candidate_id }) => candidate_id),
-        reused: reusable !== undefined,
-        origin_report_id: reusable?.origin_report_id ?? null,
-      }),
-    );
-    if (spec.onProgress !== undefined)
-      await spec.onProgress(
-        ContextualReviewProgressSchema.parse({
-          policy_version: "4",
-          prompt_version: CONTEXTUAL_PROMPT_VERSION,
-          schema_version: CONTEXTUAL_SCHEMA_VERSION,
-          model: spec.provider.model,
-          provider: endpoint.hostname,
-          endpoint_origin: endpoint.origin,
-          completed_group_ids: completedGroupIds,
-          assessments: assessments.map(
-            ({ locations: _locations, ...assessment }) => assessment,
           ),
-          observations: observations.map(
-            ({
-              observation_id: _observationId,
-              locations,
-              ...observation
-            }) => ({
-              ...observation,
-              locations: locations.map(
-                ({ path: _path, ...location }) => location,
-              ),
-            }),
-          ),
-          usage,
-          completion_ids: completionIds,
-          review_units: reviewUnits,
-        }),
+          reusable,
+        });
+    }
+    let nextGroupIndex = 0;
+    const flushResolvedPrefix = async () => {
+      let changed = false;
+      while (nextGroupIndex < remainingGroups.length) {
+        const group = remainingGroups[nextGroupIndex]!;
+        const value = resolved.get(group.group_id);
+        if (value === undefined) break;
+        const reviewInputDigest =
+          spec.reviewInputDigests?.get(group.group_id) ?? group.group_id;
+        assessments.push(...value.reviewed.assessments);
+        observations.push(...value.reviewed.observations);
+        completedGroupIds.push(group.group_id);
+        reviewUnits.push(
+          ReviewUnitSchema.parse({
+            group_id: group.group_id,
+            review_input_digest: reviewInputDigest,
+            candidate_ids: group.candidates.map(
+              ({ candidate_id }) => candidate_id,
+            ),
+            reused: value.reusable !== undefined,
+            origin_report_id: value.reusable?.origin_report_id ?? null,
+          }),
+        );
+        resolved.delete(group.group_id);
+        nextGroupIndex += 1;
+        changed = true;
+      }
+      if (changed) await checkpoint();
+    };
+    await flushResolvedPrefix();
+    for (let start = 0; start < freshGroups.length;) {
+      const batch = takeReviewBatch(freshGroups, start, spec.policy);
+      const batchReviewed = await reviewBatch(
+        batch,
+        spec,
+        usage,
+        completionIds,
+        reviewBatches,
       );
+      for (const group of batch)
+        resolved.set(group.group_id, {
+          reviewed: batchReviewed.get(group.group_id)!,
+          reusable: undefined,
+        });
+      start += batch.length;
+      await flushResolvedPrefix();
+    }
+    await flushResolvedPrefix();
   }
   if (
     new Set(observations.map((item) => item.observation_id)).size !==
@@ -947,5 +1573,6 @@ export async function reviewEvidenceGroups(
     usage,
     completion_ids: completionIds,
     review_units: reviewUnits,
+    ...(publishBatchUsage ? { review_batches: reviewBatches } : {}),
   });
 }

@@ -29,7 +29,12 @@ boundary:
    evidence digest, and restores only `prepared.json` and
    `evidence-context.json`. It never receives a target checkout path or complete
    derived source. A sanitized preparation failure bypasses the model.
-3. Successful evidence receives contextual model review. Luna may see only
+3. Successful evidence receives contextual model review. Exact cache hits are
+   removed first; remaining groups are packed in source order into conservative
+   input- and output-token-bounded calls of at most five groups. Each group has
+   its own response identity and authoritative replay validation, so valid
+   entries are retained while only missing or invalid entries retry. Luna may
+   see only
    failed hash bindings or locally proven invalid observation indices after the
    primary reviewer exhausts its own repair attempts; it never sees source,
    file paths, line numbers, scanner finding prose, or report narratives and

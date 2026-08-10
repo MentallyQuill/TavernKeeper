@@ -171,7 +171,11 @@ the first policy-4 pass is cold. Cache absence, corruption, identity drift,
 source-report mismatch, or per-group validation failure becomes a miss and
 sends the group to the model. It never removes a scanner result. Technical
 Report V5 records fresh and reused group/candidate counts and all immutable
-source report IDs used, making every saved model call auditable.
+source report IDs used. Cache misses are packed into input- and
+output-token-bounded calls of at most five groups; each response remains
+independently bound and replayed per group, and only invalid or missing entries
+are retried. Technical Report V5 also records estimated and actual usage for
+every batch, making every saved model call auditable.
 
 Every direct write to `main` uses the dedicated Publisher App. Checkout
 credentials are never persisted, `GITHUB_TOKEN` retains contents-read, and
