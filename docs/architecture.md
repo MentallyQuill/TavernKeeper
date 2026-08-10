@@ -133,24 +133,17 @@ Non-text findings remain evidence candidates with an explicit metadata-only
 coverage limitation. Model schema retries receive the rejected field category
 only; identical corrective feedback is not retried indefinitely.
 
-Operations state schema V3 persists one monotonic ticket ledger. Tavernary
-manifest V3 adds a complete positive `popularity_rank`, which controls initial
-seeding strictly from rank 1 upward. A failure moves behind every project
-already assigned a ticket; later catalog arrivals append behind that rotated
-failure. The sole scheduling stop is an explicit protected staff emergency
-stop. Manifest V2 remains a temporary compatibility input and uses the earlier
-Top-30/new/old order when seeding.
+Operations state schema V3 persists one monotonic ticket ledger. A target is
+current only when one preferred report matches its exact manifest SHA, scanner
+policy, and contextual-review policy. Reconciliation queues every mismatch;
+catalog observation classifies work as newly submitted or newly updated but is
+not an eligibility gate. Protected staff work is selected first, followed by
+new submissions, updates, and all remaining version catch-up work. Failure and
+provider-hold deadlines remain authoritative.
 
-Schema V3 also stores a bounded, immutable coverage campaign selected by the
-protected `coverage-campaign.yml` workflow. One atomic V3-manifest snapshot
-fixes the current top 20 popularity IDs and the 20 IDs with the newest
-qualifying GitHub releases, then stores their sorted deduplicated union and a
-shrinking remaining set. Overlap can produce fewer than 40 members. The
-workflow has no schedule or inputs: rerunning its fixed campaign ID is a no-op,
-not a fresh selection or a catalog rescan. Reconciliation gives those members
-ordinary queue eligibility and removes them only after a qualifying
-post-campaign current-SHA report; retry ordering, scanner-policy authority, and
-the 48-hour rescan deadline remain unchanged.
+The retired top-20/latest-20 campaign field remains in schema V3 only as an
+empty backward-compatible tombstone. Reconciliation clears any legacy value
+and never grants it eligibility or priority.
 
 Reports are addressed by provider, immutable GitHub repository ID, exact SHA,
 scanner and contextual-policy versions, and report version. Prepare matrix jobs
@@ -172,10 +165,14 @@ project's public color. Tavernary's separate strict synthesis applies
 deterministic minimum-risk floors and produces the final project assessment:
 
 - `low` / teal includes expected behavior, minor security hygiene, coverage
-  limitations, and risk whose exposure or reachability is not demonstrated;
+  limitations, risk whose exposure or reachability is not demonstrated, and
+  recoverable local/self slowdowns, memory or CPU spikes, frozen tabs, client
+  crashes, restarts, or loss of unsaved generated content;
 - `material` / yellow represents a high-confidence, demonstrated,
-  non-malicious vulnerability in shipped or executable behavior with
-  medium-or-greater impact and plausible-or-greater exploitability; and
+  non-malicious vulnerability in shipped or executable behavior with a
+  plausible path to meaningful harm such as credential theft, private-content
+  exfiltration, persistent saved-data damage, unauthorized persistence,
+  arbitrary code execution, or cross-user/system harm; and
 - `high` / red represents high-confidence demonstrated malicious or
   compromised behavior, or a demonstrated critical vulnerability that is
   readily exploitable in the shipped project.

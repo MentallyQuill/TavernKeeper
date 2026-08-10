@@ -90,11 +90,13 @@ candidate's evidence hashes or drop an optional observation whose evidence or
 location is invalid; deterministic validation still decides whether the
 original review is accepted.
 
-Initial V3 catalog coverage follows Tavernary's complete popularity rank.
-TavernKeeper temporarily accepts V2 manifests with the legacy Top-30/new/old
-fallback during rollout. Durable tickets preserve that initial order: a failed
-project receives a new tail ticket, and projects discovered later receive still
-higher tickets, so neither can starve the other. See
+Every Tavernary catalog project without a report for its exact target SHA,
+scanner policy, and contextual-review policy is automatically queued. Protected
+staff work runs first; automatic work is ordered newly submitted, newly
+updated, then all remaining out-of-version projects. The policy-4 catch-up
+bypasses the ordinary 48-hour changed-SHA cooldown once because its prior report
+uses an older policy. Durable retry and provider-hold deadlines remain
+authoritative. See
 [operations](docs/operations.md), [architecture](docs/architecture.md),
 [scanning policy](docs/SCANNING.md), and [rule documentation](docs/rules.md).
 

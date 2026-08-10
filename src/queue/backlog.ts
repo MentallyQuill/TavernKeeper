@@ -8,7 +8,10 @@ import {
   type CurrentTarget,
   type CurrentTargetManifest,
 } from "../contracts/targets.js";
-import { CURRENT_SCANNER_POLICY_VERSION } from "../config/policy.js";
+import {
+  CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
+  CURRENT_SCANNER_POLICY_VERSION,
+} from "../config/policy.js";
 import {
   OperationsStateSchema,
   type OperationsState,
@@ -18,7 +21,7 @@ import { failureFingerprint } from "../operations/failure.js";
 import { effectiveQueueEntryNotBefore } from "./durable-queue.js";
 
 export type BacklogReason =
-  "new" | "changed" | "retry" | "policy" | "coverage" | "staff";
+  "new" | "changed" | "retry" | "policy" | "version" | "staff";
 
 export interface PlannedTarget {
   target: CurrentTarget;
@@ -48,9 +51,10 @@ function parseCurrentManifest(input: CurrentTargetManifest) {
 function reasonFor(
   entry: ScanQueueEntry,
   target: CurrentTarget,
-  index: ReportIndexV5,
+  _index: ReportIndexV5,
   state: OperationsState,
   scannerPolicyVersion: string,
+  _contextualReviewPolicyVersion: string,
 ): BacklogReason {
   if (entry.consecutive_failures > 0) return "retry";
   if (entry.staff_requested === true) return "staff";
@@ -63,26 +67,9 @@ function reasonFor(
     )
   )
     return "policy";
-  if (
-    state.coverage_campaigns.some(
-      (campaign) =>
-        campaign.status === "active" &&
-        campaign.scanner_policy_version === scannerPolicyVersion &&
-        campaign.remaining_repository_ids.includes(target.repository_id),
-    )
-  )
-    return "coverage";
-  const reports = index.reports.filter(
-    ({ repository_id }) => repository_id === target.repository_id,
-  );
-  if (reports.length === 0) return "new";
-  const covered = reports.some(
-    (report) =>
-      report.target_sha === target.target_sha &&
-      report.scanner_policy_version === scannerPolicyVersion,
-  );
-  if (covered) return "staff";
-  return "changed";
+  if (entry.catalog_change === "new") return "new";
+  if (entry.catalog_change === "updated") return "changed";
+  return "version";
 }
 
 export function planBatch(
@@ -91,6 +78,7 @@ export function planBatch(
   stateInput: OperationsState,
   now: string,
   scannerPolicyVersion: string = CURRENT_SCANNER_POLICY_VERSION,
+  contextualReviewPolicyVersion: string = CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
   forceProviderProbe = false,
 ): BatchPlan {
   const manifest = parseCurrentManifest(manifestInput);
@@ -113,6 +101,16 @@ export function planBatch(
           Number(left.staff_requested === true) ||
         Number(left.consecutive_failures > 0) -
           Number(right.consecutive_failures > 0) ||
+        (left.catalog_change === "new"
+          ? 0
+          : left.catalog_change === "updated"
+            ? 1
+            : 2) -
+          (right.catalog_change === "new"
+            ? 0
+            : right.catalog_change === "updated"
+              ? 1
+              : 2) ||
         left.ticket - right.ticket,
     );
   const policyCanaryGate =
@@ -231,7 +229,14 @@ export function planBatch(
         );
       return {
         target,
-        reason: reasonFor(entry, target, index, state, scannerPolicyVersion),
+        reason: reasonFor(
+          entry,
+          target,
+          index,
+          state,
+          scannerPolicyVersion,
+          contextualReviewPolicyVersion,
+        ),
         queueEntry: entry,
       };
     });

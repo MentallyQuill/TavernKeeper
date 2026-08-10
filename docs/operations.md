@@ -95,11 +95,11 @@ retry, targeted, and policy-campaign scans
 converge on the same automatic V5 publication path. Committed queue work starts
 the next input-free batch independently of Pages deployment.
 
-The first incremental synchronization snapshots the current Tavernary manifest
-without treating unreported legacy repositories as work. Later manifest deltas
-enqueue a newly observed repository ID or a changed observed SHA. A changed SHA
-with a preferred report remains delayed until 48 hours after that report's
-completion. Scanner-policy changes require an explicit protected campaign.
+Every synchronization queues each Tavernary target that lacks a preferred
+report for the exact target SHA, scanner policy, and contextual-review policy.
+The catalog observation records whether a mismatch is a new submission or an
+updated project; it classifies priority but never blocks legacy or policy-stale
+work.
 
 The queue is a durable monotonic ticket ledger reconciled against current
 eligibility. A target that advances before acquisition keeps its ticket while
@@ -111,37 +111,25 @@ created after a prior completed report is appended as an intentional forced
 rescan, and a same-SHA replacement may become preferred without erasing
 history.
 
-Changed-SHA automatic rescans enter the durable queue immediately, but cannot
-run until 48 hours after the latest completed report. Further pushes replace the
-queued SHA without moving that deadline. The cooldown does not apply to initial
-scans, staff-targeted scans, retry entries with a failure streak, or active
-policy-campaign scans.
+Changed-SHA automatic rescans under the already-current policy tuple enter the
+durable queue immediately, but cannot run until 48 hours after the latest
+completed report. Further pushes replace the queued SHA without moving that
+deadline. A scanner- or contextual-policy catch-up bypasses this cooldown once;
+after an exact current-policy report exists, later SHA changes use the ordinary
+deadline. Initial scans, protected staff scans, retry deadlines, and active
+policy campaigns keep their existing authority.
 
-### One-time top and latest-release coverage
+The former top-20/latest-20 coverage workflow is retired. Reconciliation clears
+its legacy state field, which remains only as an empty schema-3 compatibility
+tombstone.
 
-`coverage-campaign.yml` is a protected, input-free, one-time operation. It takes
-one atomic manifest snapshot, selects the repositories currently ranked 1
-through 20 by Tavernary popularity plus the 20 repositories with the newest
-qualifying GitHub releases, and commits their deduplicated current repository
-IDs as a fixed campaign. Overlap between those lists can make the cohort smaller
-than 40. The fixed campaign ID makes a repeated workflow dispatch an idempotent
-no-op rather than a second campaign.
-
-This operation is not a recurring schedule and does not rescan the catalog. It
-only makes the selected current targets eligible for the ordinary durable queue.
-Every member retains normal exact-SHA, retry, concurrency, and 48-hour rescan
-rules; selection never grants staff or policy-campaign cooldown authority.
-
-Ticket allocation is the fairness guarantee among new, updated, retry, and
-explicit staff work; the legacy catalog is not automatically ticketed. Any
+Selection order is protected staff, new submissions, updated projects, then all
+remaining out-of-version work. Any
 failure removes that target from its old position and assigns it the next tail
 ticket behind every project currently assigned to be scanned. Later catalog
-deltas receive higher tickets, so they cannot repeatedly push an older failure
-backward. Targeted rescans use durable tickets and are marked as staff
-requested. Once due, staff requests are selected before ordinary due tickets
-so an approved investigation does not wait behind automatic work. Priority
-never bypasses an emergency stop, automatic hold, retry cooldown,
-exact-SHA validation, batch size, or concurrency limit.
+deltas retain their priority class without bypassing an emergency stop,
+automatic hold, retry cooldown, exact-SHA validation, batch size, or concurrency
+limit.
 
 ## Scan lifecycle
 
@@ -267,8 +255,6 @@ reset gate.
   reconciliation. Staff begin this flow through Tavernary's exact-GitHub-URL
   Action.
 - `policy-rescan.yml` schedules a campaign under the current reviewed policy.
-- `coverage-campaign.yml` creates the fixed one-time top-20 and latest-release
-  cohort, commits it once, and dispatches ordinary reconciliation.
 - `staff-operations.yml` sets or clears the explicit emergency stop, makes one
   target immediately due, or performs a protected legacy-to-V3 state migration.
 - `deploy-pages.yml` deploys only an exact commit proven to be on `main`;
