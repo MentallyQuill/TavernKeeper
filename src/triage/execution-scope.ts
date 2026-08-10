@@ -40,6 +40,51 @@ const actionEntrypointPattern =
   /^\s*(?:main|pre|post):\s*["']?([^\s"'#]+)["']?\s*$/gimu;
 const computedModuleLoadPattern = /\b(?:import|require)\s*\(\s*(?!["'])/u;
 
+function withoutJavaScriptComments(source: string) {
+  let result = "";
+  let quote: "'" | '"' | "`" | undefined;
+  for (let index = 0; index < source.length; index += 1) {
+    const character = source[index]!;
+    const next = source[index + 1];
+    if (quote !== undefined) {
+      result += character;
+      if (character === "\\" && next !== undefined) {
+        result += next;
+        index += 1;
+      } else if (character === quote) quote = undefined;
+      continue;
+    }
+    if (character === "'" || character === '"' || character === "`") {
+      quote = character;
+      result += character;
+      continue;
+    }
+    if (character === "/" && next === "/") {
+      index += 2;
+      while (index < source.length && !/[\r\n]/u.test(source[index]!))
+        index += 1;
+      if (index < source.length) result += source[index];
+      continue;
+    }
+    if (character === "/" && next === "*") {
+      index += 2;
+      while (
+        index < source.length &&
+        !(source[index] === "*" && source[index + 1] === "/")
+      )
+        index += 1;
+      index += 1;
+      continue;
+    }
+    result += character;
+  }
+  return result;
+}
+
+function hasComputedModuleLoad(source: string) {
+  return computedModuleLoadPattern.test(withoutJavaScriptComments(source));
+}
+
 function testDocumentationOrData(path: string) {
   const normalized = path.toLowerCase();
   const segments = normalized.split("/");
@@ -371,9 +416,7 @@ export async function analyzeExecutionScopes(input: {
     analysisComplete &&
     [...reachable].every((path) => {
       const source = sourceByPath.get(path);
-      return (
-        source !== undefined && !computedModuleLoadPattern.test(source.content)
-      );
+      return source !== undefined && !hasComputedModuleLoad(source.content);
     });
   const scopes = new Map<string, ExecutionScope>();
   for (const file of ordered) {

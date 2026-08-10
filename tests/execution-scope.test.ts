@@ -140,6 +140,30 @@ describe("execution scope analysis", () => {
     expect(scopes.get("scripts/possibly-loaded.mjs")).toBe("unknown");
   });
 
+  test("does not mistake prose comments for computed module loads", async () => {
+    const input = await fixture({
+      "manifest.json": JSON.stringify({ js: "index.js" }),
+      "index.js": [
+        "// State import (validated) is documented below.",
+        'import "./runtime.js";',
+      ].join("\n"),
+      "runtime.js": "export const runtime = true;\n",
+      "scripts/local-check.mjs": "export const local = true;\n",
+    });
+
+    const scopes = await analyzeExecutionScopes({
+      root: input.root,
+      files: input.inventory,
+      limits: {
+        maxFiles: 10_000,
+        maxTotalBytes: 67_108_864,
+        maxFileBytes: 2_097_152,
+      },
+    });
+
+    expect(scopes.get("scripts/local-check.mjs")).toBe("tooling-only");
+  });
+
   test("follows lifecycle hooks through package script aliases", async () => {
     const input = await fixture({
       "package.json": JSON.stringify({
