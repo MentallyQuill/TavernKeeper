@@ -7,20 +7,14 @@ import type {
   EvidenceContextGroup,
 } from "../context/evidence-context.js";
 import {
+  AssessmentSourceSchema,
   ContextualAssessmentSchema,
+  TriageReasonCodeSchema,
   type ContextualAssessment,
 } from "../model/contextual-review-contract.js";
 import { ownedRuleTriage } from "../policy/rule-descriptions.js";
 
-export const AssessmentSourceSchema = z.enum([
-  "deterministic-policy",
-  "contextual-model",
-]);
-
-export const TriageReasonCodeSchema = z
-  .string()
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)
-  .max(80);
+export { AssessmentSourceSchema, TriageReasonCodeSchema };
 
 export const TriageDecisionSchema = z.strictObject({
   candidate_id: z.string().regex(/^[0-9a-f]{64}$/u),

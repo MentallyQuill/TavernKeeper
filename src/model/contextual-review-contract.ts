@@ -281,6 +281,19 @@ export const ContextualAssessmentSchema = z
     validateAssessment(assessment, context);
   });
 
+export const AssessmentSourceSchema = z.enum([
+  "deterministic-policy",
+  "contextual-model",
+]);
+export const TriageReasonCodeSchema = z
+  .string()
+  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/u)
+  .max(80);
+export const PolicyV5AssessmentSchema = ContextualAssessmentSchema.safeExtend({
+  assessment_source: AssessmentSourceSchema,
+  triage_reason_code: TriageReasonCodeSchema,
+});
+
 export const ContextualAssessmentV2Schema = z
   .strictObject({
     ...LegacyAssessmentFields,

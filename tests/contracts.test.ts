@@ -8,6 +8,7 @@ import {
   serializeContractSchema,
 } from "../scripts/generate-contract-schemas.js";
 import {
+  buildContextualCountsV5,
   parseReportIndexV5,
   ReportIndexV5Schema,
   ScanReportV5Schema,
@@ -18,6 +19,7 @@ import {
   TargetManifestV2Schema,
   TargetManifestV3Schema,
 } from "../src/contracts/targets.js";
+import { PolicyV5AssessmentSchema } from "../src/model/contextual-review-contract.js";
 
 async function fixture(name: string) {
   return JSON.parse(
@@ -28,7 +30,173 @@ async function fixture(name: string) {
   ) as Record<string, unknown>;
 }
 
+async function policy5DeterministicReport() {
+  const legacy = await fixture("report.v5.valid.json");
+  const { contextual_reviewer: _reviewer, ...base } = legacy;
+  const candidateId = "d".repeat(64);
+  const evidenceId = "e".repeat(64);
+  const candidate = {
+    candidate_id: candidateId,
+    evidence_id: evidenceId,
+    origin: "tavernkeeper",
+    scanner_version: "2",
+    rule_id: "unicode-bidi-control",
+    category: "source-integrity",
+    scanner_severity: "medium",
+    scanner_confidence: "high",
+    path: "src/index.ts",
+    line_start: 1,
+    line_end: 1,
+    evidence_sha: "a".repeat(40),
+    file_role: "production",
+    title: "Bidirectional source control",
+    explanation: "The scanner found a bidirectional source control.",
+  };
+  const assessment = PolicyV5AssessmentSchema.parse({
+    candidate_id: candidateId,
+    evidence_ids: [evidenceId],
+    disposition: "material_vulnerability",
+    impact: "low",
+    exploitability: "plausible",
+    confidence: "high",
+    risk_exposure: "not_demonstrated",
+    recommended_risk: "low",
+    technical_explanation:
+      "The source contains a confusing control character, without demonstrated attacker reachability.",
+    layman_explanation:
+      "A source character may hide code from reviewers, but no exploit is demonstrated.",
+    developer_action: "Remove the control character when it is not required.",
+    locations: [{ path: "src/index.ts", line_start: 1, line_end: 1 }],
+    assessment_source: "deterministic-policy",
+    triage_reason_code: "owned-structured-weakness",
+  });
+  return {
+    ...base,
+    scanner_policy_version: "5",
+    rule_catalog_version: "2",
+    contextual_review_policy_version: "5",
+    prompt_version: "contextual-review-v7",
+    assessment_schema_version: "contextual-assessment-v2",
+    review_usage: {
+      input_tokens: 0,
+      output_tokens: 0,
+      cache_read_tokens: 0,
+      reasoning_tokens: 0,
+    },
+    coverage: {
+      ...(legacy.coverage as Record<string, unknown>),
+      tools: [
+        ...((legacy.coverage as { tools: unknown[] }).tools ?? []),
+        {
+          name: "javascript-analysis",
+          version: "1.0.0",
+          status: "completed",
+        },
+      ],
+      javascript_analysis: {
+        status: "complete",
+        candidates: 1,
+        candidate_bytes: 12,
+        representations: {
+          raw: 1,
+          decoded: 0,
+          normalized: 0,
+          bundle_modules: 0,
+        },
+        stages: {
+          raw_signatures: 1,
+          raw_ast: 1,
+          raw_opengrep: 1,
+          derived_signatures: 0,
+          derived_ast: 0,
+          derived_opengrep: 0,
+        },
+        unresolved: [],
+      },
+      evidence_validation: {
+        status: "completed",
+        validated_candidates: 1,
+      },
+    },
+    review_coverage: { required: 1, completed: 1 },
+    review_triage: {
+      policy_version: "1",
+      candidates: {
+        total: 1,
+        deterministic: 1,
+        contextual: 0,
+        reused_contextual: 0,
+      },
+      cases: { total: 1, contextual: 0, reused_contextual: 0 },
+      reasons: [{ reason_code: "owned-structured-weakness", count: 1 }],
+      model_budget: {
+        configured: {
+          max_fresh_behavior_cases: 12,
+          max_provider_calls: 6,
+          max_estimated_input_tokens: 200_000,
+          max_actual_input_tokens: 250_000,
+          max_actual_output_tokens: 40_000,
+        },
+        actual: {
+          fresh_behavior_cases: 0,
+          provider_calls: 0,
+          estimated_input_tokens: 0,
+          input_tokens: 0,
+          output_tokens: 0,
+        },
+      },
+    },
+    candidates: [candidate],
+    assessments: [assessment],
+    observations: [],
+    counts: buildContextualCountsV5(1, [assessment], []),
+  };
+}
+
 describe("public TavernKeeper contracts", () => {
+  test("accepts an all-deterministic policy v5 report without a reviewer", async () => {
+    const report = await policy5DeterministicReport();
+
+    expect(report).toEqual(await fixture("report.v5.policy5.valid.json"));
+    expect(ScanReportV5Schema.parse(report)).toEqual(report);
+    for (const invalid of [
+      {
+        ...report,
+        assessments: [
+          { ...report.assessments[0], assessment_source: "contextual-model" },
+        ],
+      },
+      {
+        ...report,
+        review_triage: {
+          ...report.review_triage,
+          candidates: { ...report.review_triage.candidates, total: 2 },
+        },
+      },
+      {
+        ...report,
+        review_triage: {
+          ...report.review_triage,
+          reasons: [{ reason_code: "owned-structured-weakness", count: 2 }],
+        },
+      },
+      {
+        ...report,
+        review_triage: {
+          ...report.review_triage,
+          model_budget: {
+            ...report.review_triage.model_budget,
+            actual: {
+              ...report.review_triage.model_budget.actual,
+              input_tokens: 1,
+            },
+          },
+        },
+      },
+    ])
+      expect(ScanReportV5Schema.safeParse(invalid).success).toBe(false);
+  });
+
   test("accepts only the strict contextual V5 report", async () => {
     const report = await fixture("report.v5.valid.json");
     expect(ScanReportV5Schema.parse(report)).toEqual(report);
@@ -168,7 +336,7 @@ describe("public TavernKeeper contracts", () => {
     const fixtures = new Map([
       ["tavernary-targets.v2.schema.json", "targets.v2.valid.json"],
       ["tavernary-targets.v3.schema.json", "targets.v3.valid.json"],
-      ["scan-report.v5.schema.json", "report.v5.valid.json"],
+      ["scan-report.v5.schema.json", "report.v5.policy5.valid.json"],
       ["report-index.v5.schema.json", "index.v5.valid.json"],
     ]);
     const ajv = new Ajv({ allErrors: true, strict: false });
