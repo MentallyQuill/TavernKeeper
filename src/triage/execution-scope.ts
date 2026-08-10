@@ -31,7 +31,7 @@ interface LoadedSource {
 const codeOrControlFile =
   /(?:^|\/)(?:package\.json|action\.ya?ml)$|\.(?:[cm]?[jt]sx?|json|ya?ml|py|sh|ps1)$/iu;
 const importPattern =
-  /(?:\b(?:import|export)\s+(?:[^'"\r\n]*?\s+from\s+)?|\brequire\s*\(\s*|\bimport\s*\(\s*)["']([^"']+)["']/gu;
+  /(?:\b(?:import|export)\s+(?:[^;'"]{0,4096}?\s+from\s+)?|\brequire\s*\(\s*|\bimport\s*\(\s*)["']([^"']+)["']/gu;
 const commandPathPattern =
   /(?:^|[\s"'])(\.?\/?[A-Za-z0-9_@.-]+(?:\/[A-Za-z0-9_@.-]+)*\.(?:[cm]?[jt]sx?|py|sh|ps1))(?:$|[\s"'])/giu;
 const packageScriptPattern =
@@ -324,6 +324,19 @@ export async function analyzeExecutionScopes(input: {
           );
         }
       }
+    } catch {
+      analysisComplete = false;
+    }
+
+  const extensionManifestSource = sourceByPath.get("manifest.json");
+  if (extensionManifestSource !== undefined)
+    try {
+      const manifest = JSON.parse(extensionManifestSource.content) as {
+        js?: unknown;
+      };
+      if (typeof manifest.js === "string")
+        addResolvedRoot(runtimeRoots, manifest.js, sourcePaths);
+      else if (manifest.js !== undefined) analysisComplete = false;
     } catch {
       analysisComplete = false;
     }

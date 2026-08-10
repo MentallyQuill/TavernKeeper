@@ -282,6 +282,22 @@ function encodedLiteralHasDangerousCompanion(group: EvidenceContextGroup) {
   );
 }
 
+function incompleteInertTestPrivateKey(
+  group: EvidenceContextGroup,
+  candidate: EvidenceCandidate,
+) {
+  if (
+    !/(?:^|\/)(?:tests?|fixtures?)(?:\/|[-_.])/iu.test(group.path) ||
+    !/private-key/iu.test(candidate.rule_id)
+  )
+    return false;
+  const context = `${group.context.imports}\n${group.context.source}`;
+  return (
+    /-----BEGIN (?:[A-Z0-9]+ )?PRIVATE KEY-----/u.test(context) &&
+    !/-----END (?:[A-Z0-9]+ )?PRIVATE KEY-----/u.test(context)
+  );
+}
+
 function triageCandidate(
   group: EvidenceContextGroup,
   candidate: EvidenceCandidate,
@@ -292,9 +308,10 @@ function triageCandidate(
   if (candidate.origin === "gitleaks") {
     const placeholder =
       inert &&
-      /\b(?:example|placeholder|dummy|fake|not-a-real|fixture)\b/iu.test(
+      (/\b(?:example|placeholder|dummy|fake|not-a-real|fixture)\b/iu.test(
         `${group.context.imports}\n${group.context.source}`,
-      );
+      ) ||
+        incompleteInertTestPrivateKey(group, candidate));
     return placeholder
       ? {
           destination: "deterministic",
@@ -373,22 +390,31 @@ function triageCandidate(
     const decoded = group.context.representations.some(
       ({ stage }) => stage === "decoded",
     );
-    return decoded && !encodedLiteralHasDangerousCompanion(group)
-      ? {
-          destination: "deterministic",
-          reasonCode: "javascript-encoded-literal-decoded",
-          assessment: deterministicAssessment(
-            group,
-            candidate,
-            "expected-decoded",
-          ),
-        }
-      : {
-          destination: "contextual",
-          reasonCode: decoded
-            ? "javascript-encoded-literal-correlated"
-            : "javascript-encoded-literal-unresolved",
-        };
+    if (decoded && !encodedLiteralHasDangerousCompanion(group))
+      return {
+        destination: "deterministic",
+        reasonCode: "javascript-encoded-literal-decoded",
+        assessment: deterministicAssessment(
+          group,
+          candidate,
+          "expected-decoded",
+        ),
+      };
+    if (inert && !decoded)
+      return {
+        destination: "deterministic",
+        reasonCode:
+          group.execution_scope === "tooling-only"
+            ? "javascript-xray-inert-tooling"
+            : "javascript-xray-inert-content",
+        assessment: deterministicAssessment(group, candidate, "expected"),
+      };
+    return {
+      destination: "contextual",
+      reasonCode: decoded
+        ? "javascript-encoded-literal-correlated"
+        : "javascript-encoded-literal-unresolved",
+    };
   }
   if (
     xrayRuntimeLowRules.has(candidate.rule_id) ||
