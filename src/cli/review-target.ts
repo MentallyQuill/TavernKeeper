@@ -28,7 +28,7 @@ export async function reviewConfiguredTarget(
       model: requiredEnvironment(environment, "JSONREPAIR_MODEL"),
     },
     policy: await dependencies.loadPolicy(
-      join(repositoryRoot, "config", "contextual-review.v3.json"),
+      join(repositoryRoot, "config", "contextual-review.v4.json"),
     ),
     expandContext: async (group, _request, attempt) =>
       expandEvidenceContextGroup(group, attempt),

@@ -62,7 +62,7 @@ describe("SillyTavern ecosystem context", () => {
     const prompt = buildContextualReviewPrompt(group);
 
     expect(prompt.systemContent).toContain(ECOSYSTEM_CONTEXT_VERSION);
-    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v6");
+    expect(CONTEXTUAL_PROMPT_VERSION).toBe("contextual-review-v7");
     expect(prompt.systemContent).toMatch(
       /top-level object.*key named review.*status="complete"/isu,
     );
@@ -71,6 +71,12 @@ describe("SillyTavern ecosystem context", () => {
     expect(prompt.systemContent).toMatch(/runtime reachability/iu);
     expect(prompt.systemContent).toMatch(/attacker control/iu);
     expect(prompt.systemContent).toMatch(/concrete user harm/iu);
+    expect(prompt.systemContent).toMatch(
+      /slowdown.*CPU.*memory.*frozen tab.*client crash.*unsaved generated content.*recommended_risk=low/isu,
+    );
+    expect(prompt.systemContent).toMatch(
+      /credential theft.*private-content exfiltration.*saved-data loss.*unauthorized persistence.*arbitrary code execution.*cross-user/isu,
+    );
     expect(prompt.systemContent).toMatch(
       /risk_exposure is demonstrated only when.*shipped or executable behavior.*attacker-controlled trigger/isu,
     );

@@ -227,9 +227,9 @@ describe("public site presentation", () => {
     );
   });
 
-  test("preserves policy-3 red from its validated demonstrated-risk counts", () => {
+  test("preserves policy-4 red from its validated demonstrated-risk counts", () => {
     const advisory = deriveIndexedProjectAdvisory({
-      contextual_review_policy_version: "3",
+      contextual_review_policy_version: "4",
       counts: {
         recommended_risk: { high: 1, material: 0, low: 0 },
         disposition: { credible_malicious_behavior: 1 },

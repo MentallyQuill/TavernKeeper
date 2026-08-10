@@ -48,12 +48,16 @@ describe("deterministic scanner policy", () => {
   });
 
   test("loads the versioned contextual review policy without a token budget", async () => {
+    expect(
+      (policyModule as Record<string, unknown>)
+        .CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
+    ).toBe("4");
     const policy = await loadContextualReviewPolicy(
-      "config/contextual-review.v3.json",
+      "config/contextual-review.v4.json",
     );
     expect(policy).toMatchObject({
-      version: "3",
-      promptVersion: "contextual-review-v6",
+      version: "4",
+      promptVersion: "contextual-review-v7",
       schemaVersion: "contextual-assessment-v2",
       maxImmediateAttempts: 3,
       timeoutMs: 300_000,

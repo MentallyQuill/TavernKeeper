@@ -375,32 +375,53 @@ export const ScanReportV5Schema = z
             message: "Policy 2 observation violates immediate-danger rules.",
           });
     }
-    if (report.contextual_review_policy_version === "3") {
-      if (report.prompt_version !== "contextual-review-v6")
+    if (
+      report.contextual_review_policy_version === "3" ||
+      report.contextual_review_policy_version === "4"
+    ) {
+      const expectedPrompt =
+        report.contextual_review_policy_version === "4"
+          ? "contextual-review-v7"
+          : "contextual-review-v6";
+      if (report.prompt_version !== expectedPrompt)
         context.addIssue({
           code: "custom",
           path: ["prompt_version"],
-          message: "Policy 3 requires contextual prompt version 6.",
+          message:
+            "Policy " +
+            report.contextual_review_policy_version +
+            " requires " +
+            expectedPrompt +
+            ".",
         });
       if (report.assessment_schema_version !== "contextual-assessment-v2")
         context.addIssue({
           code: "custom",
           path: ["assessment_schema_version"],
-          message: "Policy 3 requires contextual assessment schema 2.",
+          message:
+            "Policy " +
+            report.contextual_review_policy_version +
+            " requires contextual assessment schema 2.",
         });
       for (const [index, assessment] of report.assessments.entries())
         if (!ContextualAssessmentSchema.safeParse(assessment).success)
           context.addIssue({
             code: "custom",
             path: ["assessments", index],
-            message: "Policy 3 assessment violates demonstrated-risk rules.",
+            message:
+              "Policy " +
+              report.contextual_review_policy_version +
+              " assessment violates demonstrated-risk rules.",
           });
       for (const [index, observation] of report.observations.entries())
         if (!ContextualObservationSchema.safeParse(observation).success)
           context.addIssue({
             code: "custom",
             path: ["observations", index],
-            message: "Policy 3 observation violates demonstrated-risk rules.",
+            message:
+              "Policy " +
+              report.contextual_review_policy_version +
+              " observation violates demonstrated-risk rules.",
           });
     }
     if (report.report_id !== report.report_digest)

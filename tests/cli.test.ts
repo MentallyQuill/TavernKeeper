@@ -759,8 +759,8 @@ describe("JSON-only orchestration CLIs", () => {
       },
       {
         loadPolicy: async () => ({
-          version: "3",
-          promptVersion: "contextual-review-v6",
+          version: "4",
+          promptVersion: "contextual-review-v7",
           schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
@@ -794,8 +794,8 @@ describe("JSON-only orchestration CLIs", () => {
       "utf8",
     );
     expect(source).not.toContain("TAVERNKEEPER_CHECKOUT_ROOT");
-    expect(source).toContain("contextual-review.v3.json");
-    expect(source).not.toContain("contextual-review.v2.json");
+    expect(source).toContain("contextual-review.v4.json");
+    expect(source).not.toContain("contextual-review.v3.json");
   });
 
   test("checks only the configured JSON repair provider", async () => {

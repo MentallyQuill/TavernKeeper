@@ -411,7 +411,7 @@ describe("GitHub workflow security policy", () => {
     );
     const reviewConfig = JSON.parse(
       await readFile(
-        new URL("../config/contextual-review.v3.json", import.meta.url),
+        new URL("../config/contextual-review.v4.json", import.meta.url),
         "utf8",
       ),
     ) as { timeoutMs: number };

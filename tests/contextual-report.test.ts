@@ -151,8 +151,8 @@ const group: EvidenceContextGroup = {
   },
 };
 const review: CompletedContextualReview = {
-  policy_version: "3",
-  prompt_version: "contextual-review-v6",
+  policy_version: "4",
+  prompt_version: "contextual-review-v7",
   schema_version: "contextual-assessment-v2",
   model: "deepseek/deepseek-v4-flash-0731:thinking",
   provider: "nano-gpt.com",
@@ -327,7 +327,7 @@ function legacyMultiCandidateObservationReport(
   });
 }
 
-test("parses immutable policy-2 reports while requiring exposure in policy 3", () => {
+test("parses immutable policy-2 reports while requiring exposure in policy 4", () => {
   const current = validReport();
   const legacy = structuredClone(current) as unknown as {
     contextual_review_policy_version: string;
@@ -347,8 +347,8 @@ test("parses immutable policy-2 reports while requiring exposure in policy 3", (
   expect(
     ScanReportV5Schema.safeParse({
       ...legacy,
-      contextual_review_policy_version: "3",
-      prompt_version: "contextual-review-v6",
+      contextual_review_policy_version: "4",
+      prompt_version: "contextual-review-v7",
       assessment_schema_version: "contextual-assessment-v2",
     }).success,
   ).toBe(false);

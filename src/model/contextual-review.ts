@@ -40,7 +40,7 @@ import { redactSource } from "./redaction.js";
 import { validateCompletedGroupReview } from "./review-coverage.js";
 
 export interface ContextualReviewPolicy {
-  version: "3";
+  version: "4";
   promptVersion: typeof CONTEXTUAL_PROMPT_VERSION;
   schemaVersion: typeof CONTEXTUAL_SCHEMA_VERSION;
   maxImmediateAttempts: number;
@@ -74,7 +74,7 @@ const CompletionIdSchema = z
   .regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/u);
 export const CompletedContextualReviewSchema = z
   .strictObject({
-    policy_version: z.literal("3"),
+    policy_version: z.literal("4"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -130,7 +130,7 @@ export type CompletedContextualReview = z.infer<
 
 export const ContextualReviewProgressSchema = z
   .strictObject({
-    policy_version: z.literal("3"),
+    policy_version: z.literal("4"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
     model: z.string().trim().min(1).max(200),
@@ -381,7 +381,7 @@ function addUsage(total: ModelUsage, usage: ModelUsage) {
 
 function validatePolicy(policy: ContextualReviewPolicy) {
   if (
-    policy.version !== "3" ||
+    policy.version !== "4" ||
     policy.promptVersion !== CONTEXTUAL_PROMPT_VERSION ||
     policy.schemaVersion !== CONTEXTUAL_SCHEMA_VERSION ||
     !Number.isInteger(policy.maxImmediateAttempts) ||
@@ -787,7 +787,7 @@ export async function reviewEvidenceGroups(
     if (spec.onProgress !== undefined)
       await spec.onProgress(
         ContextualReviewProgressSchema.parse({
-          policy_version: "3",
+          policy_version: "4",
           prompt_version: CONTEXTUAL_PROMPT_VERSION,
           schema_version: CONTEXTUAL_SCHEMA_VERSION,
           model: spec.provider.model,
@@ -824,7 +824,7 @@ export async function reviewEvidenceGroups(
       "Contextual observation identities must be unique.",
     );
   return CompletedContextualReviewSchema.parse({
-    policy_version: "3",
+    policy_version: "4",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,
     schema_version: CONTEXTUAL_SCHEMA_VERSION,
     model: spec.provider.model,

@@ -290,8 +290,8 @@ async function completeReview(root: string) {
       },
     },
     policy: {
-      version: "3",
-      promptVersion: "contextual-review-v6",
+      version: "4",
+      promptVersion: "contextual-review-v7",
       schemaVersion: "contextual-assessment-v2",
       maxImmediateAttempts: 3,
       maxOutputTokens: 32_768,
@@ -604,8 +604,8 @@ describe("three-phase contextual scan session", () => {
           session_id: prepared.session_id,
           evidence_digest: evidence.evidence_digest,
           progress: {
-            policy_version: "3",
-            prompt_version: "contextual-review-v6",
+            policy_version: "4",
+            prompt_version: "contextual-review-v7",
             schema_version: "contextual-assessment-v2",
             model: "configured/model:thinking",
             provider: "provider.example",
@@ -677,8 +677,8 @@ describe("three-phase contextual scan session", () => {
           },
         },
         policy: {
-          version: "3",
-          promptVersion: "contextual-review-v6",
+          version: "4",
+          promptVersion: "contextual-review-v7",
           schemaVersion: "contextual-assessment-v2",
           maxImmediateAttempts: 3,
           maxOutputTokens: 32_768,
@@ -714,7 +714,7 @@ describe("three-phase contextual scan session", () => {
           evidence_digest: evidence.evidence_digest,
           progress: {
             policy_version: "3",
-            prompt_version: "contextual-review-v6",
+            prompt_version: "contextual-review-v7",
             schema_version: "contextual-assessment-v2",
             model: "configured/model:thinking",
             provider: "provider.example",
