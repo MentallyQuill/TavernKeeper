@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for bal-spec/sillytavern-character-memory at commit 37b2102.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; bal-spec/sillytavern-character-memory</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/bal-spec/sillytavern-character-memory" rel="noopener noreferrer">bal-spec/sillytavern-character-memory</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/bal-spec/sillytavern-character-memory/commit/37b21025e120acfbe1dcdeaa8becb05efe7188b4" rel="noopener noreferrer">37b2102</a></span>
+        <span>Reviewed <time datetime="2026-08-10T13:21:06.072Z">Aug 10, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and contextual reviewer found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>32 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The extension can fetch data from the internet and also shows editable content in a popup. If a memory file contained malicious code, it could run in the popup. However, only you (or the extension) can edit those files, so the risk is very small.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains both network retrieval primitives (fetch calls for provider APIs and file verification) and a dynamic HTML injection sink ($().html() in the previewConversion dialog). The HTML content is built from memory blocks that originate from Data Bank files. While the project uses escapeHtml elsewhere, the renderConsolidatedCards function is not shown in the evidence. If user-controlled file content is rendered into the DOM without sanitization, an XSS vector exists. However, in the SillyTavern threat model, Data Bank files are only writable by the user or the extension itself; an attacker would need prior filesystem access. The risk is self-contained and low severity. The scanner&#39;s correlation is high severity but this is a common UI pattern in extensions, and the evidence does not demonstrate active exploitation or unsanitized content.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the renderConsolidatedCards and buildConversionDialog functions to ensure that all user-originated content is properly HTML-escaped before being inserted into the DOM. Consider using textContent or safer templating methods instead of innerHTML where possible.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L923-L1210" rel="noopener noreferrer">index.js:923-1210</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This part of the extension uses a pattern to remove markdown tables from messages. The pattern can be slow on some carefully crafted inputs, which could make your browser tab freeze for a moment. This is not a security danger (no data theft or permanent damage), but it could be annoying if someone sends a very confusing message with lots of table characters.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex `/\|[^\n]*\|(?:\n\|[^\n]*\|)*/g` used on line 387 to strip markdown tables has potential for catastrophic backtracking (ReDoS) when processing crafted input containing many pipe characters without proper newline separators. While the pattern is not deeply nested, the outer repetition group combined with the global flag could cause polynomial-time backtracking on pathological strings (e.g., a long sequence of pipes without newlines). In the SillyTavern extension context, this function is applied to chat message text from users or LLMs, which could be attacker-controlled. A successful ReDoS would cause the browser tab to hang temporarily, a recoverable denial of service. No sensitive data is exposed, and no code execution is possible. The risk is low because the impact is limited to client-side performance degradation.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/lib.js#L387" rel="noopener noreferrer">lib.js:387</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Expected scanner matches (29)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool reads a temperature setting from the environment to control how creative the AI behaves during testing. This is normal and expected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 33 reads TEST_LLM_TEMPERATURE from the environment for test configuration. This is a standard, non-sensitive environment variable used only for test setup and is proportional to the test utility&#39;s purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L33" rel="noopener noreferrer">test/integration/llm-client.js:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a pattern-matching line used by a developer tool to find translatable text in the extension&#39;s own code. It&#39;s not used while chatting and no outsider can feed it bad input, so it&#39;s harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 83 matches data-i18n attributes with proper escaping. JS-X-Ray flagged it as &#39;unsafe-regex&#39; due to potential catastrophic backtracking, but it operates only on the extension&#39;s own source files (settings.html, file, editor.js) during developer tooling. No external or untrusted input reaches this regex; the input is the project&#39;s own static code. Therefore, even if a ReDoS vulnerability exists in theory, it cannot be triggered by an attacker in practice.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/scripts/extract-strings.js#L83" rel="noopener noreferrer">scripts/extract-strings.js:83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This alert is a false alarm. It flagged a French translation of &#39;Show/hide API key&#39; — just a label for a button in the settings. There&#39;s no actual API key or secret here, just words.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Gitleaks scanner flagged line 378 of the French locale file (file) which contains the translation &#39;Afficher/masquer la clé API&#39; for the English UI string &#39;Show/hide API key&#39;. No actual API key, credential, secret, or token is present. The match is a false positive triggered by the presence of the substring &#39;API key&#39; in the English source string, which is a legitimate UI label for a toggle visibility button. Localization files contain no executable logic, no network calls, and no user-configurable secrets.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/locales/fr-fr.json#L378" rel="noopener noreferrer">locales/fr-fr.json:378</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a test helper that talks to a local AI server on your own computer. It&#39;s not stealing anything—it&#39;s part of a plan to write tests for the extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The flagged code is part of a planned test file for live LLM integration tests. It reads TEST_LLM_URL from environment variables with a default of localhost, then makes fetch calls to that URL to test memory extraction against a local LLM server. No credentials are being exfiltrated; the URL is a local development endpoint. This is standard test infrastructure and poses no security threat. The scanner flag is a false positive due to the coincidental presence of an environment variable with &#39;URL&#39; and an outbound fetch in the same function.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 4</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/docs/plans/2026-02-26-automated-testing-plan.md#L610" rel="noopener noreferrer">docs/plans/2026-02-26-automated-testing-plan.md:610</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged the French phrase &#39;Afficher/masquer la clé API&#39; (meaning &#39;Show/hide API key&#39;) as if it were a real API key. It&#39;s just a translation of a button label used in the extension&#39;s settings UI, so there&#39;s nothing to worry about.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks detection on line 378 of file is a false positive. The matched text is the French translation &#39;Afficher/masquer la clé API&#39; for the English UI string &#39;Show/hide API key&#39;. This is a localization entry in a JSON translation file, not an actual API key or credential. No credential leakage, exfiltration, or security impact is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/6990e7ed20c06815d1e0c0cd3249c3aff3842407/locales/fr-fr.json#L378" rel="noopener noreferrer">locales/fr-fr.json:378</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.sql-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought there might be a database attack, but the code just shows a popup with fixed text. No user input is used, so there&#39;s no way for an attacker to inject anything harmful.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.sql-injection in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a call to callGenericPopup as a potential SQL injection, but the code at line 9936 passes a fully static HTML string (batchHtml) constructed from fixed template literals and translation function calls. No user input, untrusted data, or database query is involved. The extension does not use SQL at all; it operates entirely within SillyTavern&#39;s client-side APIs and Vector Storage. The scanner signal is a false positive from a generic pattern match.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.sql-injection</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L9936" rel="noopener noreferrer">index.js:9936</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a false alarm. The scanner got confused by the words &#39;API key&#39; in a French translation of a user interface label. There is no real password or secret key here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks generic-api-key rule flagged line 378 of file which contains the UI label translation &#39;&quot;Show/hide API key&quot;: &quot;Afficher/masquer la clé API&quot;&#39;. This is a static localization string, not an actual credential. The pattern match is a false positive caused by the literal phrase &#39;API key&#39; appearing in the English source text. No API key, token, or secret value is present anywhere in this file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/0f7e608d0f273979c61b7d2b89234b2fec2679db/locales/fr-fr.json#L378" rel="noopener noreferrer">locales/fr-fr.json:378</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses an optional API key from your computer&#39;s settings to talk to the language model you chose, which is exactly what it&#39;s supposed to do. It doesn&#39;t send the key anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This test helper reads an API key from the TEST_LLM_KEY environment variable and sends it as a Bearer token to the user-configured LLM endpoint. Both the key source and the network call are necessary for authenticating to the LLM during integration tests. The destination is the URL specified by TEST_LLM_URL, not a fixed or unknown host. There is no exfiltration or diversion; the pattern matches standard LLM client authentication. This is expected behavior for a test helper.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 4</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L48" rel="noopener noreferrer">test/integration/llm-client.js:48</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code looks like it uses an API key to talk to a language model — and that&#39;s exactly what it&#39;s for. It&#39;s a test that developers can run on their own computer to check that a new feature works. The key comes from a secret environment variable (not hardcoded), and it only goes to the model server the developer chose. This is normal and safe for testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The flagged code is a proposed live integration test file (not shipped to users) that reads an LLM API key from the environment variable TEST_LLM_KEY and passes it as a Bearer token in an HTTP POST to the LLM endpoint specified by TEST_LLM_URL (defaulting to a localhost address). This is standard practice for making authenticated requests to external LLM APIs during local testing. The credential source (environment variable) and network sink (fetch to the user-specified LLM URL) are both visible, intentional, and proportionate to the purpose of testing chunked memory consolidation against a real LLM. The test is not packaged or executed in production; it only runs when a developer explicitly invokes it with a local LLM server. There is no evidence of exfiltration, hidden transmission, or credential abuse.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 4</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/docs/superpowers/plans/2026-04-23-chunked-consolidation.md#L708" rel="noopener noreferrer">docs/superpowers/plans/2026-04-23-chunked-consolidation.md:708</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses an optional API key from your computer&#39;s settings to talk to the language model you chose, which is exactly what it&#39;s supposed to do. It doesn&#39;t send the key anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This test helper reads an API key from the TEST_LLM_KEY environment variable and sends it as a Bearer token to the user-configured LLM endpoint. Both the key source and the network call are necessary for authenticating to the LLM during integration tests. The destination is the URL specified by TEST_LLM_URL, not a fixed or unknown host. There is no exfiltration or diversion; the pattern matches standard LLM client authentication. This is expected behavior for a test helper.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L48" rel="noopener noreferrer">test/integration/llm-client.js:48</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool reads a web address from the environment to know where to send test requests. The default address points to your own computer, which is safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 19 reads TEST_LLM_URL from the environment, defaulting to a localhost endpoint. This is a legitimate test configuration value and the URL is not obfuscated or pointing to an untrusted external server by default.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L19" rel="noopener noreferrer">test/integration/llm-client.js:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Another pattern used by a developer tool to find translatable strings. It only runs on the project&#39;s own files, not on anything a user types, so it&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 176 matches t`...` template literal keys for i18n extraction. It contains nested groups and lookaheads that a static analyzer may flag as unsafe, but it is only executed against the project&#39;s own source files during the string extraction tool run by the developer. No untrusted input is processed, so no attacker can exploit any ReDoS weakness.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/scripts/extract-strings.js#L175" rel="noopener noreferrer">scripts/extract-strings.js:175</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses an optional API key from your computer&#39;s settings to talk to the language model you chose, which is exactly what it&#39;s supposed to do. It doesn&#39;t send the key anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This test helper reads an API key from the TEST_LLM_KEY environment variable and sends it as a Bearer token to the user-configured LLM endpoint. Both the key source and the network call are necessary for authenticating to the LLM during integration tests. The destination is the URL specified by TEST_LLM_URL, not a fixed or unknown host. There is no exfiltration or diversion; the pattern matches standard LLM client authentication. This is expected behavior for a test helper.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L90-L95" rel="noopener noreferrer">test/integration/llm-client.js:90-95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Same as candidate 3844eb — the test tool reads the server address from the environment.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 19 reads TEST_LLM_URL from the environment, defaulting to localhost. This is legitimate test configuration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L19" rel="noopener noreferrer">test/integration/llm-client.js:19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This alert is about a harmless notification message displayed to the user. It&#39;s not a security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;shady-link&#39; signal at line 1265 corresponds to a static toastr message string. The scanner&#39;s retained literal values were not provided, but the visible context shows a user-facing notification about file operations. No actual URL, network call, or malicious content is present in the supplied evidence. This is a benign UI message with no security relevance.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L1265" rel="noopener noreferrer">index.js:1265</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a harmless example URL in a text box where you type your own server address. It&#39;s not secretly connecting anywhere — it&#39;s just a hint to show you what the address should look like.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L5686" rel="noopener noreferrer">index.js:5686</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool reads a setting that tells the AI model not to show its thinking steps. This is just for testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 35 reads TEST_LLM_NO_THINK from the environment to configure reasoning model behavior. This is a non-sensitive test flag.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L35" rel="noopener noreferrer">test/integration/llm-client.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line helps convert template expressions into translation keys. It only processes the extension&#39;s own code, not user input, so it&#39;s not a security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex at line 158 replaces template interpolation patterns ${...} with numbered placeholders. It is part of the string extraction tool and operates only on the extension&#39;s own source code. No external input is involved, so any theoretical ReDoS vulnerability cannot be triggered by an attacker.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/scripts/extract-strings.js#L157" rel="noopener noreferrer">scripts/extract-strings.js:157</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension has a built-in address for a local AI server on your own computer. This is normal and safe—it does not send your data anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L423" rel="noopener noreferrer">index.js:423</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool reads a number from the environment that limits how many words the AI can use in its response during testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 25 reads TEST_LLM_MAX_TOKENS from the environment to set the generation budget. This is legitimate test configuration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L25" rel="noopener noreferrer">test/integration/llm-client.js:25</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test helper file that reads settings from environment variables to connect to an AI model for testing. It uses an API key to authenticate, which is normal and expected. There is no secret theft or hidden behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This test helper reads environment variables to configure an LLM client for integration testing. The variable TEST_LLM_KEY is used to set an Authorization header on requests to the configured LLM endpoint, which is the intended purpose. The scanner flagged reading process.env.TEST_LLM_MODEL (line 37) as a &#39;serialize-environment&#39; signal, but reading environment variables and using them to authenticate API requests is expected behavior for a test client. No exfiltration, obfuscation, or unauthorized destination is present; all data flow is local and transparent. The file role is test, and the code is straightforward and purposeful.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L37" rel="noopener noreferrer">test/integration/llm-client.js:37</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code stores a default address for a local AI server (Ollama) when upgrading settings. It&#39;s like setting a default printer location—completely normal and not a security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L1566" rel="noopener noreferrer">index.js:1566</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool reads an API key from the environment to prove it is allowed to use the AI service during testing. This is normal for any tool that talks to a protected API.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 20 reads TEST_LLM_KEY from the environment, which is the API key for the test LLM endpoint. This is legitimate credential handling for a test utility that needs to authenticate to the API it tests. The key is only used in auth headers sent to the configured endpoint, defaulting to localhost.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L20" rel="noopener noreferrer">test/integration/llm-client.js:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Line 5553 adds example text to a box where you type a server address. It&#39;s just an example, not an actual link or hidden network call. The extension needs this to let you connect to an AI service, which is what it&#39;s supposed to do.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L5553" rel="noopener noreferrer">index.js:5553</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool sends the API key to the AI service it is testing so the service knows the request is allowed. This is exactly how API authentication should work.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner correlates credential access (TEST_LLM_KEY on line 20) with outbound network calls (lines 48 and 90). This is exactly the intended behavior: the test client sends the bearer token to the configured LLM endpoint to authenticate requests. The data flow is fully contained within the test utility and the configured endpoint; there is no exfiltration to unexpected destinations.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L25-L48" rel="noopener noreferrer">test/integration/llm-client.js:25-48</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code just shows a placeholder example URL in a text field so users know what to type. It does not secretly send any data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L5858" rel="noopener noreferrer">index.js:5858</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This alert was triggered because the word &#39;API key&#39; appears in a French translation file. It&#39;s just a label for a button that lets users show or hide their API key — not an actual key. There is no security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Gitleaks alert matched the generic &#39;API key&#39; pattern on line 378 of a French localization file (file). The matched content is the translation string &#39;&quot;Show/hide API key&quot;: &quot;Afficher/masquer la clé API&quot;&#39; — a static UI label with no actual credential, secret, or dynamically sourced value. No API key or credential is present in the matched line or anywhere in the supplied file excerpts. The alert is a false positive from a pattern-based scanner that cannot distinguish translation strings from real secrets.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/a1549a943382f9823efc8a90dcd034981df16c69/locales/fr-fr.json#L378" rel="noopener noreferrer">locales/fr-fr.json:378</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test tool reads a timeout setting from the environment to know how long to wait for the AI to respond during testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 29 reads TEST_LLM_TIMEOUT from the environment to configure request timeout. This is a non-sensitive test configuration value.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L29" rel="noopener noreferrer">test/integration/llm-client.js:29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/index.js#L4325" rel="noopener noreferrer">index.js:4325</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Test helper authentication pattern is standard and expected</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The test file uses an API key that you provide as a setting, and only sends it to the language model service you chose. This is exactly how it should work.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file is a test integration helper that reads a bearer token from the TEST_LLM_KEY environment variable and transmits it only to the user-configured TEST_LLM_URL endpoint. This is the standard authentication pattern for LLM API clients and is necessary for the tests to function. The scanner pattern matched a credential source and network sink in the same file, but the data flow is proportionate, fully disclosed in the file comments, and directed only to the configured LLM endpoint. No malicious or hidden behavior exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/bal-spec/sillytavern-character-memory/blob/37b21025e120acfbe1dcdeaa8becb05efe7188b4/test/integration/llm-client.js#L48" rel="noopener noreferrer">test/integration/llm-client.js:48</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>112 files &middot; 5888404 bytes</dd>
+      <dt>Contextual coverage</dt><dd>31 of 31 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>23 files &middot; 660464 bytes</dd>
+        <dt>Representations</dt><dd>23 raw &middot; 20 decoded &middot; 6 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>23 raw signatures &middot; 23 raw AST &middot; 23 raw OpenGrep &middot; 26 derived signatures &middot; 12 derived AST &middot; 26 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>test/integration/llm-client.js</code> &mdash; derived-ast / parse</li><li><code>test/integration/llm-client.js</code> &mdash; normalize / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 4 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/bal-spec/sillytavern-character-memory/commit/37b21025e120acfbe1dcdeaa8becb05efe7188b4" rel="noopener noreferrer">37b21025e120acfbe1dcdeaa8becb05efe7188b4</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-10T13:21:06.072Z">Aug 10, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>4</dd>
+        <dt>Rule catalog</dt><dd>1</dd>
+        <dt>Contextual policy</dt><dd>4</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>19 fresh / 0 reused groups &middot; 31 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Review usage</dt><dd>638555 input &middot; 34459 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>133e5293a99e1a62403cf8edf8d2fdaf7a1f5c45facc0ba43a6d9fa6beafe08a</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1157586991/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
