@@ -1135,7 +1135,7 @@ describe("contextual V5 reports", () => {
 
     expect(html).toContain("What this review found");
     expect(html).toContain("This request appears to be expected.");
-    expect(html).toContain("Expected scanner matches");
+    expect(html).toContain("Contextual expected matches");
     expect(html).toContain("Related contextual observations");
     expect(html.indexOf("Related contextual observations")).toBeLessThan(
       html.indexOf("Related request handling"),
