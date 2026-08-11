@@ -1,0 +1,1207 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Sagesheep/NarrativeEngine-P at commit 3c3ed4f.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Sagesheep/NarrativeEngine-P</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Sagesheep/NarrativeEngine-P" rel="noopener noreferrer">Sagesheep/NarrativeEngine-P</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Sagesheep/NarrativeEngine-P/commit/3c3ed4f503da55db0e2498f3b830619ef0b2e842" rel="noopener noreferrer">3c3ed4f</a></span>
+        <span>Reviewed <time datetime="2026-08-11T13:52:01.190Z">Aug 11, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>100 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/lib/modLoader.js#L82" rel="noopener noreferrer">server/lib/modLoader.js:82</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/lib/nlp.js#L76" rel="noopener noreferrer">server/lib/nlp.js:76</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (73)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/chapterRoutes.test.js#L66" rel="noopener noreferrer">server/__tests__/chapterRoutes.test.js:66</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.obfuscated-code</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/scripts/buildNameBank.mjs#L1" rel="noopener noreferrer">mobile/scripts/buildNameBank.mjs:1</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveRollbackCleanup.test.js#L16" rel="noopener noreferrer">server/__tests__/archiveRollbackCleanup.test.js:16</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/vite.config.ts#L18" rel="noopener noreferrer">vite.config.ts:18</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modLoaderScreens.test.js#L21" rel="noopener noreferrer">server/__tests__/modLoaderScreens.test.js:21</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/fixtureRoundtrip.test.js#L3" rel="noopener noreferrer">server/__tests__/fixtureRoundtrip.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveScopedSearch.test.js#L3" rel="noopener noreferrer">server/__tests__/archiveScopedSearch.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:c301f7c72c558e741e2a83a0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveRollbackCleanup.test.js#L29" rel="noopener noreferrer">server/__tests__/archiveRollbackCleanup.test.js:29</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:5549e38f839c3aff7a893c01 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/packages/engine/package-lock.json" rel="noopener noreferrer">packages/engine/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:f94edd69deef3d5effba7f8b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:a74a840ed39e2c344447a144 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/packages/engine/package-lock.json" rel="noopener noreferrer">packages/engine/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/fixtureRoundtrip.test.js#L12" rel="noopener noreferrer">server/__tests__/fixtureRoundtrip.test.js:12</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveAppend.test.js#L40" rel="noopener noreferrer">server/__tests__/archiveAppend.test.js:40</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/backup.test.js#L3" rel="noopener noreferrer">server/__tests__/backup.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/tts.test.js#L12" rel="noopener noreferrer">server/__tests__/tts.test.js:12</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/measure-tables-gate.mjs#L52" rel="noopener noreferrer">scripts/measure-tables-gate.mjs:52</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modLoader.test.js#L12" rel="noopener noreferrer">server/__tests__/modLoader.test.js:12</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:c301f7c72c558e741e2a83a0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/packages/engine/package-lock.json" rel="noopener noreferrer">packages/engine/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:5fa4bd8083566590384ce4fc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/vectorStore.test.js#L2" rel="noopener noreferrer">server/__tests__/vectorStore.test.js:2</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/src/utils/__tests__/openRouterImage.test.ts#L23" rel="noopener noreferrer">src/utils/__tests__/openRouterImage.test.ts:23</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:590275f7f1e65a0bda08b540 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5p4m-2wfm-xmqj:pkg:d055453f026a4e70572d800d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveAppend.test.js#L3" rel="noopener noreferrer">server/__tests__/archiveAppend.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:a74a840ed39e2c344447a144 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:c15eeb4b6498ad284f4ce31d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/scripts/gate.mjs#L62" rel="noopener noreferrer">mobile/scripts/gate.mjs:62</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:5549e38f839c3aff7a893c01 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveSurgical.test.js#L45" rel="noopener noreferrer">server/__tests__/archiveSurgical.test.js:45</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m8rv-5g2x-5cg5:pkg:effd824192445928106e41b7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4cwx-7wf7-3272:pkg:1176429e737cfabdf766cdff applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/tableRegistry.test.js#L12" rel="noopener noreferrer">server/__tests__/tableRegistry.test.js:12</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modTableRegistry.test.js#L31" rel="noopener noreferrer">server/__tests__/modTableRegistry.test.js:31</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modLoaderPanels.test.js#L23" rel="noopener noreferrer">server/__tests__/modLoaderPanels.test.js:23</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f88m-g3jw-g9cj:pkg:ecf7e487f6a9797646947cf8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/vectorStore.test.js#L13" rel="noopener noreferrer">server/__tests__/vectorStore.test.js:13</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/sceneImages.test.js#L16" rel="noopener noreferrer">server/__tests__/sceneImages.test.js:16</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveAppend.test.js#L247" rel="noopener noreferrer">server/__tests__/archiveAppend.test.js:247</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/enemyCompendium.test.js#L2" rel="noopener noreferrer">server/__tests__/enemyCompendium.test.js:2</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xcpc-8h2w-3j85:pkg:d5eec46a16e206bae715f821 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.crypto.weak-algorithm</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/lib/fileStore.js#L206" rel="noopener noreferrer">server/lib/fileStore.js:206</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/sceneImages.test.js#L3" rel="noopener noreferrer">server/__tests__/sceneImages.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modsRoute.test.js#L8" rel="noopener noreferrer">server/__tests__/modsRoute.test.js:8</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/chaptersWO06.test.js#L13" rel="noopener noreferrer">server/__tests__/chaptersWO06.test.js:13</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modTableRegistry.test.js#L9" rel="noopener noreferrer">server/__tests__/modTableRegistry.test.js:9</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveScopedSearch.test.js#L43" rel="noopener noreferrer">server/__tests__/archiveScopedSearch.test.js:43</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/tableRegistry.test.js#L3" rel="noopener noreferrer">server/__tests__/tableRegistry.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r292-9mhp-454m:pkg:9c48992b21aae7684fbb8f78 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:96b0a287af3567603b1e7088 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/chapterRoutes.test.js#L3" rel="noopener noreferrer">server/__tests__/chapterRoutes.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modTableRoutes.test.js#L23" rel="noopener noreferrer">server/__tests__/modTableRoutes.test.js:23</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8xcm-r25x-g524:pkg:9efcb22ccad71d16e9fbb4db applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:f06446b68aa7f55d2eb73400 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5p4m-2wfm-xmqj:pkg:d055453f026a4e70572d800d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:bcb01fa3f22fe943388f7142 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/modTableRoutes.test.js#L13" rel="noopener noreferrer">server/__tests__/modTableRoutes.test.js:13</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v3r7-h72x-cjcm:pkg:2f99006f4e2ddba635fa3089 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/comfyUiProvider.test.js#L123" rel="noopener noreferrer">server/__tests__/comfyUiProvider.test.js:123</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/chaptersWO06.test.js#L3" rel="noopener noreferrer">server/__tests__/chaptersWO06.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/sceneImages.test.js#L23" rel="noopener noreferrer">server/__tests__/sceneImages.test.js:23</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/vault.test.js#L3" rel="noopener noreferrer">server/__tests__/vault.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/measure-tables-gate.mjs#L31" rel="noopener noreferrer">scripts/measure-tables-gate.mjs:31</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/tts.test.js#L2" rel="noopener noreferrer">server/__tests__/tts.test.js:2</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:17a4bca76c8dccd42bb43bfa applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.sql-injection</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/lib/vectorStore.js#L188" rel="noopener noreferrer">server/lib/vectorStore.js:188</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:6e817d0e74f5357b4ff6f7ff applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/archiveSurgical.test.js#L3" rel="noopener noreferrer">server/__tests__/archiveSurgical.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-screen-frame.mjs#L475" rel="noopener noreferrer">scripts/verify-screen-frame.mjs:475</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:01b2133f8343a79cb37d38d0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/backup.test.js#L19" rel="noopener noreferrer">server/__tests__/backup.test.js:19</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jr45-8vmc-qm54:pkg:ef6cbe09bba3516afec0221f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/package-lock.json" rel="noopener noreferrer">mobile/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/__tests__/comfyUiProvider.test.js#L26" rel="noopener noreferrer">server/__tests__/comfyUiProvider.test.js:26</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (25)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line of code that decodes text, thinking it might be stealing data. But it&#39;s just a normal part of how the program handles text—no data is being sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner signal at line 39 matches a String.fromCharCode pattern within the UTF-8 decoder utility, a standard part of the Emscripten WASM glue code. This is an encoding function, not a data exfiltration primitive. No evidence of sending data to an external destination.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/public/ort/ort-wasm-simd-threaded.mjs#L39" rel="noopener noreferrer">mobile/public/ort/ort-wasm-simd-threaded.mjs:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test script that talks to itself on your own computer. It does not connect to the internet.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a literal URL pattern within this test file, which connects to a localhost page server and a local CDP debug interface. All network targets are loopback addresses, the connection is entirely internal to the test harness, and the signal originates from the tooling-only verification script that is never shipped with the application. There is no data sent to an external server.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-sandbox.mjs#L24" rel="noopener noreferrer">scripts/verify-sandbox.mjs:24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that checks whether the app&#39;s encryption properly hides secret keys. The &#39;secret&#39; shown is just a fake placeholder used for testing, not a real key.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks match is on a test file that uses a placeholder string `[REDACTED_SECRET:18b87face90d]` to verify the encryption function does not leak the plaintext into ciphertext. This is a characterization test for a security property. The string is not a live credential; it&#39;s a synthetic test value that was already redacted by the scanner output.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/src/services/infrastructure/__tests__/settingsCrypto.test.ts#L291" rel="noopener noreferrer">src/services/infrastructure/__tests__/settingsCrypto.test.ts:291</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script uses &#39;taskkill&#39; to clean up a test browser after testing — it is safe and expected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 129 is a call to spawn(&#39;taskkill.exe&#39;, ...) in terminateProcessTree(). This is a test cleanup utility that kills child browser processes. The PID comes from the script&#39;s own child process, not from user input. This is standard test infrastructure, not an exploitable command injection.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-screen-frame.mjs#L129" rel="noopener noreferrer">scripts/verify-screen-frame.mjs:129</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app sets environment variables to control where it stores its text-to-speech model files. This is a normal setup step and not a security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged process.env assignments used to configure Hugging Face cache directories for a local TTS model. All values are hardcoded to a local data subdirectory, not user-controlled or sent externally. This is a standard workaround for a third-party library limitation and poses no credential theft risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/lib/tts.js#L67" rel="noopener noreferrer">server/lib/tts.js:67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code reads your computer&#39;s name and username to create a secret key that locks your API keys to your machine. This information stays on your computer and is never sent anywhere. It&#39;s a normal and expected part of a local password manager.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/vault.js#L4" rel="noopener noreferrer">server/vault.js:4</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script is testing that a security sandbox correctly hides sensitive information. It tries to see if it can find pretend API keys, and that is the intended behavior of the test.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The serialize-environment signal matches a test fixture that intentionally probes for credential patterns within sandboxed workers. The code serializes a mock context object and checks for API key patterns to verify that the sandbox prevents credential leakage. This is a deliberate part of the sandbox validation test, not an actual exfiltration attempt.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-sandbox.mjs#L257" rel="noopener noreferrer">scripts/verify-sandbox.mjs:257</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When the app runs as a desktop program, it needs to know where to find its own backend. It uses a fixed address that points to the same computer — nothing is sent over the internet.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file defines API_BASE and ASSET_BASE constants using an absolute localhost URL for Electron production builds where relative paths fail under file:// protocol. The URLs point to the application&#39;s own local Express server on loopback, not an external or untrusted host. This is a legitimate architectural choice for a self-hosted Electron app.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/src/lib/apiBase.ts#L10" rel="noopener noreferrer">src/lib/apiBase.ts:10</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner found a pattern that looks like data theft in a complex generated file. But this file is a standard part of the AI model library (ONNX Runtime) that runs models locally on your computer. The flagged code just coordinates worker threads and wasm loading — it does not steal or send away any data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration in this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged a &#39;data-exfiltration&#39; signal in the auto-generated Emscripten/ONNX Runtime WebAssembly glue code. The lines at and around line 60 contain worker message routing and promise management that are standard parts of the ONNX Runtime threading support. The file (ort-wasm-simd-threaded.asyncify.mjs) is a build artifact from the @huggingface/transformers library used for local embedding models. The data flows are internal to the wasm runtime (loading models, transferring tensor data between workers). No credential or user data is exfiltrated. The static analysis signal is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs#L60" rel="noopener noreferrer">mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs:60</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is a safety test that tries to reach the internet and checks that it correctly fails; it does not actually use any downloaded data in a dangerous way.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This tooling-only fixture tests that network requests are blocked by CSP; fetch, XHR, and WebSocket results are only used to record blocked status, not to execute retrieved content. There is no download-to-execution path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/screen-frame-fixtures/escape-net.js#L27-L46" rel="noopener noreferrer">scripts/screen-frame-fixtures/escape-net.js:27-46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw code that downloads a file and runs it, but that&#39;s how the ONNX AI model runtime loads its engine—it&#39;s like downloading a plugin file to run. The app is supposed to do this to work correctly.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains a fetch() call to download a .wasm binary and passes it to WebAssembly.instantiate(). This is the standard loading mechanism for ONNX Runtime WebAssembly modules. The network retrieval fetches only the trusted ORT wasm binary from a same-origin or local file path, and instantiation is a controlled code execution that runs the pre-compiled wasm. No arbitrary dynamic code execution (eval, Function) is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/public/ort/ort-wasm-simd-threaded.mjs#L4-L15" rel="noopener noreferrer">mobile/public/ort/ort-wasm-simd-threaded.mjs:4-15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app correctly restricts which websites can talk to it. Only the app itself and the local development server are allowed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a string literal containing a localhost URL in a CORS allowlist. The application is a self-hosted server bound to 127.0.0.1 and only allows requests from Electron file-based origins or the Vite development server. This is standard deplatforming behaviour, not a suspicious link.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server.js#L59" rel="noopener noreferrer">server.js:59</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is a practice test used to make sure that the app correctly blocks add-ons from reaching the internet. It tries to access a harmless website on purpose to check if the block works. It is not part of the real app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This file is a test fixture located in a sandbox test directory. It exports an async function that checks whether the fetch function is defined and then calls fetch on a benign example URL. The function returns a result object indicating whether the call succeeded or was blocked. The file is not included in production builds and is only used to verify that the mod sandbox correctly restricts network access. There is no dynamic code execution sink, such as eval or exec, present. The correlation flagged by the scanner between network retrieval and a code execution sink is not applicable here; the sole purpose is to test sandbox escape prevention.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>fixture</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/src/services/mods/sandbox/__tests__/fixtures/escape-net.js#L1-L7" rel="noopener noreferrer">src/services/mods/sandbox/__tests__/fixtures/escape-net.js:1-7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script binds a test server to localhost — that is normal and safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 52 is a server.listen() call binding to &#39;127.0.0.1&#39;. The &#39;shady-link&#39; signal is a false positive — this is a local loopback bind, not an external or suspicious link.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-screen-frame.mjs#L52" rel="noopener noreferrer">scripts/verify-screen-frame.mjs:52</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code is an automatically generated part of the ONNX AI runtime that runs inside your browser. The flagged &#39;dynamic execution&#39; is just how the runtime talks to the WebAssembly module — it is not running any user-controlled code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This file is Emscripten-generated JavaScript glue code for the ONNX Runtime WebAssembly module (ort-wasm-simd-threaded.asyncify.mjs). The dynamic execution signal at line 49 corresponds to Emscripten&#39;s internal function call dispatch, including &#39;new Function(...)&#39; used for method caller generation (Pb function) and emval dynamic dispatch. These are standard runtime constructs for WebAssembly interop and are not used to execute user-provided or untrusted code. The file is a well-known component of the @microsoft/ort-web package.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs#L49" rel="noopener noreferrer">mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs:49</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script launches a web browser as part of a test, and later cleans it up. Only the developer running the test triggers this, and it only affects their own machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-command signal corresponds to a controlled use of child_process.spawn to launch Microsoft Edge in headless mode for sandbox testing, and to spawn taskkill.exe for process cleanup. All spawned processes are part of the test infrastructure, run with hardcoded or local-address arguments, and are not reachable by untrusted input. The scanner correlation is a false positive in this tooling context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-sandbox.mjs#L129" rel="noopener noreferrer">scripts/verify-sandbox.mjs:129</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script downloads test data from its own local server and launches a browser to test it — both are controlled by the developer, not by an attacker.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;download-to-execution&#39; correlation between fetch (to localhost) and spawn (to launch a browser) is intentional. The script creates a local HTTP server, polls it for JSON, and spawns a headless browser for testing. All network destinations are loopback and attacker-unreachable. No untrusted input flows to the execution sink.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-screen-frame.mjs#L70-L212" rel="noopener noreferrer">scripts/verify-screen-frame.mjs:70-212</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script downloads nothing from the internet and only runs commands that a developer would run to test the security features. It is not a real threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains both network fetch calls (to localhost debug endpoints) and system command spawn calls (to start and kill a browser process). Both are integral to the automated sandbox verification test and operate exclusively on internal loopback addresses. The same-file correlation is expected for this test harness and does not represent a download-to-execution attack path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/verify-sandbox.mjs#L42-L211" rel="noopener noreferrer">scripts/verify-sandbox.mjs:42-211</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app checks your computer&#39;s CPU and memory to recommend settings, which is done on your own machine and not sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal &#39;data-exfiltration&#39; flagged the use of os.cpus() and os.totalmem() in the /api/system/specs endpoint. This endpoint provides host hardware information (CPU cores, memory) to the client for suggesting indexing speed. The data is served locally over localhost and is not exfiltrated. This is a legitimate feature of the application.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/routes/embedding.js#L1" rel="noopener noreferrer">server/routes/embedding.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner flagged a web address that is actually just a standard technical label used to draw graphics; no data is sent to that address.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a constant string assigned to SVG_NS used for creating SVG elements via createElementNS; it does not initiate any network request and is standard practice.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mods/skill-tree.screen.js#L163" rel="noopener noreferrer">mods/skill-tree.screen.js:163</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged that this file downloads some code (a .wasm file) and then runs it. That is exactly what this file is supposed to do — it&#39;s the runtime that loads the AI model to run locally on your device. The download is from the same server where the app itself lives, not from a suspicious source.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner correlated a network retrieval primitive (fetch/XMLHttpRequest) with a code execution sink (WebAssembly.instantiate, Worker.postMessage) in the same file. This is expected behavior for an Emscripten-generated runtime: it loads the .wasm binary via fetch and instantiates it, and it spawns pthread workers with postMessage to run model inference in parallel. The file is part of the ONNX Runtime WebAssembly distribution, a widely used dependency. The network requests target the same-origin .wasm file bundled with the application, not external or attacker-controlled destinations.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs#L5-L18" rel="noopener noreferrer">mobile/public/ort/ort-wasm-simd-threaded.asyncify.mjs:5-18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a fake API key used only in an automated test that checks whether the password-encryption code works correctly. It&#39;s not a real credential and is never used in the actual app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Gitleaks detection matched a placeholder API key string in a unit test file (settingsCrypto.test.ts). The test intentionally includes redacted secret values to validate that the encryption module (settingsCrypto) correctly encrypts and never leaks the plaintext apiKey into ciphertext. The test verifies that the ciphertext does not contain the original secret. This is a standard security characterization test and the value is not a real credential. The file role is test-documentation-data and the secret is not shipped or executed in production.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/bb7745abefd5206c00f949e21a7d26a6e3575113/src/services/infrastructure/__tests__/settingsCrypto.test.ts#L291" rel="noopener noreferrer">src/services/infrastructure/__tests__/settingsCrypto.test.ts:291</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app reads an optional environment variable to set its data folder location, which is normal and safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner signal &#39;serialize-environment&#39; flagged the line exporting DATA_DIR from process.env.DATA_DIR. This is a standard configuration pattern that allows overriding the data directory via environment variable. No credentials or secrets are read; it is a directory path. This is expected behavior for a self-hosted application.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/lib/fileStore.js#L10" rel="noopener noreferrer">server/lib/fileStore.js:10</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app downloads images from your chosen AI image service and saves them to your campaign folder, which is expected behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal &#39;shady-link&#39; flagged the data URI detection at line 178. The code handles image generation API responses that may return a data:image/ URI. It correctly decodes the base64 data after stripping the data URL prefix and validates the resulting binary is a known image format (PNG, JPEG, WebP, GIF). This is standard processing for AI image generation results. No suspicious link is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/server/services/imageProvider.js#L178" rel="noopener noreferrer">server/services/imageProvider.js:178</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged web address is part of a safety test that tries to reach a local server to confirm it is correctly blocked; it is not malicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged URL is a test fetch to the app&#39;s own local API endpoint used to verify CSP blocks; the response is only recorded as a probe outcome. This is legitimate tooling behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/blob/3c3ed4f503da55db0e2498f3b830619ef0b2e842/scripts/screen-frame-fixtures/escape-net.js#L46" rel="noopener noreferrer">scripts/screen-frame-fixtures/escape-net.js:46</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>1747 files &middot; 101468525 bytes</dd>
+      <dt>Contextual coverage</dt><dd>100 of 100 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>1122 files &middot; 8973238 bytes</dd>
+        <dt>X-Ray review families</dt><dd>114 warning occurrences compacted to 65 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>1122 raw &middot; 66 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>1121 raw signatures &middot; 163 raw AST &middot; 1110 raw OpenGrep &middot; 66 derived signatures &middot; 0 derived AST &middot; 66 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>mobile/capacitor.config.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/scripts/recallCompare.mts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/App.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/BackupModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/CampaignHub.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/ChatArea.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/ConfirmSheet.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/ContextDrawer.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/DedupReviewModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/ErrorBoundary.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/GenerationProgress.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/Header.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/LootDropTraceView.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/MobileNavBar.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/NPCLedgerModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/NPCPressureInspector.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/NPCReviewModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/PayloadTraceView.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/SamplingPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/SceneNoteEditor.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/SettingsModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/TelemetryStrip.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/Toast.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/TokenGauge.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/UtilityCallStrip.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/ActionSpeedDial.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/ArcInjectorButton.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/ChatInput.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/ContentWithChips.tsx</code> &mdash; literal-decode / binary</li><li><code>mobile/src/components/chat/ContentWithChips.tsx</code> &mdash; raw-ast / binary</li><li><code>mobile/src/components/chat/ContentWithChips.tsx</code> &mdash; raw-signatures / binary</li><li><code>mobile/src/components/chat/DiceRollModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/DivergenceEntryModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/LootRollModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/LoreCheckModal.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/MessageBubble.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/PinnedMemoriesPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/PrecontextBox.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/RegenerateSheet.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/ToolCallChips.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/chat/__tests__/ContentWithChips.test.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/BookkeepingTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/ChapterCard.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/ChapterTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/CharacterProfileEditor.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/EnginesTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/GalleryTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/LoreTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/MemoryTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/ResolvedStatePanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/RulesManagerTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/RulesTab.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/TemplateField.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/TimelineDotRow.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/Toggle.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/TokenCounter.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/context-drawer/memoryTabHelpers.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/engine-trace/EngineTraceView.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/hooks/useCondenser.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/hooks/useMessageEditor.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/hooks/useRetryStoryAI.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/hooks/useSwipeVariants.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/npc-ledger/NPCEditForm.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/npc-ledger/NPCGalleryView.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/npc-ledger/NPCListView.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/npc-ledger/NPCPortraitSection.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/npc-ledger/NPCSuggestionsPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/pc/PCCreationSteps.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/pc/PCCreationWizard.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/pc/WorldPrimerPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/settings/AdvancedEmbeddingPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/settings/DebugPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/settings/GlobalSettingsPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/settings/PresetsPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/components/settings/ProvidersPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/hooks/useBackHandler.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/main.tsx</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__evals__/callback-campaign.eval.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__evals__/evalFixtures.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__evals__/evalTypes.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__evals__/metrics.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/archiveMemory.activation.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/archiveSurgicalDelete.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/auditFixes.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/backHandler.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/chapterStorage.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/charIntroEngine.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/characterProfileParser.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/diceTool.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/divergenceExtractor.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/divergenceRegister.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/embedder.windowing.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/embedderPool.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/embeddingScheduler.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/engineRolls.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/factClusterer.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/fetchArchiveScenes.budget.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/funnelAbort.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/knowledgeScope.test.ts</code> &mdash; raw-ast / parse</li><li><code>mobile/src/services/__tests__/lexicalFusion.test.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>OpenGrep could not parse some source files; findings from successfully analyzed files are included.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Sagesheep/NarrativeEngine-P/commit/3c3ed4f503da55db0e2498f3b830619ef0b2e842" rel="noopener noreferrer">3c3ed4f503da55db0e2498f3b830619ef0b2e842</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-11T13:52:01.190Z">Aug 11, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>17 fresh / 0 reused groups &middot; 25 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>75 deterministic / 25 contextual candidates &middot; 17 contextual / 55 total behavior cases</dd>
+        <dt>Model budget</dt><dd>13 model calls &middot; 17 / 12 fresh cases &middot; 498848 / 200000 estimated input &middot; 469825 / 250000 actual input &middot; 29708 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>13 model calls &middot; up to 5 groups and 7 candidates per call &middot; 7 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>469825 input &middot; 29708 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>3f82c563a8545fe1b9054da51ef5a159943276c40562254f62dd9ae12b5fc7f0</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1215007786/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
