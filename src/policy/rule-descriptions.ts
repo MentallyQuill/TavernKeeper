@@ -171,7 +171,7 @@ export function describeFinding({
 
   return {
     title: `${external.label} reported ${ruleId}`,
-    explanation: `${external.label} matched ${external.noun} ${ruleId} in this repository.`,
+    explanation: `${external.label} matched ${external.noun} ${ruleId}. The match applies to this repository.`,
     remediation: external.remediation,
   };
 }
