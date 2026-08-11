@@ -168,16 +168,16 @@ describe("contextual evidence review", () => {
 
     expect(result).toMatchObject({
       status: "review_pending",
-      pending_groups: 1,
+      pending_groups: 3,
       progress: {
         review_protocol_version: 2,
         completed_group_ids: groups
-          .slice(0, 12)
+          .slice(0, 10)
           .map(({ group_id }) => group_id),
       },
     });
-    expect(requestCompletion).toHaveBeenCalledTimes(3);
-    expect(checkpoints.at(-1)?.completed_group_ids).toHaveLength(12);
+    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    expect(checkpoints.at(-1)?.completed_group_ids).toHaveLength(10);
     expect(CompletedContextualReviewSchema.safeParse(result).success).toBe(
       false,
     );
@@ -206,7 +206,7 @@ describe("contextual evidence review", () => {
       required: 13,
       completed: 13,
     });
-    expect(requestCompletion).toHaveBeenCalledTimes(4);
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
   });
 
   test("packs cache misses into ordered batches of at most five groups", async () => {

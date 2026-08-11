@@ -7,6 +7,7 @@ import {
 } from "./openai-compatible-client.js";
 
 export interface ContextualReviewBudgetPolicy {
+  maxImmediateAttempts: number;
   maxOutputTokens: number;
   maxBatchGroups: number;
   maxBatchInputTokens: number;
@@ -191,8 +192,10 @@ export function planContextualReviewWave(
       0,
     );
     if (
-      candidateBatches.length > policy.maxProviderCalls ||
-      candidateEstimate > policy.maxEstimatedInputTokens
+      candidateBatches.length * policy.maxImmediateAttempts >
+        policy.maxProviderCalls ||
+      candidateEstimate * policy.maxImmediateAttempts >
+        policy.maxEstimatedInputTokens
     )
       break;
     selectedGroups = candidateGroups;
