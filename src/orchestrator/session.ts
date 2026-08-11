@@ -44,6 +44,7 @@ import type { CommandRunner } from "../process/command-runner.js";
 import { JavascriptAnalysisCoverageSchema } from "../scanners/javascript-analysis-types.js";
 import { JAVASCRIPT_ANALYSIS_VERSION } from "../scanners/javascript-analysis.js";
 import {
+  CompletedContextualReviewSchema,
   ContextualReviewProgressError,
   ContextualReviewProgressSchema,
   reviewEvidenceGroups,
@@ -920,6 +921,7 @@ export async function reviewPreparedSession({
       policy,
       reviewInputDigests,
       reusableGroups,
+      stopAfterWave: true,
       ...(checkpoint === undefined ? {} : { progress: checkpoint }),
       onProgress: async (nextProgress) =>
         writeAtomic(
@@ -945,7 +947,22 @@ export async function reviewPreparedSession({
     await rm(progressPath, { force: true });
     contextualReview = await reviewFrom();
   }
-  const review = mergePolicyV5Review({ triage, contextualReview, policy });
+  if (
+    "status" in contextualReview &&
+    contextualReview.status === "review_pending"
+  )
+    return {
+      status: "review_pending" as const,
+      pending_groups: contextualReview.pending_groups,
+      progress: contextualReview.progress,
+    };
+  const completedContextualReview =
+    CompletedContextualReviewSchema.parse(contextualReview);
+  const review = mergePolicyV5Review({
+    triage,
+    contextualReview: completedContextualReview,
+    policy,
+  });
   const bundle = ReviewBundleSchema.parse({
     schema_version: 1,
     session_id: prepared.session_id,

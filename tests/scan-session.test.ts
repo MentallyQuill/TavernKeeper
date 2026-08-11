@@ -13,6 +13,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 
 import { ScanReportV5Schema } from "../src/contracts/reports-v5.js";
 import {
+  createReviewCheckpoint,
+  restoreReviewCheckpoint,
+} from "../src/contracts/review-checkpoint.js";
+import {
   assertPreparedEvidenceArtifactSize,
   createPreparedEvidenceArtifact,
   MAX_PREPARED_EVIDENCE_BYTES,
@@ -322,6 +326,75 @@ async function completeReview(root: string) {
 }
 
 describe("three-phase contextual scan session", () => {
+  test("round trips an exact reviewed session through an authenticated checkpoint", async () => {
+    const { root, prepared } = await preparedSession();
+    await completeReview(root);
+    const key = Buffer.alloc(32, 7);
+    const request = {
+      ...prepared.target,
+      project_kinds: [...prepared.project_kinds],
+      catalog_priority: {
+        top_30: false,
+        first_cataloged_at: "2026-08-01T00:00:00.000Z",
+      },
+      reason: "policy" as const,
+      report_version: prepared.report_version,
+      supersedes_report_id: prepared.supersedes_report_id,
+      previous_report_shas: [],
+    };
+    const identity = {
+      contextual_policy_version: "5" as const,
+      prompt_version: "contextual-review-v7" as const,
+      assessment_schema_version: "contextual-assessment-v2" as const,
+      provider: "provider.example",
+      endpoint_origin: "https://provider.example",
+      model: "configured/model:thinking",
+    };
+
+    const checkpoint = await createReviewCheckpoint({
+      sessionRoot: root,
+      request,
+      reviewIdentity: identity,
+      key,
+      createdAt: "2026-08-11T12:00:00.000Z",
+      expiresAt: "2026-11-09T12:00:00.000Z",
+    });
+    const restoredRoot = await mkdtemp(
+      join(tmpdir(), "tavernkeeper-session-checkpoint-"),
+    );
+    roots.push(restoredRoot);
+    await rm(restoredRoot, { recursive: true, force: true });
+
+    const restored = await restoreReviewCheckpoint({
+      encrypted: checkpoint.encrypted,
+      sessionRoot: restoredRoot,
+      expectedRequest: request,
+      expectedReviewIdentity: identity,
+      key,
+      now: "2026-08-12T12:00:00.000Z",
+    });
+
+    expect(restored).toMatchObject({
+      phase: "reviewed",
+      session_id: prepared.session_id,
+      evidence_digest: expect.stringMatching(/^[0-9a-f]{64}$/u),
+      ciphertext_sha256: expect.stringMatching(/^[0-9a-f]{64}$/u),
+    });
+    await expect(access(join(restoredRoot, "review.json"))).resolves.toBe(
+      undefined,
+    );
+    await expect(
+      restoreReviewCheckpoint({
+        encrypted: checkpoint.encrypted,
+        sessionRoot: `${restoredRoot}-wrong`,
+        expectedRequest: { ...request, target_sha: "f".repeat(40) },
+        expectedReviewIdentity: identity,
+        key,
+        now: "2026-08-12T12:00:00.000Z",
+      }),
+    ).rejects.toThrow();
+  });
+
   test("completes deterministic evidence with zero provider validation or calls", async () => {
     const { root } = await preparedSession({ deterministic: true });
     const requestCompletion = vi.fn();
@@ -353,6 +426,8 @@ describe("three-phase contextual scan session", () => {
     });
 
     expect(requestCompletion).not.toHaveBeenCalled();
+    if (reviewed.status !== "reviewed")
+      throw new Error("Deterministic session unexpectedly remained pending.");
     expect(reviewed.review.review_triage.candidates).toEqual({
       total: 1,
       deterministic: 1,

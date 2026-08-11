@@ -34,6 +34,15 @@ export async function reviewConfiguredTarget(
     expandContext: async (group, _request, attempt) =>
       expandEvidenceContextGroup(group, attempt),
   });
+  if (result.status === "review_pending")
+    return {
+      status: result.status,
+      pending_groups: result.pending_groups,
+      completed_groups: result.progress.completed_group_ids.length,
+      json_repairs: result.progress.completion_ids.filter((completionId) =>
+        completionId.startsWith("jsonrepair:"),
+      ).length,
+    };
   return {
     status: result.status,
     json_repairs: result.review.completion_ids.filter((completionId) =>
