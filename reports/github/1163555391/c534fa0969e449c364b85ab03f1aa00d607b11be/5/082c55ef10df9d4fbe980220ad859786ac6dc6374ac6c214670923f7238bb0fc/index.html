@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for DangerDaza/Dooms-Enhancement-Suite at commit c534fa0.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; DangerDaza/Dooms-Enhancement-Suite</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite" rel="noopener noreferrer">DangerDaza/Dooms-Enhancement-Suite</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/commit/c534fa0969e449c364b85ab03f1aa00d607b11be" rel="noopener noreferrer">c534fa0</a></span>
+        <span>Reviewed <time datetime="2026-08-11T13:43:49.393Z">Aug 11, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>41 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/weatherEffects.js#L43" rel="noopener noreferrer">src/systems/ui/weatherEffects.js:43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/features/avatarGenerator.js#L47" rel="noopener noreferrer">src/systems/features/avatarGenerator.js:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/utils/textUtils.js#L16" rel="noopener noreferrer">src/utils/textUtils.js:16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/sceneHeaders.js#L784" rel="noopener noreferrer">src/systems/rendering/sceneHeaders.js:784</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/characterSheet.js#L138" rel="noopener noreferrer">src/systems/ui/characterSheet.js:138</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/fullsheetButtons.js#L126" rel="noopener noreferrer">src/systems/ui/fullsheetButtons.js:126</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>This code tries to fix broken AI-generated JSON as a last resort by running it as JavaScript. That&#39;s risky if someone could sneak bad code into the AI&#39;s response, but the AI is your own and most inputs are already caught by safer methods. The developer added a safety switch so callers can turn this off when handling untrusted data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 77 uses the Function constructor (`new Function(&quot;use strict&quot;; return (${cleaned});`) as a last-resort JSON parse when `allowFunctionEval` is true (the default). Input has been preprocessed (code fences, comments, thinking tags removed) and earlier JSON.parse attempts failed. The data source is AI model output from the user&#39;s own configured provider, not third-party content. The result is validated to be an object before returning. Although the risk is low because control over AI output requires adversary-influenced model response, the Function constructor still executes arbitrary JavaScript if an attacker could craft a malicious string that evades earlier parsing. The JSDoc documents the option to pass `allowFunctionEval: false` for untrusted input, which mitigates exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider adding a console.warn when the Function constructor path is taken, to increase visibility for users. The existing opt-out flag and documentation are already good practice.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/utils/jsonRepair.js#L77" rel="noopener noreferrer">src/utils/jsonRepair.js:77</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/portraitBar.js#L1235" rel="noopener noreferrer">src/systems/ui/portraitBar.js:1235</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/thoughts.js#L516" rel="noopener noreferrer">src/systems/rendering/thoughts.js:516</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (2)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/tools/load-check.mjs#L32" rel="noopener noreferrer">tools/load-check.mjs:32</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.obfuscated-code</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/tools/sheet-detect-test.mjs#L1" rel="noopener noreferrer">tools/sheet-detect-test.mjs:1</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (28)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file appeared suspicious to an automated tool, but the actual code is clear and straightforward. It manages a character editor popup — letting you change portraits, dialogue colors, and set story hooks — exactly as described in the project&#39;s feature list.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The supplied source code for characterWorkshop.js is fully readable, well-commented, and implements legitimate per-character editing features (identity, appearance, injection/ejection/banning of characters from scenes, knife story-beat management). All API interactions (extension prompts, settings persistence, event listeners) use standard SillyTavern extension mechanisms. No concealed execution, obfuscation, or malicious data flow is present. The scanner likely flagged benign regex patterns or template literal escaping.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/characterWorkshop.js#L1" rel="noopener noreferrer">src/systems/ui/characterWorkshop.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged code looks like ordinary, readable program code despite the scanner&#39;s warning. There is no evidence that the code is hidden or scrambled.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reports a generic obfuscation signal with low confidence and no retained matched literals. The supplied source is plain, readable JavaScript with descriptive function names and explanatory comments. No encoding, packed strings, hidden evaluation, or other obfuscation technique is visible in the provided evidence. The signal does not correspond to demonstrated behavior in the artifact.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/core/persistence.js#L1" rel="noopener noreferrer">src/core/persistence.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>The security scanner thought this file might download code and run it, but the actual code doesn&#39;t download anything from the internet. It only updates the character portrait display on the screen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a correlation between network retrieval and a code execution sink, but the provided source code (portraitBar.js) does not contain any network retrieval primitives (fetch, XMLHttpRequest). The only code execution sink is innerHTML assignment in htmlToElement, which operates on sanitized template strings with escapeHtml usage. No user-controlled input reaches eval, Function, or dynamic imports. The scanner alert appears to be a false positive given the evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/portraitBar.js#L252-L909" rel="noopener noreferrer">src/systems/ui/portraitBar.js:252-909</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is just a configuration and state management module with clear comments. The scanner mistook a harmless embedded image (a fallback avatar) for obfuscated code, but there&#39;s nothing hidden or tricky here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged &#39;obfuscated-code&#39;, but the actual source code in state.js is well-documented, readable JavaScript containing plain configuration objects and utility functions. The base64-encoded SVG fallback avatar data URI (FALLBACK_AVATAR_DATA_URI) is a static embedded image, not obfuscated logic. No concealment, dynamic code generation, or string encoding that hides intent is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/core/state.js#L1" rel="noopener noreferrer">src/core/state.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension uses your API key to connect to the AI service you set up, which is exactly what it is supposed to do.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is the same code as the previous candidate: the extension retrieves an API key from secure storage and uses it in a fetch call to the user-configured external API endpoint. This is the intended behavior for the external generation mode and is proportional to the extension&#39;s purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/generation/apiClient.js#L68-L77" rel="noopener noreferrer">src/systems/generation/apiClient.js:68-77</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The file fetches a number from a public web service to show how many stars the project has, and it lazily loads its own UI screens when buttons are clicked. It does not download and run remote code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged region contains a request to a public repository metadata endpoint and dynamic module imports triggered by user interaction. The response is parsed only to extract a numeric star count for display. No data from that request flows into an evaluation, command execution, or other code-execution sink, and no fetched remote script content is executed. The scanner&#39;s download-to-execution correlation is not supported by a demonstrated data flow in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/index.js#L183-L228" rel="noopener noreferrer">index.js:183-228</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner thought this file might have hidden code, but looking at the actual code shows it is normal and readable, not hidden or scrambled. There is no security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner signal for obfuscated code is not supported by the actual file content. The source code is plain, readable JavaScript with clear comments and standard module structure. The low scanner confidence and the presence of clear source indicate a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/characterRoster.js#L1" rel="noopener noreferrer">src/systems/ui/characterRoster.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This file handles scene header displays and is written in plain, readable code. The security warning is incorrect—the code does what it says and nothing hidden.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The full source code is clean JavaScript with detailed JSDoc comments, modular functions for drag-and-drop HUD, theme color palettes, and incremental scene transition logic. No obfuscation, concealed execution, or credential handling is present. The scanner likely flagged the use of dynamic CSS property generation or DOM manipulation, which is expected for a rendering module.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/sceneHeaders.js#L1" rel="noopener noreferrer">src/systems/rendering/sceneHeaders.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code checks whether an image generation result looks like a valid link or data URI before using it. It doesn&#39;t make any internet connections itself. The scanner saw the word &#39;http&#39; and worried about suspicious links, but it&#39;s just a normal safety check.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged extractImageUrl function validates that a result string starts with &#39;http&#39;, &#39;data:&#39;, or &#39;/&#39; to confirm it is a plausible image URL. This is input validation after calling SillyTavern&#39;s /sd slash command, which returns a generated image URL. No actual network request is initiated by this function; it only checks the format of an already-retrieved value. This is standard, safe API result handling.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/features/avatarGenerator.js#L673" rel="noopener noreferrer">src/systems/features/avatarGenerator.js:673</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The automated scanner thought this file might download something and then run it as code, but looking at the actual code, it doesn&#39;t do that. It&#39;s just a settings panel for characters - no risky network requests or code execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a correlation between network retrieval and code execution within the large line range, but the actual code in characterWorkshop.js shows no network retrieval calls (fetch, XMLHttpRequest) and no dynamic code execution sinks (eval, new Function, script injection). All DOM updates use safe jQuery methods with escaped content. The pattern detected is a false positive due to broad correlation matching.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/characterWorkshop.js#L839-L1705" rel="noopener noreferrer">src/systems/ui/characterWorkshop.js:839-1705</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged this file as possibly containing hidden or scrambled code, but the actual code is clear and readable. There is no obfuscation here. This is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reported a low-confidence obfuscation signal on line 1, but review of the complete source file shows standard, well-documented JavaScript with no obfuscation. The code uses clear variable names, comments, proper module imports, and straightforward DOM manipulation. The heuristic signal is a false positive; the file exhibits expected behavior for a UI module in a SillyTavern extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/portraitBar.js#L1" rel="noopener noreferrer">src/systems/ui/portraitBar.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner thought the code was hidden or scrambled, but the actual code is clearly written and easy to read. It just manages settings for the scene tracker.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged obfuscated code, but the source code (trackerEditor.js) is clearly readable with standard JavaScript syntax, descriptive comments, and no minification or encoding tricks. The scanner confidence was low, and the provided evidence confirms no obfuscation is present. This is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/trackerEditor.js#L1" rel="noopener noreferrer">src/systems/ui/trackerEditor.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner thought this file might contain hidden or scrambled code, but it&#39;s actually a normal, readable script that handles the plot twist feature. Nothing suspicious was found.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray scanner flagged this module with low confidence for obfuscated code, but the actual source is plain, well-commented JavaScript. The file implements the Doom Counter system (tension tracking, countdown, twist/knife generation) and contains no encoded or concealed logic. The scanner alert is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/generation/doomCounter.js#L1" rel="noopener noreferrer">src/systems/generation/doomCounter.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code contains a built-in placeholder image (a question mark icon) for characters without a custom avatar. The scanner thought it might be a suspicious link, but it&#39;s just an embedded picture, not something that connects to the internet.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line (607) defines FALLBACK_AVATAR_DATA_URI, a base64-encoded SVG data URI for a fallback avatar icon. This is a static inline resource, not an external URL or a network request. There is no shady link, dynamic URL construction, or data exfiltration risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/core/state.js#L607" rel="noopener noreferrer">src/core/state.js:607</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code checks if a portrait image is a data URL (embedded image). It only talks to your own SillyTavern server, not to any shady outside website. The security alert is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;shady-link&#39; signal at line 71 corresponds to a `data:` URL prefix check in `isDataUrl()`. The file uses `fetch()` only against SillyTavern&#39;s own `/api/images/upload` and `/api/images/delete` endpoints for legitimate avatar/portrait persistence. No external or suspicious domain destinations are present. The scanner signal is a false positive from the `data:` string literal.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/utils/avatars.js#L71" rel="noopener noreferrer">src/utils/avatars.js:71</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The file can read chat data and settings, and it can make internet requests for its features, but the evidence does not show any request carrying passwords, keys, or private chat content to a third party.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner correlates credential-bearing state imports with an outbound network sink across a large file region, but the supplied evidence shows no path where credentials are read and transmitted to an external destination. Visible outbound requests are limited to repository metadata for a star count display and feature-related calls. No API keys, tokens, or private chat content are observed leaving the host in the provided evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/index.js#L228-L1897" rel="noopener noreferrer">index.js:228-1897</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner thought this code might be deliberately hidden or scrambled, but it&#39;s actually normal, readable JavaScript that explains what it does in comments.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged line 1 with a low-confidence &#39;obfuscated-code&#39; signal, but the file contains no obfuscation. The flagged location is a standard JSDoc comment block documenting the parser module. The source code is plain, readable JavaScript with clear comments and standard patterns. The scanner likely misidentified the presence of regular expressions or string patterns as obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/generation/parser.js#L1" rel="noopener noreferrer">src/systems/generation/parser.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner thought line 96 might contain a suspicious link, but it&#39;s actually just counting how much text is in an image URL for debugging - no data is sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged line 96 with a &#39;shady-link&#39; signal, but the code at that line is a standard data URL byte-length calculation (url.startsWith(&#39;data:&#39;) &amp;&amp; comma !== -1). No network access, request construction, or suspicious URL is present. The function is used solely to estimate the size of inline base64 image data for debug logging purposes. The scanner signal is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/generation/inspector.js#L96" rel="noopener noreferrer">src/systems/generation/inspector.js:96</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file lets you view and edit hidden tracker data from AI messages. The security scanner&#39;s alert was a false alarm—the code is clear and does exactly what it&#39;s supposed to.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The source code in trackerJsonInline.js is clean, readable, and well-documented. It implements inline collapsible tracker data dropdowns with an edit feature that parses JSON and writes back to the message store. No obfuscation, concealed execution, or malicious data flows are present. The code uses escapeHtml for any user-facing output and handles JSON parsing safely with try-catch. The scanner likely triggered on the template literal HTML or the JSON.stringify/parse pattern, but this is standard JavaScript.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/trackerJsonInline.js#L1" rel="noopener noreferrer">src/systems/rendering/trackerJsonInline.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This code manages a lorebook editor and is written in a clear, readable way. The security alert is a mistake—there&#39;s no hidden or malicious code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The full source code is well-structured JavaScript with descriptive comments, constants for icons and colors, and standard async/await patterns for loading lorebook data. No obfuscation, concealed logic, or credential manipulation is present. The scanner likely flagged the use of dynamic HTML construction with template literals, which is typical for UI rendering extensions.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/lorebook.js#L1" rel="noopener noreferrer">src/systems/rendering/lorebook.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file looks normal and does what it says—it shows character thoughts on screen. The security scanner had a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The source code in thoughts.js is fully readable, well-commented, and contains no obfuscation, concealed execution, or suspicious data flows. The static analysis heuristic likely triggered on regular expressions or complex string operations used for parsing AI-generated character data. The code performs expected UI rendering tasks for a SillyTavern extension (character thought bubbles, card flips, avatar uploads, etc.) and uses proper escaping (escapeHtml, escapeAttr) when inserting into the DOM. No security concern exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/thoughts.js#L1" rel="noopener noreferrer">src/systems/rendering/thoughts.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; low confidence</p>
+    <p>This file looks like normal, clean code for displaying a status panel. The security scanner flagged it by mistake; there&#39;s nothing hidden or suspicious here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The full source code shows standard JavaScript with clear comments, meaningful variable names, and straightforward DOM manipulation for rendering an info box dashboard. No obfuscation, concealed execution, or credential handling is present. The scanner likely flagged dynamic string building or use of escapeHtml/escapeAttr helpers, which are legitimate UI rendering patterns.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/rendering/infoBox.js#L1" rel="noopener noreferrer">src/systems/rendering/infoBox.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code has a list of dangerous property names (like &#39;__proto__&#39;) that it blocks to prevent a type of security attack called prototype pollution. It&#39;s actually protecting you, not doing anything harmful. The security alert is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;prototype-pollution&#39; signal at line 12 is triggered by the `__proto__` string inside the `BLOCKED_PROPERTY_NAMES` array. This array is used defensively in `sanitizeLocationName()` and `validateStoredInventory()` to reject dangerous object keys and prevent prototype pollution attacks. The code is actively mitigating the vulnerability, not committing it. The scanner signal is a false positive on a mitigation constant.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/utils/security.js#L12" rel="noopener noreferrer">src/utils/security.js:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a line that checks if an image is a data URL, which is just a normal part of displaying pictures. This is an inspection tool that shows you what&#39;s happening, not anything shady.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;shady-link&#39; signal at line 174 corresponds to a benign check of whether a data URL starts with &#39;data:&#39; for display purposes. The code uses proper escaping via escapeAttr when injecting into HTML. This is an inspector/debug modal that shows the user what portrait attachments are queued; there is no suspicious external link or data exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/inspectorModal.js#L174" rel="noopener noreferrer">src/systems/ui/inspectorModal.js:174</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is just a normal settings popup — no hidden or tricky code was found. The security scanner flagged it by mistake because it looks clean and readable.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged file (modals.js) contains standard, well-commented ES6 class definitions for modal management (SettingsModal) and associated event handlers. No obfuscation, encoded strings, or concealed execution paths are present in the supplied source. The scanner signal is a low-confidence false positive; the code is plain and maintainable.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/modals.js#L1" rel="noopener noreferrer">src/systems/ui/modals.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This extension lets you use an external AI service for some features. It takes the API key you provided (stored securely) and sends it only to the AI service you chose. This is how it is supposed to work.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The extension retrieves an API key from a secure storage mechanism (REDACTED_SECRET) and sends it only to the user-configured OpenAI-compatible API endpoint as an Authorization header. This is the intended behavior for the &#39;external&#39; generation mode, which makes a separate API call to generate RPG tracker data. The destination is the baseUrl set by the user; there is no exfiltration to third-party hosts.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/generation/apiClient.js#L49-L68" rel="noopener noreferrer">src/systems/generation/apiClient.js:49-68</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file looked suspicious to an automated scanner, but looking at the actual code shows it is perfectly normal. It parses character sheet data from chat messages and manages popup displays — nothing hidden or dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray obfuscated-code signal is a false positive. The supplied source code for characterSheet.js is fully readable, well-commented, and follows a clear, intentional structure. No obfuscation, minification, or concealed execution is present. The scanner likely triggered on regex patterns or escape sequences in string literals (common in parsing code), but these are legitimate and necessary for the sheet-parser functionality. The code only performs local UI operations, chat-data parsing, and settings persistence via standard SillyTavern APIs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/characterSheet.js#L1" rel="noopener noreferrer">src/systems/ui/characterSheet.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner thought this code might be deliberately hidden or scrambled, but it&#39;s actually normal, readable JavaScript that explains what it does in comments.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code in this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged line 1 with a low-confidence &#39;obfuscated-code&#39; signal, but the file contains no obfuscation. The flagged location is a standard JSDoc comment block documenting the integration module. The source code is plain, readable JavaScript with clear comments and standard event-handling patterns. The scanner likely misidentified the presence of regular expressions or string patterns as obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/integration/sillytavern.js#L1" rel="noopener noreferrer">src/systems/integration/sillytavern.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>False positive for obfuscation signal</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>This is a false alarm. The code is clear and open, not hidden or scrambled.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The JavaScript source in doomCounter.js is standard, readable code with comprehensive JSDoc comments and no obfuscation patterns. The scanner likely matched a low-specificity heuristic (e.g., long numeric arrays or template literals) that does not indicate concealed behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/generation/doomCounter.js#L1" rel="noopener noreferrer">src/systems/generation/doomCounter.js:1</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Low-confidence obfuscation signal not confirmed by source</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The automated scanner thought the code might be hidden or scrambled, but looking at the actual code it is all plain and visible. This is a false alarm.</p>
+    <details><summary>Technical assessment</summary>
+      <p>JS-X-Ray produced a low-confidence obfuscation signal for line 1 of portraitBar.js, but the actual source code for the entire file shows no evidence of obfuscation. The code is clean, well-commented, uses standard JavaScript patterns, and contains no encoded strings, eval calls, minified identifiers, or other obfuscation techniques. The signal is a false positive from an automated heuristic.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/blob/c534fa0969e449c364b85ab03f1aa00d607b11be/src/systems/ui/portraitBar.js#L1" rel="noopener noreferrer">src/systems/ui/portraitBar.js:1</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>100 files &middot; 2749523 bytes</dd>
+      <dt>Contextual coverage</dt><dd>39 of 39 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>79 files &middot; 1867461 bytes</dd>
+        <dt>X-Ray review families</dt><dd>34 warning occurrences compacted to 32 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>79 raw &middot; 3 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>79 raw signatures &middot; 79 raw AST &middot; 79 raw OpenGrep &middot; 3 derived signatures &middot; 0 derived AST &middot; 3 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/DangerDaza/Dooms-Enhancement-Suite/commit/c534fa0969e449c364b85ab03f1aa00d607b11be" rel="noopener noreferrer">c534fa0969e449c364b85ab03f1aa00d607b11be</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-11T13:43:49.393Z">Aug 11, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>28 fresh / 0 reused groups &middot; 29 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>10 deterministic / 29 contextual candidates &middot; 28 contextual / 38 total behavior cases</dd>
+        <dt>Model budget</dt><dd>14 model calls &middot; 28 / 12 fresh cases &middot; 628804 / 200000 estimated input &middot; 495040 / 250000 actual input &middot; 40537 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>14 model calls &middot; up to 3 groups and 3 candidates per call &middot; 3 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>495040 input &middot; 40537 output &middot; 38528 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>082c55ef10df9d4fbe980220ad859786ac6dc6374ac6c214670923f7238bb0fc</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1163555391/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
