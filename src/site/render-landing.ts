@@ -3,7 +3,6 @@ import type {
   ReportIndexV5,
 } from "../contracts/reports-v5.js";
 import {
-  deriveIndexedProjectAdvisory,
   escapeHtml,
   formatPublicDate,
   FAVICON_LINKS,
@@ -12,6 +11,7 @@ import {
   shortSha,
   SITE_STYLES,
   TAVERNARY_URL,
+  type ProjectAdvisory,
 } from "./presentation.js";
 
 const LANDING_CSP = [
@@ -138,8 +138,10 @@ const LANDING_STYLES = `
   }
 `;
 
-function renderReportCard(entry: ReportIndexEntryV5) {
-  const advisory = deriveIndexedProjectAdvisory(entry);
+function renderReportCard(
+  entry: ReportIndexEntryV5,
+  advisory: ProjectAdvisory,
+) {
   const risk = advisory.risk;
   const summary = projectAdvisorySummary(advisory);
   const search = [entry.repository, entry.target_sha, risk, summary]
@@ -174,13 +176,25 @@ function renderScannerCard(scanner: (typeof EXTERNAL_SCANNERS)[number]) {
   </article>`;
 }
 
-export function renderLandingHtml(index: ReportIndexV5) {
+export function renderLandingHtml(
+  index: ReportIndexV5,
+  advisories: ReadonlyMap<string, ProjectAdvisory>,
+) {
   const reports = [...index.reports].sort(
     (left, right) =>
       Date.parse(right.completed_at) - Date.parse(left.completed_at) ||
       left.repository.localeCompare(right.repository),
   );
-  const cards = reports.map(renderReportCard).join("\n");
+  const cards = reports
+    .map((entry) => {
+      const advisory = advisories.get(entry.report_id);
+      if (advisory === undefined)
+        throw new Error(
+          `Missing derived advisory for report: ${entry.report_id}`,
+        );
+      return renderReportCard(entry, advisory);
+    })
+    .join("\n");
   return `<!doctype html>
 <html lang="en">
 <head>

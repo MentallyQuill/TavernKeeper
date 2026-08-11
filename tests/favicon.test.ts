@@ -4,7 +4,10 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 
 import { renderHistoryHtml } from "../src/publish/render-history.js";
-import { renderReportV5Html } from "../src/publish/render-report.js";
+import {
+  deriveReportAdvisory,
+  renderReportV5Html,
+} from "../src/publish/render-report.js";
 import { projectReportToIndexV5 } from "../src/publish/publisher.js";
 import { renderLandingHtml } from "../src/site/render-landing.js";
 import { SITE_ROOT } from "../src/site/presentation.js";
@@ -38,8 +41,11 @@ describe("favicon assets", () => {
       generated_at: "2026-08-03T12:00:00.000Z",
       reports: [entry],
     };
+    const advisories = new Map([
+      [entry.report_id, deriveReportAdvisory(report)],
+    ]);
     const html = [
-      renderLandingHtml(index),
+      renderLandingHtml(index, advisories),
       renderReportV5Html(report),
       renderHistoryHtml([entry]),
     ];

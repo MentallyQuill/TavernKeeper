@@ -12,6 +12,7 @@ import {
   SITE_ROOT,
   SITE_STYLES,
   TAVERNARY_URL,
+  type ProjectAdvisory,
 } from "../site/presentation.js";
 import { sanitizeReportV5 } from "./sanitize.js";
 
@@ -181,6 +182,26 @@ function observationAdvisoryItem(
   };
 }
 
+export function deriveReportAdvisory(report: ScanReportV5): ProjectAdvisory {
+  const assessmentByCandidate = new Map(
+    report.assessments.map((assessment) => [
+      assessment.candidate_id,
+      assessment,
+    ]),
+  );
+  return deriveProjectAdvisory([
+    ...report.candidates.map((candidate) =>
+      assessmentAdvisoryItem(
+        candidate,
+        assessmentByCandidate.get(candidate.candidate_id)!,
+      ),
+    ),
+    ...report.observations.map((observation) =>
+      observationAdvisoryItem(report, observation),
+    ),
+  ]);
+}
+
 function contextualFinding(
   report: ScanReportV5,
   candidate: ScanReportV5["candidates"][number],
@@ -317,17 +338,7 @@ export function renderReportV5Html(input: unknown) {
       assessment,
     ]),
   );
-  const advisory = deriveProjectAdvisory([
-    ...report.candidates.map((candidate) =>
-      assessmentAdvisoryItem(
-        candidate,
-        assessmentByCandidate.get(candidate.candidate_id)!,
-      ),
-    ),
-    ...report.observations.map((observation) =>
-      observationAdvisoryItem(report, observation),
-    ),
-  ]);
+  const advisory = deriveReportAdvisory(report);
   const risk = advisory.risk;
   const summary = projectAdvisorySummary(advisory);
   const rendered = report.candidates.map((candidate) => ({

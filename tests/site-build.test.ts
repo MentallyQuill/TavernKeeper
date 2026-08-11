@@ -161,6 +161,93 @@ describe("Pages site allowlist", () => {
     ).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  test("renders landing advisory from report evidence instead of projected counts", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-site-"));
+    roots.push(root);
+    await mkdir(join(root, "reports"), { recursive: true });
+    const report = await fixtureReportV5();
+    const entry = projectReportToIndexV5(report);
+    const staleEntry = {
+      ...entry,
+      counts: {
+        ...entry.counts,
+        recommended_risk: { low: 0, material: 1, high: 0 },
+      },
+    };
+    const reportDirectory = join(root, ...reportPath(report).split("/"));
+    const historyDirectory = join(root, ...historyPath(report).split("/"));
+    await Promise.all([
+      mkdir(reportDirectory, { recursive: true }),
+      mkdir(historyDirectory, { recursive: true }),
+    ]);
+    await Promise.all([
+      writeFile(
+        join(root, "reports", "index.json"),
+        `${JSON.stringify({
+          schema_version: 5,
+          generated_at: "2026-08-03T12:00:00.000Z",
+          reports: [staleEntry],
+        })}\n`,
+      ),
+      writeFile(
+        join(reportDirectory, "report.json"),
+        `${JSON.stringify(report)}\n`,
+      ),
+      writeFile(
+        join(historyDirectory, "history.json"),
+        `${JSON.stringify([entry])}\n`,
+      ),
+    ]);
+
+    const output = join(root, "_site");
+    await buildSite({ root, output });
+
+    const landing = await readFile(join(output, "index.html"), "utf8");
+    const detail = await readFile(
+      join(output, ...reportPath(report).split("/"), "index.html"),
+      "utf8",
+    );
+    const lowSummary =
+      "No material or immediate-danger concern was identified in this review.";
+
+    for (const page of [landing, detail]) {
+      expect(page).toContain("risk-low");
+      expect(page).toContain(lowSummary);
+      expect(page).not.toContain("1 material concern identified.");
+    }
+  });
+
+  test("rejects a report whose identity does not match its indexed directory", async () => {
+    const root = await mkdtemp(join(tmpdir(), "tavernkeeper-site-"));
+    roots.push(root);
+    await mkdir(join(root, "reports"), { recursive: true });
+    const indexedReport = await fixtureReportV5();
+    const unrelatedReport = await fixtureReportV5({
+      target_sha: "b".repeat(40),
+    });
+    const entry = projectReportToIndexV5(indexedReport);
+    const reportDirectory = join(root, ...reportPath(indexedReport).split("/"));
+    await mkdir(reportDirectory, { recursive: true });
+    await Promise.all([
+      writeFile(
+        join(root, "reports", "index.json"),
+        `${JSON.stringify({
+          schema_version: 5,
+          generated_at: "2026-08-03T12:00:00.000Z",
+          reports: [entry],
+        })}\n`,
+      ),
+      writeFile(
+        join(reportDirectory, "report.json"),
+        `${JSON.stringify(unrelatedReport)}\n`,
+      ),
+    ]);
+
+    await expect(
+      buildSite({ root, output: join(root, "_site") }),
+    ).rejects.toThrow("Report identity does not match its indexed directory.");
+  });
+
   test("refuses to overwrite the repository or an allowlisted source tree", async () => {
     const root = await mkdtemp(join(tmpdir(), "tavernkeeper-site-"));
     roots.push(root);
