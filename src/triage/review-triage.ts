@@ -524,7 +524,9 @@ export function triageEvidenceGroups(
         if (candidate.origin === "osv-scanner") {
           const triage = triageCandidate(group, candidate);
           if (triage.destination !== "deterministic")
-            throw new Error("Structured advisory triage must be deterministic.");
+            throw new Error(
+              "Structured advisory triage must be deterministic.",
+            );
           deterministicAssessments.push(triage.assessment);
           decisions.push(
             TriageDecisionSchema.parse({

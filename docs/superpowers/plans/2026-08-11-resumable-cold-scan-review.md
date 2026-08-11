@@ -37,7 +37,7 @@ workflow transitions distinguish progress from failure and completion.
 4. Replace whole-target planning with `planContextualReviewWave`, returning the
    selected groups, pending count, wave estimate, and completion state.
 5. Run `npm.cmd test -- tests/contextual-review-budget.test.ts
-   tests/contextual-review.test.ts`.
+tests/contextual-review.test.ts`.
 
 ## Task 2: Make review stop safely at a wave boundary
 

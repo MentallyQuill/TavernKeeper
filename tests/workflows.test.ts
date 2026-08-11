@@ -402,14 +402,12 @@ describe("GitHub workflow security policy", () => {
     expect(steps[reviewIndex]?.run).toContain(
       "timeout --signal=TERM --kill-after=5s 20m",
     );
-    expect(steps[reviewIndex]?.run).toContain(
-      "for pass in $(seq 1 64); do",
-    );
+    expect(steps[reviewIndex]?.run).toContain("for pass in $(seq 1 64); do");
     expect(steps[reviewIndex]?.run).toContain(
       "npm run --silent review-target > review-result.json",
     );
     expect(steps[reviewIndex]?.run).toContain(
-      'review_status="$(jq -er \'.status\' review-result.json)"',
+      "review_status=\"$(jq -er '.status' review-result.json)\"",
     );
     expect(steps[reviewIndex]?.run).toContain(
       'if [[ "$review_status" == "review_pending" ]]; then',

@@ -187,7 +187,12 @@ describe("contextual review budget", () => {
   test("plans a large target as stable bounded waves", () => {
     const groups = Array.from({ length: 24 }, (_, index) => group(index));
 
-    const first = planContextualReviewWave(groups, new Map(), undefined, policy);
+    const first = planContextualReviewWave(
+      groups,
+      new Map(),
+      undefined,
+      policy,
+    );
 
     expect(first.selectedGroups.map(({ group_id }) => group_id)).toEqual(
       groups.slice(0, 12).map(({ group_id }) => group_id),
@@ -231,10 +236,9 @@ describe("contextual review budget", () => {
   test("reused groups do not consume fresh wave capacity", () => {
     const groups = Array.from({ length: 16 }, (_, index) => group(index));
     const reusable = new Map(
-      groups.slice(0, 4).map(({ group_id }) => [
-        group_id,
-        { review_input_digest: group_id },
-      ]),
+      groups
+        .slice(0, 4)
+        .map(({ group_id }) => [group_id, { review_input_digest: group_id }]),
     );
 
     const wave = planContextualReviewWave(groups, reusable, undefined, policy);
