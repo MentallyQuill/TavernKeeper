@@ -14,6 +14,7 @@ import {
   deriveReportAdvisory,
   renderReportV5Html,
 } from "../publish/render-report.js";
+import { reportPath } from "../publish/report-path.js";
 import { sanitizeReportV5 } from "../publish/sanitize.js";
 import { renderLandingHtml } from "./render-landing.js";
 import { REPORT_SEARCH_SCRIPT } from "./search-script.js";
@@ -131,17 +132,23 @@ export async function buildSite({
   const preferredReports = await Promise.all(
     index.reports.map(async (entry) => {
       const directory = publicDirectory(entry.report_url);
+      const report = sanitizeReportV5(
+        await readJson(join(root, ...directory.split("/"), "report.json")),
+      );
+      if (reportPath(report) !== directory)
+        throw new Error(
+          "Report identity does not match its indexed directory.",
+        );
       return {
         directory,
-        report: sanitizeReportV5(
-          await readJson(join(root, ...directory.split("/"), "report.json")),
-        ),
+        entry,
+        report,
       };
     }),
   );
   const advisories = new Map(
-    preferredReports.map(({ report }) => [
-      report.report_id,
+    preferredReports.map(({ entry, report }) => [
+      entry.report_id,
       deriveReportAdvisory(report),
     ]),
   );
