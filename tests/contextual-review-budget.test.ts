@@ -187,45 +187,51 @@ describe("contextual review budget", () => {
   test("plans a large target as stable bounded waves", () => {
     const groups = Array.from({ length: 24 }, (_, index) => group(index));
 
-    const first = planContextualReviewWave(
-      groups,
-      new Map(),
-      undefined,
-      policy,
-    );
+    const completed: string[] = [];
+    const waveSizes: number[] = [];
+    while (completed.length < groups.length) {
+      const wave = planContextualReviewWave(
+        groups,
+        new Map(),
+        completed.length === 0
+          ? undefined
+          : {
+              completed_group_ids: completed,
+              completion_ids: [],
+              usage: {
+                inputTokens: 249_999,
+                outputTokens: 39_999,
+                cacheReadTokens: 0,
+                reasoningTokens: 0,
+              },
+            },
+        policy,
+      );
 
-    expect(first.selectedGroups.map(({ group_id }) => group_id)).toEqual(
-      groups.slice(0, 12).map(({ group_id }) => group_id),
-    );
-    expect(first.freshBehaviorCases).toBe(12);
-    expect(first.pendingGroups).toBe(12);
-    expect(first.complete).toBe(false);
-
-    const second = planContextualReviewWave(
-      groups,
-      new Map(),
-      {
-        completed_group_ids: groups
-          .slice(0, 12)
+      expect(wave.selectedGroups.map(({ group_id }) => group_id)).toEqual(
+        groups
+          .slice(
+            completed.length,
+            completed.length + wave.selectedGroups.length,
+          )
           .map(({ group_id }) => group_id),
-        completion_ids: Array.from(
-          { length: first.batches.length },
-          (_, index) => `completion-${index}`,
-        ),
-        usage: {
-          inputTokens: 249_999,
-          outputTokens: 39_999,
-          cacheReadTokens: 0,
-          reasoningTokens: 0,
-        },
-      },
-      policy,
-    );
+      );
+      expect(wave.freshBehaviorCases).toBeLessThanOrEqual(
+        policy.maxFreshBehaviorCases,
+      );
+      expect(
+        wave.batches.length * policy.maxImmediateAttempts,
+      ).toBeLessThanOrEqual(policy.maxProviderCalls);
+      expect(
+        wave.estimatedInputTokens * policy.maxImmediateAttempts,
+      ).toBeLessThanOrEqual(policy.maxEstimatedInputTokens);
 
-    expect(second.selectedGroups.map(({ group_id }) => group_id)).toEqual(
-      groups.slice(12).map(({ group_id }) => group_id),
-    );
-    expect(second.complete).toBe(true);
+      waveSizes.push(wave.selectedGroups.length);
+      completed.push(...wave.selectedGroups.map(({ group_id }) => group_id));
+    }
+
+    expect(completed).toEqual(groups.map(({ group_id }) => group_id));
+    expect(waveSizes).toEqual([10, 10, 4]);
     expect(new ReviewBudgetLedger(policy).snapshot()).toEqual({
       providerCalls: 0,
       inputTokens: 0,
@@ -243,10 +249,24 @@ describe("contextual review budget", () => {
 
     const wave = planContextualReviewWave(groups, reusable, undefined, policy);
 
-    expect(wave.selectedGroups).toHaveLength(16);
-    expect(wave.freshGroups).toHaveLength(12);
-    expect(wave.pendingGroups).toBe(0);
-    expect(wave.complete).toBe(true);
+    expect(wave.selectedGroups).toHaveLength(14);
+    expect(wave.freshGroups).toHaveLength(10);
+    expect(wave.pendingGroups).toBe(2);
+    expect(wave.complete).toBe(false);
+  });
+
+  test("reserves provider calls and estimated input for every immediate attempt", () => {
+    const groups = Array.from({ length: 7 }, (_, index) => group(index));
+
+    const wave = planContextualReviewWave(groups, new Map(), undefined, {
+      ...policy,
+      maxBatchGroups: 1,
+      maxEstimatedInputTokens: 1_000_000,
+    });
+
+    expect(wave.batches).toHaveLength(2);
+    expect(wave.selectedGroups).toHaveLength(2);
+    expect(wave.pendingGroups).toBe(5);
   });
 
   test("classifies one indivisible oversized group before a provider request", () => {
