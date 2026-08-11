@@ -1,0 +1,1105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for NeoTavern/NeoTavern-Frontend at commit a0d833c.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; NeoTavern/NeoTavern-Frontend</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/NeoTavern/NeoTavern-Frontend" rel="noopener noreferrer">NeoTavern/NeoTavern-Frontend</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/NeoTavern/NeoTavern-Frontend/commit/a0d833c98dde05cea38bb372e5baa55529b82dde" rel="noopener noreferrer">a0d833c</a></span>
+        <span>Reviewed <time datetime="2026-08-11T09:35:40.636Z">Aug 11, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>49 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v2wj-q39q-566r:pkg:2da03775dcf45324bfa61d36 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A tool used during development has a known security issue, but it is not used when the app is running normally. An update is still recommended.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2wj-q39q-566r:pkg:2da03775dcf45324bfa61d36 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The project depends on vite@7.2.2, which has a known advisory (GHSA-v2wj-q39q-566r). Vite is a build-time devDependency; the shipped frontend does not expose vite&#39;s dev server or middleware at runtime. The supplied evidence does not demonstrate an exploitable path in the production deployment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update vite to a patched version (e.g., 7.2.3 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2wj-q39q-566r:pkg:2da03775dcf45324bfa61d36</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v2hh-gcrm-f6hx:pkg:1c043fdb9ddfee4f4331dbb0 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A helper library used for data validation has a reported issue, but there is no evidence it can be exploited in this application. Updating is good practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v2hh-gcrm-f6hx:pkg:1c043fdb9ddfee4f4331dbb0 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> The transitive dependency fast-uri@3.1.2 (used by ajv) has a known advisory (GHSA-v2hh-gcrm-f6hx). No attacker-controlled input path or concrete exploit scenario is demonstrated by the supplied evidence. The advisory may affect input validation but without demonstrated reachability the risk is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update fast-uri to a patched version (e.g., 3.1.3 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v2hh-gcrm-f6hx:pkg:1c043fdb9ddfee4f4331dbb0</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp:pkg:387ff1385f57b2b03c5ec3e6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A library used for pattern matching has a theoretical flaw, but there is no proof it can be triggered in this project. It is still advisable to update.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp:pkg:387ff1385f57b2b03c5ec3e6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> brace-expansion@2.0.3 is a transitive dependency with a known advisory (GHSA-3jxr-9vmj-r5cp). This is typically a ReDoS vulnerability that requires a crafted pattern input. No evidence shows that user-supplied glob patterns reach this library in a way that an attacker can control. The dependency is indirect via dev tools.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update brace-expansion to a patched version (e.g., 2.0.5 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp:pkg:387ff1385f57b2b03c5ec3e6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-c2j3-45gr-mqc4:pkg:3a617860720e33c3832a83a7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A library that cleans up HTML to prevent attacks has a minor reported issue, but there is no sign it can be exploited in this app. Updating is recommended for safety.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-c2j3-45gr-mqc4:pkg:3a617860720e33c3832a83a7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> dompurify@3.4.11 is a runtime dependency used for HTML sanitization. It has a known low-severity advisory (GHSA-c2j3-45gr-mqc4). The scanner severity is low, and the supplied evidence does not demonstrate an attacker-controlled input path or concrete exploit. Without demonstrated exposure, the risk remains low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update dompurify to version 3.4.12 or later when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-c2j3-45gr-mqc4:pkg:3a617860720e33c3832a83a7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-xvcm-6775-5m9r:pkg:a5026003cd504f00b4f9b2ba applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>A data structure library has a reported vulnerability, but there is no indication it can be used against this project. Updating is a good precaution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-xvcm-6775-5m9r:pkg:a5026003cd504f00b4f9b2ba to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> immutable@5.1.6 is a transitive dependency with a known advisory (GHSA-xvcm-6775-5m9r). This package is used by some UI libraries. No evidence is provided of a working exploit or attacker-accessible code path. The vulnerability may require specific conditions not present here.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update immutable to a patched version (e.g., 5.1.7 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-xvcm-6775-5m9r:pkg:a5026003cd504f00b4f9b2ba</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:3f058ee2b68aac4f6bcbbf9e applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>An older version of a pattern-matching library has a security notice, but there is no evidence it can be triggered here. Updating is advised.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895:pkg:3f058ee2b68aac4f6bcbbf9e to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> brace-expansion@1.1.15 is a transitive dependency with a known advisory (GHSA-rgw5-rvv9-x895). Similar to the other brace-expansion advisory, this is a ReDoS issue. No demonstrated input path or attacker control is shown.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update brace-expansion to a patched version (e.g., 1.1.16 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895:pkg:3f058ee2b68aac4f6bcbbf9e</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:36b5ec528a6a84376d2fa8cc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>Another advisory for the same pattern library; same conclusion as before. No evidence of exploitation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg:pkg:36b5ec528a6a84376d2fa8cc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> brace-expansion@2.0.3 is again flagged under a different advisory (GHSA-mh99-v99m-4gvg). Same reasoning: no demonstrated exploitable path, ReDoS likely not reachable from untrusted input in this project&#39;s context.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update brace-expansion to a patched version (e.g., 2.0.5 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg:pkg:36b5ec528a6a84376d2fa8cc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-7p8r-x3mc-p8w7:pkg:678d4d4a8016db80660c8069 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; low confidence</p>
+    <p>Another advisory for the same validation library; same reasoning as before. No evidence of exploitability.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-7p8r-x3mc-p8w7:pkg:678d4d4a8016db80660c8069 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> fast-uri@3.1.2 is flagged under a second advisory (GHSA-7p8r-x3mc-p8w7). As with the earlier fast-uri advisory, no demonstrated exposure or attacker-controlled path exists in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update fast-uri to a patched version (e.g., 3.1.3 or later) when available.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-7p8r-x3mc-p8w7:pkg:678d4d4a8016db80660c8069</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8xcm-r25x-g524:pkg:9efcb22ccad71d16e9fbb4db applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project includes a vulnerable version of an HTTP library. We don&#39;t know if attackers can actually use it here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8xcm-r25x-g524:pkg:9efcb22ccad71d16e9fbb4db to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Known vulnerability in undici 7.28.0; no evidence that the vulnerable code path is reachable from attacker-controlled input in this project. Usage of undici (if any) is not shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Review if undici is used to handle user-supplied URLs or data. If so, update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8xcm-r25x-g524:pkg:9efcb22ccad71d16e9fbb4db</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4cwx-7wf7-3272:pkg:1176429e737cfabdf766cdff applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another security issue in the HTTP library. Not confirmed whether it can be exploited here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4cwx-7wf7-3272:pkg:1176429e737cfabdf766cdff to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> High-severity advisory for undici 7.28.0. No demonstrated attacker-controlled input path in the supplied evidence.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Same as previous undici advisory: update if undici is used with untrusted data.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4cwx-7wf7-3272:pkg:1176429e737cfabdf766cdff</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-m8rv-5g2x-5cg5:pkg:effd824192445928106e41b7 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another undici vulnerability. Not shown to be dangerous here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-m8rv-5g2x-5cg5:pkg:effd824192445928106e41b7 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Medium-severity undici advisory; no evidence of exploitable usage in this project.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update undici to a fixed version if used in runtime network requests.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-m8rv-5g2x-5cg5:pkg:effd824192445928106e41b7</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:f395337a0cb5249680cc1cad applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>An old version of a pattern-matching library may have a bug, but it&#39;s probably not used in the main app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg:pkg:f395337a0cb5249680cc1cad to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Vulnerability in brace-expansion 1.1.15, likely a transitive dependency of build or test tools. Not expected to be reachable from production runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Ensure outdated transitive dependency is updated if it appears in production runtime dependencies.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg:pkg:f395337a0cb5249680cc1cad</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v6wh-96g9-6wx3:pkg:ac373679d1ec0446c126c2b6 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>Vite is only used during development. The vulnerability does not affect the running app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v6wh-96g9-6wx3:pkg:ac373679d1ec0446c126c2b6 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Vite 7.2.2 is a development dependency. In production, the built frontend is served statically; the Vite server is not running. Exploitation would require dev-mode runtime, which is not the intended deployment.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update Vite for development builds to avoid risks during development.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v6wh-96g9-6wx3:pkg:ac373679d1ec0446c126c2b6</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fx2h-pf6j-xcff:pkg:dd82781926efc7ade22030d3 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>This Vite vulnerability also only applies during development.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fx2h-pf6j-xcff:pkg:dd82781926efc7ade22030d3 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Another Vite advisory; same reasoning – Vite is a dev dependency and not used in production runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update Vite to a patched version for development safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fx2h-pf6j-xcff:pkg:dd82781926efc7ade22030d3</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-pm4m-ph32-ghv5:pkg:9fbe9520ff824acfe7c4ed6a applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The YAML library has a security flaw that could let an attacker run code, but we don&#39;t see where attackers could supply malicious YAML.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-pm4m-ph32-ghv5:pkg:9fbe9520ff824acfe7c4ed6a to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> js-yaml 5.2.1 has a known code injection vulnerability. The project uses js-yaml as a direct dependency (YAML parsing). However, no evidence that attacker-controlled YAML is parsed. If YAML is loaded only from trusted local files, the risk is limited.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Review all locations where js-yaml is used to parse YAML. If any input comes from user-controlled sources, update js-yaml or sanitize input.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-pm4m-ph32-ghv5:pkg:9fbe9520ff824acfe7c4ed6a</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-8r6m-32jq-jx6q:pkg:4103fd8f223da7e70be01de8 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The XML parser has a security issue. If the app parses untrusted XML, an attacker could exploit it. Not shown to be the case.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-8r6m-32jq-jx6q:pkg:4103fd8f223da7e70be01de8 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> fast-xml-parser 5.9.3 has a known vulnerability. It is a direct dependency used for XML parsing. No demonstrated attacker-controlled XML input path in the supplied evidence.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Audit XML parsing points. If user-supplied or fetched XML is parsed, update fast-xml-parser to a fixed version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-8r6m-32jq-jx6q:pkg:4103fd8f223da7e70be01de8</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:3a2d891c083fd08457b3fe41 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The pattern-matching library used during development has a bug, but it doesn&#39;t affect the running app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895:pkg:3a2d891c083fd08457b3fe41 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> brace-expansion 2.0.3 is listed as a dev dependency. Vulnerability likely involves ReDoS in pattern matching used in build tools. Not expected to be exploitable in production runtime.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update brace-expansion in dev dependencies to avoid issues during development.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895:pkg:3a2d891c083fd08457b3fe41</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The ID generator library has a security flaw. It might be used to create tokens, but we don&#39;t see how it&#39;s used here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> nanoid 3.3.12 has a vulnerability. nanoid is used for generating unique IDs. If the ID generator is used in a security-sensitive context (e.g., session tokens), there could be risk. No evidence of such usage in the supplied evidence.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Assess whether nanoid is used for security-critical identifiers. If so, update to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-55q2-fjhq-7xh7:pkg:2fd628b415ad04f802a2d1cc applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The HTML sanitizer has a flaw that could allow malicious scripts to slip through. Not known if it&#39;s exploited here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-55q2-fjhq-7xh7:pkg:2fd628b415ad04f802a2d1cc to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> dompurify 3.4.11 has a known bypass. dompurify is used for sanitizing HTML. If user-generated content is sanitized, an attacker could bypass to inject XSS. No specific evidence of the vulnerability being triggered in this project.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update dompurify to the latest version and review sanitization logic for any edge cases.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-55q2-fjhq-7xh7:pkg:2fd628b415ad04f802a2d1cc</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-5p4m-2wfm-xmqj:pkg:d055453f026a4e70572d800d applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A YAML library used in development tools has a security issue. It doesn&#39;t affect the main app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-5p4m-2wfm-xmqj:pkg:d055453f026a4e70572d800d to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> js-yaml 4.3.0 (a transitive dependency, often used by eslint or other tools) has a code injection vulnerability. This is likely a dev dependency. Not used in production runtime.</p>
+      <p><strong>Impact:</strong> high &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update the parent dependency that pulls in js-yaml 4.3.0 to avoid the vulnerable version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-5p4m-2wfm-xmqj:pkg:d055453f026a4e70572d800d</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:48f7fae3c8c125b98852d2a2 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The CSS processing tool used during development has a bug. The running app is not affected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-fxqj-rqcc-2cmp:pkg:48f7fae3c8c125b98852d2a2 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> postcss 8.5.16 is a dev dependency used by Vite and other build tools. Vulnerability likely affects CSS parsing in development. Not reachable in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update postcss in dev dependencies for build safety.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-fxqj-rqcc-2cmp:pkg:48f7fae3c8c125b98852d2a2</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-r28c-9q8g-f849:pkg:97b607f316e1d58c10e4e4eb applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>Another CSS tool bug that only affects development.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-r28c-9q8g-f849:pkg:97b607f316e1d58c10e4e4eb to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Another postcss advisory; same reasoning – dev-only vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update postcss to a fixed version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-r28c-9q8g-f849:pkg:97b607f316e1d58c10e4e4eb</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-p9ff-h696-f583:pkg:4fdb809d17c4d326174c35f0 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>Yet another Vite vulnerability that doesn&#39;t affect the running app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-p9ff-h696-f583:pkg:4fdb809d17c4d326174c35f0 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Vite 7.2.2 advisory (another one). Dev dependency, not used in production.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update Vite to latest patch.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-p9ff-h696-f583:pkg:4fdb809d17c4d326174c35f0</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v3r7-h72x-cjcm:pkg:2f99006f4e2ddba635fa3089 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another HTTP library vulnerability. Not shown to be exploitable here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v3r7-h72x-cjcm:pkg:2f99006f4e2ddba635fa3089 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> undici 7.28.0 advisory (medium). Same as previous undici findings – no demonstrated exploit path.</p>
+      <p><strong>Impact:</strong> medium &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Same as other undici advisories: update if used with untrusted data.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v3r7-h72x-cjcm:pkg:2f99006f4e2ddba635fa3089</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-v56q-mh7h-f735:pkg:95da09a06d8bd82445831b2f applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project includes an outdated version of a library used for managing data. While it has a known security issue, it&#39;s not clear how an attacker could actually use it to cause harm in this app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-v56q-mh7h-f735:pkg:95da09a06d8bd82445831b2f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> immutable@5.1.6 is a transitive dependency with a known advisory. No evidence that the vulnerable code is reachable from attacker-controlled input in this frontend project. The npm advisory may be for server-side or unrealistic scenarios. Without demonstrated runtime exposure, the risk is minimal.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update immutable to a patched version if it is a direct dependency; otherwise, run npm audit and update lockfile.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-v56q-mh7h-f735:pkg:95da09a06d8bd82445831b2f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-3jxr-9vmj-r5cp:pkg:33bd75a43666b34e8d957c42 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>An old version of a text pattern library is included. It has a bug that could cause slowdowns, but only in very specific conditions that don&#39;t apply here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-3jxr-9vmj-r5cp:pkg:33bd75a43666b34e8d957c42 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> brace-expansion@1.1.15 is an old version likely used by dev tooling. The advisory (GHSA-3jxr-9vmj-r5cp) is for a regex denial-of-service that requires attacker control over brace patterns. In frontend build scripts this is not exploitable from user input. No demonstrated runtime path.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update to a newer version of brace-expansion if it is a direct dependency; otherwise, update the lockfile via npm audit fix.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-3jxr-9vmj-r5cp:pkg:33bd75a43666b34e8d957c42</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A small library for creating random IDs is outdated. The vulnerability might make IDs slightly guessable, but this app doesn&#39;t use them for anything sensitive.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> nanoid@3.3.12 is a library for generating unique IDs. The advisory (GHSA-28wg-ghj8-5hjv) relates to predictability or collision issues. In this frontend, nanoid is likely used for UI keys or temporary IDs. Even if predictable, the impact is limited to minor information disclosure or state confusion. No attacker control over ID generation is demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update nanoid to version 3.3.13 or later.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4c8g-83qw-93j6:pkg:a90c096b0a189e0f49499767 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A library that handles web addresses has a bug. It&#39;s buried deep in the dependencies and not directly used by the app&#39;s features.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4c8g-83qw-93j6:pkg:a90c096b0a189e0f49499767 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> fast-uri@3.1.2 is a URI parsing library. The advisory (GHSA-4c8g-83qw-93j6) may cause denial of service or incorrect parsing. In this frontend, fast-uri is a transitive dependency of express or other server components. Without evidence that attacker-controlled URIs are parsed by this vulnerable code path, exposure is not demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update fast-uri to a patched version.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4c8g-83qw-93j6:pkg:a90c096b0a189e0f49499767</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-4w7w-66w2-5vf9:pkg:cdcea1ddcbe6ed9555aaec70 applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The build tool used to create the app has a security notice. Since it&#39;s only used during development and not when running the app, it&#39;s not a concern for users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-4w7w-66w2-5vf9:pkg:cdcea1ddcbe6ed9555aaec70 to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> vite@7.2.2 is a build tool listed as a devDependency. The advisory (GHSA-4w7w-66w2-5vf9) likely affects development server or build process. It does not affect production runtime. No attacker can exploit this unless they have local access during development, which is not a realistic threat model for end users.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update vite to version 7.2.3 or later.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-4w7w-66w2-5vf9:pkg:cdcea1ddcbe6ed9555aaec70</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:17a4bca76c8dccd42bb43bfa applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another version of the text pattern library has a bug that could slow things down, but it&#39;s not reachable by attackers.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-mh99-v99m-4gvg:pkg:17a4bca76c8dccd42bb43bfa to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> brace-expansion@5.0.7 is a newer version used by some dependency. The advisory (GHSA-mh99-v99m-4gvg) is a regex denial of service. As with the older version, no demonstrated attacker-controlled path in production use.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update to a patched version of brace-expansion.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-mh99-v99m-4gvg:pkg:17a4bca76c8dccd42bb43bfa</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-jr45-8vmc-qm54:pkg:ef6cbe09bba3516afec0221f applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The server part of the app uses an outdated networking library. While it could be exploited if someone sends malicious network traffic, the app only listens on your own computer, making it very hard for an attacker to reach.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-jr45-8vmc-qm54:pkg:ef6cbe09bba3516afec0221f to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> undici@7.28.0 is an HTTP client used by the Node.js server (express is a production dependency). The advisory (GHSA-jr45-8vmc-qm54) could allow HTTP request smuggling or other network-level attacks. However, the server listens only on localhost by default, reducing the attack surface. No evidence that attacker-controlled traffic reaches the vulnerable component in this configuration. Exposure is not demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Update undici to a patched version (7.28.1 or later) and review server configuration.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-jr45-8vmc-qm54:pkg:ef6cbe09bba3516afec0221f</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:c15eeb4b6498ad284f4ce31d applies</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Another bug in the same library. Still not reachable by attackers.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OSV-Scanner matched advisory GHSA-rgw5-rvv9-x895:pkg:c15eeb4b6498ad284f4ce31d to a dependency declared by this repository.</p>
+      <p><strong>Contextual assessment:</strong> Another advisory for brace-expansion@5.0.7 (GHSA-rgw5-rvv9-x895). Same package, different vulnerability. No demonstrated exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Update brace-expansion to a version that fixes both advisories.</p>
+      <dl>
+        <dt>Scanner</dt><dd>osv-scanner 2.4.0</dd>
+        <dt>Rule</dt><dd>GHSA-rgw5-rvv9-x895:pkg:c15eeb4b6498ad284f4ce31d</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/package-lock.json" rel="noopener noreferrer">package-lock.json</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (5)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L79" rel="noopener noreferrer">vite.config.ts:79</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/scripts/build-profile.js#L4" rel="noopener noreferrer">scripts/build-profile.js:4</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/scripts/build-profile.js#L8-L12" rel="noopener noreferrer">scripts/build-profile.js:8-12</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L32" rel="noopener noreferrer">vite.config.ts:32</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.ts#L3" rel="noopener noreferrer">vite.config.ts:3</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (12)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security tool flagged a line of CSS styling as a startup modification, but it&#39;s just a style rule for arranging buttons, not any actual code that runs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a &#39;startup-modification&#39; rule on CSS class selector .profile-actions at line 473, which is within a scoped style block. This line defines visual layout, not runtime logic. No startup persistence behavior exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L473" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:473</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher runs a git command to check the current version, which is needed for automatic updates. The command is fixed and cannot be altered by an attacker.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 162 runs &#39;git rev-parse HEAD&#39; to obtain the current commit hash for cache invalidation. The command argument is a hardcoded string with no user input interpolation. This is legitimate behavior for a launcher that manages git-based project updates.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L162" rel="noopener noreferrer">launcher.js:162</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security tool flagged a line of CSS styling as a startup modification, but it&#39;s just a style rule for a profile management section, not any actual code that runs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a &#39;startup-modification&#39; rule on CSS class selector .profile-management at line 458, which is within a scoped style block. This line defines visual layout, not runtime logic. No startup persistence behavior occurs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L458" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:458</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security tool flagged a line of CSS styling as a startup modification, but it&#39;s just a style rule for a content area, not any actual code that runs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a &#39;startup-modification&#39; rule on CSS class selector .profile-content at line 479, which is within a scoped style block. This line defines visual layout, not runtime logic. No startup persistence behavior exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L479" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:479</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher has a list of official website addresses that it uses to download the backend. These are fixed and safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The URLs in REPO_URLS point to the official SillyTavern and NeoTavern GitHub repositories. These are hardcoded, not user-supplied, and are used for cloning the backend and plugin. No dynamic or user-controlled redirection is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L31" rel="noopener noreferrer">launcher.js:31</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security tool flagged a line that reads an environment variable while building the app. The variable is only the project version number and is used to add a version label to the generated code, which is normal and harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged usage of process.env at line 18 in a Vite build config. This reads the benign npm_package_version environment variable to embed a version comment in generated TypeScript declaration files. No credentials or secrets are accessed or exfiltrated. This is standard build-time metadata injection.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/vite.config.types.ts#L18" rel="noopener noreferrer">vite.config.types.ts:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The launcher reads settings from environment variables, which is a common and expected way to configure programs. No secret information is being sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code reads environment variables (NEO_*) and writes them into the configuration object, which is later saved to disk. This is an intentional override mechanism documented in the project&#39;s README. There is no evidence of exfiltration or unintended credential exposure; the config is stored locally.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/launcher.js#L110" rel="noopener noreferrer">launcher.js:110</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner mistakenly thought a line of code was a leaked password. It&#39;s actually just telling the app where to store an API key, not exposing the key itself. This is normal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Gitleaks flagged line 169 which contains `{ widget: &#39;key-manager&#39;, label: &#39;apiConnections.ai21Key&#39;, secretKey: SECRET_KEYS.AI21 }`. This is a UI configuration object that references a constant name for managing AI21 API keys. It does not contain an actual credential. The pattern &#39;secretKey&#39; with a constant value triggered the scanner. This is expected behavior for a SillyTavern frontend that handles API key management.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/api-connection-definition.ts#L169" rel="noopener noreferrer">src/api-connection-definition.ts:169</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security tool flagged a line of CSS styling as a startup modification, but it&#39;s just a style rule for arranging profile rows, not any actual code that runs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a &#39;startup-modification&#39; rule on CSS class selector .profile-row at line 304, which is within a scoped style block. This line defines visual layout for profile rows, not runtime logic. No startup persistence behavior exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/mythic-agents/components/NpcTab.vue#L304" rel="noopener noreferrer">src/extensions/built-in/mythic-agents/components/NpcTab.vue:304</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought a line of code might contain a password, but it&#39;s just a placeholder pointing to where the real password will be stored. No actual password is exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Gitleaks flagged a reference to the constant SECRET_KEYS.AI21 in a UI configuration object. This is a symbolic key reference, not an actual credential. The code defines API key input fields using a key-manager widget and a secretKey constant, which is legitimate and expected behavior for an AI frontend that manages multiple provider keys.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/9cfab2df275892dfce7d8ecf4176463b6338c515/src/api-connection-definition.ts#L169" rel="noopener noreferrer">src/api-connection-definition.ts:169</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner thought a CSS style was suspicious. It&#39;s just styling for a popup window. The app saves your settings normally, like any other app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> OpenGrep flagged line 109 in MemoryPopup.vue with a rule &#39;tavernkeeper.persistence.startup-modification&#39;. The flagged line is `.profile-section {` in a CSS block. The component uses standard Vue lifecycle (onMounted) to load settings and watch to save user preferences. This is normal UI persistence, not malicious startup modification. The scanner rule appears to have a false positive on this line.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/chat-memory/MemoryPopup.vue#L109" rel="noopener noreferrer">src/extensions/built-in/chat-memory/MemoryPopup.vue:109</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security tool flagged a line of CSS styling as a startup modification, but it&#39;s just a style rule for control buttons, not any actual code that runs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a &#39;startup-modification&#39; rule on CSS class selector .profile-controls at line 464, which is within a scoped style block. This line defines visual layout, not runtime logic. No startup persistence behavior occurs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/blob/a0d833c98dde05cea38bb372e5baa55529b82dde/src/extensions/built-in/model-randomizer/SettingsPanel.vue#L464" rel="noopener noreferrer">src/extensions/built-in/model-randomizer/SettingsPanel.vue:464</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>422 files &middot; 3464351 bytes</dd>
+      <dt>Contextual coverage</dt><dd>49 of 49 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>222 files &middot; 1635391 bytes</dd>
+        <dt>X-Ray review families</dt><dd>47 warning occurrences compacted to 9 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>222 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>222 raw signatures &middot; 17 raw AST &middot; 222 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>src/ai-config-definition.ts</code> &mdash; raw-ast / parse</li><li><code>src/api-connection-definition.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/backgrounds.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/characters.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/chat.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/connection.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/extensions.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/generation.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/media.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/personas.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/presets.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/provider-definitions.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/secrets.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/settings.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/tokenizer.ts</code> &mdash; raw-ast / parse</li><li><code>src/api/world-info.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useAutoSave.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useCharacterTokens.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useChatGeneration.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useChatMedia.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useChatView.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useDraggable.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useModelCapabilities.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useResizable.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useStrictI18n.ts</code> &mdash; raw-ast / parse</li><li><code>src/composables/useToast.ts</code> &mdash; raw-ast / parse</li><li><code>src/constants.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/composables/use-extension-settings.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/data-utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/prompt-presets.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/chat-message.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/connection-profile.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/extension-extra.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/structured-generation.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/_shared/runtime/structured-request-format.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-branching/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-branching/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-branching/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-memory/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-memory/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-memory/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/translator.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/chat-translation/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/generation-tools/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/generation-tools/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/generation-tools/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/GroupChatService.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/group-chat/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/commentator.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/live-commentary/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/model-randomizer/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/composables/useMythicState.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/defaults.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/event-generator.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/llm.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/oracle.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/scene-manager.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/test/mythic-agents.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/mythic-agents/une.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/notebook/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/notebook/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/notebook/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/phone/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/phone/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/phone/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/RewriteService.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteContext.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteOneShot.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteSessions.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/composables/useRewriteSettings.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/test/rewrite-types.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/test/rewrite-utils.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/rewrite/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/roadway/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/roadway/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/roadway/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/manifest.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/tools/urlInspector.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/tools/webSearch.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/standard-tools/utils.ts</code> &mdash; raw-ast / parse</li><li><code>src/extensions/built-in/text-to-speech/index.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/NeoTavern/NeoTavern-Frontend/commit/a0d833c98dde05cea38bb372e5baa55529b82dde" rel="noopener noreferrer">a0d833c98dde05cea38bb372e5baa55529b82dde</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-11T09:35:40.636Z">Aug 11, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>11 fresh / 0 reused groups &middot; 44 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>5 deterministic / 44 contextual candidates &middot; 11 contextual / 13 total behavior cases</dd>
+        <dt>Model budget</dt><dd>4 model calls &middot; 11 / 12 fresh cases &middot; 191981 / 200000 estimated input &middot; 193300 / 250000 actual input &middot; 22132 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>4 model calls &middot; up to 3 groups and 16 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>193300 input &middot; 22132 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>f28ffa0a0b157759afc428035c002a1caa8746c2f4aeddbb036680f40a9e5846</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1095193888/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
