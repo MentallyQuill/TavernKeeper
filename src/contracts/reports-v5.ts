@@ -346,6 +346,7 @@ export const ReviewTriageV5Schema = z.strictObject({
     )
     .max(10_000),
   model_budget: z.strictObject({
+    review_protocol_version: z.literal(2).optional(),
     configured: z.strictObject({
       max_fresh_behavior_cases: z.literal(12),
       max_provider_calls: z.literal(6),
@@ -611,12 +612,14 @@ export const ScanReportV5Schema = z
           actual.estimated_input_tokens !== estimatedInputTokens ||
           actual.input_tokens !== report.review_usage.input_tokens ||
           actual.output_tokens !== report.review_usage.output_tokens ||
-          actual.fresh_behavior_cases > configured.max_fresh_behavior_cases ||
-          actual.provider_calls > configured.max_provider_calls ||
-          actual.estimated_input_tokens >
-            configured.max_estimated_input_tokens ||
-          actual.input_tokens > configured.max_actual_input_tokens ||
-          actual.output_tokens > configured.max_actual_output_tokens
+          (triage.model_budget.review_protocol_version !== 2 &&
+            (actual.fresh_behavior_cases >
+              configured.max_fresh_behavior_cases ||
+              actual.provider_calls > configured.max_provider_calls ||
+              actual.estimated_input_tokens >
+                configured.max_estimated_input_tokens ||
+              actual.input_tokens > configured.max_actual_input_tokens ||
+              actual.output_tokens > configured.max_actual_output_tokens))
         )
           context.addIssue({
             code: "custom",

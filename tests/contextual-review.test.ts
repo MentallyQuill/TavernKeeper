@@ -111,6 +111,104 @@ function batchContent(
 }
 
 describe("contextual evidence review", () => {
+  test("checkpoints one bounded wave without returning a partial review", async () => {
+    const groups = Array.from({ length: 13 }, (_, index) => {
+      const candidateId = (index + 1).toString(16).padStart(64, "0");
+      return group(`src/wave-${index}.ts`, [candidateId]);
+    });
+    const checkpoints: ContextualReviewProgress[] = [];
+    const requestCompletion = vi.fn(async (request: TextCompletionRequest) => {
+      const included = groups.filter((item) =>
+        request.userContent.includes(item.group_id),
+      );
+      return {
+        completionId: `completion-wave-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent(
+          included.map((item) => ({
+            group_id: item.group_id,
+            review: {
+              status: "complete",
+              assessments: [
+                assessment(item.candidates[0]!.candidate_id, item.path, 2),
+              ],
+              observations: [],
+            },
+          })),
+        ),
+        usage: {
+          inputTokens: 500,
+          outputTokens: 100,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxOutputTokens: 32_768,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+      stopAfterWave: true,
+      onProgress: async (progress) => {
+        checkpoints.push(structuredClone(progress));
+      },
+    });
+
+    expect(result).toMatchObject({
+      status: "review_pending",
+      pending_groups: 1,
+      progress: {
+        review_protocol_version: 2,
+        completed_group_ids: groups
+          .slice(0, 12)
+          .map(({ group_id }) => group_id),
+      },
+    });
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(checkpoints.at(-1)?.completed_group_ids).toHaveLength(12);
+    expect(CompletedContextualReviewSchema.safeParse(result).success).toBe(
+      false,
+    );
+    if (!("status" in result))
+      throw new Error("First bounded review unexpectedly completed.");
+
+    const resumed = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxOutputTokens: 32_768,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+      progress: result.progress,
+      stopAfterWave: true,
+    });
+
+    expect(CompletedContextualReviewSchema.parse(resumed).coverage).toEqual({
+      required: 13,
+      completed: 13,
+    });
+    expect(requestCompletion).toHaveBeenCalledTimes(4);
+  });
+
   test("packs cache misses into ordered batches of at most five groups", async () => {
     const groups = Array.from({ length: 8 }, (_, index) => {
       const candidateId = (index + 1).toString(16).repeat(64);

@@ -43,6 +43,7 @@ import { validateCompletedGroupReview } from "./review-coverage.js";
 import type { ReusableReviewGroup } from "./review-cache.js";
 import {
   planContextualReview,
+  planContextualReviewWave,
   ReviewBudgetLedger,
 } from "./contextual-review-budget.js";
 
@@ -229,6 +230,7 @@ export type CompletedContextualReview = z.infer<
 
 export const ContextualReviewProgressSchema = z
   .strictObject({
+    review_protocol_version: z.literal(2).optional(),
     policy_version: z.literal("5"),
     prompt_version: z.literal(CONTEXTUAL_PROMPT_VERSION),
     schema_version: z.literal(CONTEXTUAL_SCHEMA_VERSION),
@@ -326,6 +328,16 @@ export type ContextualReviewProgress = z.infer<
   typeof ContextualReviewProgressSchema
 >;
 
+export const PendingContextualReviewSchema = z.strictObject({
+  status: z.literal("review_pending"),
+  pending_groups: z.number().int().positive(),
+  progress: ContextualReviewProgressSchema,
+});
+
+export type PendingContextualReview = z.infer<
+  typeof PendingContextualReviewSchema
+>;
+
 interface ValidatedContextualReviewProgress {
   progress: ContextualReviewProgress;
   assessments: ContextualAssessment[];
@@ -344,6 +356,7 @@ export interface ReviewEvidenceGroupsSpec {
   reviewInputDigests?: ReadonlyMap<string, string> | undefined;
   onProgress?:
     ((progress: ContextualReviewProgress) => Promise<void>) | undefined;
+  stopAfterWave?: boolean | undefined;
   expandContext?: (
     group: EvidenceContextGroup,
     request: Extract<
@@ -1362,9 +1375,15 @@ async function reviewBatch(
   return reviewed;
 }
 
+export function reviewEvidenceGroups(
+  spec: ReviewEvidenceGroupsSpec & { stopAfterWave: true },
+): Promise<CompletedContextualReview | PendingContextualReview>;
+export function reviewEvidenceGroups(
+  spec: ReviewEvidenceGroupsSpec & { stopAfterWave?: false | undefined },
+): Promise<CompletedContextualReview>;
 export async function reviewEvidenceGroups(
   spec: ReviewEvidenceGroupsSpec,
-): Promise<CompletedContextualReview> {
+): Promise<CompletedContextualReview | PendingContextualReview> {
   validatePolicy(spec.policy);
   const endpoint = validateModelEndpoint(spec.provider.endpoint);
   if (
@@ -1405,13 +1424,26 @@ export async function reviewEvidenceGroups(
   const reviewBatches: ReviewBatchUsage[] = [];
   const validated = validatedProgress(spec.progress, spec, endpoint);
   const progress = validated?.progress;
-  const contextualPlan = planContextualReview(
-    spec.groups,
-    spec.reusableGroups,
-    progress,
+  const wavePlan = spec.stopAfterWave
+    ? planContextualReviewWave(
+        spec.groups,
+        spec.reusableGroups,
+        progress,
+        spec.policy,
+      )
+    : undefined;
+  const contextualPlan =
+    wavePlan ??
+    planContextualReview(
+      spec.groups,
+      spec.reusableGroups,
+      progress,
+      spec.policy,
+    );
+  const budgetLedger = new ReviewBudgetLedger(
     spec.policy,
+    spec.stopAfterWave ? undefined : progress,
   );
-  const budgetLedger = new ReviewBudgetLedger(spec.policy, progress);
   const batchUsageComplete =
     progress === undefined || progress.review_batches !== undefined;
   const publishBatchUsage = batchUsageComplete;
@@ -1424,36 +1456,36 @@ export async function reviewEvidenceGroups(
     reviewBatches.push(...validated.reviewBatches);
   }
   const completedGroupIds = [...(progress?.completed_group_ids ?? [])];
+  let latestProgress: ContextualReviewProgress | undefined;
   const checkpoint = async () => {
-    if (spec.onProgress === undefined) return;
-    await spec.onProgress(
-      ContextualReviewProgressSchema.parse({
-        policy_version: "5",
-        prompt_version: CONTEXTUAL_PROMPT_VERSION,
-        schema_version: CONTEXTUAL_SCHEMA_VERSION,
-        model: spec.provider.model,
-        provider: endpoint.hostname,
-        endpoint_origin: endpoint.origin,
-        completed_group_ids: completedGroupIds,
-        assessments: assessments.map(
-          ({ locations: _locations, ...assessment }) => assessment,
-        ),
-        observations: observations.map(
-          ({ observation_id: _observationId, locations, ...observation }) => ({
-            ...observation,
-            locations: locations.map(
-              ({ path: _path, ...location }) => location,
-            ),
-          }),
-        ),
-        usage,
-        completion_ids: completionIds,
-        review_units: reviewUnits,
-        ...(publishBatchUsage ? { review_batches: reviewBatches } : {}),
-      }),
-    );
+    latestProgress = ContextualReviewProgressSchema.parse({
+      ...(spec.stopAfterWave ? { review_protocol_version: 2 } : {}),
+      policy_version: "5",
+      prompt_version: CONTEXTUAL_PROMPT_VERSION,
+      schema_version: CONTEXTUAL_SCHEMA_VERSION,
+      model: spec.provider.model,
+      provider: endpoint.hostname,
+      endpoint_origin: endpoint.origin,
+      completed_group_ids: completedGroupIds,
+      assessments: assessments.map(
+        ({ locations: _locations, ...assessment }) => assessment,
+      ),
+      observations: observations.map(
+        ({ observation_id: _observationId, locations, ...observation }) => ({
+          ...observation,
+          locations: locations.map(({ path: _path, ...location }) => location),
+        }),
+      ),
+      usage,
+      completion_ids: completionIds,
+      review_units: reviewUnits,
+      ...(publishBatchUsage ? { review_batches: reviewBatches } : {}),
+    });
+    if (spec.onProgress !== undefined) await spec.onProgress(latestProgress);
+    return latestProgress;
   };
-  const remainingGroups = spec.groups.slice(completedGroupIds.length);
+  const remainingGroups =
+    wavePlan?.selectedGroups ?? spec.groups.slice(completedGroupIds.length);
   if (spec.policy.maxBatchGroups === 1)
     for (const group of remainingGroups) {
       const reviewInputDigest =
@@ -1599,6 +1631,14 @@ export async function reviewEvidenceGroups(
       "repository",
       "Contextual observation identities must be unique.",
     );
+  if (wavePlan !== undefined && !wavePlan.complete) {
+    const pendingProgress = latestProgress ?? (await checkpoint());
+    return PendingContextualReviewSchema.parse({
+      status: "review_pending",
+      pending_groups: wavePlan.pendingGroups,
+      progress: pendingProgress,
+    });
+  }
   return CompletedContextualReviewSchema.parse({
     policy_version: "5",
     prompt_version: CONTEXTUAL_PROMPT_VERSION,

@@ -10,6 +10,15 @@ function validateKey(key: Buffer) {
     throw new Error("Artifact encryption key must be exactly 32 bytes.");
 }
 
+function authenticatedData(context?: string | Buffer) {
+  if (context === undefined) return MAGIC;
+  const bytes =
+    typeof context === "string" ? Buffer.from(context, "utf8") : context;
+  if (bytes.length === 0)
+    throw new Error("Artifact authenticated context cannot be empty.");
+  return Buffer.concat([MAGIC, Buffer.from([0]), bytes]);
+}
+
 export function decodeTransportKey(value: string) {
   if (!/^[A-Za-z0-9+/]{43}=$/u.test(value))
     throw new Error("Artifact encryption key must be canonical base64.");
@@ -18,17 +27,25 @@ export function decodeTransportKey(value: string) {
   return key;
 }
 
-export function encryptTransport(value: unknown, key: Buffer) {
+export function encryptTransport(
+  value: unknown,
+  key: Buffer,
+  context?: string | Buffer,
+) {
   validateKey(key);
   const nonce = randomBytes(NONCE_BYTES);
   const cipher = createCipheriv("aes-256-gcm", key, nonce);
-  cipher.setAAD(MAGIC);
+  cipher.setAAD(authenticatedData(context));
   const plaintext = Buffer.from(JSON.stringify(value), "utf8");
   const ciphertext = Buffer.concat([cipher.update(plaintext), cipher.final()]);
   return Buffer.concat([MAGIC, nonce, cipher.getAuthTag(), ciphertext]);
 }
 
-export function decryptTransport(encrypted: Buffer, key: Buffer): unknown {
+export function decryptTransport(
+  encrypted: Buffer,
+  key: Buffer,
+  context?: string | Buffer,
+): unknown {
   validateKey(key);
   const minimum = MAGIC.length + NONCE_BYTES + TAG_BYTES + 1;
   if (
@@ -44,7 +61,7 @@ export function decryptTransport(encrypted: Buffer, key: Buffer): unknown {
     key,
     encrypted.subarray(nonceStart, tagStart),
   );
-  decipher.setAAD(MAGIC);
+  decipher.setAAD(authenticatedData(context));
   decipher.setAuthTag(encrypted.subarray(tagStart, ciphertextStart));
   const plaintext = Buffer.concat([
     decipher.update(encrypted.subarray(ciphertextStart)),

@@ -175,8 +175,9 @@ const canonicalContextualReviewRun = String.raw`progress_count() {
   node scripts/contextual-review-progress-count.mjs "$TAVERNKEEPER_SESSION_ROOT/review-progress.json"
 }
 run_review() {
+  rm -f review-result.json
   node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"MODEL_REVIEW_TIMEOUT",domain:"target",component:"contextual-model"}) + "\n", {flag:"wx"})'
-  if timeout --signal=TERM --kill-after=5s 20m npm run --silent review-target; then
+  if timeout --signal=TERM --kill-after=5s 20m npm run --silent review-target > review-result.json; then
     rm -f phase-error.json
     return 0
   fi
@@ -195,16 +196,23 @@ budget_review_failure() {
   jq -e '.code == "MODEL_REVIEW_BUDGET_EXCEEDED" and .domain == "target" and .component == "contextual-model"' phase-error.json >/dev/null
 }
 provider_no_progress_retries="0"
-for pass in 1 2 3; do
+for pass in $(seq 1 64); do
   progress_before="$(progress_count)"
   if run_review; then
-    exit 0
+    review_status="$(jq -er '.status' review-result.json)"
+    if [[ "$review_status" == "review_pending" ]]; then
+      continue
+    fi
+    if [[ "$review_status" == "reviewed" ]]; then
+      exit 0
+    fi
+    exit 1
   fi
   progress_after="$(progress_count)"
   if budget_review_failure; then
     exit 1
   fi
-  if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then
+  if ! retryable_review_failure || [[ "$pass" -eq 64 ]]; then
     exit 1
   fi
   if [[ "$progress_after" -gt "$progress_before" ]]; then

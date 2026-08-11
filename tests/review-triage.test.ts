@@ -482,6 +482,44 @@ describe("policy v5 deterministic review triage", () => {
     ]);
   });
 
+  test("keeps structured advisories deterministic when execution scope is unknown", () => {
+    const advisory = candidate("GHSA-aaaa-bbbb-cccc:pkg:npm/example@1.0.0", {
+      origin: "osv-scanner",
+      category: "dependency-advisory",
+      line_start: null,
+      line_end: null,
+    });
+    const ambiguous = candidate("unknown.future-rule");
+
+    const plan = triageEvidenceGroups([
+      group({
+        execution_scope: "unknown",
+        candidates: [advisory, ambiguous],
+      }),
+    ]);
+
+    expect(
+      plan.deterministicAssessments.map(({ candidate_id }) => candidate_id),
+    ).toEqual([advisory.candidate_id]);
+    expect(
+      plan.contextualGroups.flatMap(({ candidates }) =>
+        candidates.map(({ candidate_id }) => candidate_id),
+      ),
+    ).toEqual([ambiguous.candidate_id]);
+    expect(plan.decisions).toEqual([
+      expect.objectContaining({
+        candidate_id: advisory.candidate_id,
+        destination: "deterministic",
+        reason_code: "osv-structured-advisory",
+      }),
+      expect.objectContaining({
+        candidate_id: ambiguous.candidate_id,
+        destination: "contextual",
+        reason_code: "unknown-execution-scope",
+      }),
+    ]);
+  });
+
   test("partitions every candidate once with valid local assessments and reconciled counts", () => {
     const candidates = [
       candidate("javascript.xray.unsafe-regex"),
