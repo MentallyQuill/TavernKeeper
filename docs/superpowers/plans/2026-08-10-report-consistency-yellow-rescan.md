@@ -20,6 +20,7 @@
 ### Task 1: Share report advisory derivation with the landing build
 
 **Files:**
+
 - Modify: `src/publish/render-report.ts`
 - Modify: `src/site/render-landing.ts`
 - Modify: `src/site/build-site.ts`
@@ -27,6 +28,7 @@
 - Test: `tests/favicon.test.ts`
 
 **Interfaces:**
+
 - Produces: `deriveReportAdvisory(report: ScanReportV5): ProjectAdvisory`.
 - Consumes: `renderLandingHtml(index: ReportIndexV5, advisories: ReadonlyMap<string, ProjectAdvisory>): string`.
 
@@ -59,12 +61,14 @@ Commit message: `fix(site): unify report advisory rendering`
 ### Task 2: Add a frozen yellow policy-rescan scope
 
 **Files:**
+
 - Modify: `src/cli/policy-rescan.ts`
 - Modify: `.github/workflows/policy-rescan.yml`
 - Create: `tests/policy-rescan.test.ts`
 - Modify: `tests/workflows.test.ts`
 
 **Interfaces:**
+
 - Produces: `selectPolicyRescanRepositoryIds({ scope, manifest, index }): number[]`.
 - Consumes environment variable `TAVERNKEEPER_POLICY_RESCAN_SCOPE` with exact values `all` or `yellow`.
 
@@ -97,6 +101,7 @@ Commit message: `feat(scans): target yellow policy rescans`
 ### Task 3: Verify, review, publish, and execute
 
 **Files:**
+
 - Verify all modified source, test, workflow, and documentation files.
 
 - [ ] **Step 1: Run local verification**
