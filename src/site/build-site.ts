@@ -10,7 +10,11 @@ import { dirname, join, relative, resolve, sep } from "node:path";
 
 import { parseReportIndexV5 } from "../contracts/reports-v5.js";
 import { renderHistoryHtml } from "../publish/render-history.js";
-import { renderReportV5Html } from "../publish/render-report.js";
+import {
+  deriveReportAdvisory,
+  renderReportV5Html,
+} from "../publish/render-report.js";
+import { sanitizeReportV5 } from "../publish/sanitize.js";
 import { renderLandingHtml } from "./render-landing.js";
 import { REPORT_SEARCH_SCRIPT } from "./search-script.js";
 
@@ -124,6 +128,23 @@ export async function buildSite({
   const index = parseReportIndexV5(
     await readJson(join(root, "reports", "index.json")),
   );
+  const preferredReports = await Promise.all(
+    index.reports.map(async (entry) => {
+      const directory = publicDirectory(entry.report_url);
+      return {
+        directory,
+        report: sanitizeReportV5(
+          await readJson(join(root, ...directory.split("/"), "report.json")),
+        ),
+      };
+    }),
+  );
+  const advisories = new Map(
+    preferredReports.map(({ report }) => [
+      report.report_id,
+      deriveReportAdvisory(report),
+    ]),
+  );
 
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
@@ -136,17 +157,16 @@ export async function buildSite({
   );
   await mkdir(join(output, "assets"), { recursive: true });
   await copyTree(sources[3]!, join(output, "assets"));
-  await writeFile(join(output, "index.html"), renderLandingHtml(index));
+  await writeFile(
+    join(output, "index.html"),
+    renderLandingHtml(index, advisories),
+  );
   await writeFile(
     join(output, "assets", "report-search.js"),
     REPORT_SEARCH_SCRIPT,
   );
 
-  for (const entry of index.reports) {
-    const directory = publicDirectory(entry.report_url);
-    const report = await readJson(
-      join(root, ...directory.split("/"), "report.json"),
-    );
+  for (const { directory, report } of preferredReports) {
     await writeFile(
       join(output, ...directory.split("/"), "index.html"),
       renderReportV5Html(report),
