@@ -214,6 +214,32 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("protected policy rescans expose only the validated campaign scope", async () => {
+    const value = await workflow("policy-rescan.yml");
+    const inputs = value.on.workflow_dispatch.inputs;
+    const campaign = (value.jobs.schedule.steps as Workflow[]).find(
+      (step) => step.name === "Create reviewed policy campaign",
+    );
+    const otherSteps = (value.jobs.schedule.steps as Workflow[]).filter(
+      (step) => step !== campaign,
+    );
+
+    expect(value.jobs.schedule.environment).toBe("tavernkeeper-staff");
+    expect(Object.keys(inputs)).toEqual(["scope"]);
+    expect(inputs.scope).toMatchObject({
+      type: "choice",
+      required: true,
+      default: "all",
+      options: ["all", "yellow"],
+    });
+    expect(campaign?.env).toEqual({
+      TAVERNKEEPER_POLICY_RESCAN_SCOPE: "${{ inputs.scope }}",
+    });
+    expect(JSON.stringify(otherSteps)).not.toContain(
+      "TAVERNKEEPER_POLICY_RESCAN_SCOPE",
+    );
+  });
+
   test("automatic reusable deployments bypass only the manual approval gate", async () => {
     const [deploy, pagesReconcile, scanAndPublish] = await Promise.all([
       workflow("deploy-pages.yml"),

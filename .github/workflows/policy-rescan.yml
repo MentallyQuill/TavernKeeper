@@ -2,6 +2,15 @@ name: Staff policy rescan
 
 on:
   workflow_dispatch:
+    inputs:
+      scope:
+        description: Policy rescan scope
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - yellow
 
 permissions:
   contents: read
@@ -32,6 +41,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Create reviewed policy campaign
+        env:
+          TAVERNKEEPER_POLICY_RESCAN_SCOPE: ${{ inputs.scope }}
         run: npm run --silent policy-rescan
       - name: Create TavernKeeper Publisher token
         id: publisher-token
