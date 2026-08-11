@@ -503,10 +503,8 @@ export function triageEvidenceGroups(
     const hardEscalator =
       group.candidates.some(({ rule_id }) => isHardEscalator(rule_id)) ||
       hasDangerousCorrelation(group);
-    if (hardEscalator || group.execution_scope === "unknown") {
-      const reasonCode = hardEscalator
-        ? "hard-dangerous-correlation"
-        : "unknown-execution-scope";
+    if (hardEscalator) {
+      const reasonCode = "hard-dangerous-correlation";
       contextualGroups.push({ ...group, group_id: caseId });
       for (const candidate of group.candidates)
         decisions.push(
@@ -517,6 +515,43 @@ export function triageEvidenceGroups(
             reason_code: reasonCode,
           }),
         );
+      continue;
+    }
+
+    if (group.execution_scope === "unknown") {
+      const contextualCandidates = [];
+      for (const candidate of group.candidates) {
+        if (candidate.origin === "osv-scanner") {
+          const triage = triageCandidate(group, candidate);
+          if (triage.destination !== "deterministic")
+            throw new Error("Structured advisory triage must be deterministic.");
+          deterministicAssessments.push(triage.assessment);
+          decisions.push(
+            TriageDecisionSchema.parse({
+              candidate_id: candidate.candidate_id,
+              case_id: caseId,
+              destination: "deterministic",
+              reason_code: triage.reasonCode,
+            }),
+          );
+        } else {
+          contextualCandidates.push(candidate);
+          decisions.push(
+            TriageDecisionSchema.parse({
+              candidate_id: candidate.candidate_id,
+              case_id: caseId,
+              destination: "contextual",
+              reason_code: "unknown-execution-scope",
+            }),
+          );
+        }
+      }
+      if (contextualCandidates.length > 0)
+        contextualGroups.push({
+          ...group,
+          group_id: caseId,
+          candidates: contextualCandidates,
+        });
       continue;
     }
 
