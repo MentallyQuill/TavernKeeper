@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for SillyTavern/SillyTavern-Timelines at commit 03f7434.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; SillyTavern/SillyTavern-Timelines</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/SillyTavern/SillyTavern-Timelines" rel="noopener noreferrer">SillyTavern/SillyTavern-Timelines</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/SillyTavern/SillyTavern-Timelines/commit/03f74342c86d2edaa5a1751b34f0c7113813db7d" rel="noopener noreferrer">03f7434</a></span>
+        <span>Reviewed <time datetime="2026-08-11T20:17:07.865Z">Aug 11, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>21 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/tl_style.js#L12" rel="noopener noreferrer">tl_style.js:12</a></dd>
+      </dl>
+    </details>
+  </article>
+    
+    <details class="expected">
+      <summary>Contextual expected matches (18)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.short-identifiers</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a tiny compressed helper that copies JavaScript object properties, bundled with a graph library. Its short names are just normal minification, and nothing here reads private data or sends information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.short-identifiers. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The short-identifier signal reflects standard minification of an object-assign polyfill dependency used by the cytoscape-popper module. The extracted source is a small, self-contained property-copy helper with no external communication, no persistence, and no demonstrated use of attacker-controlled input. Short variable names are a minification artifact rather than concealed or malicious behavior, and the evidence does not identify any concrete security impact.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.short-identifiers</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape-popper.min.js#L1" rel="noopener noreferrer">cytoscape-popper.min.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a standard minified graph-drawing library. The flagged code is a common technique libraries use to detect their host environment; it does not read or send user data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate is the vendored, minified Cytoscape distribution bundled for timeline graph rendering. The dynamic-execution signal corresponds to a Function-constructor call used by the UMD wrapper to obtain the global object across module, AMD, and browser environments. It runs at load time with no attacker-controlled input, no network destination, and no security-relevant data flow. This is standard boilerplate found in upstream Cytoscape and related bundles, and the evidence does not tie it to user chat content or host state.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L23" rel="noopener noreferrer">cytoscape.min.js:23</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner flagged a possible suspicious link in a packaged graph-drawing library, but the evidence doesn&#39;t show any data being sent anywhere. Loading images for graph nodes is normal for this type of library.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied evidence does not retain the matched literal values for the two shady-link signals, and the visible minified code is consistent with a graph-rendering library that sets image sources for node display. No concrete external destination, credential flow, or private-content transmission path is demonstrated. A heuristic scanner label on a generated vendor bundle is not evidence of exfiltration or malicious linking.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L32" rel="noopener noreferrer">cytoscape.min.js:32</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is the ready-made Cytoscape graph library bundled with the Timelines extension so it can draw its node graphs. The scanner flagged code patterns that can be associated with a class of JavaScript bugs, but in context these are the library&#39;s own protective checks, and the extension does not feed untrusted data into these parts of the library. No actual dangerous behavior was shown.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged occurrence is inside file, a minified vendored build of Cytoscape 3.26.0 used by the extension for graph rendering. The line-level expression is part of the bundled lodash-style hash-table implementation and is matched by a heuristic prototype-pollution rule. The surrounding evidence windows show defensive patterns: hash key handling explicitly rejects the literal &quot;__proto__&quot; value, deep-assignment helpers short-circuit before writing keys named &quot;__proto__&quot;, &quot;constructor&quot;, or &quot;prototype&quot;, and the extension-registration path returns an error for those names with a message about prototype pollution. No evidence shows an attacker-controlled input path reaching these helpers in this project, and no global Object.prototype assignment is demonstrated. The signal describes standard internals of an upstream graphing library, not project-authored malicious or vulnerable code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> No change required for this finding. If desired for provenance, document the exact upstream Cytoscape version and build source so the vendored file can be compared or updated against future upstream releases.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L5223" rel="noopener noreferrer">cytoscape.min.js:5223</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>This file is a compressed helper library for right-click menus in the timeline view. The scanner pattern is common in minified third-party code, and nothing here shows it receiving untrusted input or sending information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray reported a prototype-pollution signal in this minified UMD bundle. The provided source excerpt shows standard class, DOM, and Babel-helper code for a Cytoscape context-menu UI library. No attacker-controlled object is shown flowing into a merge or assignment sink that could alter the global object prototype, and no network destination or persistence behavior appears in the evidence. The file is a generated third-party UI dependency used to render context menus in the timeline graph, so the heuristic signal is consistent with minified third-party code rather than demonstrated exploitable behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape-context-menus.min.js#L5" rel="noopener noreferrer">cytoscape-context-menus.min.js:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flag points at standard boilerplate generated by a build tool to set up class inheritance in a bundled menu library. It never touches your chat data, settings, or credentials, and there is no way for outside input to reach it, so it is not a security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged assignment is inside the standard Babel transpiler helper that falls back to setting an object&#39;s prototype when Object.setPrototypeOf is unavailable. The line sets the __proto__ of a newly created class object to its parent class constructor, which is compiler-supplied, not attacker-controlled. This is part of the bundled cytoscape-context-menus library&#39;s class inheritance wiring and appears in its minified build. No untrusted key or value reaches this sink, and no prototype pollution data flow or exfiltration path is shown in the evidence. This is a well-known static-analysis false positive for the prototype-pollution pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape-context-menus.min.js#L286" rel="noopener noreferrer">cytoscape-context-menus.min.js:286</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.opengrep.tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a common compatibility trick used by JavaScript libraries to find the global object in older environments. It runs a fixed, harmless expression and does not execute any user or chat content.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.opengrep.tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged expression is a standard global-object lookup fallback found in bundled libraries. The constructor receives only a fixed literal string with no runtime or attacker-controlled input, and the result is used solely to access standard built-ins. No dynamic execution of user or chat content is present in the supplied evidence, and no data leaves the page context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.opengrep.tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L581" rel="noopener noreferrer">cytoscape.min.js:581</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code loads pictures that a timeline graph may show on its nodes. It is simply the graph library fetching image addresses it was given to display, like any web page loading images. The evidence does not show it sending user data or secrets anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged code is Cytoscape&#39;s image cache loader, part of the upstream renderer. When a graph node style references a background image, this routine creates an Image object, checks whether the value is a data URI, configures crossOrigin as needed, and assigns the image source URL. This is standard, expected browser image loading for a graph visualization library and matches the project&#39;s stated purpose of rendering timeline graphs. The destination of any fetch is the image URL placed in graph data or theme settings, not a fixed collection endpoint, and the path does not carry chat content, credentials, or other private data. No attacker-controlled data flow, hidden telemetry, or exfiltration behavior is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required. This is expected rendering behavior of the bundled upstream library.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L18501" rel="noopener noreferrer">cytoscape.min.js:18501</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner noticed a common code pattern inside a bundled graph-drawing library. That pattern exists in many normal copies of the library, and the evidence does not show a way for a malicious message or file to actually reach this code and cause harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is lodash&#39;s private baseAssignValue helper within the vendored dagre bundle. It explicitly handles the __proto__ key by routing it through defineProperty, which is standard lodash internals present in many bundled builds. The scanner result is a static pattern match on the helper itself, not evidence of an attacker-controlled input reaching this function. The extension processes chat files locally to build graph structures, and the supplied evidence does not show a data flow by which a malicious object with a __proto__ key is passed to this assignment helper. No concrete prototype-pollution exposure or downstream harm is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/dagre.js#L4818" rel="noopener noreferrer">dagre.js:4818</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is part of a standard library (lodash) that file bundles. It simply gets a reference to the global object (like &#39;window&#39; in a browser) using a well-known safe technique. There&#39;s no hidden danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 8683 of file uses `Function(&#39;return this&#39;)()` to obtain the global object. This is a standard pattern found in lodash (the dagre dependency) to detect the JavaScript runtime global across environments (browser, Node.js, Web Workers). It does not execute user-controlled code or accept any attacker input. The function is created with a fixed string literal and is not influenced by external data. This is expected behavior for a utility library and poses no security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/dagre.js#L8683" rel="noopener noreferrer">dagre.js:8683</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner looked for prototype-pollution tricks, but the visible code already blocks the dangerous key names, and no way for outside data to trigger this was shown.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The visible expansion shows explicit guards that return early when object-path keys equal reserved names such as prototype-related keys, and the extension-registration code explicitly rejects illegal type names as potential prototype pollution. These flagged sites appear guarded rather than exploitable. No attacker-controlled data flow from chat or timeline content into a prototype-polluting assignment is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L29" rel="noopener noreferrer">cytoscape.min.js:29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same standard build-tool boilerplate for class inheritance as the other copy of this bundled file. It does not interact with user data or external input, so it does not create any exploitable risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is the same standard Babel _setPrototypeOf fallback helper (e.__proto__ = t) used to wire class inheritance in the bundled cytoscape-context-menus library. The right-hand side is a parent class constructor provided by the bundler, not runtime or user-controlled data. The provided source shows no attacker-influenced object keys or values reaching this assignment and no other prototype-pollution sink or data flow. The normalized representation differs from the earlier bundle-module view only by formatting and line position, not behavior, so the scanner hit remains a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape-context-menus.min.js#L310" rel="noopener noreferrer">cytoscape-context-menus.min.js:310</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension fetches chat data from the same SillyTavern server it&#39;s already running on, which is exactly what it needs to do to show your timeline. It does not run any downloaded code or scripts.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file file contains `fetch` calls to local SillyTavern API endpoints (`/api/characters/chats`, `/api/chats/get`, `/api/chats/group/get`) for retrieving chat data. These are standard network requests that the extension needs to provide timeline visualization. No dynamic code execution (eval, Function, setTimeout with string, or other code execution sinks) is present in this file. The scanner correlation between network retrieval and code execution is a false positive — there is no code execution sink to pair with the fetch calls. All fetches are to the same origin and use authentication headers consistent with SillyTavern&#39;s extension API.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/tl_node_data.js#L360-L427" rel="noopener noreferrer">tl_node_data.js:360-427</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-import</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is just a standard graph-drawing library. It doesn&#39;t do anything suspicious like sending data out or hiding behavior. The security scanner flagged it because of a generic pattern, but there&#39;s no real problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-import. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file is a bundled third-party graph layout library (dagre) used by the Timelines extension for rendering directed graphs. It contains a standard UMD wrapper with internal require() calls to its own modules and a conditional try-catch for the &#39;graphlib&#39; npm package. No network access, credential handling, persistence, or obfuscated logic is present. The scanner&#39;s &#39;unsafe-import&#39; signal is a generic static analysis flag that does not correspond to any actual security risk in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-import</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/dagre.js#L1" rel="noopener noreferrer">dagre.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner flagged some complicated text-matching patterns in the packaged library. They process colors and style text locally, and there&#39;s no shown way for an attacker to abuse them.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regular expressions are color and string-parsing patterns used for local UI and style values. No remote or attacker-controlled input reaching these regexes with adversarial payloads is demonstrated, and any worst-case regex performance issue would be a recoverable local slowdown rather than meaningful concrete harm. The static unsafe-regex heuristic on minified bundled code does not by itself demonstrate a vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L23" rel="noopener noreferrer">cytoscape.min.js:23</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner thought the file might be deliberately hidden code, but it&#39;s just a compressed third-party library with a normal open-source license header. Nothing disguised is shown.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged obfuscated-code with high severity but low confidence. The supplied start of the file shows an MIT license followed by a standard UMD wrapper, and the code is minified rather than obfuscated: no encoded strings, packing, dynamic payload construction, or concealed behavior is visible. This is consistent with a generated vendor bundle for a graph-rendering library, and no malicious behavior is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L1" rel="noopener noreferrer">cytoscape.min.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner flagged a complicated text-matching pattern inside a bundled graph-drawing library. The pattern is a normal part of that library&#39;s code, and there is no evidence that a malicious user could submit input to trigger a problem in this extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is the rePropName regular expression in lodash&#39;s stringToPath helper, packaged inside the vendored dagre bundle. The scanner&#39;s unsafe-regex signal matches the regex&#39;s complex structure, but this is a well-known lodash internal used to parse property path strings. The supplied evidence does not show that untrusted, attacker-controlled input is fed into this regex, nor that the extension passes externally influenced strings of large or pathological shape into stringToPath. Even if reachable by unusual graph data, the worst indicated consequence would be a local, recoverable performance issue, which does not rise to material harm.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/dagre.js#L8976" rel="noopener noreferrer">dagre.js:8976</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This flag points to color-parsing patterns inside a bundled graph library. They only help convert color text into numbers for display and show no sign of being exploitable or sending data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regular expressions are CSS color parsers within a vendored graph-rendering library. They are anchored and use bounded numeric, percentage, and whitespace clauses with no catastrophic backtracking pattern. Input reaches them only from local graph or style data, and the worst plausible outcome is a failed color parse during rendering. No credential, data-exfiltration, persistence, or code-execution path is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L301" rel="noopener noreferrer">cytoscape.min.js:301</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Vendored generated library context for prototype-pollution signals</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged code belongs to the ready-made graph library that the extension bundles, not to code written by the extension author, and that library contains its own safeguards around the flagged areas.</p>
+    <details><summary>Technical assessment</summary>
+      <p>file is a generated, minified vendored artifact, so the scanner hits correspond to internal utility code from the upstream Cytoscape and lodash builds rather than code authored by the extension. The protected-key checks observable in the evidence windows are defensive and match the upstream library&#39;s known implementation. Assessment of library internals belongs upstream; the extension itself is merely bundling the library for legitimate graph rendering.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Document the vendored library version and any upstream patches; otherwise no action is needed.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L5390-L5423" rel="noopener noreferrer">cytoscape.min.js:5390-5423</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Image loading is standard Cytoscape rendering behavior</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The graph library loads node pictures when the timeline references them, just as a normal web page loads images. Nothing is sent beyond the picture request itself.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The image loader visible in the evidence window is part of the upstream Cytoscape renderer and activates when node styles reference background images. The source assignment happens after a data-URI check and is ordinary browser image fetching driven by graph styling. This is not a data-exfiltration sink, and the supplied evidence contains no sign of concealed destinations.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> No action needed.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/SillyTavern/SillyTavern-Timelines/blob/03f74342c86d2edaa5a1751b34f0c7113813db7d/cytoscape.min.js#L18486-L18507" rel="noopener noreferrer">cytoscape.min.js:18486-18507</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>23 files &middot; 932893 bytes</dd>
+      <dt>Contextual coverage</dt><dd>19 of 19 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>12 files &middot; 890498 bytes</dd>
+        <dt>X-Ray review families</dt><dd>41 warning occurrences compacted to 15 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>12 raw &middot; 14 decoded &middot; 6 normalized &middot; 16 bundle modules</dd>
+        <dt>Stage scans</dt><dd>12 raw signatures &middot; 12 raw AST &middot; 11 raw OpenGrep &middot; 36 derived signatures &middot; 21 derived AST &middot; 35 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>cytoscape.min.js</code> &mdash; derived-ast / parse</li><li><code>cytoscape.min.js</code> &mdash; derived-opengrep / parse</li><li><code>cytoscape.min.js</code> &mdash; normalize / parse</li><li><code>cytoscape.min.js</code> &mdash; raw-opengrep / parse</li><li><code>dagre.js</code> &mdash; derived-ast / parse</li><li><code>dagre.js</code> &mdash; normalize / parse</li><li><code>index.js</code> &mdash; derived-ast / parse</li><li><code>index.js</code> &mdash; normalize / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>OpenGrep timed out on some rule and file combinations; findings from completed analyses are included.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/SillyTavern/SillyTavern-Timelines/commit/03f74342c86d2edaa5a1751b34f0c7113813db7d" rel="noopener noreferrer">03f74342c86d2edaa5a1751b34f0c7113813db7d</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-11T20:17:07.865Z">Aug 11, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>16 fresh / 0 reused groups &middot; 18 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>1 deterministic / 18 contextual candidates &middot; 16 contextual / 17 total behavior cases</dd>
+        <dt>Model budget</dt><dd>10 model calls &middot; 16 / 12 fresh cases &middot; 394715 / 200000 estimated input &middot; 386059 / 250000 actual input &middot; 24715 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>10 model calls &middot; up to 2 groups and 4 candidates per call &middot; 2 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>386059 input &middot; 24715 output &middot; 10752 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>8585ad6405b32aa3c434a6dd81257f60a384ad8dea5df02ad5211a3f1f5768cf</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/672419159/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
