@@ -166,6 +166,16 @@ export function mergePolicyV5Review(input: {
       },
       reasons: input.triage.counts.reasons,
       model_budget: {
+        ...(freshUnits.length > input.policy.maxFreshBehaviorCases ||
+        completionIds.length > input.policy.maxProviderCalls ||
+        (reviewBatches ?? []).reduce(
+          (total, batch) => total + (batch.estimated_input_tokens ?? 0),
+          0,
+        ) > input.policy.maxEstimatedInputTokens ||
+        usage.inputTokens > input.policy.maxActualInputTokens ||
+        usage.outputTokens > input.policy.maxActualOutputTokens
+          ? { review_protocol_version: 2 as const }
+          : {}),
         configured: {
           max_fresh_behavior_cases: input.policy.maxFreshBehaviorCases,
           max_provider_calls: input.policy.maxProviderCalls,

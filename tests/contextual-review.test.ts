@@ -181,6 +181,32 @@ describe("contextual evidence review", () => {
     expect(CompletedContextualReviewSchema.safeParse(result).success).toBe(
       false,
     );
+    if (!("status" in result))
+      throw new Error("First bounded review unexpectedly completed.");
+
+    const resumed = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxOutputTokens: 32_768,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+      progress: result.progress,
+      stopAfterWave: true,
+    });
+
+    expect(CompletedContextualReviewSchema.parse(resumed).coverage).toEqual({
+      required: 13,
+      completed: 13,
+    });
+    expect(requestCompletion).toHaveBeenCalledTimes(4);
   });
 
   test("packs cache misses into ordered batches of at most five groups", async () => {

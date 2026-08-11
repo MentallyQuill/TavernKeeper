@@ -402,7 +402,21 @@ describe("GitHub workflow security policy", () => {
     expect(steps[reviewIndex]?.run).toContain(
       "timeout --signal=TERM --kill-after=5s 20m",
     );
-    expect(steps[reviewIndex]?.run).toContain("for pass in 1 2 3; do");
+    expect(steps[reviewIndex]?.run).toContain(
+      "for pass in $(seq 1 64); do",
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      "npm run --silent review-target > review-result.json",
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'review_status="$(jq -er \'.status\' review-result.json)"',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'if [[ "$review_status" == "review_pending" ]]; then',
+    );
+    expect(steps[reviewIndex]?.run).toContain(
+      'if [[ "$review_status" == "reviewed" ]]; then',
+    );
     expect(steps[reviewIndex]?.run).toContain("progress_count() {");
     expect(steps[reviewIndex]?.run).toContain(
       'progress_before="$(progress_count)"',
@@ -420,7 +434,7 @@ describe("GitHub workflow security policy", () => {
       'provider_review_failure && [[ "$provider_no_progress_retries" -lt 1 ]]',
     );
     expect(steps[reviewIndex]?.run).toContain(
-      'if ! retryable_review_failure || [[ "$pass" -eq 3 ]]; then',
+      'if ! retryable_review_failure || [[ "$pass" -eq 64 ]]; then',
     );
     expect(steps[reviewIndex]?.run).toContain('sleep "$((pass * 5))"');
     expect(steps[reviewIndex]?.run).toContain('sleep "$((pass * 60))"');
