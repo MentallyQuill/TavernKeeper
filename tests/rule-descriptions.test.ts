@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 
+import { publicNarrativeIsSafe } from "../src/contracts/public-narrative.js";
 import {
   classifyFinding,
   describeFinding,
@@ -66,7 +67,7 @@ describe("deterministic finding policy", () => {
     ).toEqual({
       title: "JavaScript analysis reported javascript.xray.unsafe-stmt",
       explanation:
-        "JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt in this repository.",
+        "JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-stmt. The match applies to this repository.",
       remediation:
         "Review the correlated source behavior and remove unsafe execution, credential access, persistence, or network activity that is not required.",
     });
@@ -96,6 +97,19 @@ describe("deterministic finding policy", () => {
         "contextual",
     });
     expect(Object.keys(OWNED_RULE_TRIAGE)).toHaveLength(15);
+  });
+
+  test("keeps external rule identifiers from resembling executable syntax", () => {
+    const description = describeFinding({
+      ...finding,
+      origin: "javascript-analysis",
+      rule_id: "javascript.xray.unsafe-import",
+      category: "supply-chain-risk",
+    });
+
+    expect(publicNarrativeIsSafe(description.title)).toBe(true);
+    expect(publicNarrativeIsSafe(description.explanation)).toBe(true);
+    expect(publicNarrativeIsSafe(description.remediation)).toBe(true);
   });
 
   test("rejects unsupported origins and unsafe dynamic identifiers", () => {
