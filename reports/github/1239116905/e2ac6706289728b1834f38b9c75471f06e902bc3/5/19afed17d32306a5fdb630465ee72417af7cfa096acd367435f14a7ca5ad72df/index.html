@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for TCLowe1982/Marinara-Extender at commit e2ac670.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; TCLowe1982/Marinara-Extender</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/TCLowe1982/Marinara-Extender" rel="noopener noreferrer">TCLowe1982/Marinara-Extender</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/TCLowe1982/Marinara-Extender/commit/e2ac6706289728b1834f38b9c75471f06e902bc3" rel="noopener noreferrer">e2ac670</a></span>
+        <span>Reviewed <time datetime="2026-08-11T13:54:11.415Z">Aug 11, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>57 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (41)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/__tests__/security.test.ts#L28" rel="noopener noreferrer">memory-extender/src/__tests__/security.test.ts:28</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8j4g-w8fx-2239:pkg:3e467d8947b7f246d7090b8c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g7r4-m6w7-qqqr:pkg:49d70202ab5a1e786e48c24f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:c9523a0885d757426ed83e80 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/backfill-attribution.mjs#L39" rel="noopener noreferrer">memory-extender/scripts/backfill-attribution.mjs:39</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f23p-vx2j-j53r:pkg:8ca91679ace53f3fc0187ffd applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4xrf-jv44-h6hh:pkg:249ffb00fffad7006fcf485a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v3r7-h72x-cjcm:pkg:56a7523636fdad742b465963 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xgm2-5f3f-mvvc:pkg:67d9eeec4e7fe47300b75840 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7p8r-x3mc-p8w7:pkg:678d4d4a8016db80660c8069 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8xcm-r25x-g524:pkg:21482577a9f354a102a52248 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p88m-4jfj-68fv:pkg:2c9b270cbdff9249b9445785 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/scripts/repair-recap-pairing.mjs#L29" rel="noopener noreferrer">scripts/repair-recap-pairing.mjs:29</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:6f926e74aaf2969f045549e9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-79qm-7rj5-m7r9:pkg:f22e76bf7e577254be886f2e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v2hh-gcrm-f6hx:pkg:1c043fdb9ddfee4f4331dbb0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-frvp-7c67-39w9:pkg:682033ccbfda6cc7860c37a3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/backfill-beats-entries.ts#L18" rel="noopener noreferrer">memory-extender/scripts/backfill-beats-entries.ts:18</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/backfill-scene-facts.mjs#L31" rel="noopener noreferrer">memory-extender/scripts/backfill-scene-facts.mjs:31</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-22jq-vg5j-6vgg:pkg:9eb93abfae910113d9babee3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mwp4-54f8-5fhr:pkg:dbb007cbd7ab30b0c5bafbe0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c96f-x56v-gq3h:pkg:22d45e26f5c2ba711de22b7a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/__tests__/update.test.ts#L39" rel="noopener noreferrer">memory-extender/src/__tests__/update.test.ts:39</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w62v-xxxg-mg59:pkg:e12e3cf78cb874ae6863c270 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/reconcile-queue.mjs#L40" rel="noopener noreferrer">memory-extender/scripts/reconcile-queue.mjs:40</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-54fx-42gc-7vw4:pkg:14191056c0fc735262e32e4a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vxpw-j846-p89q:pkg:f643971b599393bf30cbc67d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/repair-indexes.mjs#L21" rel="noopener noreferrer">memory-extender/scripts/repair-indexes.mjs:21</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/reconcile-facts.mjs#L50" rel="noopener noreferrer">memory-extender/scripts/reconcile-facts.mjs:50</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v6wh-96g9-6wx3:pkg:a723a0b877739b2df5d9673f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/__tests__/security.test.ts#L25" rel="noopener noreferrer">memory-extender/src/__tests__/security.test.ts:25</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/scripts/reconcile-sweep.mjs#L43" rel="noopener noreferrer">memory-extender/scripts/reconcile-sweep.mjs:43</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g8m3-5g58-fq7m:pkg:9d7a6ea4726dcca5dc843ea7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/__tests__/update.test.ts#L46" rel="noopener noreferrer">memory-extender/src/__tests__/update.test.ts:46</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fx2h-pf6j-xcff:pkg:6df69dc1690d731305cb014f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hvrm-45r6-mjfj:pkg:a79c6045f84b330cd9bfc38e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m8rv-5g2x-5cg5:pkg:5f69b30b06991e290cede667 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-35p6-xmwp-9g52:pkg:672e530e9c56bae1329846bd applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4c8g-83qw-93j6:pkg:a90c096b0a189e0f49499767 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/package-lock.json" rel="noopener noreferrer">memory-extender/package-lock.json</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (15)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A README file shows a command users can run to install Beads. The extension does not run this command itself — it&#39;s just documentation.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a curl-pipe-bash command inside a documentation file (file) that describes installing Beads. The command is instructional text, not executable code in the extension. The extension itself never executes this command; it is a standard installation pattern shown to users. No runtime execution path or attacker-controlled input is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/.beads/README.md#L64-L65" rel="noopener noreferrer">.beads/README.md:64-65</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged this line, but it only serves a helper file from your own computer — no sensitive information is being sent out.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reported a credential-to-network match at line 379, but the actual code at that line is `return reply.send(code);` inside the /rewrite-assistant.js GET handler, which serves a local JavaScript file from a path specified by the MARINARA_RWA_PATH environment variable. No credentials are read or exfiltrated. The scan is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/setup.ts#L379" rel="noopener noreferrer">memory-extender/src/setup.ts:379</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension automatically updates itself by downloading the latest code from your own computer and running it. This is the designed behavior, not a security threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The buildLoaderJs function generates a loader script that fetches the extension code from the local sidecar server (127.0.0.1:port) and executes it via a blob script element. This is the project&#39;s intended auto-update mechanism, clearly documented in the README. The network retrieval targets only localhost and the execution method (blob URL) is standard for Marinara extensions. No external or malicious network destination is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/setup.ts#L54-L69" rel="noopener noreferrer">memory-extender/src/setup.ts:54-69</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code runs a harmless git command to show the version number in the interface. An attacker cannot control what command runs because it is fixed in the code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call runs a hardcoded git command (&#39;git rev-parse --short HEAD&#39;) with no user-controlled input. The cwd is validated via existsSync against the repository root, preventing injection. This is used only to derive a build version string for display purposes and is part of the project&#39;s legitimate version-reporting functionality.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; the operation is intentional and properly scoped.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/update.ts#L52-L56" rel="noopener noreferrer">memory-extender/src/update.ts:52-56</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension can store an API key for optional cloud AI access. It only saves the key on your computer and never sends it anywhere unexpected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code reads process.env.MARINARA_EXTENDER_API_KEY and saves it to a local .env file. The GET /api/config endpoint returns only a boolean apiKeySet indicator, not the actual key value. The POST /api/config endpoint accepts the API key from the user and writes it to .env for later use with optional external API calls. There is no network exfiltration of the credential; it is only used locally or sent to the user-configured external API endpoint as intended. This is expected behavior for managing an optional external API key.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/setup.ts#L69-L409" rel="noopener noreferrer">memory-extender/src/setup.ts:69-409</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The sidecar server includes a feature that lets other tools on your computer use the same AI service connection you set up. It only listens on your own machine and only sends data where you told it to.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The index.ts server registers an OpenAI-compatible inference proxy at /v1/chat/completions that forwards requests to either a local model or an external API using the cached auth token. The credential-to-network flow is the explicit purpose of this route, documented as a convenience proxy so other tools can reuse the same connection config. The server binds to 127.0.0.1, CORS is limited to loopback origins, and the external destination is user-configured. No evidence of unauthorized or covert data transmission.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/index.ts#L59-L234" rel="noopener noreferrer">memory-extender/src/index.ts:59-234</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension makes a request to delete old memory entries from Marinara&#39;s own storage. It talks to Marinara&#39;s internal API, not to an external server. No credentials are being stolen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The scanner correlated credential access and network transmission due to a fetch call at line 4145. The actual code uses a relative URL (/api/lorebooks/...) to delete lorebook entries from Marinara&#39;s own backend. This is a legitimate same-origin API call using the user&#39;s existing session cookies, not credential exfiltration. The extension manages lorebook entries as part of its memory system feature, and this DELETE call is the expected mechanism to clear old entries before writing new ones.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/marinara-extender.js#L4145" rel="noopener noreferrer">marinara-extender.js:4145</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line just reads whether the auto-start shortcut exists to show you if it is enabled or not.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Checks if the autostart file exists to display its status (ON/off) in the interactive console. No persistence action is taken at this line.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; it is a status read-only operation.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L417" rel="noopener noreferrer">start.ps1:417</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line creates a shortcut in your Startup folder so the program runs automatically when you log in. It only happens if you press &#39;A&#39; to enable it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Writes a startup launcher script to the user&#39;s Startup folder. This only occurs when the user presses &#39;A&#39; and the autostart file does not exist. It is an opt-in convenience feature for automatic service start on login.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; the feature is user-consented and clearly documented.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L478" rel="noopener noreferrer">start.ps1:478</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner flagged this section, but it only tells your browser whether an API key is already set — it never sends your key anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner reported a credential-to-network match at lines 403-410, but those lines are part of the GET /api/config handler which returns configuration values including a boolean apiKeySet indicator (not the actual key). No credential is transmitted over the network. The response contains only configuration metadata, never the secret itself. The scan is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/setup.ts#L403-L410" rel="noopener noreferrer">memory-extender/src/setup.ts:403-410</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line just prepares a file path for a possible startup shortcut. The shortcut only gets created if the user presses &#39;A&#39; to enable it, so it is not automatic.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 27 defines a path variable for a potential startup shortcut; no file is created or modified at this line. The actual persistence modification occurs later in an interactive user-command loop (lines 470-483) requiring an explicit key press, making it opt-in and visible to the user.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; the auto-start feature is opt-in and clearly communicated.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L27" rel="noopener noreferrer">start.ps1:27</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This extension can optionally use an online AI service to analyze roleplay conversations, and it sends the API key you configured to the service you chose. That&#39;s exactly what it&#39;s supposed to do — there&#39;s no hidden behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network in this repository.</p>
+      <p><strong>Contextual assessment:</strong> The ambient.ts module provides LLM-based fact extraction with two paths: a local model (fetch to localUrl) and an optional external API fallback (fetch to externalUpstream with Authorization header from getCachedAuth). The credential-to-network correlation is the intended design for the external fallback path. The server binds to 127.0.0.1, CORS is loopback-restricted, and the external API endpoint is user-configured. No evidence of unexpected destination or exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/memory-extender/src/ambient.ts#L84-L262" rel="noopener noreferrer">memory-extender/src/ambient.ts:84-262</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code sets the address of the extension&#39;s own helper server, which runs on your own computer. This is normal and expected for this type of extension.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 22 defines a constant for the sidecar server address, defaulting to the local loopback address 127.0.0.1:3001, with an optional override via window.__meSidecar set by a loader stub. This is a standard pattern for a local service required by the extension&#39;s stated purpose: communicating with the Memory Extender sidecar for persistent memory management. No external, user-controlled, or unknown destination is involved; the address is either localhost or explicitly set by the installation loader. The JS-X-Ray &#39;shady-link&#39; signal is a false positive for this legitimate local-only configuration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/marinara-extender.js#L22" rel="noopener noreferrer">marinara-extender.js:22</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line deletes the startup shortcut when you press &#39;A&#39; to disable auto-start. It only happens if you choose to turn it off.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Removes the autostart file from the user&#39;s Startup folder. This only occurs when the user presses &#39;A&#39; and the file exists, disabling auto-start. It is part of the user-toggled convenience feature.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; the cleanup is user-initiated.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L472" rel="noopener noreferrer">start.ps1:472</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line checks if the startup shortcut already exists to know whether to create or remove it when you press &#39;A&#39;.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification in this repository.</p>
+      <p><strong>Contextual assessment:</strong> Conditional check on autostart file existence as part of the user toggle logic. This decides whether to enable or disable auto-start based on current state and user input.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; it is a necessary state check for a user-controlled feature.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L471" rel="noopener noreferrer">start.ps1:471</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Auto-start toggle is user-consented</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The program can automatically start with Windows, but only if you press &#39;A&#39; to enable it. It will never auto-start without your permission.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The entire auto-start feature (checking, creating, and removing a Startup folder shortcut) is controlled by the user pressing &#39;A&#39; in an interactive console. No persistence occurs without explicit user action, and the feature is clearly documented as opt-in.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> None required; the implementation is appropriate for a user-controlled convenience feature.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L417" rel="noopener noreferrer">start.ps1:417</a></li><li><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L471" rel="noopener noreferrer">start.ps1:471</a></li><li><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L472" rel="noopener noreferrer">start.ps1:472</a></li><li><a href="https://github.com/TCLowe1982/Marinara-Extender/blob/e2ac6706289728b1834f38b9c75471f06e902bc3/start.ps1#L478" rel="noopener noreferrer">start.ps1:478</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>135 files &middot; 1637559 bytes</dd>
+      <dt>Contextual coverage</dt><dd>56 of 56 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>86 files &middot; 950750 bytes</dd>
+        <dt>X-Ray review families</dt><dd>33 warning occurrences compacted to 13 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>86 raw &middot; 7 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>86 raw signatures &middot; 16 raw AST &middot; 85 raw OpenGrep &middot; 7 derived signatures &middot; 0 derived AST &middot; 7 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>memory-extender/src/__tests__/alias-guards.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/aliases-holding-pool.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/arc-promotion.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/atomic-write.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/backup.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/chunker.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/classifier.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/cold-storage.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/csrf.integration.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/dedup-matrix.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/deleted.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/judge-calibration.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/judge-consensus.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/recap-activation.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/reconcile-queue.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/reconcile.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/resolution-api.integration.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/rollback.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/scene-facts.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/scene-recap.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/subject-routing.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/sweep.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/thread-recall.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/__tests__/threads.test.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/aliases.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/ambient.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/api.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/api.ts</code> &mdash; raw-opengrep / parse</li><li><code>memory-extender/src/apply-gate.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/arc-promotion.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/arc-renderer.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/arcs.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/auth-cache.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/backup.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/cleanup.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/cors.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/csrf.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/dedup.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/digest.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/embeddings.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/facts.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/holding-pool.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/http.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/identity.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/index.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/llm-config.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/loader.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/nanoid.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/paths.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/progress.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/promotion.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/recap-activation.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/reconcile-queue.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/reconcile.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/rollback.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/analyzer.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/chunker.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/classifier.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/config.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/encoder.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/pipeline.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sentiment/types.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/setup.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/soft-clock.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/storage.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/story-jobs.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/story-parser.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/sweep.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/threads.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/update.ts</code> &mdash; raw-ast / parse</li><li><code>memory-extender/src/writer.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/TCLowe1982/Marinara-Extender/commit/e2ac6706289728b1834f38b9c75471f06e902bc3" rel="noopener noreferrer">e2ac6706289728b1834f38b9c75471f06e902bc3</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-11T13:54:11.415Z">Aug 11, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>10 fresh / 0 reused groups &middot; 15 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>41 deterministic / 15 contextual candidates &middot; 10 contextual / 24 total behavior cases</dd>
+        <dt>Model budget</dt><dd>5 model calls &middot; 10 / 12 fresh cases &middot; 230201 / 200000 estimated input &middot; 198962 / 250000 actual input &middot; 11406 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>5 model calls &middot; up to 3 groups and 6 candidates per call &middot; 1 retry call &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>198962 input &middot; 11406 output &middot; 129594 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>19afed17d32306a5fdb630465ee72417af7cfa096acd367435f14a7ca5ad72df</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1239116905/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
