@@ -42,6 +42,12 @@ export interface ContextualReviewPlan {
   estimatedInputTokens: number;
 }
 
+export interface ContextualReviewWavePlan extends ContextualReviewPlan {
+  selectedGroups: EvidenceContextGroup[];
+  pendingGroups: number;
+  complete: boolean;
+}
+
 function budgetError(message: string): never {
   throw new ModelRequestError(
     "MODEL_REVIEW_BUDGET_EXCEEDED",
@@ -143,6 +149,71 @@ export function planContextualReview(
     batches,
     freshBehaviorCases,
     estimatedInputTokens,
+  };
+}
+
+function batchesFor(
+  freshGroups: readonly EvidenceContextGroup[],
+  policy: ContextualReviewBudgetPolicy,
+) {
+  const batches: PlannedContextualBatch[] = [];
+  for (let start = 0; start < freshGroups.length;) {
+    const batch = takeContextualReviewBatch(freshGroups, start, policy);
+    if (batch.groups.length === 0)
+      budgetError("Contextual review could not form a bounded provider batch.");
+    batches.push(batch);
+    start += batch.groups.length;
+  }
+  return batches;
+}
+
+export function planContextualReviewWave(
+  groups: readonly EvidenceContextGroup[],
+  reusableGroups: ReadonlyMap<string, ReusableGroupIdentity> = new Map(),
+  progress: ReviewBudgetProgress | undefined,
+  policy: ContextualReviewBudgetPolicy,
+): ContextualReviewWavePlan {
+  const remaining = groups.slice(progress?.completed_group_ids.length ?? 0);
+  let selectedGroups: EvidenceContextGroup[] = [];
+  let freshGroups: EvidenceContextGroup[] = [];
+  let batches: PlannedContextualBatch[] = [];
+  let estimatedInputTokens = 0;
+
+  for (let length = 1; length <= remaining.length; length += 1) {
+    const candidateGroups = remaining.slice(0, length);
+    const candidateFresh = candidateGroups.filter(
+      ({ group_id }) => !reusableGroups.has(group_id),
+    );
+    if (candidateFresh.length > policy.maxFreshBehaviorCases) break;
+    const candidateBatches = batchesFor(candidateFresh, policy);
+    const candidateEstimate = candidateBatches.reduce(
+      (total, batch) => total + batch.estimatedInputTokens,
+      0,
+    );
+    if (
+      candidateBatches.length > policy.maxProviderCalls ||
+      candidateEstimate > policy.maxEstimatedInputTokens
+    )
+      break;
+    selectedGroups = candidateGroups;
+    freshGroups = candidateFresh;
+    batches = candidateBatches;
+    estimatedInputTokens = candidateEstimate;
+  }
+
+  if (remaining.length > 0 && selectedGroups.length === 0)
+    budgetError(
+      "One indivisible contextual group exceeds an empty review wave budget.",
+    );
+
+  return {
+    selectedGroups,
+    freshGroups,
+    batches,
+    freshBehaviorCases: freshGroups.length,
+    estimatedInputTokens,
+    pendingGroups: remaining.length - selectedGroups.length,
+    complete: selectedGroups.length === remaining.length,
   };
 }
 

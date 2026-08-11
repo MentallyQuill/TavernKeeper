@@ -8,6 +8,10 @@ import {
   ContextualReviewProgressSchema,
   reviewEvidenceGroups,
 } from "../src/model/contextual-review.js";
+import {
+  planContextualReviewWave,
+  ReviewBudgetLedger,
+} from "../src/model/contextual-review-budget.js";
 import type {
   ModelCompletionResult,
   TextCompletionRequest,
@@ -180,6 +184,76 @@ function completedResponse(
 }
 
 describe("contextual review budget", () => {
+  test("plans a large target as stable bounded waves", () => {
+    const groups = Array.from({ length: 24 }, (_, index) => group(index));
+
+    const first = planContextualReviewWave(groups, new Map(), undefined, policy);
+
+    expect(first.selectedGroups.map(({ group_id }) => group_id)).toEqual(
+      groups.slice(0, 12).map(({ group_id }) => group_id),
+    );
+    expect(first.freshBehaviorCases).toBe(12);
+    expect(first.pendingGroups).toBe(12);
+    expect(first.complete).toBe(false);
+
+    const second = planContextualReviewWave(
+      groups,
+      new Map(),
+      {
+        completed_group_ids: groups
+          .slice(0, 12)
+          .map(({ group_id }) => group_id),
+        completion_ids: Array.from(
+          { length: first.batches.length },
+          (_, index) => `completion-${index}`,
+        ),
+        usage: {
+          inputTokens: 249_999,
+          outputTokens: 39_999,
+          cacheReadTokens: 0,
+          reasoningTokens: 0,
+        },
+      },
+      policy,
+    );
+
+    expect(second.selectedGroups.map(({ group_id }) => group_id)).toEqual(
+      groups.slice(12).map(({ group_id }) => group_id),
+    );
+    expect(second.complete).toBe(true);
+    expect(new ReviewBudgetLedger(policy).snapshot()).toEqual({
+      providerCalls: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+    });
+  });
+
+  test("reused groups do not consume fresh wave capacity", () => {
+    const groups = Array.from({ length: 16 }, (_, index) => group(index));
+    const reusable = new Map(
+      groups.slice(0, 4).map(({ group_id }) => [
+        group_id,
+        { review_input_digest: group_id },
+      ]),
+    );
+
+    const wave = planContextualReviewWave(groups, reusable, undefined, policy);
+
+    expect(wave.selectedGroups).toHaveLength(16);
+    expect(wave.freshGroups).toHaveLength(12);
+    expect(wave.pendingGroups).toBe(0);
+    expect(wave.complete).toBe(true);
+  });
+
+  test("classifies one indivisible oversized group before a provider request", () => {
+    const oversized = group(99);
+    oversized.context.source = `     1 | ${"x".repeat(900_000)}`;
+
+    expect(() =>
+      planContextualReviewWave([oversized], new Map(), undefined, policy),
+    ).toThrow(/indivisible contextual group/iu);
+  });
+
   test("rejects thirteen fresh behavior cases before a provider request", async () => {
     const requestCompletion = vi.fn();
 
