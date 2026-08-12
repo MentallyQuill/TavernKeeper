@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Windy-Sora/SillyTavern-GroupWorld at commit c160814.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Windy-Sora/SillyTavern-GroupWorld</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld" rel="noopener noreferrer">Windy-Sora/SillyTavern-GroupWorld</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/commit/c160814d35525f0097f0bb943b2764e1c3fd6f8c" rel="noopener noreferrer">c160814</a></span>
+        <span>Reviewed <time datetime="2026-08-12T09:17:43.923Z">Aug 12, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>26 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/tools/gd-test/lib/checks.mjs#L113" rel="noopener noreferrer">tools/gd-test/lib/checks.mjs:113</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/prompt-renderer.js#L186" rel="noopener noreferrer">prompt-renderer.js:186</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/variable-system.js#L112" rel="noopener noreferrer">systems/variable-system.js:112</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (5)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/.github/workflows/gd-test.yml#L27" rel="noopener noreferrer">.github/workflows/gd-test.yml:27</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/.github/workflows/gd-test.yml#L39" rel="noopener noreferrer">.github/workflows/gd-test.yml:39</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/.github/workflows/gd-test.yml#L24" rel="noopener noreferrer">.github/workflows/gd-test.yml:24</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.prototype-pollution</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/profile-export-system.js#L224" rel="noopener noreferrer">systems/profile-export-system.js:224</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.prototype-pollution</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/memory-export-system.js#L124" rel="noopener noreferrer">systems/memory-export-system.js:124</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (17)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file contains a list of warning patterns that check user-uploaded files for risky code. It is a safety feature, not a threat. It does not steal cookies or send data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code defines an array of regex patterns used to scan user-uploaded JavaScript files for dangerous APIs including document.cookie. It does not read, send, or exfiltrate cookies itself. The pattern is defined for detection purposes only and is never invoked on the extension&#39;s own data. The scanner alert mistakenly treats the pattern definition as actual credential access and network transmission, which is not the case.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/user-provider-loader.js#L16-L19" rel="noopener noreferrer">systems/user-provider-loader.js:16-19</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension uses a security token (CSRF) to safely communicate with your local SillyTavern server. It only sends this token to your own computer, never to outside servers. This is a good security practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code reads window.csrfToken and conditionally includes it in HTTP headers only when the endpoint is localhost or 127.0.0.1. This is a security best practice: the CSRF token is only sent to the SillyTavern server itself, not to external APIs. The scanner &#39;shady-link&#39; signal is a false positive; the behavior is intentional and safe.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/utils/custom-api.js#L70" rel="noopener noreferrer">utils/custom-api.js:70</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Same as group 3.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Similar to group 3, this is another instance of new Function(&#39;ctx&#39;, entry.code) in the message/round phase of the script executor. Same safeguards apply.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/script-executor-system.js#L301" rel="noopener noreferrer">systems/script-executor-system.js:301</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is a test helper that runs command-line tools using the same environment as the developer&#39;s computer. That&#39;s normal and expected—there&#39;s no secret stealing or suspicious behavior here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The function `runCommand` in `file` defaults `env` to `process.env` and passes it to `spawn`. This is standard behavior for a utility that runs child processes with the host environment, especially in a development/test context. The file is part of the automated test platform (not shipped to end users) and does not exfiltrate or misuse the environment. The scanner signal &#39;serialize-environment&#39; is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/tools/gd-test/lib/process.mjs#L5" rel="noopener noreferrer">tools/gd-test/lib/process.mjs:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test runner tool that reads settings from environment variables to control how tests are run. It does not steal credentials or send data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The CLI test runner reads GD_TEST_SEED and GD_TEST_ST_ROOT from environment variables at lines 44-45 and passes them to child processes at lines 146-148. This is normal configuration for deterministic test execution and optional SillyTavern contract tests. No credential access or exfiltration; the environment variables are used only for test configuration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/tools/gd-test/cli.mjs#L43" rel="noopener noreferrer">tools/gd-test/cli.mjs:43</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension lets you write custom scripts to control how characters talk. This is a powerful feature that could be dangerous if you run scripts from untrusted sources, but the extension warns you and limits how long scripts can run.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The script executor uses new Function(&#39;ctx&#39;, entry.code) to run user-defined scripts during the decision phase. This is an intentional feature documented as &#39;custom agent and script executor&#39;. The code includes safeguards: per-script timeouts (10s), error handling, cloned context to prevent cross-script mutation, and logging. However, new Function has access to the global scope, so untrusted scripts could access window/document. The risk is partially mitigated by user control (scripts are manually added via GUI) and the security scan in user-provider-loader.js that warns about dangerous APIs.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider adding sandboxing (e.g., iframe or Web Worker) for user scripts to limit global scope access, if untrusted script execution is a concern.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/script-executor-system.js#L203" rel="noopener noreferrer">systems/script-executor-system.js:203</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension fetches a list of AI model names from a server you provide. It then shows these names in a menu for you to pick from. It never runs or executes the data it receives.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The fetchModels function performs an HTTP GET to list models from a user-configured endpoint. The response is parsed as JSON and used to populate a dropdown list. No eval, Function constructor, innerHTML with script, or any other dynamic execution mechanism is applied to the fetched content. The scanner&#39;s correlation of network retrieval with code execution is not substantiated by the actual code flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/ui/sections/agents.js#L45-L67" rel="noopener noreferrer">ui/sections/agents.js:45-67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file has a safety checker that looks for dangerous functions in uploaded files. It does not actually run those functions or download anything. It is a protective measure, not an exploit.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code defines regex patterns for fetch, eval, and other APIs as part of a static analysis scanner for user-imported modules. It does not perform any network retrieval or dynamic code execution itself. The patterns exist only in a constant array and are used by the scanSource function to warn users. The scanner alert incorrectly correlates these definition patterns with actual network retrieval and code execution, which is inaccurate.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/user-provider-loader.js#L16-L22" rel="noopener noreferrer">systems/user-provider-loader.js:16-22</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test helper reads a seed value from the environment to make random tests repeatable. It does not access or transmit any sensitive information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code reads process.env.GD_TEST_SEED at lines 9 and 49 to seed a deterministic random generator for property-based tests. No environment serialization or credential exposure; the env var is used solely for test reproducibility and is optional.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/tests/harness/property.mjs#L9" rel="noopener noreferrer">tests/harness/property.mjs:9</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code downloads a character card and world book from files that come with the extension and installs them into your SillyTavern. It does not run or execute any of the downloaded content.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gdAssistant section fetches static assets (character.json, avatar.png, world-book.json) from the extension&#39;s own bundled asset directory. It then posts them to SillyTavern&#39;s internal API endpoints (/api/characters/create, /api/characters/edit-avatar, /api/worldinfo/import) using proper CSRF tokens. No dynamic code execution, eval, or innerHTML injection occurs. The scanner&#39;s correlation is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/ui/sections/gdAssistant.js#L5-L18" rel="noopener noreferrer">ui/sections/gdAssistant.js:5-18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file contains simple helper functions to clean up and extract JSON from text. The code is clear and readable, not hidden or scrambled. There is no security concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains straightforward JSON parsing and sanitization utility functions. There is no obfuscated code; the functions are well-commented and use standard string manipulation and regex. The scanner &#39;obfuscated-code&#39; signal is a false positive with low confidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/utils/json-utils.js#L1" rel="noopener noreferrer">utils/json-utils.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a standard test report upload. There are no secrets or passwords involved.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow uploads test result JSON files as CI artifacts. No credentials or secrets are included in the artifact path or content. The zizmor &#39;artipacked&#39; rule flags artifact uploads that could potentially leak secrets, but this workflow has minimal permissions (contents: read) and only uploads non-sensitive test reports.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/.github/workflows/gd-test.yml#L23-L24" rel="noopener noreferrer">.github/workflows/gd-test.yml:23-24</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that looks for an environment variable to know where SillyTavern is installed. It&#39;s only used during testing and doesn&#39;t have any malicious behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test reads process.env.GD_TEST_ST_ROOT to locate the SillyTavern source directory for a contract test. No serialization, credential access, or exfiltration occurs; the environment variable is used only for conditional test setup and skipped when absent.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/tests/contract/sillytavern-event-source.test.mjs#L8" rel="noopener noreferrer">tests/contract/sillytavern-event-source.test.mjs:8</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This alert is not a real security issue. The code simply imports a standard Node.js function to get a temporary folder for running tests. No data is being stolen or sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/tests/unit/gd-test-checks.test.mjs#L3" rel="noopener noreferrer">tests/unit/gd-test-checks.test.mjs:3</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code sends NPC character information to SillyTavern&#39;s own server to create a new character card, using a required security token. It is not stealing credentials or sending data to an attacker.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The fetch call on line 143 sends NPC character data to the SillyTavern internal API endpoint /api/characters/create along with a CSRF token obtained from the same origin via /csrf-token. This is a core feature of the extension: importing an NPC as a character card. The token is used only for server-side CSRF protection, not exfiltrated. No credentials, API keys, or sensitive data are sent to an external destination. The scanner alert misidentifies this legitimate same-origin API interaction as credential exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/npc-system.js#L143" rel="noopener noreferrer">systems/npc-system.js:143</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension loads its settings page from its own files on your computer. It doesn&#39;t download anything from the internet or run any code from the network. This is the normal way extensions show their settings.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The renderSettingsTemplate function fetches an HTML template file from the extension&#39;s installed directory. This is a standard pattern for loading UI templates. There is no dynamic code execution. The network retrieval is to a local path and is directly related to the extension&#39;s settings UI initialization.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/ui/settings-init.js#L11-L65" rel="noopener noreferrer">ui/settings-init.js:11-65</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension includes a safety check that looks for dangerous code in files the user wants to import. It doesn&#39;t do anything bad itself—it&#39;s a watchdog, not a thief.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This file defines DANGEROUS_PATTERNS containing regex patterns to detect credential theft and network exfiltration APIs. The code never accesses document.cookie, localStorage, or makes network requests itself; it scans user-provided JavaScript source code for these patterns as a security warning mechanism before import. The scanner alert misinterprets the pattern definitions as actual credential access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/user-provider-loader.js#L16" rel="noopener noreferrer">systems/user-provider-loader.js:16</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Static analysis patterns in security scanner code</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged lines are part of a safety scanner that checks uploaded files for risky code. They are not performing any dangerous actions themselves. The security warnings are false alarms.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Both scanner alerts originate from the DANGEROUS_PATTERNS array (lines 15-26) which is a static list of regex patterns used to detect potentially harmful APIs in user-uploaded files. The array is a detection mechanism, not actual malicious code. The scanner tool incorrectly flagged the definition of these patterns as evidence of credential theft and code execution, but the patterns are only used defensively by the scanSource function to warn users before importing third-party modules. This is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/blob/c160814d35525f0097f0bb943b2764e1c3fd6f8c/systems/user-provider-loader.js#L15-L26" rel="noopener noreferrer">systems/user-provider-loader.js:15-26</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>185 files &middot; 2459968 bytes</dd>
+      <dt>Contextual coverage</dt><dd>25 of 25 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>158 files &middot; 1260609 bytes</dd>
+        <dt>X-Ray review families</dt><dd>16 warning occurrences compacted to 12 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>158 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>158 raw signatures &middot; 158 raw AST &middot; 158 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Windy-Sora/SillyTavern-GroupWorld/commit/c160814d35525f0097f0bb943b2764e1c3fd6f8c" rel="noopener noreferrer">c160814d35525f0097f0bb943b2764e1c3fd6f8c</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-12T09:17:43.923Z">Aug 12, 2026</time></dd>
+        <dt>History depth</dt><dd>1 commit</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>16 fresh / 0 reused groups &middot; 17 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>8 deterministic / 17 contextual candidates &middot; 16 contextual / 21 total behavior cases</dd>
+        <dt>Model budget</dt><dd>9 model calls &middot; 16 / 12 fresh cases &middot; 283973 / 200000 estimated input &middot; 238838 / 250000 actual input &middot; 21686 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>9 model calls &middot; up to 5 groups and 6 candidates per call &middot; 5 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>238838 input &middot; 21686 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>5ed3d6446e06d58b24bb6d4d7237c9c3619d7a99a92d668e81a7cbc704c9408a</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1262742050/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
