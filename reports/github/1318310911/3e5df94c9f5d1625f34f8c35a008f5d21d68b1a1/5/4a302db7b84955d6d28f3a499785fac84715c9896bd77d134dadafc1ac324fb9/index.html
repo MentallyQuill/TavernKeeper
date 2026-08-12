@@ -1,0 +1,1224 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ddkhan24/hordestudio at commit 3e5df94.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ddkhan24/hordestudio</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ddkhan24/hordestudio" rel="noopener noreferrer">ddkhan24/hordestudio</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ddkhan24/hordestudio/commit/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1" rel="noopener noreferrer">3e5df94</a></span>
+        <span>Reviewed <time datetime="2026-08-12T11:03:20.047Z">Aug 12, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>56 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The project uses many regular expressions to process text. Some scanners worry they could be slow if fed tricky input, but the supplied code doesn&#39;t show any pattern that is likely to freeze your browser or steal data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal highlights 31 regex patterns used for input validation, parsing, and content filtering. None of the patterns in the evidence exhibit nested quantifiers or alternations known to cause catastrophic backtracking. User or model input could reach these regexes, but no concrete ReDoS vector is demonstrated. Even if a crafted input caused a brief slowdown, the impact is a recoverable client-side delay, not data loss or exfiltration.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider reviewing the flagged patterns with a ReDoS tool if performance feedback ever surfaces, but no immediate change is required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L258" rel="noopener noreferrer">app.js:258</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A pattern used to detect greetings could potentially be slowed down by a specially crafted message, but you would have to type it yourself and the input is limited. It&#39;s not a serious security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 417 `/^(?:(?:hey|hi|hello|yo|sup)(?:\s+pip)?|(?:are you|you) there)[\s!?.,]*$/i` is complex with nested alternations and optional groups. While user input is capped at 1000 characters before reaching this regex, crafted input could cause ReDoS with catastrophic backtracking on certain engines. The practical risk is low because input originates from the user&#39;s own typing, not from a remote attacker, and the regex is bounded by input length. However, it is a minor code quality issue.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider rewriting the greeting regex to avoid nested alternations and optional groups, e.g., using word boundaries or simpler alternation, to prevent potential ReDoS.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/labs-ui.js#L417" rel="noopener noreferrer">labs-ui.js:417</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (2)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/.github/workflows/release.yml#L16" rel="noopener noreferrer">.github/workflows/release.yml:16</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/.github/workflows/package-current-release.yml#L14" rel="noopener noreferrer">.github/workflows/package-current-release.yml:14</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (46)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.sql-injection</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner thought there might be an SQL injection risk, but this app doesn&#39;t use any SQL database. It&#39;s just a harmless log message about a character&#39;s outfit change.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.sql-injection. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The static analysis flagged a sql-injection signal at line 21393. The context shows a console.warn with a template literal interpolating a detected outfit string. No SQL queries, database connections, or query construction exist anywhere in the provided evidence. The application uses IndexedDB and localStorage for persistence, not SQL. This is a false positive from pattern matching.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.sql-injection</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L21393" rel="noopener noreferrer">app.js:21393</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-vm-context</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code uses Node&#39;s built-in virtual machine to run small pieces of the app in a safe testing environment, like a sandbox for experimenting. This is how many tests work and does not create a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-vm-context. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;unsafe-vm-context&#39; signal flags use of vm.runInNewContext. In this test file, vm is used with hardcoded application source slices and fixed test data to unit-test individual functions in isolation. No user-supplied or dynamically-fetched code is passed to vm. The sandbox context is a plain object and no dangerous capabilities are exposed. This is a standard testing pattern and does not represent a runtime attack vector.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-vm-context</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L97" rel="noopener noreferrer">scratch/engine_audit.js:97</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file talks to AI models over the internet or a local server, which is exactly what the app is supposed to do. It does not run any downloaded code, so there&#39;s no hidden danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a correlation between network retrieval (fetch calls) and dynamic code execution sinks, but the provided source code only uses fetch for OpenAI-compatible API calls to local or configured model endpoints. No eval, new Function, or other dynamic execution sink is present. The fetched response is used as text output, not executed. This is standard behavior for an LLM client and proportionate to the project&#39;s stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/labs-core.js#L1-L253" rel="noopener noreferrer">labs-core.js:1-253</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is part of a test that checks how the project handles certain keywords. It runs a small piece of the project&#39;s own code in a sandbox to see if it works correctly. It is not used during normal use of the application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 115 in the regression test file uses vm.runInNewContext to execute a function (parseLoreKeywords, loreKeywordMatches) extracted from the project&#39;s own application source, with a sandbox containing only Set, RegExp, and String. This is a unit test for the lore keyword parser. The executed code is project-authored, not user-supplied. The result is used only for assertion comparisons. No production impact.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/gameplay_overhaul_audit.js#L115" rel="noopener noreferrer">scratch/gameplay_overhaul_audit.js:115</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file stores a fictional world&#39;s characters, images, and settings as data. The scanner flagged the long image data strings, but they are just embedded pictures, not dangerous links.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file is a generated JavaScript data structure defining a persistent world for Horde Studio. It contains large inline base64-encoded media assets (data URIs) which are normal for this format. The &#39;shady-link&#39; signal is a false positive triggered by the long data URI strings. No external URLs or network requests are present; the data is purely declarative and local.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/policy-panic-world.js#L2" rel="noopener noreferrer">policy-panic-world.js:2</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line runs a test that checks how the project saves and restores game state. It runs a small piece of the project&#39;s own code in a sandbox to verify it behaves correctly. No outside data is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 47 in the regression test file uses vm.runInNewContext to execute functions captureWorldTurnState and restoreWorldTurnState extracted from the project&#39;s own application source. The sandbox context is limited to structuredClone, JSON, a safeJsonClone helper, isPlainObject, and a stub bumpMemoryEpoch. The executed code is project-authored, not user-supplied. This is a standard testing pattern for isolated verification.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/gameplay_overhaul_audit.js#L47" rel="noopener noreferrer">scratch/gameplay_overhaul_audit.js:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks that a built-in character&#39;s photo is correctly embedded as a data URL. It doesn&#39;t connect to any website or download anything. The scanner warning is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 36 asserts that a bundled virtual human&#39;s profilePhoto property starts with &#39;data:image/jpeg;base64,&#39;. This is a data URI, not a network URL or shady link. The scanner flagged it as a &#39;shady-link&#39; due to a heuristic that treats data: URIs as potentially suspicious. However, the test merely validates that the bundled character data contains an embedded base64-encoded JPEG image. No actual network request is made. This is safe expected behavior for test validation of bundled assets.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/included_human_audit.js#L36" rel="noopener noreferrer">scratch/included_human_audit.js:36</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that runs a small piece of the app&#39;s code to check if it works correctly. It does not run any user-supplied code and only runs during development testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This vm.runInNewContext call is part of a test suite (engine_audit.js) that slices application code to unit-test specific functions. The executed code is hardcoded string slices from the application bundle, not user or external input. The test context is a fresh empty object, and no runtime state is leaked. This is a standard Node.js testing pattern with no production exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L125" rel="noopener noreferrer">scratch/engine_audit.js:125</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.suspicious-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This signal appeared because the file has very long text strings inside, but that&#39;s normal for an AI roleplay preset — it&#39;s just saved prompts, not hidden code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.suspicious-literal. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The suspicious-literal signal was raised on a static preset definition file (file) that contains only data: an array of JSON-like system prompt objects with long text values. No obfuscation, dynamic execution, or hidden logic is present. The scanner likely flagged the large content as an unusual literal, but it is structurally identical to a data file for SillyTavern-adjacent preset systems.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.suspicious-literal</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/presets.js#L1" rel="noopener noreferrer">presets.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner flagged some code as suspicious, but it&#39;s actually just the character&#39;s built-in profile pictures stored as text. No external links or data theft is involved.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged &#39;shady-link&#39; on the data:image/jpeg;base64 URIs embedded in the virtual-human character definition. These are inline base64-encoded JPEG images for the character&#39;s profile and base photos, not external URLs. No network request or credential exposure occurs from these data URIs. The scanner signal is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/ashlyn-reynolds-human.js#L5" rel="noopener noreferrer">ashlyn-reynolds-human.js:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Another test that runs app functions in a safe sandbox to verify they reject bad data. Only runs during development.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same pattern as prior candidate: vm.runInNewContext used to execute a hardcoded slice of application source to test validation functions. The string is composed from literal source slices via app.slice(), no dynamic input. No user or attacker influence. Part of the project&#39;s own security audit suite.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L135" rel="noopener noreferrer">scratch/engine_audit.js:135</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The file contains a list of common local addresses for AI model servers. This is used to automatically find a running local model. It does not send data to the internet.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner identified hardcoded URLs (14 occurrences) but they are all localhost or private IP addresses used for auto-discovery of local model servers (e.g., Ollama, LM Studio). The normalizeLoopbackBase function validates that only private hosts are used. These URLs are not sent to external services; they are used to probe for local endpoints. This is expected for a local-first AI tool and does not represent a security concern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/labs-core.js#L17" rel="noopener noreferrer">labs-core.js:17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that checks if the game&#39;s travel rules work correctly. It runs inside the test runner, not in the live app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Third occurrence: vm.runInNewContext used to test travel logic. The executed code is built from functionSource() which extracts hardcoded function bodies from the application string. No external or untrusted data reaches the vm context. This is a unit test, not a production execution path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L143" rel="noopener noreferrer">scratch/engine_audit.js:143</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks a feature that rotates items in a large world to keep things manageable. It runs a small piece of the project&#39;s own code in a sandbox to make sure the rotation works as expected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 130 in the regression test file uses vm.runInNewContext to execute the rotatingWorldWindow function extracted from the project&#39;s own application source. The sandbox context is limited to Math, Number, Array. The executed code is project-authored, not user-supplied. This test verifies the rotation algorithm produces different orderings with different parameters.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/gameplay_overhaul_audit.js#L130" rel="noopener noreferrer">scratch/gameplay_overhaul_audit.js:130</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought this file might be scrambled, but it&#39;s just a data file with long image strings. It&#39;s not hidden or malicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;obfuscated-code&#39; signal triggered due to the file&#39;s very long lines (base64 data URIs) and lack of typical formatting. However, the file is a generated data structure, not obfuscated code. The scanner confidence is low, indicating uncertainty. The normalized representation shows valid JavaScript object syntax with no obfuscation, minification, or hidden logic.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/policy-panic-world.js#L1" rel="noopener noreferrer">policy-panic-world.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a build script that prepares images and game data. It&#39;s not hiding anything; the code is easy to read and does exactly what it says.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The script is a straightforward build tool that reads PNG assets, converts them to JPEG via the sharp library, and constructs a world file with embedded media. All code is clearly readable and serves its documented purpose. The scanner&#39;s obfuscated-code signal has low confidence and is not supported by the visible source—there is no concealment, encoding, or intentional obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/build_policy_panic_world.js#L1" rel="noopener noreferrer">scratch/build_policy_panic_world.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same safe test pattern as the other flag. It uses a sandbox to test app code without risking any harmful execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The OpenGrep rule flags the same vm.runInNewContext call from the quest engine stress test. As analyzed in the companion assessment, this is a deliberate sandboxed test execution of a static code slice, not a dynamic eval of untrusted content. No security concern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/quest_engine_stress_test.js#L55-L66" rel="noopener noreferrer">scratch/quest_engine_stress_test.js:55-66</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that uses a regular expression to check the app&#39;s own code. Since it never sees user input, it cannot be used to attack anyone.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex is used solely in a test assertion that checks whether a hardcoded application source string contains a specific code pattern. It does not process any user-supplied or network-supplied input. Therefore the unsafe-regex pattern cannot be triggered by an attacker and poses no security risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/authored_world_audit.js#L172" rel="noopener noreferrer">scratch/authored_world_audit.js:172</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app uses fetch to talk to its local bridge and AI providers, and it updates the page using safe HTML escaping. There is no way for an attacker to make it run code from the network based on what we can see.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner correlated fetch (network retrieval) with a code execution sink in the same file. The visible fetch calls are to the local MCP bridge (localhost:43127) or hardcoded provider API bases. The only dynamic DOM update is innerHTML with values escaped via escapeHTML, not arbitrary code execution. No eval, new Function, or similar execution of fetched content is present in the provided evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L456-L8242" rel="noopener noreferrer">app.js:456-8242</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought there might be a path that downloads code and then runs it, but looking at the actual file, there is no network download happening. The code only runs pre-written test snippets. This is not a real vulnerability.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;download-to-execution&#39; correlation suggests a network retrieval primitive combined with a code execution sink in the same file. The supplied evidence shows no network function (fetch, http) in the visible code. The file is a test suite that uses vm.runInNewContext with static app source. There is no demonstrated path where remotely fetched data reaches a dynamic code execution sink. The correlation is a static-analysis artifact without runtime reachability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L97-L419" rel="noopener noreferrer">scratch/engine_audit.js:97-419</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a security test that checks Horde Studio blocks remote model endpoints. The flagged URL is just an example used in the test, not a real connection attempt.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray shady-link signal flagged a line in a test file where a remote URL is used as an assertion input. The test explicitly verifies that remote cognition endpoints are normalized to localhost, confirming a security guard. No actual remote connection is made; the URL is a test argument.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/labs_cognition_audit.js#L44" rel="noopener noreferrer">scratch/labs_cognition_audit.js:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-vm-context</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-vm-context. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The Node.js vm.runInNewContext call on line 47 is used within a project-internal regression test script to extract and execute a specific function from the project&#39;s own application code (file) in a sandboxed context. The executed code is a statically extracted substring of the project&#39;s own source, not user-controlled input. The sandbox context is limited to safe built-ins (structuredClone, JSON, a stub bumpMemoryEpoch). No untrusted data reaches the vm call, and the test has no runtime reachability in production browser execution. This is a standard testing pattern for isolated unit verification.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-vm-context</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/gameplay_overhaul_audit.js#L47" rel="noopener noreferrer">scratch/gameplay_overhaul_audit.js:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This workflow builds and uploads the application. The token used to upload is temporary and not stored inside the uploaded file. There is no security issue here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags potential credential persistence into GitHub Actions artifacts, but this workflow uses github.token only to upload a pre-built portable application zip to a release via gh. The token is not embedded into the artifact; it is an environment variable scoped and short-lived. No evidence of credential leakage or persistence exists in the supplied workflow source.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/.github/workflows/package-current-release.yml#L13-L16" rel="noopener noreferrer">.github/workflows/package-current-release.yml:13-16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that simulates launching a preset selector to ensure it picks a valid option. Only runs when the developers run tests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> vm.runInNewContext is used with a hardcoded string template to test DEFAULT_SYSTEM_PRESETS initialization. The code is a known slice of the application&#39;s source. No untrusted input is involved. This is a development-time test.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L97" rel="noopener noreferrer">scratch/engine_audit.js:97</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a complex pattern used by the project&#39;s own test tools to clean up source code before checking it. It only runs on the project&#39;s own files, not on anything a user might type or send. There is no practical risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 193 is part of a test-utility function (constInitializerIsInert) that normalizes regex literals in static source code extracted from the project&#39;s own file file. The regex is used to replace JavaScript regex literals with a placeholder to prevent false positives in a subsequent call-detection scan. The input is the project&#39;s own source, not attacker-controlled data. No ReDoS risk is demonstrated because the input is controlled by the developer and is not dynamic or user-provided.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/app_source.js#L193" rel="noopener noreferrer">scratch/app_source.js:193</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app talks to several services like local model servers and cloud AI providers, which means it needs to reference many web addresses. All of them are expected for the app&#39;s features, not hidden or malicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shady-link signal flags 36 URL references across the codebase. All observed URLs connect to local loopback addresses for self-hosted services, well-known model provider endpoints, an open weather API, blob and data URIs for media handling, and SVG namespace constants. These matches are consistent with the project&#39;s stated purpose of connecting to local and cloud AI services and media providers. No evidence of unexpected destinations or credential exfiltration is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L250" rel="noopener noreferrer">app.js:250</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Another development test that checks the game clock doesn&#39;t go negative. Safe and only runs when testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> vm.runInNewContext used to test getWorldTimeData with a hardcoded function source slice. The context is a fresh object, input is hardcoded test values. No dynamic or untrusted data. Part of the unit test suite.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L240" rel="noopener noreferrer">scratch/engine_audit.js:240</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file stores images as long text strings. The scanner flagged them as suspicious links, but they are just embedded pictures for the world.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The &#39;shady-link&#39; signal is a false positive triggered by the long data URI strings present in this generated world data file. These data URIs are embedded JPEG images for NPC portraits and location backgrounds, not external URLs or network destinations. No runtime network requests are made from this file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/policy-panic-world.js#L15" rel="noopener noreferrer">policy-panic-world.js:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that verifies undoing a game turn doesn&#39;t break the world map. Only runs during development.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> vm.runInNewContext used to test turn snapshot restore functions. The code string is built from multiple hardcoded functionSource() calls joined together. The context object receives no external input. This is a development-only unit test ensuring snapshot logic doesn&#39;t corrupt shared world geography. No attacker-accessible path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L249-L256" rel="noopener noreferrer">scratch/engine_audit.js:249-256</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-vm-context</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test script that runs a chunk of the app&#39;s map code in a sandbox to make sure it works. No user data or secrets are involved, and the script only runs when the developer manually executes it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-vm-context. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file is a developer test script that runs a static slice of the application&#39;s world-map engine inside a Node.js VM context (vm.runInNewContext) for isolated regression and stress testing. The input string is constructed from hardcoded offsets and the file source file read at test start; no user-controlled or untrusted data is injected. The use of vm.runInNewContext is appropriate for this test isolation purpose and does not expose any production risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-vm-context</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/world_map_stress_test.js#L17-L30" rel="noopener noreferrer">scratch/world_map_stress_test.js:17-30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged &#39;data:image/jpeg;base64,...&#39; as a suspicious link, but that&#39;s just how images are stored directly in the data — no external server is contacted. It&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shady-link signal at line 33 in file points to the assertion: assert(ash.profilePhoto.startsWith(&#39;data:image/jpeg;base64,&#39;)). This is a data URI (embedded image), not an external link. The scanner interpreted the &#39;data:&#39; prefix as a suspicious URL, but it&#39;s a legitimate inline image reference for a virtual human&#39;s profile photo. A similar assertion on the next line for basePhoto also triggers. No network request or data exfiltration is involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/ashlyn_archive_audit.js#L33" rel="noopener noreferrer">scratch/ashlyn_archive_audit.js:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file contains a character definition with a pre-loaded profile picture stored inside the code itself (a data URI). It does not connect to the internet or send data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file defines a virtual human character object with embedded Base64 image data for profile photos, using data URIs. No external network calls or URLs are present in the provided source; the scanner signal &#39;shady-link&#39; likely matched the data URI strings, which are static content storage, not actual network links. The file is a generated data artifact for the Horde Studio project.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/jane-harlow-human.js#L4" rel="noopener noreferrer">jane-harlow-human.js:4</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test checks how the project handles different statistics for characters, like health or agility. It runs a small piece of the project&#39;s own code in a sandbox to verify the default settings are correct.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 84 in the regression test file uses vm.runInNewContext to execute the worldStatRollConfig function extracted from the project&#39;s own application source. The sandbox context is limited to isPlainObject. The executed code is project-authored, not user-supplied. This test verifies default stat roll configuration for different stat types.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/gameplay_overhaul_audit.js#L84" rel="noopener noreferrer">scratch/gameplay_overhaul_audit.js:84</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that runs part of the app&#39;s map code inside a sandbox to check for bugs. It only runs when the developer tests manually and does not affect users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate flags the same vm.runInNewContext call in the test file. The dynamic execution is limited to a predetermined slice of the application&#39;s own source code with no runtime user input. The test script is not shipped or executed in production; it is a developer-only artifact. No credential handling, exfiltration, or persistence is present. The behavior is standard for unit testing isolated functions.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/world_map_stress_test.js#L17-L30" rel="noopener noreferrer">scratch/world_map_stress_test.js:17-30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This workflow creates a release when a new version tag is pushed. It uses a temporary token to upload the application, but the token stays in the workflow environment and is not packed into the download. Safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked rule flags potential credential persistence into artifacts, but this workflow uses github.token only to create a release and upload the portable zip. The token is not written into the artifact. The workflow triggers only on tag pushes and has no artifact-storing steps beyond the release upload. No credential persistence is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/.github/workflows/release.yml#L15-L16" rel="noopener noreferrer">.github/workflows/release.yml:15-16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The file is a character definition file with a pre-stored image. It is not hidden or scrambled; it&#39;s just data.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file is a generated data artifact (virtual human character definition) and its code is not obfuscated; it is a straightforward JSON-like object with named properties. The scanner signal &#39;obfuscated-code&#39; is a low-confidence false positive likely triggered by the large inline base64 image strings, which are not obfuscation but static data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/jane-harlow-human.js#L1" rel="noopener noreferrer">jane-harlow-human.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app reads which AI service you set up and sends your story text to that service. That is exactly what it&#39;s supposed to do. The credentials stay with your chosen provider.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner noted credential access (reading API base URLs from state.globalSettings) correlated with a network sink (fetch). The code reads base URLs for user-configured providers and makes fetch requests to those URLs. This is the intended behavior: the app sends prompts to the user&#39;s chosen AI provider. No evidence shows credentials being sent to an attacker-controlled destination or outside the configured provider endpoints.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L456-L1475" rel="noopener noreferrer">app.js:456-1475</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-vm-context</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file carefully isolates a piece of the app&#39;s quest code in a sandbox to run unit tests. It only uses code already in the app and doesn&#39;t allow any outside input, making it safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-vm-context. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> vm.runInNewContext is used in a test helper to extract a bounded portion of the application&#39;s quest engine code and execute it inside a sandboxed context with only safe stubs (console, showToast, utility functions). The source string is a fixed slice of file determined by start/end markers; no untrusted input is involved. This is a standard Node.js testing pattern and does not introduce runtime code injection risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-vm-context</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/quest_engine_stress_test.js#L55-L66" rel="noopener noreferrer">scratch/quest_engine_stress_test.js:55-66</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file contains automated tests for the app&#39;s companion system. The URLs and keys shown are test data, not real secrets or malicious links. They are used to verify that the app correctly connects to AI providers during development testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged hardcoded URLs and API key patterns in a test file. The evidence shows unit tests for a companion module that validate provider configuration, image request construction, and authentication headers. All URLs point to test endpoints or documented provider base URLs; the API key strings are test placeholders. No production credential exfiltration or malicious network destination is present. The file&#39;s role is production but its content is exclusively test code, so the flagged patterns do not affect shipped behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/companion_audit.js#L525" rel="noopener noreferrer">scratch/companion_audit.js:525</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought the long text might be hidden code, but it&#39;s just a set of AI instructions stored as data — nothing dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The obfuscated-code signal also fired on the same static data. The file contains only plain object literals and string content. No minification, encoding, or concealment is used. The scanner&#39;s low confidence further supports that this is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/presets.js#L1" rel="noopener noreferrer">presets.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that checks whether the app&#39;s internal function extractor works correctly. It uses JavaScript&#39;s Function constructor on strings it already knows are safe, so there&#39;s no risk to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The test file uses new Function() to validate that extracted function source strings parse correctly. This is a deliberate test-harness technique to verify the extractor produces syntactically valid JavaScript. No user or attacker-controlled input reaches this call; the source strings are statically derived from the application&#39;s own source code. This is not a vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/extractor_audit.js#L180" rel="noopener noreferrer">scratch/extractor_audit.js:180</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought there might be a way to mess with object internals, but the code actually protects against that. There&#39;s no actual issue here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The static analysis flagged a prototype-pollution signal at line 921. The context around that line shows object literal initialization (state defaults) and no assignment to __proto__, prototype, or constructor. The codebase includes defensive cloning (safeJsonClone) that strips prototype-pollution keys, and uses isPlainObject checks. No prototype pollution vulnerability is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L921" rel="noopener noreferrer">app.js:921</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security scanner thought the first line of the JavaScript code looked suspicious, but it&#39;s just a simple line that collects any errors that happen while the app runs. Nothing hidden or dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged line 1 of file as obfuscated code, but the actual source shows a straightforward runtime error tracking assignment: window.__hordeRuntimeErrors = window.__hordeRuntimeErrors || [];. This is a common pattern for accumulating runtime errors, not obfuscation. The scanner confidence is low, and no obfuscated or concealed logic is visible in the supplied code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/app.js#L1" rel="noopener noreferrer">app.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The file holds a character profile with a built-in image. It does not make any internet connections.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file contains only static data URIs (base64 encoded images) and no external network URLs. The scanner signal &#39;shady-link&#39; likely matched the data URI strings, which are not actual network links. The file is a character data definition for Horde Studio&#39;s virtual human feature.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/jane-harlow-human.js#L14" rel="noopener noreferrer">jane-harlow-human.js:14</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The security scanner flagged some code as suspicious, but it&#39;s actually just the character&#39;s built-in profile pictures stored as text. No external links or data theft is involved.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> JS-X-Ray flagged &#39;shady-link&#39; on the data:image/jpeg;base64 URIs embedded in the virtual-human character definition. These are inline base64-encoded JPEG images for the character&#39;s profile and base photos, not external URLs. No network request or credential exposure occurs from these data URIs. The scanner signal is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/ashlyn-reynolds-human.js#L14" rel="noopener noreferrer">ashlyn-reynolds-human.js:14</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test that makes sure user-generated text in chat gets properly cleaned up to prevent attacks. Only runs during testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Another vm.runInNewContext test: this one tests HTML escaping by executing the escapeHTML function in a sandbox. The input is a hardcoded test string. The context is isolated and no data persists. Standard unit test practice.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L115" rel="noopener noreferrer">scratch/engine_audit.js:115</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Embedded base64 image data in character definition</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged content is just the character&#39;s pictures stored as long text strings in the code. This is normal for offline-usable character files.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file contains two large data:image/jpeg;base64 strings representing the character&#39;s profile photo and base photo. These are standard for bundling images directly into code and do not interact with external servers. The scanner&#39;s &#39;shady-link&#39; rule appears to have matched the &#39;data:&#39; URI scheme, which is a false positive here.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/ashlyn-reynolds-human.js#L14" rel="noopener noreferrer">ashlyn-reynolds-human.js:14</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Embedded base64 image data in character definition</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The flagged content is just the character&#39;s pictures stored as long text strings in the code. This is normal for offline-usable character files.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file contains two large data:image/jpeg;base64 strings representing the character&#39;s profile photo and base photo. These are standard for bundling images directly into code and do not interact with external servers. The scanner&#39;s &#39;shady-link&#39; rule appears to have matched the &#39;data:&#39; URI scheme, which is a false positive here.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/ashlyn-reynolds-human.js#L5" rel="noopener noreferrer">ashlyn-reynolds-human.js:5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Generated world data file with embedded media</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>This is a data file automatically created by a build script. It contains all the images needed for a fictional world, stored directly in the code as long text strings.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file is generated by &#39;file&#39; as indicated in the comment. It pushes a world definition object onto globalThis.HORDE_INCLUDED_WORLDS. All media (banner, NPC portraits, location backgrounds) are stored as inline data URIs. No runtime network calls, dynamic imports, or user input processing occur in this file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/policy-panic-world.js#L2" rel="noopener noreferrer">policy-panic-world.js:2</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Both scanner signals are false positives on generated data</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Both scanner warnings are false alarms. The file is just a data file containing a fictional world&#39;s settings and images. It doesn&#39;t do anything except store information.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Both signals arise from the same generated data file. The &#39;obfuscated-code&#39; signal at line 1 and &#39;shady-link&#39; signal at line 15 are artifacts of the file&#39;s generated nature: long base64 strings and a compact format. The normalized representation confirms standard JavaScript object syntax with no obfuscation, no external references, and no executable logic beyond defining a data structure. The file is safe and behaves as expected for a world definition.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/policy-panic-world.js#L1" rel="noopener noreferrer">policy-panic-world.js:1</a></li><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/policy-panic-world.js#L15" rel="noopener noreferrer">policy-panic-world.js:15</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All vm.runInNewContext calls are from a development test suite</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The file is a set of automated tests that the developers run to catch bugs before releasing updates. They use a safe sandbox to run small parts of the app to check that everything works properly. This is normal and does not affect users.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The entire file &#39;file&#39; is a Node.js-based test harness (it uses assert, test() registration, and runs via a test runner). Every vm.runInNewContext call executes hardcoded substrings of the application &#39;app&#39; variable, which is itself a concatenation of the production JavaScript bundle. The tests are run during CI or local development, not shipped to users. No dynamic input from users or external sources reaches the vm context. This pattern is standard for sandboxed unit testing of JavaScript logic. The project&#39;s security posture is reinforced by these tests, which explicitly verify CSP, escaping, and data validation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L97" rel="noopener noreferrer">scratch/engine_audit.js:97</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>All vm.runInNewContext calls in group 2 are also from the same test suite</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>More automated tests that check game mechanisms like time and save/restore. Only developers see these tests.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Continues the pattern from group 1. Both candidates are additional unit tests in the same audit file. They execute hardcoded slices of the application JavaScript to validate world time calculation and turn snapshots. No user or attacker influence reaches the vm context. The tests are not part of the shipped application.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ddkhan24/hordestudio/blob/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1/scratch/engine_audit.js#L240" rel="noopener noreferrer">scratch/engine_audit.js:240</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>131 files &middot; 24699861 bytes</dd>
+      <dt>Contextual coverage</dt><dd>50 of 50 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>59 files &middot; 6766803 bytes</dd>
+        <dt>X-Ray review families</dt><dd>174 warning occurrences compacted to 28 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>59 raw &middot; 9 decoded &middot; 6 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>59 raw signatures &middot; 59 raw AST &middot; 58 raw OpenGrep &middot; 15 derived signatures &middot; 8 derived AST &middot; 15 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>app.js</code> &mdash; derived-ast / parse</li><li><code>app.js</code> &mdash; normalize / parse</li><li><code>app.js</code> &mdash; raw-opengrep / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ddkhan24/hordestudio/commit/3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1" rel="noopener noreferrer">3e5df94c9f5d1625f34f8c35a008f5d21d68b1a1</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-12T11:03:20.047Z">Aug 12, 2026</time></dd>
+        <dt>History depth</dt><dd>10 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>32 fresh / 0 reused groups &middot; 48 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>2 deterministic / 48 contextual candidates &middot; 32 contextual / 32 total behavior cases</dd>
+        <dt>Model budget</dt><dd>19 model calls &middot; 32 / 12 fresh cases &middot; 867592 / 200000 estimated input &middot; 887090 / 250000 actual input &middot; 40608 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>19 model calls &middot; up to 4 groups and 7 candidates per call &middot; 6 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>887090 input &middot; 40608 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>4a302db7b84955d6d28f3a499785fac84715c9896bd77d134dadafc1ac324fb9</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1318310911/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
