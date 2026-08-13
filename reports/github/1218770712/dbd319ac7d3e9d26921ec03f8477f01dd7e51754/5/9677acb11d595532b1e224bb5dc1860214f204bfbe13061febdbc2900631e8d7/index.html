@@ -1,0 +1,1651 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Noineri/vibe_tavern at commit dbd319a.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Noineri/vibe_tavern</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Noineri/vibe_tavern" rel="noopener noreferrer">Noineri/vibe_tavern</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Noineri/vibe_tavern/commit/dbd319ac7d3e9d26921ec03f8477f01dd7e51754" rel="noopener noreferrer">dbd319a</a></span>
+        <span>Reviewed <time datetime="2026-08-13T06:08:20.381Z">Aug 13, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>126 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A dice-rolling script uses a complex-looking pattern to recognize commands like /roll d20. While the pattern might be slightly inefficient, it&#39;s not dangerous and won&#39;t crash things in practice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex pattern used for parsing dice commands is flagged by JS-X-Ray as potentially unsafe, likely due to the use of the &#39;g&#39; flag and multiple optional capture groups. However, the regex is structurally simple and operates on short user chat messages. It does not contain nested quantifiers or overlapping alternatives that would cause catastrophic backtracking. The practical risk of ReDoS is negligible, and any denial of service would be limited to the client&#39;s own browser tab.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider simplifying the regex or adding input length limits for defense-in-depth, though this is not a priority.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/components/build/editors/script-templates/dice.js#L17" rel="noopener noreferrer">apps/web/src/components/build/editors/script-templates/dice.js:17</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (75)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L328" rel="noopener noreferrer">.github/workflows/release.yml:328</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L270" rel="noopener noreferrer">.github/workflows/release.yml:270</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L57" rel="noopener noreferrer">.github/workflows/release.yml:57</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L267" rel="noopener noreferrer">.github/workflows/release.yml:267</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L74" rel="noopener noreferrer">.github/workflows/ci.yml:74</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L119" rel="noopener noreferrer">.github/workflows/ci.yml:119</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-67mh-4wv8-2f99:pkg:100a52fb5850b2ff8a7f76c7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L219" rel="noopener noreferrer">.github/workflows/release.yml:219</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L86" rel="noopener noreferrer">.github/workflows/ci.yml:86</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L207" rel="noopener noreferrer">.github/workflows/ci.yml:207</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L316" rel="noopener noreferrer">.github/workflows/release.yml:316</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L287" rel="noopener noreferrer">.github/workflows/release.yml:287</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L337" rel="noopener noreferrer">.github/workflows/release.yml:337</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L96" rel="noopener noreferrer">.github/workflows/release.yml:96</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-latest.yml#L52" rel="noopener noreferrer">.github/workflows/release-latest.yml:52</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L250" rel="noopener noreferrer">.github/workflows/release.yml:250</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L219" rel="noopener noreferrer">.github/workflows/release.yml:219</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L270" rel="noopener noreferrer">.github/workflows/release.yml:270</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L193" rel="noopener noreferrer">.github/workflows/ci.yml:193</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L292" rel="noopener noreferrer">.github/workflows/release.yml:292</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L132" rel="noopener noreferrer">.github/workflows/release.yml:132</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported template-injection</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L286" rel="noopener noreferrer">.github/workflows/release.yml:286</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-67mh-4wv8-2f99:pkg:0ad9c1081b9e42257b771395 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:c15eeb4b6498ad284f4ce31d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L132" rel="noopener noreferrer">.github/workflows/release.yml:132</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L99" rel="noopener noreferrer">.github/workflows/release.yml:99</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L205" rel="noopener noreferrer">.github/workflows/release.yml:205</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L132" rel="noopener noreferrer">.github/workflows/release-npm.yml:132</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L144" rel="noopener noreferrer">.github/workflows/release.yml:144</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L108" rel="noopener noreferrer">.github/workflows/ci.yml:108</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L218" rel="noopener noreferrer">.github/workflows/ci.yml:218</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported template-injection</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L284" rel="noopener noreferrer">.github/workflows/release.yml:284</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L188" rel="noopener noreferrer">.github/workflows/ci.yml:188</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L109" rel="noopener noreferrer">.github/workflows/ci.yml:109</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L359" rel="noopener noreferrer">.github/workflows/release.yml:359</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L128" rel="noopener noreferrer">.github/workflows/release-npm.yml:128</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-395f-4hp3-45gv:pkg:f8812e56262cb0bece83a469 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L79" rel="noopener noreferrer">.github/workflows/release-npm.yml:79</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L187" rel="noopener noreferrer">.github/workflows/ci.yml:187</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L319" rel="noopener noreferrer">.github/workflows/release.yml:319</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L62" rel="noopener noreferrer">.github/workflows/ci.yml:62</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L75" rel="noopener noreferrer">.github/workflows/ci.yml:75</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L132" rel="noopener noreferrer">.github/workflows/release-npm.yml:132</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L132" rel="noopener noreferrer">.github/workflows/ci.yml:132</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L247" rel="noopener noreferrer">.github/workflows/release.yml:247</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L219" rel="noopener noreferrer">.github/workflows/ci.yml:219</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L129" rel="noopener noreferrer">.github/workflows/release.yml:129</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L63" rel="noopener noreferrer">.github/workflows/ci.yml:63</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-latest.yml#L51" rel="noopener noreferrer">.github/workflows/release-latest.yml:51</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L375" rel="noopener noreferrer">.github/workflows/release.yml:375</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L205" rel="noopener noreferrer">.github/workflows/release.yml:205</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L97" rel="noopener noreferrer">.github/workflows/ci.yml:97</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L298" rel="noopener noreferrer">.github/workflows/release.yml:298</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L208" rel="noopener noreferrer">.github/workflows/ci.yml:208</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-gpj5-g38j-94v9:pkg:21ad97366e3942078eb532b3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L110" rel="noopener noreferrer">.github/workflows/release.yml:110</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L215" rel="noopener noreferrer">.github/workflows/release.yml:215</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L99" rel="noopener noreferrer">.github/workflows/release.yml:99</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:17a4bca76c8dccd42bb43bfa applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L123" rel="noopener noreferrer">.github/workflows/ci.yml:123</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L87" rel="noopener noreferrer">.github/workflows/ci.yml:87</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L363" rel="noopener noreferrer">.github/workflows/release.yml:363</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L161" rel="noopener noreferrer">.github/workflows/release.yml:161</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L113" rel="noopener noreferrer">.github/workflows/release.yml:113</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L141" rel="noopener noreferrer">.github/workflows/release.yml:141</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L98" rel="noopener noreferrer">.github/workflows/ci.yml:98</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L172" rel="noopener noreferrer">.github/workflows/ci.yml:172</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L157" rel="noopener noreferrer">.github/workflows/ci.yml:157</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L221" rel="noopener noreferrer">.github/workflows/ci.yml:221</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L345" rel="noopener noreferrer">.github/workflows/release.yml:345</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L128" rel="noopener noreferrer">.github/workflows/release-npm.yml:128</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L133" rel="noopener noreferrer">.github/workflows/ci.yml:133</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L158" rel="noopener noreferrer">.github/workflows/ci.yml:158</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L113" rel="noopener noreferrer">.github/workflows/release.yml:113</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L322" rel="noopener noreferrer">.github/workflows/release.yml:322</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (50)</summary>
+      <article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a routine CI step that downloads the source code before building the Android app. The scanner warning about credentials in artifacts does not apply here because the uploaded app files do not contain any secret keys or passwords.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor &#39;artipacked&#39; rule flagged a step in the build-android job at lines 161–163 (actions/checkout@v5). This rule generally warns when a workflow with access to secrets later uploads artifacts, but the provided evidence shows no credential data is included in the uploaded artifacts. The secrets (ANDROID_KEYSTORE_BASE64, passwords, alias) are used only during the build process—they are decoded to a temporary keystore, used to sign the APK, and the keystore is not packaged into the output. The artifacts uploaded (APK, tarball, installer) are standard release builds. No credential exfiltration, persistence, or unauthorized data flow is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L161-L163" rel="noopener noreferrer">.github/workflows/release.yml:161-163</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported adhoc-packages</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow installs the latest version of npm to handle publishing the software. This is a normal part of the release process and does not pose a security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule adhoc-packages. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The step &#39;npm install -g npm@latest&#39; upgrades the npm CLI to support OIDC trusted publishing, which is a standard and necessary part of this workflow. The installation uses the latest tag without pinning, but the workflow runs on a GitHub-hosted ephemeral runner with minimal permissions (contents: read, id-token: write). There is no secret exposure or malicious intent; this is routine CI/CD behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>adhoc-packages</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L140" rel="noopener noreferrer">.github/workflows/release-npm.yml:140</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow checks out the code from GitHub, which is a standard first step. No passwords or keys are saved into any file that gets uploaded, so there is no risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged an actions/checkout step as potentially persisting credentials via artifacts. However, this checkout step retrieves the repository source code without any credential handling. The workflow uses OIDC-based trusted publishing and does not store secrets in artifacts. The artifact upload steps later upload only build outputs, not credentials. The rule is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release-npm.yml#L79-L83" rel="noopener noreferrer">.github/workflows/release-npm.yml:79-83</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow uses a community-made action for creating releases instead of the built-in one. This isn&#39;t a security problem, just a style choice.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The superfluous-actions finding flags that the softprops/action-gh-release action could be replaced by GitHub&#39;s built-in release functionality, but this is a code quality/style issue, not a security vulnerability. The action is pinned and widely used.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider using the built-in GitHub release creation to reduce third-party dependency, but not required for security.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L375" rel="noopener noreferrer">.github/workflows/release.yml:375</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported private-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a fake key used only for testing, not a real secret. It&#39;s not used in the actual app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule private-key. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This file is a test fixture (provider-proxy-key.pem) located in the test/fixtures directory. The content is a dummy or test-only key used for testing provider proxy functionality. There is no evidence it is a real, usable credential or that it is shipped to users. Test fixture keys are standard practice and pose no risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>private-key</dd>
+        <dt>File role</dt><dd>fixture</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/test/fixtures/provider-proxy-key.pem#L1-L28" rel="noopener noreferrer">services/api/test/fixtures/provider-proxy-key.pem:1-28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a routine step that downloads the code onto the CI runner. This is normal and does not leak or store any login information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The line flagged by the zizmor &#39;artipacked&#39; rule is a standard `actions/checkout@v5` step that retrieves repository contents. No artifacts are uploaded at this point; the only artifact upload in the workflow is an npm tarball with a 7-day retention. No credential material is exposed or persisted through this step.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L62" rel="noopener noreferrer">.github/workflows/ci.yml:62</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test checks that the updater correctly reads release notes that mention &#39;Faster startup&#39;. That&#39;s just sample text used in the test. Nothing is actually changing startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal matches a TavernKeeper rule for &#39;startup-modification&#39; at line 60, where the test asserts that parsed release notes equal a hardcoded string containing &#39;Faster startup&#39;. This is a pure assertion on test data within a characterization test for the updater&#39;s parseRelease function. No actual persistence modification occurs; the string is part of a mocked GitHub release payload.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/test/updater-release.test.ts#L60" rel="noopener noreferrer">services/api/test/updater-release.test.ts:60</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow checks out the code to build the Linux release. This is normal and does not expose any secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The alert at lines 129-131 (build-linux job) flags actions/checkout@v5 with a ref from job outputs. This is the same pattern as other build jobs. The workflow does upload artifacts later (lines 144-149), but those artifacts are build outputs (tarball) attested with build provenance, not credentials. No secret or credential is written into the artifact. The low-confidence artipacked rule does not demonstrate actual credential persistence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L129-L131" rel="noopener noreferrer">.github/workflows/release.yml:129-131</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>malcontent reported anti-static-xor-terms</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>Another font file was flagged by the scanner for looking suspicious, but without seeing the actual data, this is not a confirmed risk. It is likely a normal font.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule anti-static-xor-terms. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same as group e3c25489: the malcontent scanner flagged XOR-obfuscated terms in a font file, but metadata-only analysis precludes confirming any malicious behavior. Font files routinely include encoded data. No demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optionally verify font integrity from official source.</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>anti-static-xor-terms</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/public/fonts/JetBrainsMonoNLNerdFont-Regular.ttf" rel="noopener noreferrer">apps/web/public/fonts/JetBrainsMonoNLNerdFont-Regular.ttf</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a normal code checkout for the self-update test job. It does not expose or store any credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a standard `actions/checkout@v5` step in the selfupdate-npm job. It only retrieves repository code; no artifacts are uploaded at this point. The scanner rule produces a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L218" rel="noopener noreferrer">.github/workflows/ci.yml:218</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app uses a security token to stream chat messages from its own server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file uses getMobileToken() to authenticate a fetch request to the project&#39;s own backend SSE streaming endpoints. This is normal for streaming AI chat responses from the local backend.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/stream.ts#L37" rel="noopener noreferrer">apps/web/src/api/stream.ts:37</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test creates fake release notes that say &#39;Faster startup&#39; to verify the parsing logic. It&#39;s just dummy data in a test, not an actual change to the program.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal matches a TavernKeeper rule for &#39;startup-modification&#39; at line 30, where a helper function constructs a mock release body containing &#39;Faster startup&#39;. This is test fixture data used to simulate a GitHub API response. No persistence modification happens; the string never reaches any runtime code that modifies startup behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/test/updater-release.test.ts#L30" rel="noopener noreferrer">services/api/test/updater-release.test.ts:30</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a data file that tells the app how to break text into tokens for AI models. It&#39;s just plain information—it can&#39;t run any code or change how the app starts up. The security warning was a mistaken alert.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The OpenGrep rule for startup persistence modification triggered on a static JSON tokenizer configuration file. The file contains a BPE tokenizer vocabulary (version, added_tokens, pre_tokenizer, model, etc.) and is read-only data. It is not executable and contains no code paths that modify startup behavior. The rule likely matched on structural patterns (e.g., &#39;added_tokens&#39;) unrelated to actual persistence. No harmful modification or execution is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/assets/tokenizers/claude.json#L1" rel="noopener noreferrer">services/api/assets/tokenizers/claude.json:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Bidirectional text control detected in source</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just a data file for the AI model&#39;s tokenizer. The unusual character is simply one of the many symbols the tokenizer recognizes, not a hidden code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A bidirectional Unicode control character was detected in a source file.</p>
+      <p><strong>Contextual assessment:</strong> The file is a JSON tokenizer vocabulary (Mistral model) mapping tokens to IDs. The bidirectional control character (U+202E) appears as a token for a Unicode character in the vocabulary, not as obfuscation or executable code. Static data files for tokenizers commonly include such Unicode tokens. No executable context or disguised logic.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>unicode-bidi-control</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/assets/tokenizers/mistral.json#L30716" rel="noopener noreferrer">services/api/assets/tokenizers/mistral.json:30716</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The server reads settings from environment variables to know where to find files and which port to use. This is standard and safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The production server entry point reads several environment variables (VIBE_TAVERN_ROOT_DIR, VIBE_TAVERN_DATA_DIR, VIBE_TAVERN_HOST, VIBE_TAVERN_PORT) to configure paths and listen options. This is normal runtime configuration, not credential serialization or exfiltration. The scanner signal is a static analysis false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/server/prod-server.ts#L34" rel="noopener noreferrer">services/api/src/server/prod-server.ts:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This code sends a debug log to the app&#39;s own server, using the same authentication token the app normally uses. It&#39;s not sending your login info to a third party; it&#39;s just logging for debugging purposes.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The devLog function sends a POST request to the application&#39;s own backend gateway (/api/debug/send-log) using the mobile token for authentication. This is a legitimate internal debug logging endpoint, not external data exfiltration. The credential source and network transmission are co-located by design for authenticated client-to-server communication within the same application, which is standard for a local AI roleplay client that stores API keys and tokens locally and communicates with its own backend.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/lib/dev-log.ts#L9" rel="noopener noreferrer">apps/web/src/lib/dev-log.ts:9</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a unit test that creates a temporary folder on your computer to test database features. It doesn&#39;t send any data anywhere or access your credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a test file that uses Node.js standard library tmpdir to create temporary directories for isolated database testing. The static analysis signal is a false positive — tmpdir is a standard OS temp directory and is used here solely for test isolation. There is no network activity, credential handling, or data exfiltration in this test code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/packages/db/test/provider-coauthor-transport.test.ts#L3" rel="noopener noreferrer">packages/db/test/provider-coauthor-transport.test.ts:3</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The server reads a setting from the environment to know which network address to use. This is normal.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file reads the environment variable VIBE_TAVERN_HOST to configure the listen address. This is a standard server configuration pattern, not credential serialization. The scanner signal is a static analysis false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/server/npm-server.ts#L72" rel="noopener noreferrer">services/api/src/server/npm-server.ts:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>malcontent reported anti-static-xor-terms</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>A security scan found a suspicious pattern in a font file that could indicate hidden code. However, font files often look suspicious to scanners. Since we couldn&#39;t examine the actual file contents, we cannot confirm any issue. The font is likely a well-known font from the Nerd Font project.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule anti-static-xor-terms. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The malcontent scanner detected XOR-obfuscated terms in a binary font file (JetBrainsMonoNLNerdFont-Bold.ttf). However, the artifact is metadata-only; raw content was not inspected. Font files, especially Nerd Font variants, commonly contain compressed or encoded data that can trigger false positives in static analysis. No concrete threat path is demonstrated without artifact content review.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> If desired, verify the font file origin from the official JetBrains Mono Nerd Font release to confirm integrity.</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>anti-static-xor-terms</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/public/fonts/JetBrainsMonoNLNerdFont-Bold.ttf" rel="noopener noreferrer">apps/web/public/fonts/JetBrainsMonoNLNerdFont-Bold.ttf</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just setting up the server&#39;s host address, nothing shady.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The referenced line (72) assigns the host string from environment or default. There is no suspicious external link or network request. The scanner signal is a static analysis false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/server/npm-server.ts#L72" rel="noopener noreferrer">services/api/src/server/npm-server.ts:72</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app uses a login token to talk to its own backend when uploading character avatars. That token stays on your machine and is only sent to the backend server that runs alongside the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file retrieves a local mobile auth token via getMobileToken() and sends it in an Authorization header to backend endpoints under the same local gateway (getGatewayBaseUrl()). The token never leaves the local process; the fetch targets are the project&#39;s own API routes for avatar upload and gallery operations. This is standard frontend-to-backend authentication for a single-host application, not credential exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/character-api.ts#L160" rel="noopener noreferrer">apps/web/src/api/character-api.ts:160</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When the app logs debug info, it sends a small message to its own backend using the same login token. No data goes outside your computer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The postSendDebug function retrieves a mobile auth token via getMobileToken() and sends it in an Authorization header to the local backend endpoint /api/debug/send-log. This is a client-side debug logging mechanism that transmits only non-sensitive event names and timestamps to the same local server. The token is never sent to an external destination. Normal first-party authenticated request.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/chat-api.ts#L740" rel="noopener noreferrer">apps/web/src/api/chat-api.ts:740</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test file reads an environment variable to see if a Linux display is running. That&#39;s exactly what the real code does to decide whether to open a file picker window. No secrets are being stolen.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The signal flags access to process.env.DISPLAY inside a test file for the hasLinuxDisplay helper. This helper is designed to check whether a Linux graphical session is present, which is a legitimate and necessary capability for a native file dialog route that must decide whether to spawn a GUI picker. The test file saves and restores env variables in afterEach hooks; no credential or sensitive data is read or transmitted. The scanner signal is a false positive for this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/test/fs-native-dialog.test.ts#L87" rel="noopener noreferrer">services/api/test/fs-native-dialog.test.ts:87</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app gets a login token from its own server and sends it back to upload a file. This is normal and secure; the token never leaves your own computer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The tavernkeeper credential-exfiltration rule flagged that a mobile token is retrieved and then sent as a Bearer token in a fetch call within the same file. This is legitimate client-server authentication for asset uploads to the user&#39;s own local gateway server. There is no exfiltration to an external destination; the token is used to authenticate against the same server that issued it.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/asset-api.ts#L8" rel="noopener noreferrer">apps/web/src/api/asset-api.ts:8</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a loading screen that checks if the server is ready and then reloads into the main app. It&#39;s not doing anything suspicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The loading placeholder serves a static HTML page with inline scripts that poll the same-origin /health endpoint and reload the page when the server is ready. The fetch URL is not attacker-controlled and the reload is a standard pattern for waiting on server startup. The scanner correlation of network retrieval and page reload is benign.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/server/loading-placeholder.ts#L147-L193" rel="noopener noreferrer">services/api/src/server/loading-placeholder.ts:147-193</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A security tool warned that credentials might be saved in build artifacts, but the workflow only saves the program files, not any passwords or API keys. This is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor artipacked finding flags credential persistence through GitHub Actions artifacts, but the workflow only uploads build binaries (APK, installer, zip) and never secrets. The GITHUB_TOKEN used in docker login is a short-lived token scoped to the job. No credentials are embedded in artifacts.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L316-L318" rel="noopener noreferrer">.github/workflows/release.yml:316-318</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a standard CI step that checks out the code before building the Windows version. The scanner warning about credentials in artifacts is not a real concern here because the uploaded installer and zip files do not include any private keys or passwords.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The zizmor &#39;artipacked&#39; rule flagged a step in the build-windows job at lines 267–269 (actions/checkout@v5). The job has access to the repository secrets only through the GITHUB_TOKEN and builds Windows artifacts (installer and zip). No credential data is written into these artifacts; they are standard distribution files. The artifact uploads later in the job do not contain any secret material. There is no evidence of credential persistence, exfiltration, or malicious behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L267-L269" rel="noopener noreferrer">.github/workflows/release.yml:267-269</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just the CI system downloading the project code to run tests. It does not expose or store any secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is another standard `actions/checkout@v5` step in the test-linux job. It only pulls the repository code and does not produce or upload any artifacts. No credential exposure occurs.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L74" rel="noopener noreferrer">.github/workflows/ci.yml:74</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is just setting the server&#39;s host address, nothing suspicious.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The referenced line (49) assigns the host string from environment or default. There is no suspicious external link or network request. The scanner signal is a static analysis false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/server/prod-server.ts#L49" rel="noopener noreferrer">services/api/src/server/prod-server.ts:49</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner mistakenly flagged a routine code checkout step in the Windows build job. It does not leak or persist any credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a standard `actions/checkout@v5` step in the build-windows job. It only retrieves repository code; no artifacts are uploaded at this line. The scanner rule is producing a false positive on an ordinary checkout action.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L132" rel="noopener noreferrer">.github/workflows/ci.yml:132</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Another normal checkout used for the Docker build job. It does not leak or persist any login information.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a standard `actions/checkout@v5` step in the build-docker job. It only retrieves repository source code; no artifacts are uploaded. The scanner incorrectly flags this as credential persistence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L207" rel="noopener noreferrer">.github/workflows/ci.yml:207</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app uses a security token to talk to its own server, which is exactly what it should do. No suspicious external connections.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file obtains an authentication token via getMobileToken() and includes it as a Bearer header in a fetch request to the project&#39;s own backend endpoint /api/bootstrap. This is standard practice for a frontend communicating with its own authenticated API; there is no indication that credentials are sent to any third-party or unintended destination.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/settings-api.ts#L20" rel="noopener noreferrer">apps/web/src/api/settings-api.ts:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code checkout step on the Windows test runner is normal. It does not upload or leak any credentials.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a standard `actions/checkout@v5` step in the test-windows job. It only retrieves the repository code; no artifacts are uploaded at this line. The scanner rule is triggered by the action name itself, but no credential persistence is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L86" rel="noopener noreferrer">.github/workflows/ci.yml:86</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test file uses a standard Node.js function to create a temporary folder for testing. It does not send any data anywhere, and the flagged line is just a normal import. The security warning is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/test/provider-profile-transport.test.ts#L3" rel="noopener noreferrer">services/api/test/provider-profile-transport.test.ts:3</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanning tool falsely labeled a common code download step as risky. No actual credential exposure happens here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a standard `actions/checkout@v5` step in the build-android job. It only clones the repository and does not upload any artifacts. The zizmor &#39;artipacked&#39; rule incorrectly flags well-known checkout actions as credential persistence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L108" rel="noopener noreferrer">.github/workflows/ci.yml:108</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow gets a copy of the code to run tests on it. No passwords or secrets are stored in any file that gets saved or uploaded, so there is no danger.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged an actions/checkout step in the verify-windows job as potential credential persistence through artifacts. However, this step only checks out the repository source code. No secrets or credentials are involved, and no artifacts are created in this job. The later artifact upload steps in build jobs upload build outputs, not credentials. This is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L110-L112" rel="noopener noreferrer">.github/workflows/release.yml:110-112</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file works like a typical app login: it gets a security token and sends it to the app&#39;s own server to identify the user. The token goes only to the app&#39;s backend, not to any outside website, so this is normal behavior for a secure app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file obtains a bearer token via getMobileToken() and sends it in Authorization headers to the application&#39;s own backend API endpoints (e.g., /api/personas/import). This is standard client-server authentication for a single-page application. The token is not sent to any third-party or unexpected destination. The base URL is derived from getGatewayBaseUrl(), which is controlled by the application configuration. There is no evidence of credential exfiltration or malicious data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/persona-api.ts#L125" rel="noopener noreferrer">apps/web/src/api/persona-api.ts:125</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file runs dice game scripts in a locked-down virtual sandbox. It only lets the scripts do basic math, use dice rolling, and register checks. It blocks dangerous actions like accessing the internet, reading files, or changing the app&#39;s chat. This is exactly what you want for running user-made dice rules safely.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file uses Node.js `runInNewContext` to execute user-defined dice scripts in an isolated sandbox. The sandbox explicitly excludes dangerous APIs (fetch, require, process, globalThis, eval, Function, setTimeout, etc.) and only exposes a curated set of standard globals (Math, JSON, Date, etc.) plus a Dice-only context with `register` and `roll` methods. Both discovery and roll functions are wrapped in try-catch with a configurable timeout. The orchestration snippet is appended but runs inside the same sandbox with no additional privileges. This is a well-documented, intentional design for executing user-authored dice logic without host access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/domain/scripts-engine/dice-script-sandbox.ts#L164-L167" rel="noopener noreferrer">services/api/src/domain/scripts-engine/dice-script-sandbox.ts:164-167</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app uses a security token when attaching images from your gallery to a chat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file uses getMobileToken() to authenticate a fetch request to the project&#39;s own backend endpoint /api/characters/:cid/assets/:rowId/promote-to-attachment. This is a legitimate backend operation to promote a gallery asset, and credentials are not exfiltrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/lib/attach-from-gallery.ts#L29" rel="noopener noreferrer">apps/web/src/lib/attach-from-gallery.ts:29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app uses a security token when sending skill files to its own server.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file uses getMobileToken() to authenticate a fetch request to the project&#39;s own backend endpoint /api/coauthor/skills/import. This is a legitimate API call for importing skill files, and credentials are not exfiltrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/skill-api.ts#L66" rel="noopener noreferrer">apps/web/src/api/skill-api.ts:66</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Normal code checkout for the smoke test job. No credentials are at risk from this step.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a standard `actions/checkout@v5` step in the smoke-npm job. It downloads the repository code; the artifact consumed by this job (npm-tarball) is a short-lived build output with a 7-day retention and contains no credentials. The checkout step itself poses no risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L187" rel="noopener noreferrer">.github/workflows/ci.yml:187</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is another part of the dice-rolling system that safely runs user scripts in a sandbox. It&#39;s designed to prevent any harmful behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same file as previous candidate, but this instance is in the &#39;executeDiceRoll&#39; function (line 254). It also uses runInNewContext to execute the dice script code concatenated with an internal orchestration snippet. The sandbox configuration is identical to the discovery phase: limited globals, frozen context objects, timeout. The orchestration code safely finds and invokes the target check&#39;s resolve() function. This is expected behavior for the dice system and does not constitute a security vulnerability.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/domain/scripts-engine/dice-script-sandbox.ts#L254-L257" rel="noopener noreferrer">services/api/src/domain/scripts-engine/dice-script-sandbox.ts:254-257</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Same false alarm as the first group: the tool worried about credentials in artifacts, but the workflow only handles program files.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The artipacked finding flags credential persistence through artifacts at the checkout step, but this is a false positive. The publish job downloads build artifacts (binaries) and creates a draft release. No credentials are leaked or persisted.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L359-L361" rel="noopener noreferrer">.github/workflows/release.yml:359-361</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a harmless test script that creates fake data in a temporary folder to check how progress bars look. It uses a standard Node.js feature to find the temporary folder location. There is no data theft or security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/scripts/bench/generate-small-mock.ts#L4" rel="noopener noreferrer">scripts/bench/generate-small-mock.ts:4</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The frontend uses a token to log in to its own backend server when performing imports. This is normal behavior for any app that needs to authenticate its requests. The token stays within the application and is not sent to any outside or malicious service.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The file retrieves a mobile bearer token via getMobileToken() from the client module and attaches it as an Authorization header in HTTP requests to the local backend API endpoints (e.g., /api/fs/native-dialog, /api/import/st-directory/stream). This is standard client-server authentication for a local application where the frontend authenticates to its own backend server. The destination URL is derived from getGatewayBaseUrl(), which resolves to the local server. No credentials are sent to external or unauthorized destinations. The scanner rule &#39;credential-exfiltration&#39; flags co-location of credential access and network transmission, but here the transmission is to the application&#39;s own backend, not to an attacker-controlled host.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/apps/web/src/api/import-api.ts#L127" rel="noopener noreferrer">apps/web/src/api/import-api.ts:127</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Another normal code checkout that the scanner incorrectly flagged. It does not expose or store any secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a standard `actions/checkout@v5` step in the build-linux job. It retrieves repository source code and does not produce or upload any artifacts. No credentials are at risk.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L97" rel="noopener noreferrer">.github/workflows/ci.yml:97</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow retrieves the code to run checks on it. No sensitive information is leaked or saved in any artifact file, so it&#39;s safe.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate flags the actions/checkout step in the verify-linux job. As with the other artipacked alerts, this checkout retrieves source code without credential handling. No secrets are written to artifacts. The alert is a false positive in this context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L96-L98" rel="noopener noreferrer">.github/workflows/release.yml:96-98</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The workflow gets the code to verify the version. No secrets or credentials are exposed or saved in any artifact, so there is no security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This candidate flags the actions/checkout step in the version job. Again, this is a standard checkout without credential handling or artifact creation. The alert is a false positive.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/release.yml#L57-L59" rel="noopener noreferrer">.github/workflows/release.yml:57-59</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported artipacked</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Normal checkout step for the npm packaging pipeline. No secrets are exposed or stored by this action.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule artipacked. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a standard `actions/checkout@v5` step in the build-npm job. It clones the repository and does not upload any artifacts at this point. The intentional artifact upload later (npm tarball with 7-day retention) is clearly documented and does not involve credential exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>artipacked</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/.github/workflows/ci.yml#L157" rel="noopener noreferrer">.github/workflows/ci.yml:157</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file runs user-written scripts in a restricted sandbox, which is a core feature of the app. The code is not hidden or malicious; it is the expected way scripts are executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file uses node:vm&#39;s runInNewContext to execute user-authored JavaScript scripts within a carefully constructed sandbox that limits globals, provides specific context objects (chat, character, lore, state, shared, persona, utility), and enforces a 5-second timeout. This is the intended design of the scripting engine, not a hidden execution vector. No evidence of attacker-controlled code injection or malicious behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Noineri/vibe_tavern/blob/dbd319ac7d3e9d26921ec03f8477f01dd7e51754/services/api/src/domain/scripts-engine/script-sandbox.ts#L208-L211" rel="noopener noreferrer">services/api/src/domain/scripts-engine/script-sandbox.ts:208-211</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>1379 files &middot; 87391486 bytes</dd>
+      <dt>Contextual coverage</dt><dd>126 of 126 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>1119 files &middot; 10322237 bytes</dd>
+        <dt>X-Ray review families</dt><dd>39 warning occurrences compacted to 9 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>1119 raw &middot; 36 decoded &middot; 5 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>1118 raw signatures &middot; 69 raw AST &middot; 1104 raw OpenGrep &middot; 41 derived signatures &middot; 10 derived AST &middot; 40 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>apps/web/bun-plugin-build-config.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/bun-plugin-data-component.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/bun-plugin-web-assets.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/data-component-transform.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/dev-server.ts</code> &mdash; derived-ast / parse</li><li><code>apps/web/dev-server.ts</code> &mdash; normalize / unsupported</li><li><code>apps/web/dev-server.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/ai-assistant-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/asset-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/character-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/chat-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/client.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/dice-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/gallery-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/import-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/lorebook-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/normalize.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/normalize.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/persona-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/preset-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/provider-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/provider-stream-error.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/proxy-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/quota-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/runtime-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/script-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/settings-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/skill-api.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/skill-api.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/stream.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/types.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/api/unwrap.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/app-client.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/build-config.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/build-config.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/bun-env.d.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/BuildMode.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/VersionSwitcher.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/AvatarDescriptionField.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/AvatarDescriptionField.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/CharacterForm.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/DiceAssignment.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/DiceScriptTester.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/GalleryAccordion.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/GalleryAccordion.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/GalleryGrid.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/GalleryLightbox.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/GalleryViewer.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/InsightsPanel.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/InsightsPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LoreEntryEditor.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LoreEntryEditor.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LoreEntryList.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LorebookAccordion.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LorebookAccordion.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LorebookEditor.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LorebookEditor.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/LorebookImportModal.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/ObjectiveConfig.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/ObjectiveConfig.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/SceneHistoryBackfill.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/SceneHistoryBackfill.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/ScriptEditor.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/ScriptEditor.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/ScriptTester.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/ScriptTester.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/TrackerConfig.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/TrackerConfig.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/VibeMdView.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/VibeMdView.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/activation-test-panel.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/character-filter-picker.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/lore-entry-reorder.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/lore-entry-reorder.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/lore-keys-ai-pill.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/lorebook-create-body.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/lorebook-create-body.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/script-api-reference.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/script-templates/index.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/thumbnail-crop.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/thumbnail-crop.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/use-lorebook-editor-state.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-folding.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-greetings.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-locked-headings.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-locked-headings.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-macros.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-macros.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-sync.test.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-sync.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/editors/vibe-md-theme.ts</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/fields/DepthPromptField.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/fields/TagsField.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/fields/TextAreaField.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/fields/field-label.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/trace-json-downloads.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/trace-json-downloads.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/trace-payload-view.test.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/build/trace-payload-view.tsx</code> &mdash; raw-ast / parse</li><li><code>apps/web/src/components/chat/AssistantContextHeader.test.tsx</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li><li>One or more scanner candidates refer to non-text artifacts. Their size, digest, and scanner metadata were verified, but raw contents were not provided to the contextual model.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Noineri/vibe_tavern/commit/dbd319ac7d3e9d26921ec03f8477f01dd7e51754" rel="noopener noreferrer">dbd319ac7d3e9d26921ec03f8477f01dd7e51754</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-13T06:08:20.381Z">Aug 13, 2026</time></dd>
+        <dt>History depth</dt><dd>6 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; deepseek/deepseek-v4-flash:thinking</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>0 fresh / 38 reused groups &middot; 0 fresh / 51 reused candidates</dd>
+        <dt>Review source reports</dt><dd><code>59b8a2b162f35592d80884efa18c943588205cba600fa87e65435cbbf624eda4</code></dd>
+        <dt>Evidence triage</dt><dd>75 deterministic / 51 contextual candidates &middot; 38 contextual / 41 total behavior cases</dd>
+        <dt>Model budget</dt><dd>0 model calls &middot; 0 / 12 fresh cases &middot; 0 / 200000 estimated input &middot; 0 / 250000 actual input &middot; 0 / 40000 output tokens</dd>
+        
+        <dt>Review usage</dt><dd>0 input &middot; 0 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>9677acb11d595532b1e224bb5dc1860214f204bfbe13061febdbc2900631e8d7</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1218770712/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
