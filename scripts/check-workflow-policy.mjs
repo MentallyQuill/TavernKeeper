@@ -7,7 +7,7 @@ const root = process.cwd();
 const workflowRoot = join(root, ".github", "workflows");
 const failures = [];
 const publisherAction =
-  "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
+  "actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1";
 const publisherClientId = "${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}";
 const publisherPrivateKey =
   "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}";
