@@ -22,6 +22,7 @@ import {
   type JavascriptAnalysisCoverage,
 } from "../scanners/javascript-analysis-types.js";
 import { ExecutionScopeSchema } from "../triage/execution-scope.js";
+import { ModelResponseDiagnosticSchema } from "../model/openai-compatible-client.js";
 
 const CountSchema = z.number().int().nonnegative();
 const DigestSchema = z.string().regex(/^[0-9a-f]{64}$/u);
@@ -322,6 +323,8 @@ export const ReviewBatchUsageV5Schema = z.strictObject({
   output_tokens: CountSchema,
   cache_read_tokens: CountSchema,
   reasoning_tokens: CountSchema,
+  // Optional so reports published before this field existed still parse.
+  retry_reason: ModelResponseDiagnosticSchema.nullable().optional(),
 });
 
 export const ReviewTriageV5Schema = z.strictObject({

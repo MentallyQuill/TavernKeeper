@@ -11,6 +11,7 @@ import {
   buildContextualCountsV5,
   parseReportIndexV5,
   ReportIndexV5Schema,
+  ReviewBatchUsageV5Schema,
   ScanReportV5Schema,
 } from "../src/contracts/reports-v5.js";
 import {
@@ -417,4 +418,38 @@ describe("public TavernKeeper contracts", () => {
       ).toBe(false);
     },
   );
+
+  test("review batch usage accepts retry reasons from known diagnostics only", () => {
+    const batch = {
+      kind: "contextual_review",
+      attempt: 2,
+      group_count: 1,
+      candidate_count: 1,
+      estimated_input_tokens: 1_000,
+      over_budget: false,
+      input_tokens: 100,
+      output_tokens: 40,
+      cache_read_tokens: 0,
+      reasoning_tokens: 10,
+    };
+    expect(ReviewBatchUsageV5Schema.safeParse(batch).success).toBe(true);
+    expect(
+      ReviewBatchUsageV5Schema.safeParse({
+        ...batch,
+        retry_reason: "provider_http_error",
+      }).success,
+    ).toBe(true);
+    expect(
+      ReviewBatchUsageV5Schema.safeParse({
+        ...batch,
+        retry_reason: null,
+      }).success,
+    ).toBe(true);
+    expect(
+      ReviewBatchUsageV5Schema.safeParse({
+        ...batch,
+        retry_reason: "not_a_diagnostic",
+      }).success,
+    ).toBe(false);
+  });
 });

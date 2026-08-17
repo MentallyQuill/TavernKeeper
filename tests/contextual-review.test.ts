@@ -1874,6 +1874,158 @@ describe("contextual evidence review", () => {
     expect(requestRepair).not.toHaveBeenCalled();
   });
 
+  test("records why each retry attempt exists on batch usage", async () => {
+    const current = group("src/a.ts", ids.slice(0, 2));
+    const requestCompletion = vi.fn(
+      async (_request: TextCompletionRequest) => ({
+        completionId: `completion-retry-reason-${requestCompletion.mock.calls.length}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: reviewContent({
+          status: "complete",
+          assessments:
+            requestCompletion.mock.calls.length === 3
+              ? [
+                  assessment(ids[0]!, current.path, 2),
+                  assessment(ids[1]!, current.path, 3),
+                ]
+              : [assessment(ids[0]!, current.path, 2)],
+          observations: [],
+        }),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      }),
+    );
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(result.review_batches?.map(({ attempt }) => attempt)).toEqual([
+      1, 2, 3,
+    ]);
+    expect(
+      result.review_batches?.map(({ retry_reason }) => retry_reason),
+    ).toEqual([null, "assessment_candidate_id", "assessment_candidate_id"]);
+    expect(CompletedContextualReviewSchema.safeParse(result).success).toBe(
+      true,
+    );
+  });
+
+  test("records the binding diagnostic that triggered a repair attempt", async () => {
+    const current = group("src/a.ts", [ids[0]!]);
+    let primaryCalls = 0;
+    const requestCompletion = vi.fn(async () => {
+      primaryCalls += 1;
+      return {
+        completionId: `completion-primary-${primaryCalls}`,
+        endpointOrigin: "https://provider.example",
+        provider: "provider.example",
+        content: batchContent([
+          {
+            group_id: current.group_id,
+            review: {
+              status: "complete",
+              assessments: [assessment(ids[0]!, current.path, 2)],
+              observations: [
+                {
+                  related_candidate_ids: [ids[0]!],
+                  evidence_ids: [ids[0]!],
+                  disposition: "minor_weakness",
+                  impact: "low",
+                  exploitability: "unlikely",
+                  confidence: "medium",
+                  risk_exposure: "not_demonstrated",
+                  recommended_risk: "low",
+                  title: "Bounded observation",
+                  technical_explanation: "The behavior should remain bounded.",
+                  layman_explanation: "This deserves a small caution.",
+                  developer_action: "Document the intended boundary.",
+                  locations: [
+                    { path: current.path, line_start: 99, line_end: 99 },
+                  ],
+                },
+              ],
+            },
+          },
+        ]),
+        usage: {
+          inputTokens: 100,
+          outputTokens: 40,
+          cacheReadTokens: 0,
+          reasoningTokens: 10,
+        },
+      } satisfies ModelCompletionResult;
+    });
+    const requestRepair = vi.fn(
+      async () =>
+        ({
+          completionId: "completion-luna-repair",
+          endpointOrigin: "https://api.openai.com",
+          provider: "api.openai.com",
+          content: JSON.stringify({
+            repair: {
+              assessment_evidence_ids: [],
+              observations: [{ index: 0, action: "drop" }],
+            },
+          }),
+          usage: {
+            inputTokens: 25,
+            outputTokens: 10,
+            cacheReadTokens: 0,
+            reasoningTokens: 0,
+          },
+        }) satisfies ModelCompletionResult,
+    );
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "deepseek-v4-flash",
+        requestCompletion,
+      },
+      jsonRepairProvider: {
+        endpoint: "https://api.openai.com/v1/chat/completions",
+        apiKey: "repair-key",
+        model: "gpt-5.6-luna",
+        requestCompletion: requestRepair,
+      },
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+    });
+
+    expect(primaryCalls).toBe(3);
+    expect(requestRepair).toHaveBeenCalledOnce();
+    expect(
+      result.review_batches?.map(({ kind, retry_reason }) => [
+        kind,
+        retry_reason,
+      ]),
+    ).toEqual([
+      ["contextual_review", null],
+      ["contextual_review", "observation_locations"],
+      ["contextual_review", "observation_locations"],
+      ["json_repair", "observation_locations"],
+    ]);
+  });
+
   test("does not send malformed or semantically invalid output to Luna", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestRepair = vi.fn();

@@ -26,6 +26,7 @@ import {
 } from "./contextual-prompt.js";
 import {
   ModelRequestError,
+  ModelResponseDiagnosticSchema,
   type ModelCompletionResult,
   type ModelResponseDiagnostic,
   type ModelUsage,
@@ -98,6 +99,11 @@ export const ReviewBatchUsageSchema = z.strictObject({
   output_tokens: CountSchema,
   cache_read_tokens: CountSchema,
   reasoning_tokens: CountSchema,
+  // Records why this attempt exists, not why it failed: the diagnostic of the
+  // failure that scheduled the attempt (null for a fresh first attempt; for
+  // json_repair, the binding diagnostic that triggered the repair). Optional
+  // so checkpoints persisted before this field existed still parse.
+  retry_reason: ModelResponseDiagnosticSchema.nullable().optional(),
 });
 export type ReviewBatchUsage = z.infer<typeof ReviewBatchUsageSchema>;
 export const ReviewUnitSchema = z
@@ -892,6 +898,7 @@ async function reviewGroup(
           estimatedInputTokens,
           spec.policy.maxBatchInputTokens,
           completion.usage,
+          repair?.diagnostic ?? null,
         ),
       );
       budgetLedger.recordCompletion(completion.usage);
@@ -1024,6 +1031,7 @@ async function reviewGroup(
           null,
           spec.policy.maxBatchInputTokens,
           repaired.usage,
+          repairCandidate.diagnostic,
         ),
       );
       budgetLedger.recordCompletion(repaired.usage);
@@ -1068,6 +1076,10 @@ function batchUsage(
   estimatedInputTokens: number | null,
   maximumInputTokens: number,
   usage: ModelUsage,
+  // Why this attempt exists: the diagnostic carried in from the previous
+  // failed attempt, or null when this is a fresh first attempt. The failure
+  // reason of the attempt itself is only known after it is validated.
+  retryReason: ModelResponseDiagnostic | null,
 ): ReviewBatchUsage {
   return ReviewBatchUsageSchema.parse({
     kind,
@@ -1085,7 +1097,19 @@ function batchUsage(
     output_tokens: usage.outputTokens,
     cache_read_tokens: usage.cacheReadTokens,
     reasoning_tokens: usage.reasoningTokens,
+    retry_reason: retryReason,
   });
+}
+
+// A batch record describes one provider call for many groups; it only carries
+// a retry reason when every group in the batch was retried for the same
+// diagnostic, and stays null for fresh or mixed-reason batches.
+function batchRetryReason(states: readonly BatchGroupState[]) {
+  const first = states[0]?.repair?.diagnostic;
+  return first !== undefined &&
+    states.every((state) => state.repair?.diagnostic === first)
+    ? first
+    : null;
 }
 
 function repairCompletionIdentity(completionId: string) {
@@ -1203,6 +1227,7 @@ async function reviewBatch(
           estimatedInputTokens,
           spec.policy.maxBatchInputTokens,
           completion.usage,
+          batchRetryReason(currentStates),
         ),
       );
       budgetLedger.recordCompletion(completion.usage);
@@ -1356,6 +1381,7 @@ async function reviewBatch(
               null,
               spec.policy.maxBatchInputTokens,
               repaired.usage,
+              state.repairCandidate.diagnostic,
             ),
           );
           budgetLedger.recordCompletion(repaired.usage);
