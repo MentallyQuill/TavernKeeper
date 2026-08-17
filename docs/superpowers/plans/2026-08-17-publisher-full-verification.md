@@ -22,11 +22,13 @@
 ### Task 1: Define the Client ID and canary contracts
 
 **Files:**
+
 - Modify: `tests/workflows.test.ts`
 - Modify: `scripts/check-workflow-policy.mjs`
 - Create: `.github/workflows/publisher-verification.yml`
 
 **Interfaces:**
+
 - Consumes: `publisherAction`, `mutationJobs`, `permissionProfiles`, and `checkPublisherBoundary`.
 - Produces: exact Client ID enforcement for every mutation job and two reviewed canary jobs.
 
@@ -62,6 +64,7 @@ the policy catches the obsolete contract.
 ### Task 2: Migrate workflows and add the canary
 
 **Files:**
+
 - Modify: `.github/workflows/coverage-campaign.yml`
 - Modify: `.github/workflows/policy-rescan.yml`
 - Modify: `.github/workflows/reconcile.yml`
@@ -72,6 +75,7 @@ the policy catches the obsolete contract.
 - Create: `.github/workflows/publisher-verification.yml`
 
 **Interfaces:**
+
 - Consumes: environment variable `TAVERNKEEPER_PUBLISHER_CLIENT_ID` and private-key secret.
 - Produces: Client-ID-authenticated production publishers and sequential scanner/staff live canaries.
 
@@ -99,11 +103,13 @@ Expected: both pass and the policy reports every workflow reviewed.
 ### Task 3: Update documentation and run the full gate
 
 **Files:**
+
 - Modify: `docs/operations.md`
 - Modify: `docs/superpowers/specs/2026-08-01-tavernkeeper-publisher-app-design.md`
 - Modify: `docs/superpowers/plans/2026-08-01-tavernkeeper-publisher-app.md`
 
 **Interfaces:**
+
 - Consumes: the Client ID contract from Tasks 1-2.
 - Produces: current operator guidance with no legacy App ID references.
 
@@ -124,9 +130,11 @@ checks all pass.
 ### Task 4: Review, merge, and prove both environments
 
 **Files:**
+
 - Live GitHub state only
 
 **Interfaces:**
+
 - Consumes: tested feature branch and ruleset `20197146`.
 - Produces: merged Client ID migration, two App commits, two revocations, and rejected owner direct write.
 
