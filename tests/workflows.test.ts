@@ -26,6 +26,23 @@ const reviewProgressCountScript = fileURLToPath(
 );
 const publisherAction =
   "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
+const checkoutAction =
+  "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
+const publisherClientId = "${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}";
+const publisherPrivateKey =
+  "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}";
+const publisherMutationJobs = [
+  ["coverage-campaign.yml", "create", "tavernkeeper-staff"],
+  ["policy-rescan.yml", "schedule", "tavernkeeper-staff"],
+  ["publisher-verification.yml", "verify-scanner", "tavernkeeper-scanner"],
+  ["publisher-verification.yml", "verify-staff", "tavernkeeper-staff"],
+  ["reconcile.yml", "claim", "tavernkeeper-scanner"],
+  ["reconcile.yml", "probe-provider", "tavernkeeper-scanner"],
+  ["release-holds.yml", "release", "tavernkeeper-staff"],
+  ["scan-and-publish.yml", "publish", "tavernkeeper-scanner"],
+  ["staff-operations.yml", "operate", "tavernkeeper-staff"],
+  ["targeted-scan.yml", "enqueue", "tavernkeeper-scanner"],
+] as const;
 const uploadArtifactAction =
   "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a";
 const downloadArtifactAction =
@@ -38,6 +55,7 @@ const workflowNames = [
   "pages-reconcile.yml",
   "policy-rescan.yml",
   "provider-check.yml",
+  "publisher-verification.yml",
   "reconcile.yml",
   "release-holds.yml",
   "retry.yml",
@@ -803,20 +821,84 @@ describe("GitHub workflow security policy", () => {
     ]);
   });
 
-  test("each Publisher App token has one reviewed bounded push consumer", async () => {
-    for (const [workflowName, jobName] of [
-      ["coverage-campaign.yml", "create"],
-      ["reconcile.yml", "claim"],
-      ["reconcile.yml", "probe-provider"],
-      ["scan-and-publish.yml", "publish"],
+  test("every Publisher token uses the protected Client ID variable", async () => {
+    for (const [workflowName, jobName, environment] of publisherMutationJobs) {
+      const value = await workflow(workflowName);
+      const job = value.jobs[jobName];
+      const steps = job.steps as Workflow[];
+      const tokenSteps = steps.filter((step) => step.uses === publisherAction);
+      const tokenStep = tokenSteps[0];
+
+      expect(job.environment).toBe(environment);
+      expect(tokenSteps).toHaveLength(1);
+      expect(tokenStep).toMatchObject({
+        name: "Create TavernKeeper Publisher token",
+        id: "publisher-token",
+        uses: publisherAction,
+        with: {
+          "client-id": publisherClientId,
+          "private-key": publisherPrivateKey,
+          owner: "MentallyQuill",
+          repositories: "TavernKeeper",
+          "permission-contents": "write",
+        },
+      });
+      expect(tokenStep?.with).not.toHaveProperty("app-id");
+      expect(JSON.stringify(job)).not.toMatch(
+        /TAVERNKEEPER_PUBLISHER_APP_ID|\bapp-id\b/u,
+      );
+    }
+  });
+
+  test("the Publisher verification canary is owner-only and sequential", async () => {
+    const value = await workflow("publisher-verification.yml");
+    const ownerMainGuard =
+      "${{ github.actor_id == 2625904 && github.ref == 'refs/heads/main' }}";
+
+    expect(value.on).toEqual({ workflow_dispatch: null });
+    expect(value.permissions).toEqual({ contents: "read" });
+    expect(value.concurrency).toEqual({
+      group: "tavernkeeper-publisher-verification",
+      "cancel-in-progress": false,
+    });
+    expect(Object.keys(value.jobs)).toEqual(["verify-scanner", "verify-staff"]);
+    expect(value.jobs["verify-scanner"].needs).toBeUndefined();
+    expect(value.jobs["verify-staff"].needs).toBe("verify-scanner");
+
+    for (const [jobName, environment] of [
+      ["verify-scanner", "tavernkeeper-scanner"],
+      ["verify-staff", "tavernkeeper-staff"],
     ] as const) {
+      const job = value.jobs[jobName];
+      const steps = job.steps as Workflow[];
+      const checkout = steps.find((step) => step.uses === checkoutAction);
+      const token = steps.find((step) => step.uses === publisherAction);
+      const push = steps.find((step) =>
+        String(step.run).includes("git push origin HEAD:main"),
+      );
+
+      expect(job.if).toBe(ownerMainGuard);
+      expect(job.environment).toBe(environment);
+      expect(job.permissions).toEqual({ contents: "read" });
+      expect(checkout).toMatchObject({
+        uses: checkoutAction,
+        with: { ref: "main", "persist-credentials": false },
+      });
+      expect(token?.with).not.toHaveProperty("skip-token-revoke");
+      expect(push?.env).toEqual({
+        GH_TOKEN: "${{ steps.publisher-token.outputs.token }}",
+      });
+      expect(push?.run).toContain("gh auth setup-git");
+      expect(push?.run).toContain("git commit --allow-empty");
+      expect(push?.run).not.toMatch(/--force/iu);
+    }
+  });
+
+  test("each Publisher App token has one reviewed bounded push consumer", async () => {
+    for (const [workflowName, jobName] of publisherMutationJobs) {
       const value = await workflow(workflowName);
       const steps = value.jobs[jobName].steps as Workflow[];
-      const tokenSteps = steps.filter((step) =>
-        JSON.stringify(step).match(
-          /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)/u,
-        ),
-      );
+      const tokenSteps = steps.filter((step) => step.uses === publisherAction);
       const consumers = steps.filter((step) =>
         JSON.stringify(step).includes("steps.publisher-token.outputs.token"),
       );
@@ -1001,6 +1083,27 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("workflow policy rejects legacy Publisher App ID credentials", async () => {
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "client-id: ${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}",
+          "app-id: ${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}",
+        ),
+      /Publisher App token step changed from the reviewed contract/u,
+      "coverage-campaign.yml",
+    );
+    await expectPolicyFailure(
+      (text) =>
+        text.replace(
+          "client-id: ${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}",
+          "client-id: ${{ secrets.TAVERNKEEPER_PUBLISHER_APP_ID }}",
+        ),
+      /legacy Publisher App ID credential is not allowed/u,
+      "coverage-campaign.yml",
+    );
+  });
+
   test("workflow policy rejects removal of bounded Publisher push retries", async () => {
     await expectPolicyFailure(
       (text) =>
@@ -1131,7 +1234,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 13 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 14 workflows/u),
     });
   });
 });
