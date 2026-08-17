@@ -25,7 +25,7 @@ const reviewProgressCountScript = fileURLToPath(
   new URL("../scripts/contextual-review-progress-count.mjs", import.meta.url),
 );
 const publisherAction =
-  "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
+  "actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1";
 const checkoutAction =
   "actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1";
 const publisherClientId = "${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}";
