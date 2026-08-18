@@ -397,7 +397,10 @@ export async function runJavascriptAnalysis(
       );
     let content: string;
     try {
-      content = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+      content = new TextDecoder("utf-8", {
+        fatal: true,
+        ignoreBOM: true,
+      }).decode(bytes);
     } catch {
       for (const stage of ["raw-signatures", "raw-ast"] as const)
         addUnresolved({

