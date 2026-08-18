@@ -14,7 +14,10 @@ import {
   recordAutomaticProbeFailure,
   recordAutomaticProbeSuccess,
 } from "../operations/retry.js";
-import { prioritizeQueuedTargetRetry } from "../queue/durable-queue.js";
+import {
+  prioritizeQueuedTargetRetry,
+  revokeQueuedTargetStaffRequest,
+} from "../queue/durable-queue.js";
 import {
   isDirectExecution,
   readJsonFile,
@@ -42,6 +45,10 @@ const OperationSchema = z.discriminatedUnion("operation", [
   }),
   z.strictObject({
     operation: z.literal("retry"),
+    repository_id: z.number().int().positive(),
+  }),
+  z.strictObject({
+    operation: z.literal("revoke"),
     repository_id: z.number().int().positive(),
   }),
 ]);
@@ -75,6 +82,20 @@ export function applyRetryOperation(
           operation.error_fingerprint,
           operation.probed_at,
         );
+  }
+  if (operation.operation === "revoke") {
+    const hasStaffRequest = state.scan_queue.entries.some(
+      (entry) =>
+        entry.repository_id === operation.repository_id &&
+        entry.staff_requested === true,
+    );
+    const revoked = revokeQueuedTargetStaffRequest(
+      state,
+      operation.repository_id,
+    );
+    return hasStaffRequest
+      ? parseOperationsState({ ...revoked, updated_at: now })
+      : state;
   }
   return operation.operation === "pause"
     ? pauseSystem(state, {

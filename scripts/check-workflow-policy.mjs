@@ -143,7 +143,7 @@ const canonicalStaffPublisherRun =
     '  elif [[ "$OPERATION" = "pause" ]]; then',
     '    request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" \'{operation:$operation,reason_code:$reason_code}\')"',
     '    env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry',
-    '  elif [[ "$OPERATION" = "retry" ]]; then',
+    '  elif [[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" ]]; then',
     '    request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" \'{operation:$operation,repository_id:$repository_id}\')"',
     '    env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry',
     "  else",
@@ -256,6 +256,7 @@ const allowedTriggers = {
   "deploy-pages.yml": ["workflow_call", "workflow_dispatch"],
   "pages-reconcile.yml": ["schedule", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
+  "prepare-diagnostic.yml": ["workflow_dispatch"],
   "provider-check.yml": ["workflow_dispatch"],
   "publisher-verification.yml": ["workflow_dispatch"],
   "reconcile.yml": [
@@ -295,6 +296,10 @@ const permissionProfiles = {
   "policy-rescan.yml": {
     workflow: { contents: "read", actions: "write" },
     jobs: { schedule: { contents: "read", actions: "write" } },
+  },
+  "prepare-diagnostic.yml": {
+    workflow: { contents: "read" },
+    jobs: { prepare: { contents: "read" } },
   },
   "provider-check.yml": {
     workflow: { contents: "read" },
@@ -1120,6 +1125,64 @@ function checkTargetedAuthority(file, workflow) {
     );
 }
 
+function checkPreparationDiagnostic(file, workflow) {
+  if (file !== "prepare-diagnostic.yml") return;
+  const inputs = workflow.on?.workflow_dispatch?.inputs ?? {};
+  const job = workflow.jobs?.prepare;
+  const steps = job?.steps ?? [];
+  const prepare = steps.find(
+    (step) => step?.name === "Prepare exact target and scanner evidence",
+  );
+  const finalize = steps.find(
+    (step) => step?.name === "Finalize sanitized preparation diagnostic",
+  );
+  const cleanup = steps.find(
+    (step) => step?.name === "Remove repository preparation data",
+  );
+  const uploads = steps.filter(
+    (step) =>
+      typeof step?.uses === "string" &&
+      step.uses.startsWith("actions/upload-artifact@"),
+  );
+  const upload = uploads[0];
+  const repositoryExpression =
+    "${{ fromJSON(inputs.request_json).repository_id }}";
+  const serialized = JSON.stringify(workflow);
+  if (
+    !same(Object.keys(inputs), ["request_json"]) ||
+    inputs.request_json?.type !== "string" ||
+    inputs.request_json?.required !== true ||
+    job?.if !==
+      "${{ github.actor_id == '2625904' && github.ref == 'refs/heads/main' && fromJSON(inputs.request_json) != null }}" ||
+    job?.environment !== undefined ||
+    job?.["timeout-minutes"] !== 30 ||
+    prepare?.run !== "npm run --silent prepare-target" ||
+    prepare?.["continue-on-error"] !== true ||
+    prepare?.env?.TAVERNKEEPER_ERROR_OUTPUT !== "phase-error.json" ||
+    !finalize?.run?.includes("prepared-evidence -- fail") ||
+    !finalize?.run?.includes("{status,failure}") ||
+    cleanup?.if !== "always()" ||
+    cleanup?.id !== "cleanup" ||
+    !cleanup?.run?.includes("tavernkeeper-checkout-") ||
+    !cleanup?.run?.includes("tavernkeeper-session-") ||
+    steps.indexOf(cleanup) >= steps.indexOf(upload) ||
+    uploads.length !== 1 ||
+    upload?.uses !== uploadArtifactAction ||
+    upload?.if !== "${{ always() && steps.cleanup.outcome == 'success' }}" ||
+    upload?.with?.name !== `preparation-diagnostic-${repositoryExpression}` ||
+    upload?.with?.path !==
+      "${{ runner.temp }}/tavernkeeper-preparation-diagnostic/result.json" ||
+    upload?.with?.["retention-days"] !== 1 ||
+    /TAVERNKEEPER_API_|TAVERNKEEPER_MODEL|JSONREPAIR_|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER|review-target|finalize-target|candidate\.json|git push|reconcile\.yml/iu.test(
+      serialized,
+    )
+  )
+    fail(
+      file,
+      "preparation diagnostic must remain owner-only, model-free, sanitized, and non-mutating",
+    );
+}
+
 function checkScannerToolchain(file, workflow) {
   if (file !== "ci.yml") return;
   const steps = workflow.jobs?.["scanner-toolchain"]?.steps ?? [];
@@ -1206,6 +1269,7 @@ for (const file of names) {
   checkPublisherBoundary(file, workflow);
   checkPublisherVerification(file, workflow);
   checkTargetedAuthority(file, workflow);
+  checkPreparationDiagnostic(file, workflow);
   checkScannerToolchain(file, workflow);
   checkDelayedWake(file, workflow);
 }

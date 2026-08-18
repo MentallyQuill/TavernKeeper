@@ -54,6 +54,7 @@ const workflowNames = [
   "deploy-pages.yml",
   "pages-reconcile.yml",
   "policy-rescan.yml",
+  "prepare-diagnostic.yml",
   "provider-check.yml",
   "publisher-verification.yml",
   "reconcile.yml",
@@ -153,6 +154,61 @@ describe("GitHub workflow security policy", () => {
         name: "prepared-${{ fromJSON(inputs.request_json).repository_id }}",
       },
     });
+  });
+
+  test("runs an owner-only model-free preparation diagnostic", async () => {
+    const value = await workflow("prepare-diagnostic.yml");
+    const job = value.jobs.prepare;
+    const steps = job.steps as Workflow[];
+    const prepare = steps.find(
+      (step) => step.name === "Prepare exact target and scanner evidence",
+    );
+    const cleanup = steps.find(
+      (step) => step.name === "Remove repository preparation data",
+    );
+    const upload = steps.find(
+      (step) => step.name === "Upload sanitized preparation diagnostic",
+    );
+
+    expect(value.on.workflow_dispatch.inputs.request_json).toMatchObject({
+      type: "string",
+      required: true,
+    });
+    expect(value.permissions).toEqual({ contents: "read" });
+    expect(job.environment).toBeUndefined();
+    expect(job.if).toContain("github.actor_id == '2625904'");
+    expect(job.if).toContain("github.ref == 'refs/heads/main'");
+    expect(job["timeout-minutes"]).toBe(30);
+    expect(prepare).toMatchObject({
+      "continue-on-error": true,
+      run: "npm run --silent prepare-target",
+      env: {
+        TAVERNKEEPER_SCAN_REQUEST: "${{ inputs.request_json }}",
+        TAVERNKEEPER_CHECKOUT_ROOT:
+          "${{ runner.temp }}/tavernkeeper-checkout-${{ fromJSON(inputs.request_json).repository_id }}",
+        TAVERNKEEPER_SESSION_ROOT:
+          "${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}",
+        TAVERNKEEPER_ERROR_OUTPUT: "phase-error.json",
+      },
+    });
+    expect(cleanup?.if).toBe("always()");
+    expect(cleanup?.id).toBe("cleanup");
+    expect(cleanup?.run).toContain("tavernkeeper-checkout-");
+    expect(cleanup?.run).toContain("tavernkeeper-session-");
+    expect(cleanup?.run).toContain("phase-error.json");
+    expect(upload).toMatchObject({
+      if: "${{ always() && steps.cleanup.outcome == 'success' }}",
+      uses: uploadArtifactAction,
+      with: {
+        name: "preparation-diagnostic-${{ fromJSON(inputs.request_json).repository_id }}",
+        path: "${{ runner.temp }}/tavernkeeper-preparation-diagnostic/result.json",
+        "if-no-files-found": "error",
+        "retention-days": 1,
+      },
+    });
+    expect(JSON.stringify(value)).not.toMatch(
+      /TAVERNKEEPER_API_|TAVERNKEEPER_MODEL|JSONREPAIR_|TAVERNKEEPER_ARTIFACT_KEY|TAVERNKEEPER_PUBLISHER|review-target|finalize-target|candidate\.json|git push|reconcile\.yml/iu,
+    );
   });
 
   test("the review progress counter never prints malformed checkpoint content", async () => {
@@ -630,6 +686,24 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("staff can revoke a queued scan without reopening reconciliation", async () => {
+    const value = await workflow("staff-operations.yml");
+    const inputs = value.on.workflow_dispatch.inputs;
+    const operate = (value.jobs.operate.steps as Workflow[]).find(
+      (step) => step.name === "Apply and commit validated staff operation",
+    );
+    const reconcile = (value.jobs.operate.steps as Workflow[]).find(
+      (step) => step.name === "Dispatch reconcile",
+    );
+
+    expect(inputs.operation.options).toContain("revoke");
+    expect(inputs.repository_id.description).toMatch(/retry or revoke/iu);
+    expect(operate?.run).toContain(
+      '[[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" ]]',
+    );
+    expect(reconcile?.if).toContain("inputs.operation != 'revoke'");
+  });
+
   test("release holds is staff-gated and restarts reconciliation", async () => {
     const value = await workflow("release-holds.yml");
     const job = value.jobs.release;
@@ -945,6 +1019,14 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
+  test("workflow policy rejects an unguarded preparation diagnostic", async () => {
+    await expectPolicyFailure(
+      (source) => source.replace("github.actor_id == '2625904' && ", ""),
+      /preparation diagnostic must remain owner-only/iu,
+      "prepare-diagnostic.yml",
+    );
+  });
+
   test("workflow policy requires the synthetic JSON repair check", async () => {
     await expectPolicyFailure(
       (text) =>
@@ -1234,7 +1316,7 @@ describe("GitHub workflow security policy", () => {
         cwd: repositoryRoot,
       }),
     ).resolves.toMatchObject({
-      stdout: expect.stringMatching(/Workflow policy passed for 14 workflows/u),
+      stdout: expect.stringMatching(/Workflow policy passed for 15 workflows/u),
     });
   });
 });

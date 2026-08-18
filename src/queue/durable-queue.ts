@@ -189,6 +189,32 @@ export function prioritizeQueuedTargetRetry(
   });
 }
 
+export function revokeQueuedTargetStaffRequest(
+  stateInput: OperationsState,
+  repositoryId: number,
+) {
+  const state = OperationsStateSchema.parse(stateInput);
+  if (!Number.isSafeInteger(repositoryId) || repositoryId < 1)
+    throw new Error("Staff revoke repository ID is invalid.");
+  const queued = state.scan_queue.entries.find(
+    ({ repository_id }) => repository_id === repositoryId,
+  );
+  if (queued === undefined)
+    throw new Error("Staff revoke repository is not queued.");
+  if (queued.staff_requested !== true) return state;
+  return OperationsStateSchema.parse({
+    ...state,
+    scan_queue: {
+      ...state.scan_queue,
+      entries: state.scan_queue.entries.map((entry) => {
+        if (entry.repository_id !== repositoryId) return entry;
+        const { staff_requested: _revoked, ...revoked } = entry;
+        return revoked;
+      }),
+    },
+  });
+}
+
 export function rotateFailedTarget(
   stateInput: OperationsState,
   input: { target: Target; failure: FailureDescriptor; at: string },

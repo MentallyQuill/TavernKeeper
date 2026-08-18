@@ -55,10 +55,19 @@ export function claimScanSlots(input: {
     started_at: input.now,
     run_id: `${input.runId}-${target.repository_id}`,
   }));
+  const claimedRepositoryIds = new Set(
+    claimed.map(({ target }) => target.repository_id),
+  );
+  const queueEntries = state.scan_queue.entries.map((entry) => {
+    if (!claimedRepositoryIds.has(entry.repository_id)) return entry;
+    const { staff_requested: _consumed, ...consumed } = entry;
+    return consumed;
+  });
   const changed = expiredClaims.changed || additions.length > 0;
   const nextState = OperationsStateSchema.parse({
     ...state,
     updated_at: changed ? input.now : state.updated_at,
+    scan_queue: { ...state.scan_queue, entries: queueEntries },
     active_scans: [...activeScans, ...additions],
   });
   return {

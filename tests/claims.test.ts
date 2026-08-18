@@ -45,6 +45,36 @@ function planned(
 }
 
 describe("durable scan claims", () => {
+  test("consumes a staff request only when its target receives a lease", () => {
+    const staffTarget = target(41);
+    const ordinaryTarget = target(42);
+    let state = appendQueuedTarget(initialOperationsState(now), staffTarget, {
+      staffRequested: true,
+    });
+    state = appendQueuedTarget(state, ordinaryTarget, {
+      staffRequested: true,
+    });
+
+    const result = claimScanSlots({
+      state,
+      plannedTargets: planned(state, [staffTarget]),
+      now,
+      runId: "run-staff-100",
+    });
+
+    expect(result.claimed[0]?.queueEntry.staff_requested).toBe(true);
+    expect(
+      result.state.scan_queue.entries.find(
+        ({ repository_id }) => repository_id === staffTarget.repository_id,
+      ),
+    ).not.toHaveProperty("staff_requested");
+    expect(
+      result.state.scan_queue.entries.find(
+        ({ repository_id }) => repository_id === ordinaryTarget.repository_id,
+      ),
+    ).toHaveProperty("staff_requested", true);
+  });
+
   test("claims at most two exact targets", () => {
     const targets = [target(41), target(42), target(43)];
     const state = queued(...targets);

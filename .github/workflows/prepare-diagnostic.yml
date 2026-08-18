@@ -1,0 +1,96 @@
+name: Model-free preparation diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      request_json:
+        description: Reviewed immutable scan request JSON
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  prepare:
+    if: ${{ github.actor_id == '2625904' && github.ref == 'refs/heads/main' && fromJSON(inputs.request_json) != null }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Initialize sanitized diagnostic
+        shell: bash
+        run: |
+          result_root="$RUNNER_TEMP/tavernkeeper-preparation-diagnostic"
+          mkdir -p "$result_root"
+          jq -nc '{status:"failed",failure:{code:"SCAN_BOOTSTRAP_FAILED",domain:"shared",component:"orchestrator"}}' > "$result_root/result.json"
+      - name: Check out trusted TavernKeeper main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        id: dependencies
+        continue-on-error: true
+        run: npm ci
+      - name: Install and verify pinned scanners
+        id: toolchain
+        if: steps.dependencies.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          npm run scanners:install
+          npm run scanners:verify
+          echo "$RUNNER_TEMP/tavernkeeper-tools-v1/bin" >> "$GITHUB_PATH"
+      - name: Record shared scanner toolchain failure
+        if: ${{ steps.dependencies.outcome == 'success' && steps.toolchain.outcome == 'failure' }}
+        run: node -e 'require("node:fs").writeFileSync("phase-error.json", JSON.stringify({code:"SCANNER_UNAVAILABLE",domain:"shared",component:"orchestrator"}) + "\n", {flag:"wx"})'
+      - name: Prepare exact target and scanner evidence
+        id: prepare
+        if: ${{ steps.dependencies.outcome == 'success' && steps.toolchain.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+          TAVERNKEEPER_CHECKOUT_ROOT: ${{ runner.temp }}/tavernkeeper-checkout-${{ fromJSON(inputs.request_json).repository_id }}
+          TAVERNKEEPER_SESSION_ROOT: ${{ runner.temp }}/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}
+          TAVERNKEEPER_ERROR_OUTPUT: phase-error.json
+        run: npm run --silent prepare-target
+      - name: Finalize sanitized preparation diagnostic
+        if: always()
+        env:
+          TAVERNKEEPER_SCAN_REQUEST: ${{ inputs.request_json }}
+        shell: bash
+        run: |
+          result_root="$RUNNER_TEMP/tavernkeeper-preparation-diagnostic"
+          if [[ "${{ steps.prepare.outcome }}" = "success" ]]; then
+            jq -nc '{status:"prepared"}' > "$result_root/result.json"
+          elif [[ "${{ steps.dependencies.outcome }}" = "success" && -f phase-error.json ]]; then
+            failure_root="$RUNNER_TEMP/tavernkeeper-prepared-diagnostic-failure"
+            if npm run --silent prepared-evidence -- fail phase-error.json "$failure_root"; then
+              jq '{status,failure}' "$failure_root/manifest.json" > "$result_root/result.json"
+            fi
+          fi
+      - name: Remove repository preparation data
+        id: cleanup
+        if: always()
+        shell: bash
+        run: |
+          rm -rf \
+            "$RUNNER_TEMP/tavernkeeper-checkout-${{ fromJSON(inputs.request_json).repository_id }}" \
+            "$RUNNER_TEMP/tavernkeeper-session-${{ fromJSON(inputs.request_json).repository_id }}" \
+            "$RUNNER_TEMP/tavernkeeper-prepared-diagnostic-failure"
+          rm -f phase-error.json
+      - name: Upload sanitized preparation diagnostic
+        if: ${{ always() && steps.cleanup.outcome == 'success' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: preparation-diagnostic-${{ fromJSON(inputs.request_json).repository_id }}
+          path: ${{ runner.temp }}/tavernkeeper-preparation-diagnostic/result.json
+          if-no-files-found: error
+          retention-days: 1

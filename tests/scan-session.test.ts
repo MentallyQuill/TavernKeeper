@@ -30,6 +30,7 @@ import {
 } from "../src/config/policy.js";
 import type { EvidenceContextGroup } from "../src/context/evidence-context.js";
 import { CompletedContextualReviewSchema } from "../src/model/contextual-review.js";
+import { classifyFailure } from "../src/operations/failure.js";
 import {
   buildBoundedEvidenceContext,
   finalizePreparedSession,
@@ -539,8 +540,17 @@ describe("three-phase contextual scan session", () => {
     const pins = await loadScannerPins(resolve("config/scanners.v1.json"));
     let verified = false;
     let executionScopeAnalyzed = false;
+    let preparationFailure:
+      | "preparation_structural"
+      | "preparation_scanner_contract"
+      | "preparation_historical"
+      | "preparation_execution_scope"
+      | "preparation_evidence"
+      | "preparation_persistence"
+      | null = null;
     const dependencies: PrepareTargetSessionDependencies & {
       executionScopes: typeof analyzeExecutionScopes;
+      persist?: () => Promise<void>;
     } = {
       checkout: async ({ destination }) => {
         await mkdir(destination, { recursive: true });
@@ -581,73 +591,89 @@ describe("three-phase contextual scan session", () => {
         ok: true,
         value: { baseSha: null, historyCommits: 1, changedPaths: [] },
       }),
-      structuralScan: async () => [],
-      scanners: async () => [
-        {
-          name: "tavernkeeper-static",
-          version: "5",
-          status: "completed",
-          findings: [],
-        },
-        {
-          name: "gitleaks",
-          version: "8.30.1",
-          status: "completed",
-          findings: [],
-        },
-        {
-          name: "opengrep",
-          version: "1.26.0",
-          status: "completed",
-          findings: [],
-          pathCoverage: { scanned: [], skipped: [] },
-        },
-        {
-          name: "javascript-analysis",
-          version: JAVASCRIPT_ANALYSIS_VERSION,
-          status: "completed",
-          findings: [],
-          javascriptAnalysis: {
-            status: "complete",
-            candidates: 0,
-            candidate_bytes: 0,
-            representations: {
-              raw: 0,
-              decoded: 0,
-              normalized: 0,
-              bundle_modules: 0,
-            },
-            stages: {
-              raw_signatures: 0,
-              raw_ast: 0,
-              raw_opengrep: 0,
-              derived_signatures: 0,
-              derived_ast: 0,
-              derived_opengrep: 0,
-            },
-            unresolved: [],
+      structuralScan: async () => {
+        if (preparationFailure === "preparation_structural")
+          throw new Error("PRIVATE_REPOSITORY_PATH");
+        return [];
+      },
+      scanners: async () => {
+        return [
+          {
+            name: "tavernkeeper-static",
+            version: "5",
+            status: "completed",
+            findings: [],
           },
-          evidenceHints: [],
-          derivativeAncestry: [],
-        },
-        ...[
-          ["osv-scanner", "2.4.0"],
-          ["zizmor", "1.28.0"],
-          ["malcontent", "1.25.7"],
-        ].map(([name, version]) => ({
-          name: name!,
-          version: version!,
-          status: "not-applicable" as const,
-          findings: [],
-        })),
-      ],
-      extractHistorical: async () => [],
+          {
+            name: "gitleaks",
+            version: "8.30.1",
+            status: "completed",
+            findings: [],
+          },
+          {
+            name: "opengrep",
+            version: "1.26.0",
+            status: "completed",
+            findings: [],
+            pathCoverage: { scanned: [], skipped: [] },
+          },
+          {
+            name: "javascript-analysis",
+            version: JAVASCRIPT_ANALYSIS_VERSION,
+            status: "completed",
+            findings: [],
+            javascriptAnalysis: {
+              status: "complete",
+              candidates: 0,
+              candidate_bytes: 0,
+              representations: {
+                raw: 0,
+                decoded: 0,
+                normalized: 0,
+                bundle_modules: 0,
+              },
+              stages: {
+                raw_signatures: 0,
+                raw_ast: 0,
+                raw_opengrep: 0,
+                derived_signatures: 0,
+                derived_ast: 0,
+                derived_opengrep: 0,
+              },
+              unresolved: [],
+            },
+            evidenceHints: [],
+            derivativeAncestry: [],
+          },
+          ...[
+            ["osv-scanner", "2.4.0"],
+            ["zizmor", "1.28.0"],
+            ["malcontent", "1.25.7"],
+          ].map(([name, version]) => ({
+            name: name!,
+            version: version!,
+            status: "not-applicable" as const,
+            findings: [],
+          })),
+        ];
+      },
+      extractHistorical: async () => {
+        if (preparationFailure === "preparation_historical")
+          throw new Error("PRIVATE_REPOSITORY_PATH");
+        return [];
+      },
       executionScopes: async ({ limits }) => {
+        if (preparationFailure === "preparation_execution_scope")
+          throw new Error("PRIVATE_REPOSITORY_PATH");
         executionScopeAnalyzed = true;
         expect(limits).toEqual(policy.executionScope);
         return new Map();
       },
-      buildEvidence: async () => [],
+      buildEvidence: async () => {
+        if (preparationFailure === "preparation_evidence")
+          throw new Error("PRIVATE_REPOSITORY_PATH");
+        return [];
+      },
       verifyHead: async (_root, expectedSha) => {
         verified = true;
         return { ok: true, value: expectedSha };
@@ -692,6 +718,68 @@ describe("three-phase contextual scan session", () => {
     await expect(
       access(join(sessionRoot, "prepared.json")),
     ).resolves.toBeUndefined();
+
+    const stageCases = [
+      ["preparation_structural", "orchestrator"],
+      ["preparation_scanner_contract", "orchestrator"],
+      ["preparation_historical", "history"],
+      ["preparation_execution_scope", "orchestrator"],
+      ["preparation_evidence", "evidence-context"],
+      ["preparation_persistence", "artifact-transport"],
+    ] as const;
+    for (const [index, [diagnostic, component]] of stageCases.entries()) {
+      preparationFailure = diagnostic;
+      if (diagnostic === "preparation_persistence")
+        dependencies.persist = async () => {
+          throw new Error("PRIVATE_REPOSITORY_PATH");
+        };
+      else delete dependencies.persist;
+      let classified: ReturnType<typeof classifyFailure> | undefined;
+      try {
+        await prepareTargetSession(
+          {
+            target: {
+              source_id: "github-42",
+              provider: "github",
+              repository_id: 42,
+              repository: "owner/repo",
+              target_sha: targetSha,
+              canonical_url: "https://github.com/owner/repo",
+            },
+            projectKinds: ["extension"],
+            checkoutRoot: join(base, `tavernkeeper-checkout-${index + 43}`),
+            sessionRoot: join(base, `tavernkeeper-session-${index + 43}`),
+            previousReportShas: [],
+            preparedAt:
+              diagnostic === "preparation_scanner_contract"
+                ? "PRIVATE_REPOSITORY_PATH"
+                : "2026-08-02T15:00:00.000Z",
+            scannerVersion: "1.0.0",
+            scannerPolicyVersion: "5",
+            ruleCatalogVersion: "1",
+            reportVersion: 1,
+            supersedesReportId: null,
+            policy,
+            pins,
+            rulesRoot: resolve("rules/opengrep"),
+            runner: {} as CommandRunner,
+            temporaryRoot: base,
+          },
+          dependencies,
+        );
+      } catch (error) {
+        classified = classifyFailure(error);
+      }
+      expect(classified).toEqual({
+        code: "PREPARATION_FAILED",
+        domain: "target",
+        component,
+        diagnostic,
+      });
+      expect(JSON.stringify(classified)).not.toContain(
+        "PRIVATE_REPOSITORY_PATH",
+      );
+    }
   });
 
   test("requires validated review before producing one V5 candidate", async () => {
