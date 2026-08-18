@@ -51,42 +51,58 @@ export type ModelRequestErrorCode =
   | "MODEL_REVIEW_BUDGET_EXCEEDED"
   | "MODEL_CONTEXT_INCOMPLETE";
 
-export type ModelResponseDiagnostic =
-  | "assessment_candidate_id"
-  | "assessment_confidence"
-  | "assessment_developer_action"
-  | "assessment_disposition"
-  | "assessment_evidence_ids"
-  | "assessment_exploitability"
-  | "assessment_impact"
-  | "assessment_layman_explanation"
-  | "assessment_locations"
-  | "assessment_recommended_risk"
-  | "assessment_risk_exposure"
-  | "assessment_schema"
-  | "assessment_technical_explanation"
-  | "observation_evidence_ids"
-  | "observation_locations"
-  | "observation_risk_exposure"
-  | "observation_schema"
-  | "output_limit"
-  | "response_content"
-  | "response_envelope"
-  | "response_json"
-  | "provider_bad_request"
-  | "provider_contextual_contract_rejected"
-  | "provider_http_error"
-  | "provider_method_not_allowed"
-  | "provider_model_unavailable"
-  | "provider_not_found"
-  | "provider_parameter_rejected"
-  | "provider_payload_too_large"
-  | "provider_schema_rejected"
-  | "provider_server_error"
-  | "provider_unprocessable"
-  | "review_schema"
-  | "response_size"
-  | "response_usage";
+export const ModelResponseDiagnosticSchema = z.enum([
+  "assessment_candidate_id",
+  "assessment_confidence",
+  "assessment_developer_action",
+  "assessment_disposition",
+  "assessment_evidence_ids",
+  "assessment_exploitability",
+  "assessment_impact",
+  "assessment_layman_explanation",
+  "assessment_locations",
+  "assessment_recommended_risk",
+  "assessment_risk_exposure",
+  "assessment_schema",
+  "assessment_technical_explanation",
+  "observation_evidence_ids",
+  "observation_locations",
+  "observation_risk_exposure",
+  "observation_schema",
+  "output_limit",
+  "response_content",
+  "response_envelope",
+  "response_json",
+  "provider_bad_request",
+  "provider_contextual_contract_rejected",
+  "provider_http_error",
+  "provider_method_not_allowed",
+  "provider_model_unavailable",
+  "provider_not_found",
+  "provider_parameter_rejected",
+  "provider_payload_too_large",
+  "provider_schema_rejected",
+  "provider_server_error",
+  "provider_unprocessable",
+  "review_schema",
+  "response_size",
+  "response_usage",
+]);
+export type ModelResponseDiagnostic = z.infer<
+  typeof ModelResponseDiagnosticSchema
+>;
+
+/**
+ * Why a review attempt exists. A superset of ModelResponseDiagnostic: an
+ * attempt can also follow a successful context expansion, which is a request
+ * for more source rather than a defect in the previous response. Recording
+ * those as null would make them indistinguishable from a fresh first attempt.
+ */
+export const RetryReasonSchema = z.enum([
+  ...ModelResponseDiagnosticSchema.options,
+  "context_expanded",
+]);
+export type RetryReason = z.infer<typeof RetryReasonSchema>;
 
 export class ModelRequestError extends Error {
   constructor(
