@@ -27,6 +27,8 @@ import {
 import {
   ModelRequestError,
   ModelResponseDiagnosticSchema,
+  RetryReasonSchema,
+  type RetryReason,
   type ModelCompletionResult,
   type ModelResponseDiagnostic,
   type ModelUsage,
@@ -103,7 +105,7 @@ export const ReviewBatchUsageSchema = z.strictObject({
   // failure that scheduled the attempt (null for a fresh first attempt; for
   // json_repair, the binding diagnostic that triggered the repair). Optional
   // so checkpoints persisted before this field existed still parse.
-  retry_reason: ModelResponseDiagnosticSchema.nullable().optional(),
+  retry_reason: RetryReasonSchema.nullable().optional(),
 });
 export type ReviewBatchUsage = z.infer<typeof ReviewBatchUsageSchema>;
 export const ReviewUnitSchema = z
@@ -824,6 +826,10 @@ async function reviewGroup(
 ) {
   let group = initialGroup;
   let repair: ContextualReviewRepair | undefined;
+  // Why the next attempt exists. Kept separate from `repair` so a context
+  // expansion, which clears the repair guidance, is still distinguishable
+  // from a fresh first attempt in the persisted batch record.
+  let retryReason: RetryReason | null = null;
   let lastError: unknown;
   let repairCandidate:
     | {
@@ -898,7 +904,7 @@ async function reviewGroup(
           estimatedInputTokens,
           spec.policy.maxBatchInputTokens,
           completion.usage,
-          repair?.diagnostic ?? null,
+          retryReason,
         ),
       );
       budgetLedger.recordCompletion(completion.usage);
@@ -964,6 +970,7 @@ async function reviewGroup(
           );
         group = expanded;
         repair = undefined;
+        retryReason = "context_expanded";
         continue;
       }
       completedResponse = response;
@@ -994,6 +1001,7 @@ async function reviewGroup(
             : "review_schema",
       };
       repair = nextRepair;
+      retryReason = nextRepair.diagnostic;
     }
   }
   if (
@@ -1055,6 +1063,10 @@ interface BatchGroupState {
   group: EvidenceContextGroup;
   attempt: number;
   repair?: ContextualReviewRepair | undefined;
+  // Why the current attempt exists. Tracked separately from `repair` because
+  // a context expansion clears the repair guidance but still schedules a
+  // retry, which must not be recorded as a fresh first attempt.
+  retryReason?: RetryReason | undefined;
   lastError?: unknown;
   repairCandidate?:
     | {
@@ -1079,7 +1091,7 @@ function batchUsage(
   // Why this attempt exists: the diagnostic carried in from the previous
   // failed attempt, or null when this is a fresh first attempt. The failure
   // reason of the attempt itself is only known after it is validated.
-  retryReason: ModelResponseDiagnostic | null,
+  retryReason: RetryReason | null,
 ): ReviewBatchUsage {
   return ReviewBatchUsageSchema.parse({
     kind,
@@ -1105,9 +1117,9 @@ function batchUsage(
 // a retry reason when every group in the batch was retried for the same
 // diagnostic, and stays null for fresh or mixed-reason batches.
 function batchRetryReason(states: readonly BatchGroupState[]) {
-  const first = states[0]?.repair?.diagnostic;
+  const first = states[0]?.retryReason;
   return first !== undefined &&
-    states.every((state) => state.repair?.diagnostic === first)
+    states.every((state) => state.retryReason === first)
     ? first
     : null;
 }
@@ -1121,6 +1133,10 @@ function repairCompletionIdentity(completionId: string) {
 
 function nextBatchAttempt(state: BatchGroupState, error: unknown) {
   state.lastError = error;
+  state.retryReason =
+    error instanceof ModelRequestError && error.diagnostic !== undefined
+      ? error.diagnostic
+      : "review_schema";
   state.repair = {
     diagnostic:
       error instanceof ModelRequestError && error.diagnostic !== undefined
@@ -1318,6 +1334,7 @@ async function reviewBatch(
               );
             state.group = expanded;
             state.repair = undefined;
+            state.retryReason = "context_expanded";
             state.attempt += 1;
             continue;
           }

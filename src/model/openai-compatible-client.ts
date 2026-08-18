@@ -92,6 +92,18 @@ export type ModelResponseDiagnostic = z.infer<
   typeof ModelResponseDiagnosticSchema
 >;
 
+/**
+ * Why a review attempt exists. A superset of ModelResponseDiagnostic: an
+ * attempt can also follow a successful context expansion, which is a request
+ * for more source rather than a defect in the previous response. Recording
+ * those as null would make them indistinguishable from a fresh first attempt.
+ */
+export const RetryReasonSchema = z.enum([
+  ...ModelResponseDiagnosticSchema.options,
+  "context_expanded",
+]);
+export type RetryReason = z.infer<typeof RetryReasonSchema>;
+
 export class ModelRequestError extends Error {
   constructor(
     readonly code: ModelRequestErrorCode,

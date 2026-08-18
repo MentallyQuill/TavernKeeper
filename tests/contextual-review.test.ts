@@ -1547,6 +1547,12 @@ describe("contextual evidence review", () => {
     expect(result.review_batches?.map(({ attempt }) => attempt)).toEqual([
       1, 2,
     ]);
+    // A context expansion schedules a retry without any defect in the previous
+    // response. Recording null here would make it indistinguishable from a
+    // fresh first attempt.
+    expect(
+      result.review_batches?.map(({ retry_reason }) => retry_reason),
+    ).toEqual([null, "context_expanded"]);
   });
 
   test("refuses a response that omits a supplied candidate", async () => {
