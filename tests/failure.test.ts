@@ -137,4 +137,22 @@ describe("operation failure domains", () => {
       diagnostic: "rule_timeout",
     });
   });
+
+  test("preserves a bounded preparation stage without exposing its message", () => {
+    const classified = classifyFailure({
+      code: "PREPARATION_FAILED",
+      scope: "repository",
+      component: "evidence-context",
+      diagnostic: "preparation_evidence",
+      message: "PRIVATE_REPOSITORY_PATH",
+    });
+
+    expect(classified).toEqual({
+      code: "PREPARATION_FAILED",
+      domain: "target",
+      component: "evidence-context",
+      diagnostic: "preparation_evidence",
+    });
+    expect(JSON.stringify(classified)).not.toContain("PRIVATE_REPOSITORY_PATH");
+  });
 });

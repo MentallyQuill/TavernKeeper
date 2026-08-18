@@ -294,7 +294,15 @@ reset gate.
 - `coverage-campaign.yml` freezes the one-time top-20-popular plus
   latest-20-stable-release cohort and dispatches reconciliation.
 - `staff-operations.yml` sets or clears the explicit emergency stop, makes one
-  target immediately due, or performs a protected legacy-to-V3 state migration.
+  target immediately due, revokes an unconsumed staff request, or performs a
+  protected legacy-to-V3 state migration. `revoke` removes only
+  `staff_requested`, preserves retry history and the emergency stop, is
+  idempotent, and does not dispatch reconciliation.
+- `prepare-diagnostic.yml` is an owner-only, `main`-only deterministic probe.
+  It checks out the immutable request, runs preparation and pinned scanners,
+  removes all repository/session data, and retains only a sanitized
+  `result.json` artifact for one day. It has no model, repair, Publisher,
+  queue, report, deployment, or reconciliation authority.
 - `deploy-pages.yml` deploys only an exact commit proven to be on `main`;
   manual runs require staff protection.
 - `pages-reconcile.yml` automatically repairs a missing or stale Pages
@@ -308,6 +316,24 @@ reset gate.
   may the obsolete `TAVERNKEEPER_PUBLISHER_APP_ID` environment secrets be
   removed; retain the Client ID variable and private-key secret in both
   environments.
+
+To revoke CharacterLibrary's unconsumed staff request while preserving full
+maintenance and retry history, run:
+
+```text
+gh workflow run staff-operations.yml --repo MentallyQuill/TavernKeeper --ref main -f operation=revoke -f repository_id=1139430137
+```
+
+For a model-free preparation diagnosis, save the reviewed immutable scan
+request as `request.json`, then run:
+
+```text
+gh workflow run prepare-diagnostic.yml --repo MentallyQuill/TavernKeeper --ref main -f request_json="$(jq -c . request.json)"
+```
+
+Download only the resulting `preparation-diagnostic-<repository-id>` artifact.
+`status: prepared` means deterministic preparation succeeded; it grants no
+scan authorization and does not permit a contextual-model request.
 
 Public Issues and comments do not trigger these workflows. A false-positive
 appeal cannot change an individual report. If evidence exposes a scanner,

@@ -60,6 +60,12 @@ export const SafeFailureDiagnostics = [
   "review_schema",
   "evidence_non_text",
   "parser_syntax",
+  "preparation_evidence",
+  "preparation_execution_scope",
+  "preparation_historical",
+  "preparation_persistence",
+  "preparation_scanner_contract",
+  "preparation_structural",
   "rule_timeout",
 ] as const;
 
@@ -83,6 +89,7 @@ const TargetSystemCodes = new Set([
   "MODEL_EVIDENCE_INVALID",
   "MODEL_INVALID_RESPONSE",
   "MODEL_REVIEW_BUDGET_EXCEEDED",
+  "PREPARATION_FAILED",
   "REPORT_FINALIZATION_FAILED",
   "SCAN_PACKAGE_FINALIZATION_FAILED",
   "SCAN_PACKAGE_INVALID",

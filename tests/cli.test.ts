@@ -234,6 +234,50 @@ describe("JSON-only orchestration CLIs", () => {
     ).toBe(false);
   });
 
+  test("staff revoke clears only future eligibility and preserves the stop", () => {
+    const targetValue = target(42);
+    const queued = syncScanQueue({
+      manifest: {
+        schema_version: 2,
+        generated_at: now,
+        repositories: [
+          { ...targetValue, project_kinds: [...targetValue.project_kinds] },
+        ],
+      },
+      index: { schema_version: 5, generated_at: now, reports: [] },
+      state: stateObserving(),
+      now,
+      scannerPolicyVersion: "2",
+    }).state;
+    const requested = applyRetryOperation(
+      queued,
+      { operation: "retry", repository_id: 42 },
+      "2026-07-31T18:01:00.000Z",
+    );
+    const stopped = pauseSystem(requested, {
+      kind: "staff",
+      reasonCode: "MODEL_COST_MAINTENANCE",
+      at: "2026-07-31T18:02:00.000Z",
+    });
+
+    const revoked = applyRetryOperation(
+      stopped,
+      { operation: "revoke", repository_id: 42 },
+      "2026-07-31T18:03:00.000Z",
+    );
+
+    expect(revoked.emergency_stop).toEqual(stopped.emergency_stop);
+    expect(revoked.updated_at).toBe("2026-07-31T18:03:00.000Z");
+    expect(revoked.scan_queue.entries[0]).not.toHaveProperty("staff_requested");
+    expect(
+      applyRetryOperation(
+        revoked,
+        { operation: "revoke", repository_id: 42 },
+        "2026-07-31T18:04:00.000Z",
+      ),
+    ).toStrictEqual(revoked);
+  });
+
   test("reconcile emits no more than five self-contained scan requests", () => {
     const manifest: TargetManifestV2 = {
       schema_version: 2,

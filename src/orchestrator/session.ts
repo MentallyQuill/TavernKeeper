@@ -300,6 +300,52 @@ export class ScanPhaseError extends Error {
   }
 }
 
+type PreparationStageDiagnostic =
+  | "preparation_structural"
+  | "preparation_scanner_contract"
+  | "preparation_historical"
+  | "preparation_execution_scope"
+  | "preparation_evidence"
+  | "preparation_persistence";
+
+export class PreparationStageError extends ScanPhaseError {
+  constructor(
+    readonly diagnostic: PreparationStageDiagnostic,
+    readonly component:
+      "orchestrator" | "history" | "evidence-context" | "artifact-transport",
+  ) {
+    super(
+      "PREPARATION_FAILED",
+      "repository",
+      "Repository preparation stage failed.",
+    );
+    this.name = "PreparationStageError";
+  }
+}
+
+function hasBoundedPhaseIdentity(error: unknown) {
+  if (error === null || typeof error !== "object") return false;
+  const candidate = error as Record<string, unknown>;
+  return (
+    typeof candidate.code === "string" &&
+    /^[A-Z][A-Z0-9_]{0,79}$/u.test(candidate.code) &&
+    (candidate.scope === "repository" || candidate.scope === "system")
+  );
+}
+
+async function runPreparationStage<T>(
+  diagnostic: PreparationStageDiagnostic,
+  component: PreparationStageError["component"],
+  operation: () => T | Promise<T>,
+) {
+  try {
+    return await operation();
+  } catch (error) {
+    if (hasBoundedPhaseIdentity(error)) throw error;
+    throw new PreparationStageError(diagnostic, component);
+  }
+}
+
 export interface PrepareTargetSessionDependencies {
   checkout: typeof checkoutExactTarget;
   inventory: typeof inventoryRepository;
@@ -311,6 +357,11 @@ export interface PrepareTargetSessionDependencies {
   executionScopes: typeof analyzeExecutionScopes;
   buildEvidence: typeof buildEvidenceContextGroups;
   verifyHead: typeof verifyExactHead;
+  persist?: (input: {
+    sessionRoot: string;
+    prepared: PreparedSession;
+    evidenceBundle: z.infer<typeof EvidenceContextBundleSchema>;
+  }) => Promise<void>;
 }
 
 const defaultPrepareDependencies: PrepareTargetSessionDependencies = {
@@ -571,37 +622,52 @@ export async function prepareTargetSession(
         "repository",
         "Repository history failed.",
       );
-    const structuralFindings = await dependencies.structuralScan(
-      checkoutRoot,
-      classification.firstPartyText,
+    const structuralFindings = await runPreparationStage(
+      "preparation_structural",
+      "orchestrator",
+      () =>
+        dependencies.structuralScan(
+          checkoutRoot,
+          classification.firstPartyText,
+        ),
     );
-    const scannerRuns = await dependencies.scanners({
-      root: checkoutRoot,
-      history: {
-        baseSha: history.value.baseSha,
-        targetSha: target.target_sha,
-        commits: history.value.historyCommits,
-      },
-      classification,
-      inventoryFiles: inventory.files,
-      structuralFiles: [],
-      structuralFindings,
-      runner,
-      policy,
-      pins,
-      rulesRoot,
-      ...(executables === undefined ? {} : { executables }),
-      ...(temporaryRoot === undefined ? {} : { temporaryRoot }),
-    });
-    validateScannerRuns(scannerRuns, classification, structuralFindings, {
-      "tavernkeeper-static": policy.version,
-      gitleaks: pins.gitleaks.version,
-      opengrep: pins.opengrep.version,
-      "javascript-analysis": JAVASCRIPT_ANALYSIS_VERSION,
-      "osv-scanner": pins.osvScanner.version,
-      zizmor: pins.zizmor.version,
-      malcontent: pins.malcontent.version,
-    });
+    const scannerRuns = await runPreparationStage(
+      "preparation_scanner_contract",
+      "orchestrator",
+      () =>
+        dependencies.scanners({
+          root: checkoutRoot,
+          history: {
+            baseSha: history.value.baseSha,
+            targetSha: target.target_sha,
+            commits: history.value.historyCommits,
+          },
+          classification,
+          inventoryFiles: inventory.files,
+          structuralFiles: [],
+          structuralFindings,
+          runner,
+          policy,
+          pins,
+          rulesRoot,
+          ...(executables === undefined ? {} : { executables }),
+          ...(temporaryRoot === undefined ? {} : { temporaryRoot }),
+        }),
+    );
+    await runPreparationStage(
+      "preparation_scanner_contract",
+      "orchestrator",
+      () =>
+        validateScannerRuns(scannerRuns, classification, structuralFindings, {
+          "tavernkeeper-static": policy.version,
+          gitleaks: pins.gitleaks.version,
+          opengrep: pins.opengrep.version,
+          "javascript-analysis": JAVASCRIPT_ANALYSIS_VERSION,
+          "osv-scanner": pins.osvScanner.version,
+          zizmor: pins.zizmor.version,
+          malcontent: pins.malcontent.version,
+        }),
+    );
     const orderedRuns = canonicalScannerRuns(scannerRuns);
     const findings = orderedRuns
       .flatMap(({ findings }) => findings)
@@ -668,41 +734,61 @@ export async function prepareTargetSession(
       )!.javascriptAnalysis!,
       findings,
     };
-    const prepared = PreparedSessionSchema.parse({
-      ...withoutIdentity,
-      session_id: preparedSessionIdentity(withoutIdentity),
-    });
-    const historicalSources = await dependencies.extractHistorical({
-      checkoutRoot,
-      targetSha: target.target_sha,
-      findings,
-      runner,
-      maxFileBytes: policy.inventory.maxFileBytes,
-    });
-    const executionScopes = await dependencies.executionScopes({
-      root: checkoutRoot,
-      files: inventory.files,
-      limits: policy.executionScope,
-    });
-    const evidenceBundle = await buildBoundedEvidenceContext({
-      prepared,
-      maxEvidenceCharacters:
-        policy.javascriptAnalysis.maxEvidenceCharactersPerFinding,
-      buildGroups: (maxEvidenceCharactersPerFinding) =>
-        dependencies.buildEvidence({
-          checkoutRoot,
-          target,
-          projectKinds,
-          findings,
-          inventory,
-          historicalSources,
-          executionScopes,
-          javascriptEvidenceHints: orderedRuns.flatMap(
-            ({ evidenceHints }) => evidenceHints ?? [],
-          ),
-          maxEvidenceCharactersPerFinding,
+    const prepared = await runPreparationStage(
+      "preparation_scanner_contract",
+      "orchestrator",
+      () =>
+        PreparedSessionSchema.parse({
+          ...withoutIdentity,
+          session_id: preparedSessionIdentity(withoutIdentity),
         }),
-    });
+    );
+    const historicalSources = await runPreparationStage(
+      "preparation_historical",
+      "history",
+      () =>
+        dependencies.extractHistorical({
+          checkoutRoot,
+          targetSha: target.target_sha,
+          findings,
+          runner,
+          maxFileBytes: policy.inventory.maxFileBytes,
+        }),
+    );
+    const executionScopes = await runPreparationStage(
+      "preparation_execution_scope",
+      "orchestrator",
+      () =>
+        dependencies.executionScopes({
+          root: checkoutRoot,
+          files: inventory.files,
+          limits: policy.executionScope,
+        }),
+    );
+    const evidenceBundle = await runPreparationStage(
+      "preparation_evidence",
+      "evidence-context",
+      () =>
+        buildBoundedEvidenceContext({
+          prepared,
+          maxEvidenceCharacters:
+            policy.javascriptAnalysis.maxEvidenceCharactersPerFinding,
+          buildGroups: (maxEvidenceCharactersPerFinding) =>
+            dependencies.buildEvidence({
+              checkoutRoot,
+              target,
+              projectKinds,
+              findings,
+              inventory,
+              historicalSources,
+              executionScopes,
+              javascriptEvidenceHints: orderedRuns.flatMap(
+                ({ evidenceHints }) => evidenceHints ?? [],
+              ),
+              maxEvidenceCharactersPerFinding,
+            }),
+        }),
+    );
     const verifiedHead = await dependencies.verifyHead(
       checkoutRoot,
       target.target_sha,
@@ -714,17 +800,31 @@ export async function prepareTargetSession(
         "repository",
         "Repository head changed before evidence persistence.",
       );
-    await mkdir(sessionRoot, { recursive: true });
-    sessionCreated = true;
-    await writeFile(
-      resolve(sessionRoot, "prepared.json"),
-      `${JSON.stringify(prepared, null, 2)}\n`,
-      { flag: "wx" },
-    );
-    await writeFile(
-      resolve(sessionRoot, "evidence-context.json"),
-      `${JSON.stringify(evidenceBundle, null, 2)}\n`,
-      { flag: "wx" },
+    await runPreparationStage(
+      "preparation_persistence",
+      "artifact-transport",
+      async () => {
+        sessionCreated = true;
+        if (dependencies.persist !== undefined)
+          await dependencies.persist({
+            sessionRoot,
+            prepared,
+            evidenceBundle,
+          });
+        else {
+          await mkdir(sessionRoot, { recursive: true });
+          await writeFile(
+            resolve(sessionRoot, "prepared.json"),
+            `${JSON.stringify(prepared, null, 2)}\n`,
+            { flag: "wx" },
+          );
+          await writeFile(
+            resolve(sessionRoot, "evidence-context.json"),
+            `${JSON.stringify(evidenceBundle, null, 2)}\n`,
+            { flag: "wx" },
+          );
+        }
+      },
     );
     await rm(checkoutRoot, { recursive: true, force: true });
     checkoutCreated = false;

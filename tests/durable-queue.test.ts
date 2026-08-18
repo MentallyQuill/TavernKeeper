@@ -8,6 +8,7 @@ import {
   dueQueueEntries,
   prioritizeQueuedTargetRetry,
   removeSuccessfulTarget,
+  revokeQueuedTargetStaffRequest,
   replaceQueuedTargetSha,
   rotateFailedTarget,
 } from "../src/queue/durable-queue.js";
@@ -127,6 +128,32 @@ describe("durable scan ticket operations", () => {
       staff_requested: true,
     });
     expect(() => prioritizeQueuedTargetRetry(state, 404)).toThrow(
+      /not queued/iu,
+    );
+  });
+
+  test("revokes only future staff eligibility and is idempotent", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    state = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at,
+    }).state;
+    state = prioritizeQueuedTargetRetry(state, 42);
+
+    const revoked = revokeQueuedTargetStaffRequest(state, 42);
+
+    expect(revoked.scan_queue.entries[0]).toMatchObject({
+      repository_id: 42,
+      ticket: 2,
+      consecutive_failures: 1,
+      total_failures: 1,
+      not_before: null,
+      last_failure: failure,
+    });
+    expect(revoked.scan_queue.entries[0]).not.toHaveProperty("staff_requested");
+    expect(revokeQueuedTargetStaffRequest(revoked, 42)).toStrictEqual(revoked);
+    expect(() => revokeQueuedTargetStaffRequest(state, 404)).toThrow(
       /not queued/iu,
     );
   });

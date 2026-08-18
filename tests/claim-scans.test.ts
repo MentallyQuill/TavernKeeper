@@ -6,6 +6,8 @@ import {
   initialOperationsState,
   pauseSystem,
 } from "../src/operations/state.js";
+import { recordFailure } from "../src/operations/retry.js";
+import { appendQueuedTarget } from "../src/queue/durable-queue.js";
 
 const now = "2026-08-10T14:00:00.000Z";
 const index = { schema_version: 5 as const, generated_at: now, reports: [] };
@@ -82,5 +84,69 @@ describe("scan claim orchestration", () => {
     expect(result.include).toEqual([]);
     expect(result.state.active_scans).toEqual([]);
     expect(result.emergency_stopped).toBe(true);
+  });
+
+  test("a canary claim keeps its staff reason but consumes future eligibility", () => {
+    const value = target(41);
+    const queued = appendQueuedTarget(observedEmptyState(), value, {
+      staffRequested: true,
+    });
+    const canary = pauseSystem(queued, {
+      kind: "staff",
+      reasonCode: "POLICY_V4_CANARY_GATE",
+      at: now,
+    });
+
+    const result = buildScanClaims({
+      manifest: manifest(value),
+      index,
+      state: canary,
+      now: "2026-08-10T14:01:00.000Z",
+      runId: "actions-canary-100",
+      scannerPolicyVersion: "4",
+      contextualReviewPolicyVersion: "4",
+    });
+
+    expect(result.include).toEqual([
+      expect.objectContaining({ repository_id: 41, reason: "staff" }),
+    ]);
+    expect(result.state.active_scans).toHaveLength(1);
+    expect(result.state.scan_queue.entries[0]).not.toHaveProperty(
+      "staff_requested",
+    );
+
+    const failedAt = "2026-08-10T14:02:00.000Z";
+    const failed = recordFailure(result.state, {
+      target: value,
+      failure: {
+        code: "PREPARATION_FAILED",
+        domain: "target",
+        component: "orchestrator",
+        diagnostic: "preparation_scanner_contract",
+      },
+      at: failedAt,
+    }).state;
+    expect(failed.active_scans).toEqual([]);
+    expect(failed.scan_queue.entries[0]).toMatchObject({
+      consecutive_failures: 1,
+      total_failures: 1,
+      last_failed_at: failedAt,
+    });
+    expect(failed.scan_queue.entries[0]).not.toHaveProperty("staff_requested");
+
+    const replanned = buildScanClaims({
+      manifest: manifest(value),
+      index,
+      state: failed,
+      now: "2026-08-10T15:00:00.000Z",
+      runId: "actions-canary-101",
+      scannerPolicyVersion: "4",
+      contextualReviewPolicyVersion: "4",
+    });
+    expect(replanned.include).toEqual([]);
+    expect(replanned.state.active_scans).toEqual([]);
+    expect(replanned.emergency_stopped).toBe(true);
+    expect(replanned.delayed_entries).toBe(0);
+    expect(replanned.next_wake_at).toBeNull();
   });
 });
