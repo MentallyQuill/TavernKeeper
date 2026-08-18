@@ -7,7 +7,10 @@ const root = process.cwd();
 const workflowRoot = join(root, ".github", "workflows");
 const failures = [];
 const publisherAction =
-  "actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859";
+  "actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1";
+const publisherClientId = "${{ vars.TAVERNKEEPER_PUBLISHER_CLIENT_ID }}";
+const publisherPrivateKey =
+  "${{ secrets.TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY }}";
 const uploadArtifactAction =
   "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a";
 const downloadArtifactAction =
@@ -254,6 +257,7 @@ const allowedTriggers = {
   "pages-reconcile.yml": ["schedule", "workflow_dispatch"],
   "policy-rescan.yml": ["workflow_dispatch"],
   "provider-check.yml": ["workflow_dispatch"],
+  "publisher-verification.yml": ["workflow_dispatch"],
   "reconcile.yml": [
     "repository_dispatch",
     "schedule",
@@ -295,6 +299,13 @@ const permissionProfiles = {
   "provider-check.yml": {
     workflow: { contents: "read" },
     jobs: { authorize: {}, check: { contents: "read" } },
+  },
+  "publisher-verification.yml": {
+    workflow: { contents: "read" },
+    jobs: {
+      "verify-scanner": { contents: "read" },
+      "verify-staff": { contents: "read" },
+    },
   },
   "reconcile.yml": {
     workflow: {
@@ -365,6 +376,10 @@ const mutationJobs = {
     { job: "create", environment: "tavernkeeper-staff" },
   ],
   "policy-rescan.yml": [{ job: "schedule", environment: "tavernkeeper-staff" }],
+  "publisher-verification.yml": [
+    { job: "verify-scanner", environment: "tavernkeeper-scanner" },
+    { job: "verify-staff", environment: "tavernkeeper-staff" },
+  ],
   "reconcile.yml": [
     { job: "claim", environment: "tavernkeeper-scanner" },
     { job: "probe-provider", environment: "tavernkeeper-scanner" },
@@ -402,13 +417,13 @@ const approvedWorkflowSecretNames = new Set([
   "TAVERNKEEPER_API_ENDPOINT",
   "TAVERNKEEPER_API_KEY",
   "TAVERNKEEPER_MODEL",
-  "TAVERNKEEPER_PUBLISHER_APP_ID",
   "TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY",
   "TAVERNARY_WAKE_APP_ID",
   "TAVERNARY_WAKE_APP_PRIVATE_KEY",
 ]);
-const publisherSecretPattern =
-  /TAVERNKEEPER_PUBLISHER_APP_(?:ID|PRIVATE_KEY)\b/u;
+const publisherCredentialPattern =
+  /TAVERNKEEPER_PUBLISHER_(?:CLIENT_ID|APP_PRIVATE_KEY|APP_ID)\b/u;
+const legacyPublisherAppIdPattern = /TAVERNKEEPER_PUBLISHER_APP_ID\b/u;
 const artifactSecretPattern = /TAVERNKEEPER_ARTIFACT_KEY\b/u;
 const providerSecretPattern =
   /TAVERNKEEPER_API_(?:ENDPOINT|KEY)\b|TAVERNKEEPER_MODEL\b/u;
@@ -556,6 +571,8 @@ function checkPins(file, workflow) {
 }
 
 function checkSecretPlacement(file, workflow) {
+  if (legacyPublisherAppIdPattern.test(JSON.stringify(workflow)))
+    fail(file, "legacy Publisher App ID credential is not allowed");
   for (const name of workflowCallSecretDeclarations(workflow))
     if (!approvedWorkflowSecretNames.has(name))
       fail(file, `unapproved workflow secret ${name}`);
@@ -916,24 +933,27 @@ function checkEncryptedHandoff(file, workflow) {
 
 function checkPublisherBoundary(file, workflow) {
   const mutations = mutationJobs[file];
-  const jobsWithPublisherSecrets = Object.entries(workflow.jobs ?? {})
-    .filter(([, job]) => publisherSecretPattern.test(JSON.stringify(job)))
+  const jobsWithPublisherCredentials = Object.entries(workflow.jobs ?? {})
+    .filter(([, job]) => publisherCredentialPattern.test(JSON.stringify(job)))
     .map(([jobName]) => jobName);
   if (mutations === undefined) {
-    if (jobsWithPublisherSecrets.length > 0)
-      fail(file, "Publisher App secret appears outside a mutation workflow");
+    if (jobsWithPublisherCredentials.length > 0)
+      fail(
+        file,
+        "Publisher App credential appears outside a mutation workflow",
+      );
     return;
   }
   const mutationJobNames = new Set(mutations.map(({ job }) => job));
-  if (jobsWithPublisherSecrets.some((job) => !mutationJobNames.has(job)))
-    fail(file, "Publisher App secret appears outside a mutation job");
+  if (jobsWithPublisherCredentials.some((job) => !mutationJobNames.has(job)))
+    fail(file, "Publisher App credential appears outside a mutation job");
   for (const mutation of mutations) {
     const job = workflow.jobs?.[mutation.job];
     if (job?.environment !== mutation.environment)
       fail(file, `${mutation.job} must use ${mutation.environment}`);
     const steps = job?.steps ?? [];
     const tokenSteps = steps.filter((step) =>
-      JSON.stringify(step).match(publisherSecretPattern),
+      JSON.stringify(step).match(publisherCredentialPattern),
     );
     const tokenStep = tokenSteps[0];
     if (
@@ -941,6 +961,10 @@ function checkPublisherBoundary(file, workflow) {
       tokenStep?.name !== "Create TavernKeeper Publisher token" ||
       tokenStep?.id !== "publisher-token" ||
       tokenStep?.uses !== publisherAction ||
+      tokenStep?.with?.["client-id"] !== publisherClientId ||
+      tokenStep?.with?.["private-key"] !== publisherPrivateKey ||
+      tokenStep?.with?.["app-id"] !== undefined ||
+      tokenStep?.with?.["skip-token-revoke"] !== undefined ||
       tokenStep?.with?.owner !== "MentallyQuill" ||
       tokenStep?.with?.repositories !== "TavernKeeper" ||
       tokenStep?.with?.["permission-contents"] !== "write"
@@ -1035,6 +1059,48 @@ function checkPublisherBoundary(file, workflow) {
       checkouts.some((step) => step.with?.["persist-credentials"] !== false)
     )
       fail(file, "mutation checkout must disable persisted credentials");
+  }
+}
+
+function checkPublisherVerification(file, workflow) {
+  if (file !== "publisher-verification.yml") return;
+  const ownerMainGuard =
+    "${{ github.actor_id == 2625904 && github.ref == 'refs/heads/main' }}";
+  const scanner = workflow.jobs?.["verify-scanner"];
+  const staff = workflow.jobs?.["verify-staff"];
+  if (
+    Object.keys(workflow.on?.workflow_dispatch?.inputs ?? {}).length !== 0 ||
+    !same(workflow.concurrency, {
+      group: "tavernkeeper-publisher-verification",
+      "cancel-in-progress": false,
+    }) ||
+    scanner?.if !== ownerMainGuard ||
+    staff?.if !== ownerMainGuard ||
+    scanner?.needs !== undefined ||
+    staff?.needs !== "verify-scanner"
+  )
+    fail(
+      file,
+      "Publisher verification must remain owner-only, serialized, and sequential",
+    );
+  for (const job of [scanner, staff]) {
+    const steps = job?.steps ?? [];
+    const checkout = steps.find(
+      (step) =>
+        typeof step?.uses === "string" &&
+        step.uses.startsWith("actions/checkout@"),
+    );
+    const push = steps.find(
+      (step) =>
+        typeof step?.run === "string" &&
+        step.run.includes("git push origin HEAD:main"),
+    );
+    if (
+      checkout?.with?.ref !== "main" ||
+      checkout?.with?.["persist-credentials"] !== false ||
+      !push?.run?.includes("git commit --allow-empty")
+    )
+      fail(file, "Publisher verification must make an empty commit from main");
   }
 }
 
@@ -1138,6 +1204,7 @@ for (const file of names) {
   checkContextualRuntime(file, workflow);
   checkEncryptedHandoff(file, workflow);
   checkPublisherBoundary(file, workflow);
+  checkPublisherVerification(file, workflow);
   checkTargetedAuthority(file, workflow);
   checkScannerToolchain(file, workflow);
   checkDelayedWake(file, workflow);

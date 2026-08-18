@@ -65,11 +65,10 @@ TavernKeeper. The App is installed only on Tavernary with Actions write and
 metadata read. Tavernary stores the inverse TavernKeeper wake App credentials;
 they are not TavernKeeper secrets.
 
-Configure these environment secrets separately in both
-`tavernkeeper-scanner` and `tavernkeeper-staff`:
-
-- `TAVERNKEEPER_PUBLISHER_APP_ID`
-- `TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY`
+Configure `TAVERNKEEPER_PUBLISHER_CLIENT_ID` as a non-secret environment
+variable and `TAVERNKEEPER_PUBLISHER_APP_PRIVATE_KEY` as an environment secret
+separately in both `tavernkeeper-scanner` and `tavernkeeper-staff`. Do not store
+either value at repository scope.
 
 `TavernKeeper Publisher` is installed only on TavernKeeper with contents
 read/write and metadata read. It has no Actions permission. Mutation jobs mint
@@ -300,6 +299,15 @@ reset gate.
   manual runs require staff protection.
 - `pages-reconcile.yml` automatically repairs a missing or stale Pages
   deployment without participating in scan continuation.
+- `publisher-verification.yml` is an input-free owner-only canary. From `main`,
+  it first mints and uses a Publisher token in `tavernkeeper-scanner`, then
+  waits for that empty audit commit before entering `tavernkeeper-staff` and
+  repeating the protected-main write. Approve the existing staff environment
+  gate, verify both commits were authored through the Publisher App, and verify
+  each action post step reports token revocation. Only after both lanes succeed
+  may the obsolete `TAVERNKEEPER_PUBLISHER_APP_ID` environment secrets be
+  removed; retain the Client ID variable and private-key secret in both
+  environments.
 
 Public Issues and comments do not trigger these workflows. A false-positive
 appeal cannot change an individual report. If evidence exposes a scanner,
