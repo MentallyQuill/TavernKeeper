@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for platberlitz/sd-proxy at commit 8af334f.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; platberlitz/sd-proxy</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/platberlitz/sd-proxy" rel="noopener noreferrer">platberlitz/sd-proxy</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/platberlitz/sd-proxy/commit/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7" rel="noopener noreferrer">8af334f</a></span>
+        <span>Reviewed <time datetime="2026-08-20T21:44:31.644Z">Aug 20, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>15 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    
+    <details class="expected">
+      <summary>Contextual expected matches (13)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed git command to check for updates. No user input reaches the command, and the endpoint requires login. This is normal self-update behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 1620 invokes a static git fetch command with no user-controlled interpolation. The cwd is set to __dirname, a built-in constant. The endpoint is gated behind requireAuth. This is part of a self-update feature consistent with the project purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1620" rel="noopener noreferrer">server.js:1620</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed git command to count how many updates are behind. No user input is involved and login is required. This is normal self-update behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 1623 invokes a static git rev-list command with no user-controlled interpolation. The cwd is __dirname and the endpoint is auth-protected. No injection surface exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1623" rel="noopener noreferrer">server.js:1623</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed git command to apply updates and then restarts the server. No user input is involved and login is required. This is normal self-update behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 1638 invokes a static git pull command with no user-controlled interpolation. The cwd is __dirname and the endpoint is auth-protected. The subsequent process.exit restarts the server after update, consistent with a self-update feature. No injection surface exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1638" rel="noopener noreferrer">server.js:1638</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The tool has built-in addresses for well-known image generation services. This is exactly what a multi-backend proxy is supposed to have.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged signal corresponds to hardcoded default API endpoint URLs for image generation backends (OpenAI, Pollinations, NovelAI, Gemini, A1111, ComfyUI). These are well-known public service endpoints that directly match the project&#39;s stated purpose as a multi-backend image generation proxy. No obfuscated, dynamically constructed, or unexpected destinations are present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L16" rel="noopener noreferrer">server.js:16</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This project is a proxy that sends your image-generation API keys to the official websites of services like CivitAI, PixAI, and others so it can generate images on your behalf. That is exactly what the project is designed to do. The keys go only to the expected service providers and nowhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged credential access and outbound network transmission co-located in one file. The supplied source shows each backend handler reads a configured API key and transmits it solely as an Authorization header to that provider&#39;s official, well-known API endpoint (civitai.com, naistera.org, api.pixai.art, api.stability.ai, api.replicate.com, etc.). This is the core stated purpose of the project: a multi-backend image generation proxy. The credentials flow only to the legitimate provider APIs that require them, not to any unexpected, third-party, or exfiltration destination. No obfuscation, hidden channels, or off-label destinations are present in the evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L878" rel="noopener noreferrer">server.js:878</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed git command to read the remote version hash. No user input is involved and login is required. This is normal self-update behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 1622 invokes a static git rev-parse command with no user-controlled interpolation. The cwd is __dirname and the endpoint is auth-protected. No injection surface exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1622" rel="noopener noreferrer">server.js:1622</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed git command to show a changelog of pending updates. No user input is involved and login is required. This is normal self-update behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 1629 invokes a static git log command with no user-controlled interpolation. The cwd is __dirname and the endpoint is auth-protected. No injection surface exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1629" rel="noopener noreferrer">server.js:1629</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.credential-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The proxy takes your API keys and sends them to the image generation services they&#39;re meant for. That&#39;s what a proxy does.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.credential-to-network. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The code reads API keys from request headers and environment variables and forwards them to the corresponding backend API endpoints via fetch. This is the core data flow of an image generation proxy: user-supplied credentials are sent only to the intended provider endpoints (OpenAI, NovelAI, CivitAI, Gemini, etc.). No evidence shows credentials being copied to unexpected destinations, logged in plaintext, or exfiltrated to a third-party sink. The credential-to-network correlation is the product&#39;s primary function.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.credential-to-network</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L14-L358" rel="noopener noreferrer">server.js:14-358</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The tool reads its settings from environment variables, which is a normal way to configure a server application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged signal corresponds to process.env being read for configuration values such as ADMIN_USER, ADMIN_PASS, SESSION_SECRET, LOGIN_REQUIRED, MODEL_PROXY_ALLOWED_HOSTS, and default URL overrides. These are standard environment-variable configuration reads, not serialization or transmission of the full environment object. No evidence shows the environment being stringified, logged, or sent over the network.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L11" rel="noopener noreferrer">server.js:11</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The tool can update itself by running git commands. These commands are fixed text with no user input mixed in, and the feature requires login. This is a normal self-update feature, not a security hole.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync calls are in two self-update endpoints, both gated by requireAuth middleware. Every command string is a hardcoded literal (git fetch origin, git rev-parse HEAD, git rev-parse origin/main, git rev-list --count, git log --oneline, git pull origin main) with no user-controlled interpolation. The cwd is set to __dirname, the project&#39;s own directory. There is no command injection vector because no request body, query parameter, or header value is concatenated into any command. This is a standard git-based self-update mechanism. The only residual concern is that default admin/admin credentials could allow an authenticated party to trigger the update, but that is a configuration issue addressed by the default-credentials observation, not a code-level injection vulnerability.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1620" rel="noopener noreferrer">server.js:1620</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported curl-auth-header</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is just an example in the documentation showing how to use the API, with a placeholder that says YOUR_API_KEY. There is no real password or key exposed here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule curl-auth-header. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The gitleaks match is a curl example in the README documentation using the placeholder string YOUR_API_KEY. This is a template showing users how to call the API, not a real credential. No actual secret is present in the matched content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>curl-auth-header</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/README.md#L327-L330" rel="noopener noreferrer">README.md:327-330</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a web dashboard for an image generation proxy. It stores your API keys locally in the browser and sends them to its own proxy server and to the image generation services you selected. This is exactly what the tool is designed to do. There is no sign of keys being secretly sent anywhere unexpected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line initiates session management by fetching a session ID from the same-origin /api/session endpoint and storing it in localStorage. API keys are loaded from localStorage, entered by the user in the UI, and sent as Bearer tokens to same-origin proxy endpoints via getHeaders(). The proxy&#39;s stated purpose is to forward credentials to image generation backends. fetchBackendModels() also sends the API key directly to legitimate model-listing endpoints for the selected backend. All network destinations are the project&#39;s own proxy or known model-provider APIs, matching the stated purpose. No evidence of hidden exfiltration, unexpected destinations, obfuscation, or credential access disproportionate to the project&#39;s role as a multi-backend image generation proxy.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/public/index.html#L1983" rel="noopener noreferrer">public/index.html:1983</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This runs a fixed git command to read the current version hash. No user input is involved and login is required. This is normal for a self-update feature.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.node-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The execSync call at line 1621 invokes a static git rev-parse command with no user-controlled interpolation. The cwd is __dirname. The endpoint is auth-protected. No injection surface exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.node-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1621" rel="noopener noreferrer">server.js:1621</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>API keys stored in localStorage without additional protection</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The tool saves your API keys in the browser&#39;s local storage so you don&#39;t have to re-enter them. This is normal for local tools but means that if someone could inject malicious scripts into the page, they could read your keys. For a personal or local setup this is fine; for a shared remote deployment it&#39;s worth keeping in mind.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Settings including per-backend API keys are persisted in localStorage via JSON.stringify(settings). Any XSS in the single-page application could read these keys. This is a common pattern in browser-based tooling and is proportionate to a local or single-user deployment, but it is worth noting for shared or remote deployments.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Consider documenting the localStorage credential storage behavior for users deploying on shared or public-facing servers, and remind users to set custom credentials and session secrets for remote deployments.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/public/index.html#L1983" rel="noopener noreferrer">public/index.html:1983</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Default admin credentials and default session secret shipped</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>The tool starts with a default username and password of admin/admin. If you put it on a public network without changing them, anyone could log in. The tool warns you about this on startup.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The code defaults ADMIN_USER to admin and ADMIN_PASS to admin, and falls back to a hardcoded session secret when SESSION_SECRET is unset. While warnings are printed to the console, these defaults could allow unauthorized access if the proxy is exposed beyond localhost without changing them. The README also documents these defaults. This is a configuration hygiene weakness, not demonstrated malicious behavior.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider requiring explicit ADMIN_PASS and SESSION_SECRET on first run, or generating a random session secret automatically when none is provided.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L1" rel="noopener noreferrer">server.js:1</a></li><li><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L11" rel="noopener noreferrer">server.js:11</a></li><li><a href="https://github.com/platberlitz/sd-proxy/blob/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7/server.js#L16" rel="noopener noreferrer">server.js:16</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>7 files &middot; 320216 bytes</dd>
+      <dt>Contextual coverage</dt><dd>13 of 13 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>1 files &middot; 78156 bytes</dd>
+        <dt>X-Ray review families</dt><dd>26 warning occurrences compacted to 3 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>1 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>1 raw signatures &middot; 1 raw AST &middot; 1 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/platberlitz/sd-proxy/commit/8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7" rel="noopener noreferrer">8af334f18fe3e3a8c6c1f79d7e6d368aa439b4c7</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-20T21:44:31.644Z">Aug 20, 2026</time></dd>
+        <dt>History depth</dt><dd>2 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 13 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>0 deterministic / 13 contextual candidates &middot; 6 contextual / 6 total behavior cases</dd>
+        <dt>Model budget</dt><dd>4 model calls &middot; 6 / 12 fresh cases &middot; 139165 / 200000 estimated input &middot; 109857 / 250000 actual input &middot; 6736 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>4 model calls &middot; up to 2 groups and 6 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>109857 input &middot; 6736 output &middot; 5441 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>077793c21d166034967d89b3e413d25d4041b31bd7a0b311f0da3e2adcc1ca1e</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1132779410/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
