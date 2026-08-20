@@ -1729,7 +1729,7 @@ describe("contextual evidence review", () => {
     );
   });
 
-  test("refuses invented observation locations", async () => {
+  test("replaces invented observation locations with deterministic candidate locations", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(
       async (_request: TextCompletionRequest) => ({
@@ -1766,24 +1766,95 @@ describe("contextual evidence review", () => {
       }),
     );
 
-    await expect(
-      reviewEvidenceGroups({
-        groups: [current],
-        provider: {
-          endpoint: "https://provider.example/v1/chat/completions",
-          apiKey: "test-key",
-          model: "configured/model:thinking",
-          requestCompletion,
-        },
-        policy: { ...policy, maxImmediateAttempts: 2 },
-      }),
-    ).rejects.toMatchObject({
-      code: "MODEL_EVIDENCE_INVALID",
-      diagnostic: "observation_locations",
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: { ...policy, maxImmediateAttempts: 2 },
     });
-    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
-      "observation_locations",
-    );
+
+    expect(requestCompletion).toHaveBeenCalledOnce();
+    expect(result.observations[0]?.locations).toEqual([
+      { path: current.path, line_start: 2, line_end: 2 },
+    ]);
+    expect(result.review_batches).toEqual([
+      expect.objectContaining({ attempt: 1, retry_reason: null }),
+    ]);
+  });
+
+  test("canonicalizes batched observation locations without retrying", async () => {
+    const current = group("src/a.ts", ids.slice(0, 2));
+    const requestCompletion = vi.fn(async () => ({
+      completionId: "completion-batched-observation-location",
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: batchContent([
+        {
+          group_id: current.group_id,
+          review: {
+            status: "complete",
+            assessments: current.candidates.map((candidate, index) =>
+              assessment(candidate.candidate_id, current.path, index + 2),
+            ),
+            observations: [
+              {
+                related_candidate_ids: ids.slice(0, 2),
+                evidence_ids: ids.slice(0, 2),
+                disposition: "minor_weakness",
+                impact: "low",
+                exploitability: "unlikely",
+                confidence: "medium",
+                risk_exposure: "not_demonstrated",
+                recommended_risk: "low",
+                title: "Combined behavior",
+                technical_explanation:
+                  "The related findings describe one combined behavior.",
+                layman_explanation:
+                  "Two related actions deserve one combined caution.",
+                developer_action: "Document the combined behavior.",
+                locations: [
+                  { path: current.path, line_start: 99, line_end: 99 },
+                ],
+              },
+            ],
+          },
+        },
+      ]),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: {
+        ...policy,
+        maxBatchGroups: 5,
+        maxBatchInputTokens: 1_000_000,
+      },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledOnce();
+    expect(result.observations[0]?.locations).toEqual([
+      { path: current.path, line_start: 2, line_end: 2 },
+      { path: current.path, line_start: 3, line_end: 3 },
+    ]);
+    expect(result.review_batches).toEqual([
+      expect.objectContaining({ attempt: 1, retry_reason: null }),
+    ]);
   });
 
   test("uses one Luna binding patch only after DeepSeek exhausts evidence repair", async () => {
@@ -1804,7 +1875,7 @@ describe("contextual evidence review", () => {
               observations: [
                 {
                   related_candidate_ids: [ids[0]!],
-                  evidence_ids: [ids[0]!],
+                  evidence_ids: [ids[1]!],
                   disposition: "minor_weakness",
                   impact: "low",
                   exploitability: "unlikely",
@@ -1996,7 +2067,7 @@ describe("contextual evidence review", () => {
               observations: [
                 {
                   related_candidate_ids: [ids[0]!],
-                  evidence_ids: [ids[0]!],
+                  evidence_ids: [ids[1]!],
                   disposition: "minor_weakness",
                   impact: "low",
                   exploitability: "unlikely",
@@ -2074,9 +2145,9 @@ describe("contextual evidence review", () => {
       ]),
     ).toEqual([
       ["contextual_review", null],
-      ["contextual_review", "observation_locations"],
-      ["contextual_review", "observation_locations"],
-      ["json_repair", "observation_locations"],
+      ["contextual_review", "observation_evidence_ids"],
+      ["contextual_review", "observation_evidence_ids"],
+      ["json_repair", "observation_evidence_ids"],
     ]);
   });
 
@@ -2179,7 +2250,7 @@ describe("contextual evidence review", () => {
         observations: [
           {
             related_candidate_ids: [ids[0]!],
-            evidence_ids: [ids[0]!],
+            evidence_ids: [ids[1]!],
             disposition: "minor_weakness",
             impact: "low",
             exploitability: "unlikely",
@@ -2228,7 +2299,7 @@ describe("contextual evidence review", () => {
       }),
     ).rejects.toMatchObject({
       code: "MODEL_EVIDENCE_INVALID",
-      diagnostic: "observation_locations",
+      diagnostic: "observation_evidence_ids",
     });
     expect(requestRepair).toHaveBeenCalledOnce();
   });
@@ -2245,7 +2316,7 @@ describe("contextual evidence review", () => {
         observations: [
           {
             related_candidate_ids: [ids[0]!],
-            evidence_ids: [ids[0]!],
+            evidence_ids: [ids[1]!],
             disposition: "minor_weakness",
             impact: "low",
             exploitability: "unlikely",
@@ -2288,7 +2359,7 @@ describe("contextual evidence review", () => {
       }),
     ).rejects.toMatchObject({
       code: "MODEL_EVIDENCE_INVALID",
-      diagnostic: "observation_locations",
+      diagnostic: "observation_evidence_ids",
     });
     expect(requestRepair).not.toHaveBeenCalled();
   });

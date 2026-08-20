@@ -39,30 +39,6 @@ function suppliedLines(group: EvidenceContextGroup) {
   return lines;
 }
 
-function validateLocations(
-  group: EvidenceContextGroup,
-  locations: readonly {
-    path: string;
-    line_start: number;
-    line_end: number;
-  }[],
-) {
-  const lines = suppliedLines(group);
-  for (const location of locations) {
-    if (location.path !== group.path)
-      evidenceError(
-        "Contextual review cited an unsupplied file path.",
-        "observation_locations",
-      );
-    for (let line = location.line_start; line <= location.line_end; line += 1)
-      if (!lines.has(line))
-        evidenceError(
-          "Contextual review cited an unsupplied source line.",
-          "observation_locations",
-        );
-  }
-}
-
 function canonicalCandidateLocation(
   group: EvidenceContextGroup,
   candidate: EvidenceContextGroup["candidates"][number],
@@ -85,6 +61,34 @@ function canonicalCandidateLocation(
   const lineStart = rangeIsSupplied ? requestedStart : fallback;
   const lineEnd = rangeIsSupplied ? requestedEnd : fallback;
   return [{ path: group.path, line_start: lineStart, line_end: lineEnd }];
+}
+
+function canonicalObservationLocations(
+  group: EvidenceContextGroup,
+  relatedCandidateIds: readonly string[],
+) {
+  const candidates = new Map(
+    group.candidates.map((candidate) => [candidate.candidate_id, candidate]),
+  );
+  const locations = relatedCandidateIds.flatMap((candidateId) =>
+    canonicalCandidateLocation(group, candidates.get(candidateId)!),
+  );
+  return locations
+    .filter(
+      (location, index) =>
+        locations.findIndex(
+          (candidate) =>
+            candidate.path === location.path &&
+            candidate.line_start === location.line_start &&
+            candidate.line_end === location.line_end,
+        ) === index,
+    )
+    .sort(
+      (left, right) =>
+        left.path.localeCompare(right.path) ||
+        left.line_start - right.line_start ||
+        left.line_end - right.line_end,
+    );
 }
 
 function escapeRegularExpression(value: string) {
@@ -204,7 +208,6 @@ export function validateCompletedGroupReview(
         "Contextual observation cited unknown evidence.",
         "observation_evidence_ids",
       );
-    validateLocations(group, observation.locations);
   }
   const assessmentById = new Map(
     review.assessments.map((assessment) => [
@@ -218,29 +221,36 @@ export function validateCompletedGroupReview(
       locations: canonicalCandidateLocation(group, candidate),
     })),
     observations: review.observations
-      .map((observation) => ({
-        observation_id: createHash("sha256")
-          .update(
-            JSON.stringify([
-              group.group_id,
-              observation.related_candidate_ids,
-              observation.evidence_ids,
-              observation.disposition,
-              observation.impact,
-              observation.exploitability,
-              observation.confidence,
-              observation.risk_exposure,
-              observation.recommended_risk,
-              observation.title,
-              observation.technical_explanation,
-              observation.layman_explanation,
-              observation.developer_action,
-              observation.locations,
-            ]),
-          )
-          .digest("hex"),
-        ...observation,
-      }))
+      .map((observation) => {
+        const locations = canonicalObservationLocations(
+          group,
+          observation.related_candidate_ids,
+        );
+        return {
+          observation_id: createHash("sha256")
+            .update(
+              JSON.stringify([
+                group.group_id,
+                observation.related_candidate_ids,
+                observation.evidence_ids,
+                observation.disposition,
+                observation.impact,
+                observation.exploitability,
+                observation.confidence,
+                observation.risk_exposure,
+                observation.recommended_risk,
+                observation.title,
+                observation.technical_explanation,
+                observation.layman_explanation,
+                observation.developer_action,
+                locations,
+              ]),
+            )
+            .digest("hex"),
+          ...observation,
+          locations,
+        };
+      })
       .sort((left, right) =>
         left.observation_id.localeCompare(right.observation_id),
       ),
