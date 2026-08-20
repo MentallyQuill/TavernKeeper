@@ -10,7 +10,10 @@ function inlineCode(value: string) {
     ...[...normalized.matchAll(/`+/gu)].map(([run]) => run.length),
   );
   const delimiter = "`".repeat(longestBacktickRun + 1);
-  const needsPadding = normalized.startsWith("`") || normalized.endsWith("`");
+  const needsPadding =
+    normalized.startsWith("`") ||
+    normalized.endsWith("`") ||
+    /^\s|\s$/u.test(normalized);
   const padding = needsPadding ? " " : "";
   return `${delimiter}${padding}${normalized}${padding}${delimiter}`;
 }

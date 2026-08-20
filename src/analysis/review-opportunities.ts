@@ -202,7 +202,9 @@ function compareReferences(
 ) {
   return (
     compareStrings(left.repository, right.repository) ||
+    left.repository_id - right.repository_id ||
     compareStrings(left.target_sha, right.target_sha) ||
+    compareStrings(left.report_id, right.report_id) ||
     compareStrings(left.candidate_id, right.candidate_id) ||
     compareStrings(left.path, right.path)
   );

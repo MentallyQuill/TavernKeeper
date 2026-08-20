@@ -140,7 +140,7 @@ describe("review opportunity rendering", () => {
           references: [
             {
               ...analysis.opportunities[0]!.references[0],
-              repository: "owner/rep``o",
+              repository: " owner/rep``o ",
               path: "docs/evil`name.md\nnext",
             },
           ],
@@ -150,7 +150,7 @@ describe("review opportunity rendering", () => {
 
     const markdown = renderReviewOpportunitiesMarkdown(hostile);
 
-    expect(markdown).toContain("```owner/rep``o```");
+    expect(markdown).toContain("```  owner/rep``o  ```");
     expect(markdown).toContain("``docs/evil`name.md next``");
     expect(markdown).not.toContain("docs/evil`name.md\nnext");
   });

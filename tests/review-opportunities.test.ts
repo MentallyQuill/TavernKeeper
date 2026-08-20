@@ -512,6 +512,32 @@ describe("review opportunity analysis", () => {
     expect(reversed).toEqual(result);
   });
 
+  test("uses identity tie-breakers when bounded references look identical", async () => {
+    const left = await contextualReport({
+      repositoryId: 521,
+      repository: "owner/same-name",
+      candidateSeed: "a",
+    });
+    const right = await contextualReport({
+      repositoryId: 522,
+      repository: "owner/same-name",
+      candidateSeed: "a",
+    });
+
+    const forward = await analyzeReviewOpportunities({
+      index: reportIndex([left, right]),
+      loadReport: loaderFor([left, right]).loadReport,
+      maxReferencesPerOpportunity: 1,
+    });
+    const reversed = await analyzeReviewOpportunities({
+      index: reportIndex([right, left]),
+      loadReport: loaderFor([right, left]).loadReport,
+      maxReferencesPerOpportunity: 1,
+    });
+
+    expect(reversed).toEqual(forward);
+  });
+
   test("propagates a missing preferred report instead of changing the denominator", async () => {
     const report = await contextualReport({
       repositoryId: 551,
