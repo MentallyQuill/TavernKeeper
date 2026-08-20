@@ -806,7 +806,7 @@ describe("contextual evidence review", () => {
       policy,
     });
 
-    expect(requestCompletion).toHaveBeenCalledTimes(3);
+    expect(requestCompletion).toHaveBeenCalledTimes(1);
     expect(result.assessments[0]?.technical_explanation).toBe(
       "Detailed technical wording was omitted by the public report safety filter.",
     );
@@ -818,6 +818,62 @@ describe("contextual evidence review", () => {
     );
     expect(JSON.stringify(result)).not.toContain("leakedValue");
     expect(JSON.stringify(result)).not.toContain("example.invalid");
+  });
+
+  test("salvages unsafe narratives in a batched response without retrying", async () => {
+    const groups = [group("src/a.ts", [ids[0]!]), group("src/b.ts", [ids[1]!])];
+    const requestCompletion = vi.fn(async () => ({
+      completionId: `completion-batch-unsafe-narrative-${requestCompletion.mock.calls.length}`,
+      endpointOrigin: "https://provider.example",
+      provider: "provider.example",
+      content: batchContent(
+        groups.map((current) => ({
+          group_id: current.group_id,
+          review: {
+            status: "complete",
+            assessments: [
+              {
+                ...assessment(
+                  current.candidates[0]!.candidate_id,
+                  current.path,
+                  2,
+                ),
+                technical_explanation:
+                  "const leakedValue = sourceValue; see https://example.invalid/details",
+              },
+            ],
+            observations: [],
+          },
+        })),
+      ),
+      usage: {
+        inputTokens: 100,
+        outputTokens: 40,
+        cacheReadTokens: 0,
+        reasoningTokens: 10,
+      },
+    }));
+
+    const result = await reviewEvidenceGroups({
+      groups,
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy: { ...policy, maxBatchGroups: 5 },
+    });
+
+    expect(requestCompletion).toHaveBeenCalledTimes(1);
+    expect(
+      result.assessments.map(
+        ({ technical_explanation }) => technical_explanation,
+      ),
+    ).toEqual([
+      "Detailed technical wording was omitted by the public report safety filter.",
+      "Detailed technical wording was omitted by the public report safety filter.",
+    ]);
   });
 
   test("accepts one fenced JSON object from a non-strict provider", async () => {
@@ -853,7 +909,7 @@ describe("contextual evidence review", () => {
     ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
   });
 
-  test("retries public safety claims before report finalization", async () => {
+  test("salvages public safety claims before report finalization", async () => {
     const current = group("src/a.ts", [ids[0]!]);
     const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {
       const item = assessment(ids[0]!, current.path, 2);
@@ -879,27 +935,24 @@ describe("contextual evidence review", () => {
       } satisfies ModelCompletionResult;
     });
 
-    await expect(
-      reviewEvidenceGroups({
-        groups: [current],
-        provider: {
-          endpoint: "https://provider.example/v1/chat/completions",
-          apiKey: "test-key",
-          model: "configured/model:thinking",
-          requestCompletion,
-        },
-        policy,
-      }),
-    ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
-    expect(requestCompletion).toHaveBeenCalledTimes(2);
+    const result = await reviewEvidenceGroups({
+      groups: [current],
+      provider: {
+        endpoint: "https://provider.example/v1/chat/completions",
+        apiKey: "test-key",
+        model: "configured/model:thinking",
+        requestCompletion,
+      },
+      policy,
+    });
+
+    expect(result).toMatchObject({ coverage: { required: 1, completed: 1 } });
+    expect(requestCompletion).toHaveBeenCalledTimes(1);
     expect(requestCompletion.mock.calls[0]?.[0].systemContent).not.toContain(
       "assessment_layman_explanation",
     );
-    expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
-      "assessment_layman_explanation",
-    );
-    expect(requestCompletion.mock.calls[1]?.[0].systemContent).not.toContain(
-      "This repository is safe.",
+    expect(result.assessments[0]?.layman_explanation).toBe(
+      "Detailed wording was omitted by the public report safety filter.",
     );
   });
 
@@ -1414,12 +1467,7 @@ describe("contextual evidence review", () => {
           call === 1
             ? {
                 status: "complete",
-                assessments: [
-                  {
-                    ...assessment(ids[0]!, current.path, 2),
-                    layman_explanation: "This repository is safe.",
-                  },
-                ],
+                assessments: [assessment(ids[1]!, current.path, 2)],
                 observations: [],
               }
             : call === 2
@@ -1464,10 +1512,10 @@ describe("contextual evidence review", () => {
       }),
     ).resolves.toMatchObject({ coverage: { required: 1, completed: 1 } });
     expect(requestCompletion.mock.calls[1]?.[0].systemContent).toContain(
-      "assessment_layman_explanation",
+      "assessment_candidate_id",
     );
     expect(requestCompletion.mock.calls[2]?.[0].systemContent).not.toContain(
-      "assessment_layman_explanation",
+      "assessment_candidate_id",
     );
     expect(
       JSON.stringify(
