@@ -120,6 +120,7 @@ async function contextualReport(input: {
     reasoning_tokens: number;
   };
   reuse?: boolean;
+  reviewer?: { provider: string; model: string };
 }) {
   const base = await fixturePolicy5ReportV5();
   const candidateId = input.candidateSeed.repeat(64);
@@ -168,7 +169,7 @@ async function contextualReport(input: {
     repository: input.repository,
     canonical_url: `https://github.com/${input.repository}`,
     target_sha: input.candidateSeed.repeat(40),
-    contextual_reviewer: {
+    contextual_reviewer: input.reviewer ?? {
       provider: "openrouter.ai",
       model: "zai-org/glm-latest",
     },
@@ -304,6 +305,10 @@ describe("review opportunity analysis", () => {
         cache_read_tokens: 40,
         reasoning_tokens: 6,
       },
+      reviewer: {
+        provider: "openrouter.ai",
+        model: "deepseek/deepseek-v4-flash:thinking",
+      },
     });
     const deterministic = await fixturePolicy5ReportV5({
       repository_id: 203,
@@ -355,6 +360,20 @@ describe("review opportunity analysis", () => {
           reasoning_tokens: 9,
         },
       },
+      reviewer_strata: [
+        {
+          provider: "openrouter.ai",
+          model: "deepseek/deepseek-v4-flash:thinking",
+          candidate_count: 1,
+          report_count: 1,
+        },
+        {
+          provider: "openrouter.ai",
+          model: "zai-org/glm-latest",
+          candidate_count: 1,
+          report_count: 1,
+        },
+      ],
     });
     expect(result.opportunities[0]!.references).toHaveLength(1);
     expect(result.opportunities[0]!.references[0]!.repository).toBe(
@@ -481,11 +500,33 @@ describe("review opportunity analysis", () => {
       index: reportIndex([zRule, aRule]),
       loadReport: loaderFor([zRule, aRule]).loadReport,
     });
+    const reversed = await analyzeReviewOpportunities({
+      index: reportIndex([aRule, zRule]),
+      loadReport: loaderFor([aRule, zRule]).loadReport,
+    });
 
     expect(result.opportunities.map(({ key }) => key.rule_id)).toEqual([
       "a-rule",
       "z-rule",
     ]);
+    expect(reversed).toEqual(result);
+  });
+
+  test("propagates a missing preferred report instead of changing the denominator", async () => {
+    const report = await contextualReport({
+      repositoryId: 551,
+      repository: "owner/missing",
+      candidateSeed: "a",
+    });
+
+    await expect(
+      analyzeReviewOpportunities({
+        index: reportIndex([report]),
+        loadReport: async () => {
+          throw new Error("ENOENT: preferred report is missing");
+        },
+      }),
+    ).rejects.toThrow("ENOENT: preferred report is missing");
   });
 
   test("rejects a malformed selected report", async () => {

@@ -41,6 +41,7 @@
   6. contextual reuse is surfaced as an unmapped limitation;
   7. malformed and identity-mismatched selected reports reject;
   8. input order does not affect output order.
+  9. contextual provider/model strata remain exact and deterministically sorted.
 
   The test index uses the same fields as each validated fixture report:
 
@@ -127,7 +128,7 @@
   });
   ```
 
-  Each opportunity includes the exact key fields, candidate and repository counts, disposition/exposure/risk counts, bounded references, and an `associated_reports` envelope containing deduplicated report count, provider calls, and usage. The envelope always carries `attribution: "overlapping-non-additive"`.
+  Each opportunity includes the exact key fields, candidate and repository counts, disposition/exposure/risk counts, bounded references, exact contextual provider/model strata, and an `associated_reports` envelope containing deduplicated report count, provider calls, and usage. The envelope always carries `attribution: "overlapping-non-additive"`.
 
 - [ ] Implement:
 
@@ -241,8 +242,8 @@
 
   ```powershell
   npm.cmd test -- tests/review-opportunities-cli.test.ts
-  npm.cmd run review-opportunities -- --format json
-  npm.cmd run review-opportunities -- --format markdown
+  npm.cmd run --silent review-opportunities -- --format json
+  npm.cmd run --silent review-opportunities -- --format markdown
   ```
 
 ---
@@ -285,8 +286,8 @@
 - [ ] Run the finished analyzer against the checked-in preferred corpus and capture both formats outside tracked paths:
 
   ```powershell
-  npm.cmd run review-opportunities -- --format json
-  npm.cmd run review-opportunities -- --format markdown
+  npm.cmd run --silent review-opportunities -- --format json
+  npm.cmd run --silent review-opportunities -- --format markdown
   ```
 
 - [ ] Record the exact corpus totals and the full `artipacked` key variants in the baseline document. State:

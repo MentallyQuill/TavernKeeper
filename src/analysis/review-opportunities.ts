@@ -53,6 +53,13 @@ const OpportunityReferenceSchema = z.strictObject({
   path: z.string().min(1),
 });
 
+const ReviewerStratumSchema = z.strictObject({
+  provider: z.string().min(1),
+  model: z.string().min(1),
+  candidate_count: CountSchema,
+  report_count: CountSchema,
+});
+
 const ReviewOpportunitySchema = z.strictObject({
   key: OpportunityKeySchema,
   candidate_count: CountSchema,
@@ -64,6 +71,7 @@ const ReviewOpportunitySchema = z.strictObject({
     provider_calls: CountSchema,
     usage: UsageSchema,
   }),
+  reviewer_strata: z.array(ReviewerStratumSchema),
   references: z.array(OpportunityReferenceSchema),
 });
 
@@ -104,12 +112,20 @@ type AssociatedReport = {
   usage: Usage;
 };
 
+type ReviewerStratumAccumulator = {
+  provider: string;
+  model: string;
+  candidateCount: number;
+  reportIds: Set<string>;
+};
+
 type OpportunityAccumulator = {
   key: OpportunityKey;
   candidateCount: number;
   repositoryIds: Set<number>;
   outcomes: Outcomes;
   associatedReports: Map<string, AssociatedReport>;
+  reviewerStrata: Map<string, ReviewerStratumAccumulator>;
   references: OpportunityReference[];
 };
 
@@ -178,6 +194,28 @@ function opportunityIdentity(key: OpportunityKey) {
     key.scanner_confidence,
     key.triage_reason_code,
   ]);
+}
+
+function compareReferences(
+  left: OpportunityReference,
+  right: OpportunityReference,
+) {
+  return (
+    compareStrings(left.repository, right.repository) ||
+    compareStrings(left.target_sha, right.target_sha) ||
+    compareStrings(left.candidate_id, right.candidate_id) ||
+    compareStrings(left.path, right.path)
+  );
+}
+
+function addBoundedReference(
+  references: OpportunityReference[],
+  reference: OpportunityReference,
+  maximumReferences: number,
+) {
+  references.push(reference);
+  references.sort(compareReferences);
+  if (references.length > maximumReferences) references.pop();
 }
 
 function verifyPreferredIdentity(
@@ -250,6 +288,11 @@ export async function analyzeReviewOpportunities(input: {
         throw new Error(
           `Contextual assessment has no candidate: ${assessment.candidate_id}`,
         );
+      const reviewer = report.contextual_reviewer;
+      if (reviewer === undefined)
+        throw new Error(
+          `Contextual assessment has no reviewer identity: ${assessment.candidate_id}`,
+        );
 
       contextualCandidates += 1;
       const key: OpportunityKey = {
@@ -270,6 +313,7 @@ export async function analyzeReviewOpportunities(input: {
           repositoryIds: new Set<number>(),
           outcomes: emptyOutcomes(),
           associatedReports: new Map<string, AssociatedReport>(),
+          reviewerStrata: new Map<string, ReviewerStratumAccumulator>(),
           references: [],
         };
         opportunities.set(identity, opportunity);
@@ -285,15 +329,35 @@ export async function analyzeReviewOpportunities(input: {
           providerCalls: reportProviderCalls(report),
           usage: { ...report.review_usage },
         });
-      opportunity.references.push({
-        repository: report.repository,
-        repository_id: report.repository_id,
-        target_sha: report.target_sha,
-        report_id: report.report_id,
-        report_url: entry.report_url,
-        candidate_id: candidate.candidate_id,
-        path: candidate.path,
-      });
+      const reviewerIdentity = JSON.stringify([
+        reviewer.provider,
+        reviewer.model,
+      ]);
+      let reviewerStratum = opportunity.reviewerStrata.get(reviewerIdentity);
+      if (reviewerStratum === undefined) {
+        reviewerStratum = {
+          provider: reviewer.provider,
+          model: reviewer.model,
+          candidateCount: 0,
+          reportIds: new Set<string>(),
+        };
+        opportunity.reviewerStrata.set(reviewerIdentity, reviewerStratum);
+      }
+      reviewerStratum.candidateCount += 1;
+      reviewerStratum.reportIds.add(report.report_id);
+      addBoundedReference(
+        opportunity.references,
+        {
+          repository: report.repository,
+          repository_id: report.repository_id,
+          target_sha: report.target_sha,
+          report_id: report.report_id,
+          report_url: entry.report_url,
+          candidate_id: candidate.candidate_id,
+          path: candidate.path,
+        },
+        maximumReferences,
+      );
     }
   }
 
@@ -316,15 +380,19 @@ export async function analyzeReviewOpportunities(input: {
           provider_calls: associatedProviderCalls,
           usage: associatedUsage,
         },
-        references: opportunity.references
+        reviewer_strata: [...opportunity.reviewerStrata.values()]
           .sort(
             (left, right) =>
-              compareStrings(left.repository, right.repository) ||
-              compareStrings(left.target_sha, right.target_sha) ||
-              compareStrings(left.candidate_id, right.candidate_id) ||
-              compareStrings(left.path, right.path),
+              compareStrings(left.provider, right.provider) ||
+              compareStrings(left.model, right.model),
           )
-          .slice(0, maximumReferences),
+          .map((stratum) => ({
+            provider: stratum.provider,
+            model: stratum.model,
+            candidate_count: stratum.candidateCount,
+            report_count: stratum.reportIds.size,
+          })),
+        references: opportunity.references,
       };
     })
     .sort(

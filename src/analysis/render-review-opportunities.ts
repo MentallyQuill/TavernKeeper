@@ -4,7 +4,15 @@ import {
 } from "./review-opportunities.js";
 
 function inlineCode(value: string) {
-  return `\`${value.replaceAll("`", "\\`")}\``;
+  const normalized = value.replace(/[\r\n]+/gu, " ");
+  const longestBacktickRun = Math.max(
+    0,
+    ...[...normalized.matchAll(/`+/gu)].map(([run]) => run.length),
+  );
+  const delimiter = "`".repeat(longestBacktickRun + 1);
+  const needsPadding = normalized.startsWith("`") || normalized.endsWith("`");
+  const padding = needsPadding ? " " : "";
+  return `${delimiter}${padding}${normalized}${padding}${delimiter}`;
 }
 
 function usageSummary(usage: {
@@ -75,14 +83,18 @@ export function renderReviewOpportunitiesMarkdown(
         `- Credible malicious behavior: ${opportunity.outcomes.disposition.credible_malicious_behavior}`,
         `- Demonstrated exposure: ${opportunity.outcomes.risk_exposure.demonstrated}`,
         `- High recommended risk: ${opportunity.outcomes.recommended_risk.high}`,
+        `- Risk exposure: not demonstrated ${opportunity.outcomes.risk_exposure.not_demonstrated}; demonstrated ${opportunity.outcomes.risk_exposure.demonstrated}`,
+        `- Recommended risk: low ${opportunity.outcomes.recommended_risk.low}; material ${opportunity.outcomes.recommended_risk.material}; high ${opportunity.outcomes.recommended_risk.high}`,
         `- Associated reports: ${opportunity.associated_reports.report_count}`,
         `- Associated provider calls: ${opportunity.associated_reports.provider_calls}`,
         `- Associated usage (${opportunity.associated_reports.attribution}): ${usageSummary(opportunity.associated_reports.usage)}`,
         "- Associated usage is an overlapping, non-additive report-level envelope; do not sum it or interpret it as avoided spend.",
-        "",
-        "Representative references:",
-        "",
       );
+      for (const stratum of opportunity.reviewer_strata)
+        lines.push(
+          `- Reviewer stratum: ${inlineCode(stratum.provider)} / ${inlineCode(stratum.model)}; candidates ${stratum.candidate_count}; reports ${stratum.report_count}`,
+        );
+      lines.push("", "Representative references:", "");
       for (const reference of opportunity.references)
         lines.push(
           `- ${inlineCode(reference.repository)} at ${inlineCode(reference.target_sha)}: ` +

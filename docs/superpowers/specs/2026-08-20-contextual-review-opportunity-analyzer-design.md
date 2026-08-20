@@ -41,6 +41,7 @@ The first production promotion is Zizmor's `artipacked` rule. TavernKeeper alrea
 - rule summaries keyed by origin, rule ID, scanner version, execution scope, file role, scanner confidence, and triage reason;
 - outcome counts for disposition, exposure, and recommended risk;
 - distinct repositories and bounded representative candidate references;
+- exact contextual reviewer/provider/model strata for mixed-model corpora;
 - report-level associated usage, explicitly marked overlapping and non-additive;
 - data-quality limitations, including contextual reuse that cannot be mapped to individual public candidates.
 
@@ -53,8 +54,8 @@ The loader verifies that each report's identity matches its index entry. A missi
 `src/cli/review-opportunities.ts` reads `reports/index.json` and its referenced local report files. The package script `review-opportunities` supports:
 
 ```text
-npm run review-opportunities -- --format json
-npm run review-opportunities -- --format markdown
+npm run --silent review-opportunities -- --format json
+npm run --silent review-opportunities -- --format markdown
 ```
 
 JSON is the canonical contract. Markdown is a pure renderer over that result and includes the attribution warning beside every associated-token column. Output goes to stdout so CI or operators can redirect it without repository churn.

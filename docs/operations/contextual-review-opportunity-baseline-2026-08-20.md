@@ -7,7 +7,7 @@ This baseline was generated from the preferred report index at `reports/index.js
 Command:
 
 ```text
-npm run review-opportunities -- --format json
+npm run --silent review-opportunities -- --format json
 ```
 
 The analyzer reads only preferred index entries, validates every selected report through the strict V5 contract, and includes only assessments whose source is `contextual-model`.
@@ -28,6 +28,8 @@ The analyzer reads only preferred index entries, validates every selected report
 | Reports with contextual reuse not attributable to individual candidates |           2 |
 
 Candidate and repository frequencies are exact. Corpus provider calls and token totals are exact.
+
+The analyzer retains exact contextual reviewer strata rather than mixing model generations. This corpus contains `nano-gpt.com / deepseek/deepseek-v4-flash:thinking` and `nano-gpt.com / zai-org/glm-latest`. Every `artipacked` assessment in this snapshot belongs to the former stratum.
 
 ## First promotion: `zizmor:artipacked`
 

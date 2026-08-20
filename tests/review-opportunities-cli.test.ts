@@ -1,3 +1,6 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
 import { describe, expect, test } from "vitest";
 
 import {
@@ -9,6 +12,8 @@ import {
   renderReviewOpportunitiesMarkdown,
 } from "../src/analysis/render-review-opportunities.js";
 import { reviewOpportunitiesMain } from "../src/cli/review-opportunities.js";
+
+const execFileAsync = promisify(execFile);
 
 const analysis: ReviewOpportunityAnalysis =
   ReviewOpportunityAnalysisSchema.parse({
@@ -24,7 +29,7 @@ const analysis: ReviewOpportunityAnalysis =
       indexed_reports: 3,
       loaded_reports: 2,
       skipped_policy_reports: 1,
-      contextual_candidates: 2,
+      contextual_candidates: 3,
       provider_calls: 2,
       usage: {
         input_tokens: 300,
@@ -45,18 +50,26 @@ const analysis: ReviewOpportunityAnalysis =
           scanner_confidence: "high",
           triage_reason_code: "unknown-rule",
         },
-        candidate_count: 2,
+        candidate_count: 3,
         repository_count: 2,
         outcomes: {
           disposition: {
             expected_behavior: 1,
             minor_weakness: 0,
-            material_vulnerability: 0,
+            material_vulnerability: 1,
             credible_malicious_behavior: 1,
           },
-          risk_exposure: { not_demonstrated: 1, demonstrated: 1 },
-          recommended_risk: { low: 1, material: 0, high: 1 },
+          risk_exposure: { not_demonstrated: 1, demonstrated: 2 },
+          recommended_risk: { low: 1, material: 1, high: 1 },
         },
+        reviewer_strata: [
+          {
+            provider: "openrouter.ai",
+            model: "zai-org/glm-latest",
+            candidate_count: 3,
+            report_count: 2,
+          },
+        ],
         associated_reports: {
           attribution: "overlapping-non-additive",
           report_count: 2,
@@ -101,17 +114,45 @@ describe("review opportunity rendering", () => {
     const markdown = renderReviewOpportunitiesMarkdown(analysis);
 
     expect(markdown).toContain("# Contextual Review Opportunities");
-    expect(markdown).toContain("Contextual candidates: 2");
+    expect(markdown).toContain("Contextual candidates: 3");
     expect(markdown).toContain("`zizmor:artipacked`");
     expect(markdown).toContain("Credible malicious behavior: 1");
-    expect(markdown).toContain("Demonstrated exposure: 1");
+    expect(markdown).toContain("Demonstrated exposure: 2");
     expect(markdown).toContain("High recommended risk: 1");
+    expect(markdown).toContain("Recommended risk: low 1; material 1; high 1");
+    expect(markdown).toContain(
+      "Reviewer stratum: `openrouter.ai` / `zai-org/glm-latest`; candidates 3; reports 2",
+    );
     expect(markdown).toContain(
       "Associated usage is an overlapping, non-additive report-level envelope; do not sum it or interpret it as avoided spend.",
     );
     expect(markdown).toContain(
       "https://mentallyquill.github.io/TavernKeeper/reports/github/42/",
     );
+  });
+
+  test("uses CommonMark-safe code-span delimiters for hostile valid text", () => {
+    const hostile = ReviewOpportunityAnalysisSchema.parse({
+      ...analysis,
+      opportunities: [
+        {
+          ...analysis.opportunities[0],
+          references: [
+            {
+              ...analysis.opportunities[0]!.references[0],
+              repository: "owner/rep``o",
+              path: "docs/evil`name.md\nnext",
+            },
+          ],
+        },
+      ],
+    });
+
+    const markdown = renderReviewOpportunitiesMarkdown(hostile);
+
+    expect(markdown).toContain("```owner/rep``o```");
+    expect(markdown).toContain("``docs/evil`name.md next``");
+    expect(markdown).not.toContain("docs/evil`name.md\nnext");
   });
 });
 
@@ -141,6 +182,28 @@ describe("review opportunity CLI", () => {
     expect(first.endsWith("\n")).toBe(true);
     expect(ReviewOpportunityAnalysisSchema.parse(JSON.parse(first))).toEqual(
       JSON.parse(first),
+    );
+  });
+
+  test("the documented silent package command emits parseable JSON only", async () => {
+    const windows = process.platform === "win32";
+    const executable = windows ? (process.env.ComSpec ?? "cmd.exe") : "npm";
+    const args = windows
+      ? [
+          "/d",
+          "/s",
+          "/c",
+          "npm.cmd run --silent review-opportunities -- --format json",
+        ]
+      : ["run", "--silent", "review-opportunities", "--", "--format", "json"];
+    const { stdout, stderr } = await execFileAsync(executable, args, {
+      cwd: process.cwd(),
+      maxBuffer: 5_000_000,
+    });
+
+    expect(stderr).toBe("");
+    expect(ReviewOpportunityAnalysisSchema.parse(JSON.parse(stdout))).toEqual(
+      JSON.parse(stdout),
     );
   });
 
