@@ -75,6 +75,68 @@ function group(input: {
 }
 
 describe("policy v5 deterministic review triage", () => {
+  test("classifies artipacked as a deterministic structured weakness", () => {
+    const finding = candidate("artipacked", {
+      origin: "zizmor",
+      category: "workflow-security",
+      scanner_confidence: "high",
+    });
+    const plan = triageEvidenceGroups([
+      group({
+        execution_scope: "automation",
+        path: ".github/workflows/release.yml",
+        candidates: [finding],
+      }),
+    ]);
+
+    expect(plan.contextualGroups).toHaveLength(0);
+    expect(plan.decisions).toEqual([
+      expect.objectContaining({
+        candidate_id: finding.candidate_id,
+        destination: "deterministic",
+        reason_code: "zizmor-known-workflow-rule",
+      }),
+    ]);
+    expect(plan.deterministicAssessments).toEqual([
+      expect.objectContaining({
+        candidate_id: finding.candidate_id,
+        disposition: "material_vulnerability",
+        risk_exposure: "not_demonstrated",
+        recommended_risk: "low",
+      }),
+    ]);
+  });
+
+  test("keeps artipacked contextual when its evidence case has a hard escalator", () => {
+    const artipacked = candidate("artipacked", {
+      origin: "zizmor",
+      category: "workflow-security",
+    });
+    const credentialBoundary = candidate("javascript.credential-to-network");
+    const plan = triageEvidenceGroups([
+      group({
+        execution_scope: "automation",
+        path: ".github/workflows/release.yml",
+        candidates: [artipacked, credentialBoundary],
+      }),
+    ]);
+
+    expect(plan.deterministicAssessments).toHaveLength(0);
+    expect(plan.contextualGroups[0]?.candidates).toHaveLength(2);
+    expect(plan.decisions).toEqual([
+      expect.objectContaining({
+        candidate_id: artipacked.candidate_id,
+        destination: "contextual",
+        reason_code: "hard-dangerous-correlation",
+      }),
+      expect.objectContaining({
+        candidate_id: credentialBoundary.candidate_id,
+        destination: "contextual",
+        reason_code: "hard-dangerous-correlation",
+      }),
+    ]);
+  });
+
   test("hard escalator keeps the entire behavior case contextual", () => {
     const plan = triageEvidenceGroups([
       group({
