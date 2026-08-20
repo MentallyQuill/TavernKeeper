@@ -910,9 +910,10 @@ async function reviewGroup(
       budgetLedger.recordCompletion(completion.usage);
       const response = parseReviewResponse(
         completion.content,
-        // Keep corrective feedback authoritative until the bounded final
-        // attempt, then salvage only invalid non-empty narrative strings.
-        finalAttempt,
+        // Narrative text never establishes evidence or risk. Salvage an
+        // invalid non-empty narrative immediately through the deterministic
+        // public fallback instead of paying to ask the model to rephrase it.
+        true,
       );
       if (response.status === "needs_more_context") {
         const candidateIds = new Set(
@@ -1247,11 +1248,7 @@ async function reviewBatch(
         ),
       );
       budgetLedger.recordCompletion(completion.usage);
-      responses = parseBatchResponse(
-        completion.content,
-        currentGroups,
-        finalAttempt,
-      );
+      responses = parseBatchResponse(completion.content, currentGroups, true);
     } catch (error) {
       if (!retryable(error)) throw error;
       for (const state of currentStates) {
