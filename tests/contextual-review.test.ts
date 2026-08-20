@@ -112,7 +112,7 @@ function batchContent(
 
 describe("contextual evidence review", () => {
   test("checkpoints one bounded wave without returning a partial review", async () => {
-    const groups = Array.from({ length: 13 }, (_, index) => {
+    const groups = Array.from({ length: 12 }, (_, index) => {
       const candidateId = (index + 1).toString(16).padStart(64, "0");
       return group(`src/wave-${index}.ts`, [candidateId]);
     });
@@ -168,7 +168,7 @@ describe("contextual evidence review", () => {
 
     expect(result).toMatchObject({
       status: "review_pending",
-      pending_groups: 3,
+      pending_groups: 2,
       progress: {
         review_protocol_version: 2,
         completed_group_ids: groups
@@ -203,8 +203,8 @@ describe("contextual evidence review", () => {
     });
 
     expect(CompletedContextualReviewSchema.parse(resumed).coverage).toEqual({
-      required: 13,
-      completed: 13,
+      required: 12,
+      completed: 12,
     });
     expect(requestCompletion).toHaveBeenCalledTimes(3);
   });

@@ -1480,10 +1480,7 @@ export async function reviewEvidenceGroups(
       progress,
       spec.policy,
     );
-  const budgetLedger = new ReviewBudgetLedger(
-    spec.policy,
-    spec.stopAfterWave ? undefined : progress,
-  );
+  const budgetLedger = new ReviewBudgetLedger(spec.policy, progress);
   const batchUsageComplete =
     progress === undefined || progress.review_batches !== undefined;
   const publishBatchUsage = batchUsageComplete;

@@ -117,10 +117,7 @@ export function planContextualReview(
   const freshGroups = remaining.filter(
     ({ group_id }) => !reusableGroups.has(group_id),
   );
-  const priorFresh =
-    progress?.review_units === undefined
-      ? (progress?.completed_group_ids.length ?? 0)
-      : progress.review_units.filter(({ reused }) => !reused).length;
+  const priorFresh = priorFreshBehaviorCases(progress);
   const freshBehaviorCases = priorFresh + freshGroups.length;
   if (freshBehaviorCases > policy.maxFreshBehaviorCases)
     budgetError(
@@ -135,11 +132,12 @@ export function planContextualReview(
     batches.push(batch);
     start += batch.groups.length;
   }
-  const persistedEstimate =
-    progress?.review_batches?.reduce(
-      (total, batch) => total + (batch.estimated_input_tokens ?? 0),
-      0,
-    ) ?? 0;
+  if (
+    freshGroups.length > 0 &&
+    priorProviderCalls(progress) + batches.length > policy.maxProviderCalls
+  )
+    budgetError("Contextual review exceeds the provider-call budget.");
+  const persistedEstimate = priorEstimatedInputTokens(progress);
   const estimatedInputTokens =
     persistedEstimate +
     batches.reduce((total, batch) => total + batch.estimatedInputTokens, 0);
@@ -168,6 +166,28 @@ function batchesFor(
   return batches;
 }
 
+function priorFreshBehaviorCases(progress: ReviewBudgetProgress | undefined) {
+  return progress?.review_units === undefined
+    ? (progress?.completed_group_ids.length ?? 0)
+    : progress.review_units.filter(({ reused }) => !reused).length;
+}
+
+function priorProviderCalls(progress: ReviewBudgetProgress | undefined) {
+  return Math.max(
+    progress?.completion_ids.length ?? 0,
+    progress?.review_batches?.length ?? 0,
+  );
+}
+
+function priorEstimatedInputTokens(progress: ReviewBudgetProgress | undefined) {
+  return (
+    progress?.review_batches?.reduce(
+      (total, batch) => total + (batch.estimated_input_tokens ?? 0),
+      0,
+    ) ?? 0
+  );
+}
+
 export function planContextualReviewWave(
   groups: readonly EvidenceContextGroup[],
   reusableGroups: ReadonlyMap<string, ReusableGroupIdentity> = new Map(),
@@ -175,33 +195,57 @@ export function planContextualReviewWave(
   policy: ContextualReviewBudgetPolicy,
 ): ContextualReviewWavePlan {
   const remaining = groups.slice(progress?.completed_group_ids.length ?? 0);
+  const priorFresh = priorFreshBehaviorCases(progress);
+  const priorCalls = priorProviderCalls(progress);
+  const persistedEstimate = priorEstimatedInputTokens(progress);
+  const allRemainingFresh = remaining.filter(
+    ({ group_id }) => !reusableGroups.has(group_id),
+  );
+  if (priorFresh + allRemainingFresh.length > policy.maxFreshBehaviorCases)
+    budgetError(
+      "Contextual review exceeds the per-target behavior-case budget.",
+    );
+  const requiredBatches = batchesFor(allRemainingFresh, policy);
+  if (
+    allRemainingFresh.length > 0 &&
+    priorCalls + requiredBatches.length > policy.maxProviderCalls
+  )
+    budgetError("Contextual review exceeds the provider-call budget.");
+  const requiredEstimate = requiredBatches.reduce(
+    (total, batch) => total + batch.estimatedInputTokens,
+    0,
+  );
+  if (persistedEstimate + requiredEstimate > policy.maxEstimatedInputTokens)
+    budgetError("Contextual review exceeds the estimated input-token budget.");
+
   let selectedGroups: EvidenceContextGroup[] = [];
   let freshGroups: EvidenceContextGroup[] = [];
   let batches: PlannedContextualBatch[] = [];
-  let estimatedInputTokens = 0;
+  let estimatedInputTokens = persistedEstimate;
 
   for (let length = 1; length <= remaining.length; length += 1) {
     const candidateGroups = remaining.slice(0, length);
     const candidateFresh = candidateGroups.filter(
       ({ group_id }) => !reusableGroups.has(group_id),
     );
-    if (candidateFresh.length > policy.maxFreshBehaviorCases) break;
+    if (priorFresh + candidateFresh.length > policy.maxFreshBehaviorCases)
+      break;
     const candidateBatches = batchesFor(candidateFresh, policy);
     const candidateEstimate = candidateBatches.reduce(
       (total, batch) => total + batch.estimatedInputTokens,
       0,
     );
     if (
-      candidateBatches.length * policy.maxImmediateAttempts >
+      priorCalls + candidateBatches.length * policy.maxImmediateAttempts >
         policy.maxProviderCalls ||
-      candidateEstimate * policy.maxImmediateAttempts >
+      persistedEstimate + candidateEstimate * policy.maxImmediateAttempts >
         policy.maxEstimatedInputTokens
     )
       break;
     selectedGroups = candidateGroups;
     freshGroups = candidateFresh;
     batches = candidateBatches;
-    estimatedInputTokens = candidateEstimate;
+    estimatedInputTokens = persistedEstimate + candidateEstimate;
   }
 
   if (remaining.length > 0 && selectedGroups.length === 0)
@@ -213,7 +257,7 @@ export function planContextualReviewWave(
     selectedGroups,
     freshGroups,
     batches,
-    freshBehaviorCases: freshGroups.length,
+    freshBehaviorCases: priorFresh + freshGroups.length,
     estimatedInputTokens,
     pendingGroups: remaining.length - selectedGroups.length,
     complete: selectedGroups.length === remaining.length,

@@ -184,54 +184,12 @@ function completedResponse(
 }
 
 describe("contextual review budget", () => {
-  test("plans a large target as stable bounded waves", () => {
+  test("rejects a large target that cannot fit the report-wide fresh-case budget", () => {
     const groups = Array.from({ length: 24 }, (_, index) => group(index));
 
-    const completed: string[] = [];
-    const waveSizes: number[] = [];
-    while (completed.length < groups.length) {
-      const wave = planContextualReviewWave(
-        groups,
-        new Map(),
-        completed.length === 0
-          ? undefined
-          : {
-              completed_group_ids: completed,
-              completion_ids: [],
-              usage: {
-                inputTokens: 249_999,
-                outputTokens: 39_999,
-                cacheReadTokens: 0,
-                reasoningTokens: 0,
-              },
-            },
-        policy,
-      );
-
-      expect(wave.selectedGroups.map(({ group_id }) => group_id)).toEqual(
-        groups
-          .slice(
-            completed.length,
-            completed.length + wave.selectedGroups.length,
-          )
-          .map(({ group_id }) => group_id),
-      );
-      expect(wave.freshBehaviorCases).toBeLessThanOrEqual(
-        policy.maxFreshBehaviorCases,
-      );
-      expect(
-        wave.batches.length * policy.maxImmediateAttempts,
-      ).toBeLessThanOrEqual(policy.maxProviderCalls);
-      expect(
-        wave.estimatedInputTokens * policy.maxImmediateAttempts,
-      ).toBeLessThanOrEqual(policy.maxEstimatedInputTokens);
-
-      waveSizes.push(wave.selectedGroups.length);
-      completed.push(...wave.selectedGroups.map(({ group_id }) => group_id));
-    }
-
-    expect(completed).toEqual(groups.map(({ group_id }) => group_id));
-    expect(waveSizes).toEqual([10, 10, 4]);
+    expect(() =>
+      planContextualReviewWave(groups, new Map(), undefined, policy),
+    ).toThrow(/per-target behavior-case budget/iu);
     expect(new ReviewBudgetLedger(policy).snapshot()).toEqual({
       providerCalls: 0,
       inputTokens: 0,
@@ -256,7 +214,7 @@ describe("contextual review budget", () => {
   });
 
   test("reserves provider calls and estimated input for every immediate attempt", () => {
-    const groups = Array.from({ length: 7 }, (_, index) => group(index));
+    const groups = Array.from({ length: 6 }, (_, index) => group(index));
 
     const wave = planContextualReviewWave(groups, new Map(), undefined, {
       ...policy,
@@ -266,7 +224,7 @@ describe("contextual review budget", () => {
 
     expect(wave.batches).toHaveLength(2);
     expect(wave.selectedGroups).toHaveLength(2);
-    expect(wave.pendingGroups).toBe(5);
+    expect(wave.pendingGroups).toBe(4);
   });
 
   test("classifies one indivisible oversized group before a provider request", () => {
@@ -275,7 +233,7 @@ describe("contextual review budget", () => {
 
     expect(() =>
       planContextualReviewWave([oversized], new Map(), undefined, policy),
-    ).toThrow(/indivisible contextual group/iu);
+    ).toThrow(/estimated input-token budget/iu);
   });
 
   test("rejects thirteen fresh behavior cases before a provider request", async () => {
@@ -291,12 +249,93 @@ describe("contextual review budget", () => {
           requestCompletion,
         },
         policy,
+        stopAfterWave: true,
       }),
     ).rejects.toMatchObject({
       code: "MODEL_REVIEW_BUDGET_EXCEEDED",
       scope: "repository",
     });
     expect(requestCompletion).not.toHaveBeenCalled();
+  });
+
+  test("bounded waves retain cumulative fresh-case and provider-call usage", async () => {
+    const groups = Array.from({ length: 12 }, (_, index) => group(index));
+    const completed = groups.slice(0, 10);
+    const priorProgress = ContextualReviewProgressSchema.parse({
+      ...progress({ calls: 6, inputTokens: 600, outputTokens: 60 }),
+      completed_group_ids: completed.map(({ group_id }) => group_id),
+      assessments: completed.map((item) => ({
+        candidate_id: item.candidates[0]!.candidate_id,
+        evidence_ids: [item.candidates[0]!.evidence_id],
+        disposition: "expected_behavior",
+        impact: "none",
+        exploitability: "unlikely",
+        confidence: "high",
+        risk_exposure: "not_demonstrated",
+        recommended_risk: "low",
+        technical_explanation: "Expected behavior.",
+        layman_explanation: "Expected behavior.",
+        developer_action: "none",
+      })),
+      review_units: completed.map((item) => ({
+        group_id: item.group_id,
+        review_input_digest: item.group_id,
+        candidate_ids: item.candidates.map(({ candidate_id }) => candidate_id),
+        reused: false,
+        origin_report_id: null,
+      })),
+    });
+    const requestCompletion = vi.fn();
+
+    expect(() =>
+      planContextualReviewWave(groups, new Map(), priorProgress, policy),
+    ).toThrow(/provider-call budget/iu);
+    await expect(
+      reviewEvidenceGroups({
+        groups,
+        provider: {
+          endpoint: "https://provider.example/v1/chat/completions",
+          apiKey: "test-key",
+          model: "configured/model:thinking",
+          requestCompletion,
+        },
+        policy,
+        progress: priorProgress,
+        stopAfterWave: true,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_REVIEW_BUDGET_EXCEEDED" });
+    expect(requestCompletion).not.toHaveBeenCalled();
+  });
+
+  test("bounded waves retain cumulative estimated input usage", () => {
+    const groups = [group(40), group(41)];
+    const remainingEstimate = planContextualReviewWave(
+      [groups[1]!],
+      new Map(),
+      undefined,
+      { ...policy, maxImmediateAttempts: 1 },
+    ).estimatedInputTokens;
+    const priorEstimate = 10_000;
+    const priorProgress = {
+      completed_group_ids: [groups[0]!.group_id],
+      completion_ids: ["completion-prior"],
+      usage: {
+        inputTokens: 1,
+        outputTokens: 1,
+        cacheReadTokens: 0,
+        reasoningTokens: 0,
+      },
+      review_units: [{ reused: false }],
+      review_batches: [{ estimated_input_tokens: priorEstimate }],
+    };
+
+    expect(() =>
+      planContextualReviewWave(groups, new Map(), priorProgress, {
+        ...policy,
+        maxImmediateAttempts: 1,
+        maxEstimatedInputTokens: priorEstimate + remainingEstimate - 1,
+      }),
+    ).toThrow(/estimated input-token budget/iu);
   });
 
   test.each([
@@ -320,7 +359,22 @@ describe("contextual review budget", () => {
     expect(requestCompletion).not.toHaveBeenCalled();
   });
 
-  test("never makes a seventh live provider call", async () => {
+  test("bounded waves restore actual token usage before requesting", async () => {
+    const requestCompletion = vi.fn();
+
+    await expect(
+      reviewEvidenceGroups({
+        ...reviewSpec(
+          requestCompletion,
+          progress({ calls: 0, inputTokens: 250_000, outputTokens: 0 }),
+        ),
+        stopAfterWave: true,
+      }),
+    ).rejects.toMatchObject({ code: "MODEL_REVIEW_BUDGET_EXCEEDED" });
+    expect(requestCompletion).not.toHaveBeenCalled();
+  });
+
+  test("rejects a plan requiring a seventh provider call before going live", async () => {
     const groups = Array.from({ length: 7 }, (_, index) => group(index));
     const requestCompletion = vi.fn(async (_request: TextCompletionRequest) => {
       const index = requestCompletion.mock.calls.length - 1;
@@ -339,7 +393,7 @@ describe("contextual review budget", () => {
         policy: { ...policy, maxBatchGroups: 1 },
       }),
     ).rejects.toMatchObject({ code: "MODEL_REVIEW_BUDGET_EXCEEDED" });
-    expect(requestCompletion).toHaveBeenCalledTimes(6);
+    expect(requestCompletion).not.toHaveBeenCalled();
   });
 
   test.each([
