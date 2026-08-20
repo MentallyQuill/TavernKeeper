@@ -263,6 +263,7 @@ const xrayAmbiguousRules = new Set([
   "javascript.xray.unsafe-vm-context",
 ]);
 const knownZizmorRules = new Set([
+  "artipacked",
   "template-injection",
   "excessive-permissions",
   "unpinned-uses",

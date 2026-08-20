@@ -55,8 +55,7 @@
       scanner_policy_version: report.scanner_policy_version,
       rule_catalog_version: report.rule_catalog_version,
       package_schema_version: report.package_schema_version,
-      contextual_review_policy_version:
-        report.contextual_review_policy_version,
+      contextual_review_policy_version: report.contextual_review_policy_version,
       ecosystem_context_version: report.ecosystem_context_version,
       prompt_version: report.prompt_version,
       assessment_schema_version: report.assessment_schema_version,
@@ -72,11 +71,17 @@
         history_commits: report.history.commits,
         inventory_files: report.coverage.inventory.files,
         inventory_bytes: report.coverage.inventory.bytes,
-        tools_completed: report.coverage.tools.filter(({ status }) => status === "completed").length,
-        tools_not_applicable: report.coverage.tools.filter(({ status }) => status === "not-applicable").length,
-        evidence_validated: report.coverage.evidence_validation.validated_candidates,
+        tools_completed: report.coverage.tools.filter(
+          ({ status }) => status === "completed",
+        ).length,
+        tools_not_applicable: report.coverage.tools.filter(
+          ({ status }) => status === "not-applicable",
+        ).length,
+        evidence_validated:
+          report.coverage.evidence_validation.validated_candidates,
         metadata_only_candidates:
-          report.coverage.evidence_validation.status === "completed-with-limitations"
+          report.coverage.evidence_validation.status ===
+          "completed-with-limitations"
             ? report.coverage.evidence_validation.metadata_only_candidates
             : 0,
         review_required: report.review_coverage.required,
@@ -86,8 +91,7 @@
       report_url:
         `https://mentallyquill.github.io/TavernKeeper/reports/github/${report.repository_id}/` +
         `${report.target_sha}/${report.scanner_policy_version}/${report.report_id}/`,
-      history_url:
-        `https://mentallyquill.github.io/TavernKeeper/reports/github/${report.repository_id}/history/`,
+      history_url: `https://mentallyquill.github.io/TavernKeeper/reports/github/${report.repository_id}/history/`,
     });
   }
   ```
@@ -133,7 +137,7 @@
     loadReport: (entry: ReportIndexEntryV5) => Promise<unknown>;
     contextualPolicyVersion?: "5";
     maxReferencesPerOpportunity?: number;
-  }): Promise<ReviewOpportunityAnalysis>
+  }): Promise<ReviewOpportunityAnalysis>;
   ```
 
   Parse `input.index` with `ReportIndexV5Schema`. Skip entries whose scanner/contextual policy is not exactly `5`. Parse every selected loader result with `ScanReportV5Schema` and compare `report_id`, `report_digest`, `repository_id`, `repository`, `source_id`, `target_sha`, `scanner_version`, `scanner_policy_version`, `rule_catalog_version`, `contextual_review_policy_version`, `prompt_version`, and `assessment_schema_version` against the index entry.
@@ -222,7 +226,7 @@
     entry.scanner_policy_version,
     entry.report_id,
     "report.json",
-  )
+  );
   ```
 
   Direct execution writes the returned string to stdout and uses `safeCliErrorRecord` for body-free stderr failures.
@@ -252,7 +256,7 @@
 
 - [ ] Add three focused tests before implementation:
 
-  1. `artipacked` in an automation group produces destination `deterministic`, reason `zizmor-known-workflow-rule`, assessment source `deterministic-policy`, and a structured-weakness/minor-weakness result;
+  1. `artipacked` in an automation group produces destination `deterministic`, reason `zizmor-known-workflow-rule`, assessment source `deterministic-policy`, and the existing structured-weakness/material-vulnerability result with no demonstrated exposure and low recommended risk;
   2. `future-zizmor-rule` remains contextual with `unknown-rule`;
   3. one group containing `artipacked` plus `javascript.credential-to-network` routes every decision contextually through the hard-escalator reason.
 
