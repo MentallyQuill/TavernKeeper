@@ -6,6 +6,7 @@ import {
   type ReportIndexEntryV5,
   type ScanReportV5,
 } from "../contracts/reports-v5.js";
+import { RetryReasonSchema } from "../model/openai-compatible-client.js";
 
 const CountSchema = z.number().int().nonnegative();
 const UsageSchema = z.strictObject({
@@ -13,6 +14,66 @@ const UsageSchema = z.strictObject({
   output_tokens: CountSchema,
   cache_read_tokens: CountSchema,
   reasoning_tokens: CountSchema,
+});
+
+/**
+ * Ceilings the report declares for itself, paired with the actual figure each
+ * one constrains. Both key names come from `review_triage.model_budget`.
+ */
+const BUDGET_CEILINGS = [
+  ["max_fresh_behavior_cases", "fresh_behavior_cases"],
+  ["max_provider_calls", "provider_calls"],
+  ["max_estimated_input_tokens", "estimated_input_tokens"],
+  ["max_actual_input_tokens", "input_tokens"],
+  ["max_actual_output_tokens", "output_tokens"],
+] as const;
+
+const RetryReasonCountSchema = z.strictObject({
+  reason: RetryReasonSchema,
+  batches: CountSchema,
+});
+
+const BudgetCeilingSchema = z.strictObject({
+  budget: z.string().min(1),
+  measure: z.string().min(1),
+  reports_exceeding: CountSchema,
+  widest_configured: CountSchema,
+  widest_actual: CountSchema,
+});
+
+/**
+ * Whole-corpus review cost. Batch records carry no candidate or group IDs, so
+ * none of this is attributable to an individual rule or opportunity; it sits
+ * beside the opportunity ranking rather than inside it.
+ */
+const CostSchema = z.strictObject({
+  batches: z.strictObject({
+    total: CountSchema,
+    first_attempt: CountSchema,
+    retries: CountSchema,
+    max_attempt: CountSchema,
+  }),
+  retry_overhead: z.strictObject({
+    input_tokens: CountSchema,
+    output_tokens: CountSchema,
+    share_of_batch_input_percent: z.number().nullable(),
+  }),
+  retry_reasons: z.array(RetryReasonCountSchema),
+  // A retried batch whose report predates retry_reason omits the field
+  // entirely. Counting them keeps the histogram's coverage visible.
+  retries_predating_retry_reason: CountSchema,
+  // A retried batch whose groups were rescheduled for different diagnostics
+  // records null instead of any single cause.
+  retries_with_mixed_retry_reason: CountSchema,
+  prompt_cache: z.strictObject({
+    cache_read_tokens: CountSchema,
+    batches_with_cache_reads: CountSchema,
+  }),
+  budget: z.strictObject({
+    reports_declaring_budget: CountSchema,
+    reports_exceeding_any_ceiling: CountSchema,
+    ceilings: z.array(BudgetCeilingSchema),
+  }),
 });
 
 const OpportunityKeySchema = z.strictObject({
@@ -93,6 +154,7 @@ export const ReviewOpportunityAnalysisSchema = z.strictObject({
     usage: UsageSchema,
     reports_with_unmapped_contextual_reuse: CountSchema,
   }),
+  cost: CostSchema,
   opportunities: z.array(ReviewOpportunitySchema),
   limitations: z.array(z.string().min(1)),
 });
@@ -237,6 +299,133 @@ function reportProviderCalls(report: ScanReportV5) {
   return report.review_triage?.model_budget.actual.provider_calls ?? 0;
 }
 
+type CostAccumulator = {
+  total: number;
+  firstAttempt: number;
+  retries: number;
+  maxAttempt: number;
+  batchInputTokens: number;
+  retryInputTokens: number;
+  retryOutputTokens: number;
+  cacheReadTokens: number;
+  batchesWithCacheReads: number;
+  retriesPredatingReason: number;
+  retriesWithMixedReason: number;
+  reasons: Map<string, number>;
+  reportsDeclaringBudget: number;
+  reportsExceedingAny: number;
+  ceilings: Map<
+    string,
+    { exceeding: number; configured: number; actual: number }
+  >;
+};
+
+/** Folds one report's batch records and declared budget into the corpus cost. */
+function accumulateCost(cost: CostAccumulator, report: ScanReportV5) {
+  for (const batch of report.review_batches ?? []) {
+    cost.total += 1;
+    cost.batchInputTokens += batch.input_tokens;
+    cost.cacheReadTokens += batch.cache_read_tokens;
+    if (batch.cache_read_tokens > 0) cost.batchesWithCacheReads += 1;
+    cost.maxAttempt = Math.max(cost.maxAttempt, batch.attempt);
+
+    // JSON repair only runs after a primary review failed, so it is recovery
+    // overhead even though its batch records restart at attempt 1.
+    if (batch.kind === "contextual_review" && batch.attempt === 1) {
+      cost.firstAttempt += 1;
+      continue;
+    }
+
+    cost.retries += 1;
+    cost.retryInputTokens += batch.input_tokens;
+    cost.retryOutputTokens += batch.output_tokens;
+    const reason = batch.retry_reason;
+    if (reason === undefined) {
+      cost.retriesPredatingReason += 1;
+      continue;
+    }
+    if (reason === null) {
+      cost.retriesWithMixedReason += 1;
+      continue;
+    }
+    cost.reasons.set(reason, (cost.reasons.get(reason) ?? 0) + 1);
+  }
+
+  const budget = report.review_triage?.model_budget;
+  if (budget === undefined) return;
+
+  cost.reportsDeclaringBudget += 1;
+  let exceededAny = false;
+  for (const [configuredKey, actualKey] of BUDGET_CEILINGS) {
+    const configured = budget.configured[configuredKey];
+    const actual = budget.actual[actualKey];
+    const entry = cost.ceilings.get(configuredKey) ?? {
+      exceeding: 0,
+      configured,
+      actual: 0,
+    };
+    if (actual > configured) {
+      entry.exceeding += 1;
+      exceededAny = true;
+    }
+    // Keep the widest observed actual value, breached or not, so the gap
+    // between policy and reality is visible without listing every report.
+    if (actual > entry.actual) entry.actual = actual;
+    cost.ceilings.set(configuredKey, entry);
+  }
+  if (exceededAny) cost.reportsExceedingAny += 1;
+}
+
+/** Projects the accumulator into the strict result shape, deterministically. */
+function renderCost(cost: CostAccumulator) {
+  return {
+    batches: {
+      total: cost.total,
+      first_attempt: cost.firstAttempt,
+      retries: cost.retries,
+      max_attempt: cost.maxAttempt,
+    },
+    retry_overhead: {
+      input_tokens: cost.retryInputTokens,
+      output_tokens: cost.retryOutputTokens,
+      // Null rather than zero when there is no denominator, so an empty corpus
+      // never reports a fabricated 0%.
+      share_of_batch_input_percent:
+        cost.batchInputTokens > 0
+          ? Math.round((cost.retryInputTokens / cost.batchInputTokens) * 1000) /
+            10
+          : null,
+    },
+    retry_reasons: [...cost.reasons.entries()]
+      .map(([reason, batches]) => ({ reason, batches }))
+      .sort(
+        (left, right) =>
+          right.batches - left.batches ||
+          compareStrings(left.reason, right.reason),
+      ),
+    retries_predating_retry_reason: cost.retriesPredatingReason,
+    retries_with_mixed_retry_reason: cost.retriesWithMixedReason,
+    prompt_cache: {
+      cache_read_tokens: cost.cacheReadTokens,
+      batches_with_cache_reads: cost.batchesWithCacheReads,
+    },
+    budget: {
+      reports_declaring_budget: cost.reportsDeclaringBudget,
+      reports_exceeding_any_ceiling: cost.reportsExceedingAny,
+      ceilings: BUDGET_CEILINGS.map(([configuredKey, actualKey]) => {
+        const entry = cost.ceilings.get(configuredKey);
+        return {
+          budget: configuredKey,
+          measure: actualKey,
+          reports_exceeding: entry?.exceeding ?? 0,
+          widest_configured: entry?.configured ?? 0,
+          widest_actual: entry?.actual ?? 0,
+        };
+      }),
+    },
+  };
+}
+
 export async function analyzeReviewOpportunities(input: {
   index: unknown;
   loadReport: (entry: ReportIndexEntryV5) => Promise<unknown>;
@@ -258,6 +447,26 @@ export async function analyzeReviewOpportunities(input: {
   let contextualCandidates = 0;
   let providerCalls = 0;
   let reportsWithUnmappedContextualReuse = 0;
+  const cost = {
+    total: 0,
+    firstAttempt: 0,
+    retries: 0,
+    maxAttempt: 0,
+    batchInputTokens: 0,
+    retryInputTokens: 0,
+    retryOutputTokens: 0,
+    cacheReadTokens: 0,
+    batchesWithCacheReads: 0,
+    retriesPredatingReason: 0,
+    retriesWithMixedReason: 0,
+    reasons: new Map<string, number>(),
+    reportsDeclaringBudget: 0,
+    reportsExceedingAny: 0,
+    ceilings: new Map<
+      string,
+      { exceeding: number; configured: number; actual: number }
+    >(),
+  };
 
   for (const entry of index.reports) {
     if (
@@ -273,6 +482,7 @@ export async function analyzeReviewOpportunities(input: {
     loadedReports += 1;
     providerCalls += reportProviderCalls(report);
     addUsage(corpusUsage, report.review_usage);
+    accumulateCost(cost, report);
     if ((report.review_triage?.candidates.reused_contextual ?? 0) > 0)
       reportsWithUnmappedContextualReuse += 1;
 
@@ -435,6 +645,7 @@ export async function analyzeReviewOpportunities(input: {
       reports_with_unmapped_contextual_reuse:
         reportsWithUnmappedContextualReuse,
     },
+    cost: renderCost(cost),
     opportunities: renderedOpportunities,
     limitations,
   });

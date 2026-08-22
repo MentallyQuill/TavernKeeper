@@ -39,6 +39,61 @@ const analysis: ReviewOpportunityAnalysis =
       },
       reports_with_unmapped_contextual_reuse: 1,
     },
+    cost: {
+      batches: { total: 3, first_attempt: 2, retries: 1, max_attempt: 2 },
+      retry_overhead: {
+        input_tokens: 100,
+        output_tokens: 10,
+        share_of_batch_input_percent: 33.3,
+      },
+      retry_reasons: [
+        { reason: "assessment_technical_explanation", batches: 1 },
+      ],
+      retries_predating_retry_reason: 0,
+      retries_with_mixed_retry_reason: 0,
+      prompt_cache: { cache_read_tokens: 60, batches_with_cache_reads: 2 },
+      budget: {
+        reports_declaring_budget: 2,
+        reports_exceeding_any_ceiling: 1,
+        ceilings: [
+          {
+            budget: "max_fresh_behavior_cases",
+            measure: "fresh_behavior_cases",
+            reports_exceeding: 0,
+            widest_configured: 12,
+            widest_actual: 2,
+          },
+          {
+            budget: "max_provider_calls",
+            measure: "provider_calls",
+            reports_exceeding: 1,
+            widest_configured: 6,
+            widest_actual: 9,
+          },
+          {
+            budget: "max_estimated_input_tokens",
+            measure: "estimated_input_tokens",
+            reports_exceeding: 0,
+            widest_configured: 200000,
+            widest_actual: 160000,
+          },
+          {
+            budget: "max_actual_input_tokens",
+            measure: "input_tokens",
+            reports_exceeding: 0,
+            widest_configured: 250000,
+            widest_actual: 180000,
+          },
+          {
+            budget: "max_actual_output_tokens",
+            measure: "output_tokens",
+            reports_exceeding: 0,
+            widest_configured: 40000,
+            widest_actual: 12000,
+          },
+        ],
+      },
+    },
     opportunities: [
       {
         key: {

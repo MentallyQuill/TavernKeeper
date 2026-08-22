@@ -37,6 +37,57 @@ export function renderReviewOpportunitiesJson(
   return `${JSON.stringify(parsed, null, 2)}\n`;
 }
 
+function retryShare(share: number | null) {
+  return share === null ? "" : ` (${share}% of batch input tokens)`;
+}
+
+function retryReasonLines(cost: ReviewOpportunityAnalysis["cost"]) {
+  if (
+    cost.retry_reasons.length === 0 &&
+    cost.retries_predating_retry_reason === 0 &&
+    cost.retries_with_mixed_retry_reason === 0
+  )
+    return [];
+  const lines = ["### Recorded retry causes", ""];
+  if (cost.retry_reasons.length === 0)
+    lines.push("No retry cause was recorded for any batch.", "");
+  else {
+    lines.push("| Cause | Batches |", "| --- | ---: |");
+    for (const entry of cost.retry_reasons)
+      lines.push(`| ${inlineCode(entry.reason)} | ${entry.batches} |`);
+    lines.push("");
+  }
+  if (cost.retries_predating_retry_reason > 0)
+    lines.push(
+      `${cost.retries_predating_retry_reason} retried batches predate the recorded retry cause and are not represented above.`,
+      "",
+    );
+  if (cost.retries_with_mixed_retry_reason > 0)
+    lines.push(
+      `${cost.retries_with_mixed_retry_reason} retried batches mixed several causes and record no single cause.`,
+      "",
+    );
+  return lines;
+}
+
+function budgetLines(budget: ReviewOpportunityAnalysis["cost"]["budget"]) {
+  if (budget.reports_declaring_budget === 0) return [];
+  const lines = [
+    "### Declared budget adherence",
+    "",
+    `${budget.reports_exceeding_any_ceiling} of ${budget.reports_declaring_budget} reports exceeded at least one ceiling declared in their own policy.`,
+    "",
+    "| Ceiling | Reports exceeding | Configured | Widest observed |",
+    "| --- | ---: | ---: | ---: |",
+  ];
+  for (const ceiling of budget.ceilings)
+    lines.push(
+      `| ${inlineCode(ceiling.budget)} | ${ceiling.reports_exceeding} | ${ceiling.widest_configured} | ${ceiling.widest_actual} |`,
+    );
+  lines.push("");
+  return lines;
+}
+
 export function renderReviewOpportunitiesMarkdown(
   analysis: ReviewOpportunityAnalysis,
 ) {
@@ -64,6 +115,16 @@ export function renderReviewOpportunitiesMarkdown(
     `- Usage: ${usageSummary(parsed.corpus.usage)}`,
     `- Reports with unmapped contextual reuse: ${parsed.corpus.reports_with_unmapped_contextual_reuse}`,
     "",
+    "## Review cost",
+    "",
+    "Whole-corpus figures. Batch records carry no candidate or group IDs, so none of this is attributable to an individual rule.",
+    "",
+    `- Batches: ${parsed.cost.batches.total} (${parsed.cost.batches.first_attempt} first attempts, ${parsed.cost.batches.retries} retries, highest attempt ${parsed.cost.batches.max_attempt})`,
+    `- Retry overhead: ${parsed.cost.retry_overhead.input_tokens} input and ${parsed.cost.retry_overhead.output_tokens} output tokens${retryShare(parsed.cost.retry_overhead.share_of_batch_input_percent)}`,
+    `- Cache reads: ${parsed.cost.prompt_cache.cache_read_tokens} tokens across ${parsed.cost.prompt_cache.batches_with_cache_reads} batches`,
+    "",
+    ...retryReasonLines(parsed.cost),
+    ...budgetLines(parsed.cost.budget),
     "## Ranked opportunities",
     "",
   ];
