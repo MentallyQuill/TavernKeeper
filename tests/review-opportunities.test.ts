@@ -121,6 +121,9 @@ async function contextualReport(input: {
   };
   reuse?: boolean;
   reviewer?: { provider: string; model: string };
+  batches?: FixtureBatch[];
+  budgetActual?: FixtureBudgetActual;
+  budgetProtocolVersion?: 2;
 }) {
   const base = await fixturePolicy5ReportV5();
   const candidateId = input.candidateSeed.repeat(64);
@@ -174,7 +177,7 @@ async function contextualReport(input: {
       model: "zai-org/glm-latest",
     },
     review_usage: usage,
-    review_batches: [
+    review_batches: input.batches ?? [
       {
         kind: "contextual_review",
         attempt: 1,
@@ -200,8 +203,11 @@ async function contextualReport(input: {
       },
       reasons: [{ reason_code: "unknown-rule", count: 1 }],
       model_budget: {
+        ...(input.budgetProtocolVersion === undefined
+          ? {}
+          : { review_protocol_version: input.budgetProtocolVersion }),
         configured: base.review_triage!.model_budget.configured,
-        actual: {
+        actual: input.budgetActual ?? {
           fresh_behavior_cases: input.reuse ? 0 : 1,
           provider_calls: 1,
           estimated_input_tokens: 120,
@@ -229,6 +235,62 @@ async function contextualReport(input: {
     assessments: [assessment],
     counts: buildContextualCountsV5(1, [assessment], []),
   });
+}
+
+/** One batch record with defaults that keep token maths easy to read. */
+type FixtureBatch = NonNullable<ScanReportV5["review_batches"]>[number];
+type FixtureBudgetActual = NonNullable<
+  ScanReportV5["review_triage"]
+>["model_budget"]["actual"];
+
+function batchSpec(
+  attempt: number,
+  retryReason?: FixtureBatch["retry_reason"],
+): FixtureBatch {
+  return {
+    kind: "contextual_review" as const,
+    attempt,
+    group_count: 1,
+    candidate_count: 1,
+    estimated_input_tokens: 120,
+    over_budget: false,
+    input_tokens: 100,
+    output_tokens: 10,
+    cache_read_tokens: 0,
+    reasoning_tokens: 0,
+    ...(retryReason === undefined ? {} : { retry_reason: retryReason }),
+  };
+}
+
+/**
+ * Derives the usage totals and budget actuals a report must declare for its
+ * own batch list. The V5 contract rejects any report whose batches do not
+ * reconcile with its totals, so fixtures cannot invent either half.
+ */
+function reconcile(batches: readonly FixtureBatch[]) {
+  const sum = (
+    field:
+      | "input_tokens"
+      | "output_tokens"
+      | "cache_read_tokens"
+      | "estimated_input_tokens",
+    // estimated_input_tokens is nullable in the contract.
+  ) => batches.reduce((total, batch) => total + (batch[field] ?? 0), 0);
+  return {
+    usage: {
+      input_tokens: sum("input_tokens"),
+      output_tokens: sum("output_tokens"),
+      cache_read_tokens: sum("cache_read_tokens"),
+      reasoning_tokens: 0,
+    },
+    budgetActual: {
+      fresh_behavior_cases: 1,
+      provider_calls: batches.length,
+      estimated_input_tokens: sum("estimated_input_tokens"),
+      input_tokens: sum("input_tokens"),
+      output_tokens: sum("output_tokens"),
+    },
+  };
 }
 
 function loaderFor(reports: readonly ScanReportV5[]) {
@@ -536,6 +598,188 @@ describe("review opportunity analysis", () => {
     });
 
     expect(reversed).toEqual(forward);
+  });
+
+  test("records retry attempts and the causes that scheduled them", async () => {
+    const batches = [
+      batchSpec(1, null),
+      batchSpec(2, "assessment_technical_explanation"),
+      batchSpec(3, "assessment_technical_explanation"),
+    ];
+    const report = await contextualReport({
+      repositoryId: 1,
+      repository: "owner/one",
+      candidateSeed: "a",
+      batches,
+      ...reconcile(batches),
+    });
+    const { loadReport } = loaderFor([report]);
+    const analysis = await analyzeReviewOpportunities({
+      index: reportIndex([report]),
+      loadReport,
+    });
+
+    expect(analysis.cost.batches).toEqual({
+      total: 3,
+      first_attempt: 1,
+      retries: 2,
+      max_attempt: 3,
+    });
+    expect(analysis.cost.retry_overhead).toEqual({
+      input_tokens: 200,
+      output_tokens: 20,
+      share_of_batch_input_percent: 66.7,
+    });
+    expect(analysis.cost.retry_reasons).toEqual([
+      { reason: "assessment_technical_explanation", batches: 2 },
+    ]);
+    expect(analysis.cost.retries_predating_retry_reason).toBe(0);
+    expect(analysis.cost.retries_with_mixed_retry_reason).toBe(0);
+  });
+
+  test("counts retries that predate the recorded cause separately", async () => {
+    // Reports published before retry_reason existed omit the field entirely;
+    // they must not silently vanish from the retry accounting.
+    const batches = [batchSpec(1), batchSpec(2)];
+    const report = await contextualReport({
+      repositoryId: 1,
+      repository: "owner/one",
+      candidateSeed: "a",
+      batches,
+      ...reconcile(batches),
+    });
+    const { loadReport } = loaderFor([report]);
+    const analysis = await analyzeReviewOpportunities({
+      index: reportIndex([report]),
+      loadReport,
+    });
+
+    expect(analysis.cost.batches.retries).toBe(1);
+    expect(analysis.cost.retry_reasons).toEqual([]);
+    expect(analysis.cost.retries_predating_retry_reason).toBe(1);
+    expect(analysis.cost.retries_with_mixed_retry_reason).toBe(0);
+  });
+
+  test("counts retried batches that mix causes separately from legacy ones", async () => {
+    // An explicit null retry_reason is a modern batch whose groups were
+    // rescheduled for different diagnostics; it must not be presented as a
+    // report that predates the field.
+    const batches = [batchSpec(1, null), batchSpec(2, null)];
+    const report = await contextualReport({
+      repositoryId: 1,
+      repository: "owner/one",
+      candidateSeed: "a",
+      batches,
+      ...reconcile(batches),
+    });
+    const { loadReport } = loaderFor([report]);
+    const analysis = await analyzeReviewOpportunities({
+      index: reportIndex([report]),
+      loadReport,
+    });
+
+    expect(analysis.cost.batches.retries).toBe(1);
+    expect(analysis.cost.retry_reasons).toEqual([]);
+    expect(analysis.cost.retries_predating_retry_reason).toBe(0);
+    expect(analysis.cost.retries_with_mixed_retry_reason).toBe(1);
+  });
+
+  test("counts JSON-repair batches as recovery overhead despite attempt 1", async () => {
+    // JSON repair runs only after a primary review failed, so kind, not the
+    // restarted attempt counter, decides whether its cost is overhead.
+    const batches = [
+      batchSpec(1, null),
+      {
+        ...batchSpec(1, null),
+        kind: "json_repair" as const,
+        retry_reason: "observation_evidence_ids" as const,
+      },
+    ];
+    const report = await contextualReport({
+      repositoryId: 1,
+      repository: "owner/one",
+      candidateSeed: "a",
+      batches,
+      ...reconcile(batches),
+    });
+    const { loadReport } = loaderFor([report]);
+    const analysis = await analyzeReviewOpportunities({
+      index: reportIndex([report]),
+      loadReport,
+    });
+
+    expect(analysis.cost.batches).toEqual({
+      total: 2,
+      first_attempt: 1,
+      retries: 1,
+      max_attempt: 1,
+    });
+    expect(analysis.cost.retry_overhead).toEqual({
+      input_tokens: 100,
+      output_tokens: 10,
+      share_of_batch_input_percent: 50,
+    });
+    expect(analysis.cost.retry_reasons).toEqual([
+      { reason: "observation_evidence_ids", batches: 1 },
+    ]);
+    expect(analysis.cost.retries_predating_retry_reason).toBe(0);
+    expect(analysis.cost.retries_with_mixed_retry_reason).toBe(0);
+  });
+
+  test("counts reports that exceed each declared budget ceiling", async () => {
+    // The configured ceilings are fixed literals, so a breach has to come from
+    // real extra provider calls rather than a lowered cap.
+    const overBatches = Array.from({ length: 7 }, (_, index) =>
+      batchSpec(index === 0 ? 1 : 2, null),
+    );
+    const over = await contextualReport({
+      repositoryId: 1,
+      repository: "owner/one",
+      candidateSeed: "a",
+      batches: overBatches,
+      ...reconcile(overBatches),
+      // Protocol 2 is what allows a real report to publish over its declared
+      // ceilings; without it the contract rejects the report outright.
+      budgetProtocolVersion: 2,
+    });
+    const within = await contextualReport({
+      repositoryId: 2,
+      repository: "owner/two",
+      candidateSeed: "c",
+    });
+    const { loadReport } = loaderFor([over, within]);
+    const analysis = await analyzeReviewOpportunities({
+      index: reportIndex([over, within]),
+      loadReport,
+    });
+
+    expect(analysis.cost.budget.reports_declaring_budget).toBe(2);
+    expect(analysis.cost.budget.reports_exceeding_any_ceiling).toBe(1);
+    expect(
+      analysis.cost.budget.ceilings.find(
+        (ceiling) => ceiling.budget === "max_provider_calls",
+      ),
+    ).toEqual({
+      budget: "max_provider_calls",
+      measure: "provider_calls",
+      reports_exceeding: 1,
+      widest_configured: 6,
+      widest_actual: 7,
+    });
+    // A ceiling nothing breached still appears with the widest value actually
+    // observed rather than a misleading zero: the breaching report alone
+    // produced 70 output tokens across its seven batches.
+    expect(
+      analysis.cost.budget.ceilings.find(
+        (ceiling) => ceiling.budget === "max_actual_output_tokens",
+      ),
+    ).toEqual({
+      budget: "max_actual_output_tokens",
+      measure: "output_tokens",
+      reports_exceeding: 0,
+      widest_configured: 40_000,
+      widest_actual: 70,
+    });
   });
 
   test("propagates a missing preferred report instead of changing the denominator", async () => {
