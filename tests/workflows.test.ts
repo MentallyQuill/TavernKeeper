@@ -1277,6 +1277,23 @@ describe("GitHub workflow security policy", () => {
     expect(text).not.toMatch(/token_budget|priority|mode:/iu);
   });
 
+  test("Pages artifacts are unique to each reusable deployment", async () => {
+    const text = await readFile(
+      new URL("../.github/workflows/deploy-pages.yml", import.meta.url),
+      "utf8",
+    );
+    const sourceScopedArtifactName =
+      /github-pages-\$\{\{\s*inputs\.source_sha\s*\}\}/gu;
+
+    expect(text.match(sourceScopedArtifactName)).toHaveLength(2);
+    expect(text).toMatch(
+      /actions\/upload-pages-artifact@[0-9a-f]{40}[\s\S]*?with:\s*[\s\S]*?name:\s*github-pages-\$\{\{\s*inputs\.source_sha\s*\}\}/iu,
+    );
+    expect(text).toMatch(
+      /actions\/deploy-pages@[0-9a-f]{40}[\s\S]*?with:\s*[\s\S]*?artifact_name:\s*github-pages-\$\{\{\s*inputs\.source_sha\s*\}\}/iu,
+    );
+  });
+
   test("documents the GitHub-only policy-5 JavaScript boundary", async () => {
     const scanning = await readFile(
       new URL("../docs/SCANNING.md", import.meta.url),
