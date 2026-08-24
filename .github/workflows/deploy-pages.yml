@@ -85,10 +85,13 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9
         with:
+          name: github-pages-${{ inputs.source_sha }}
           path: .site
       - name: Deploy Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128
+        with:
+          artifact_name: github-pages-${{ inputs.source_sha }}
       - name: Verify exact public report index
         shell: bash
         env:
