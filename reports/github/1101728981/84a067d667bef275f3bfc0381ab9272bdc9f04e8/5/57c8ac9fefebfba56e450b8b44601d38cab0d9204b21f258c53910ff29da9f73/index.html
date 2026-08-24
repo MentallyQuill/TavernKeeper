@@ -1,0 +1,888 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Mnehmos/mnehmos.quest-keeper.game at commit 84a067d.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Mnehmos/mnehmos.quest-keeper.game</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game" rel="noopener noreferrer">Mnehmos/mnehmos.quest-keeper.game</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/commit/84a067d667bef275f3bfc0381ab9272bdc9f04e8" rel="noopener noreferrer">84a067d</a></span>
+        <span>Reviewed <time datetime="2026-08-24T08:59:41.018Z">Aug 24, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>101 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (101)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L18" rel="noopener noreferrer">.github/workflows/release.yml:18</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0080:pkg:d9db6230dfa23e8ba0fa93cf applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qx2v-qp2m-jg93:pkg:d0433ccd51b55fc561da06bf applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v2wj-q39q-566r:pkg:2da03775dcf45324bfa61d36 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0414:pkg:e12ed7daa8c1d8360f101be8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v6wh-96g9-6wx3:pkg:c56121eae41b737e771f5dfe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L8-L56" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:8-56</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.obfuscated-code</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/checkpoint-database.js#L1" rel="noopener noreferrer">scripts/checkpoint-database.js:1</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L135-L140" rel="noopener noreferrer">scripts/dev-server.js:135-140</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L16" rel="noopener noreferrer">.github/workflows/ci.yml:16</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-cq8v-f236-94qc:pkg:3025fc3ef3bf079927f963fc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L63" rel="noopener noreferrer">scripts/dev-server.js:63</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-23c5-xmqv-rm74:pkg:732c7481baa8e54386dfde00 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L27" rel="noopener noreferrer">.github/workflows/release.yml:27</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L51" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:51</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5xrq-8626-4rwp:pkg:9050b80cbfdd759d03b3d57f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0097:pkg:67ad090387f960532cd231b9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3v7f-55p6-f55p:pkg:6567e5dee65459862e18aa65 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0411:pkg:7048d8a9d3d0f0ec2dd07bfe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L123-L128" rel="noopener noreferrer">scripts/dev-server.js:123-128</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-cq8v-f236-94qc:pkg:7c09c7b6ff1c344041f9bc7a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0370:pkg:9b268f40461da81c7a1c55ed applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7r86-cg39-jmmj:pkg:1a39cca405ef708861dee501 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0413:pkg:c2f358c9f3bc98a14e0c2abf applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-25h7-pfq9-p65f:pkg:b1d04aa3fb09699f2ce52d11 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-wrw7-89jp-8q8g:pkg:4b30aae73f1836d87a5b008c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L14" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:14</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L21" rel="noopener noreferrer">.github/workflows/release.yml:21</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:a3638530d49c16954a754a83 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r6v5-fh4h-64xc:pkg:8c88822499350af2ff5f33b3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L39" rel="noopener noreferrer">.github/workflows/ci.yml:39</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0221:pkg:44eb386acc1a4f9a94166f13 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w5hq-g745-h8pq:pkg:dc7b41cc886ce4ad03b2d732 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0081:pkg:5c764120c78ffcfe5027b39c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:309438d8c981844c76003c01 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-96hv-2xvq-fx4p:pkg:e7e644a7c4ee2328aaaf410f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v6wh-96g9-6wx3:pkg:ac373679d1ec0446c126c2b6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f886-m6hf-6m8v:pkg:16af9086b5e4ae9e3d4dc665 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fx2h-pf6j-xcff:pkg:dd82781926efc7ade22030d3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L11" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:11</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L21" rel="noopener noreferrer">.github/workflows/release.yml:21</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rf6f-7fwh-wjgh:pkg:b63e05e77a564d495c499726 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L17-L18" rel="noopener noreferrer">.github/workflows/release.yml:17-18</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0429:pkg:d2e88fc02f6be9987f66e6e8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L91" rel="noopener noreferrer">scripts/dev-server.js:91</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4w7w-66w2-5vf9:pkg:b05cf1d2fd08e11489a53642 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L11" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:11</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4x5r-pxfx-6jf8:pkg:7fa3c5a48e754ae0b1b6d3d5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0195:pkg:b2765c7b11c24ec2d7e87302 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/vite.config.ts#L5" rel="noopener noreferrer">vite.config.ts:5</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6g55-p6wh-862q:pkg:be20184562ed7ac60b9bb3c5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L76" rel="noopener noreferrer">scripts/dev-server.js:76</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/release.yml#L55" rel="noopener noreferrer">.github/workflows/release.yml:55</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-48c2-rrv3-qjmp:pkg:4a13c1a979a3f31a165653c6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0007:pkg:9ccfb94ee491ab6ac686a617 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:19b149914c26cb2c9c5de439 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:006e2a19c763cc0fc17b9679 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:80dc2988b9d15a40674cea67 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0100:pkg:bd8adf60c37242745cb633a0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0418:pkg:b245323ca01b322dae07bf9b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0420:pkg:d1377594ef97b5997d1bd6e4 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7gcf-g7xr-8hxj:pkg:9b3ae1ede32e40256c2ca834 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0415:pkg:7feb02dbce543e0572f8f169 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0075:pkg:3e15a087e2f1d00bbc8d944a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0098:pkg:bc6e2fc910a7ca702c31e56a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L39" rel="noopener noreferrer">scripts/dev-server.js:39</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-67mh-4wv8-2f99:pkg:9f437f50cb9a95220530f4b0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:a9b17cadf83e3a5de547592b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L39" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:39</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L10-L25" rel="noopener noreferrer">.github/workflows/ci.yml:10-25</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0416:pkg:c8c328b18837aef0f997eeec applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0097:pkg:2de12843da62fa20376b0d24 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p9ff-h696-f583:pkg:4fdb809d17c4d326174c35f0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-434x-w66g-qw3r:pkg:c9f3d96cd2462e5785d562d1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c2c7-rcm5-vvqj:pkg:6159a1838ee53aace6ac3052 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3jxr-9vmj-r5cp:pkg:0546a3b9043a41cf17d6475f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0190:pkg:d7ee54a94ea24d860c852143 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mw96-cpmx-2vgc:pkg:c29ae50f5c015b1c7e6647c6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L1-L60" rel="noopener noreferrer">.github/workflows/ci.yml:1-60</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L30" rel="noopener noreferrer">.github/workflows/ci.yml:30</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c2c7-rcm5-vvqj:pkg:09f761f2e2a83fdc7890eb5a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0419:pkg:694df782baf029578982f056 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3ppc-4f35-3m26:pkg:5b0d86b7147a191050fb118c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0412:pkg:4216c3e2f95d873b67813c23 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L33" rel="noopener noreferrer">.github/workflows/ci.yml:33</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L27-L60" rel="noopener noreferrer">.github/workflows/ci.yml:27-60</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fx2h-pf6j-xcff:pkg:4d43116c7f40e099d5763941 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3v7f-55p6-f55p:pkg:972939a004a2a625fbda61c7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0009:pkg:d5d0113eb9ce1f0b88860edc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7gmj-67g7-phm9:pkg:159f7c63ad1aed7f2fafff4f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/deploy-staging.yml#L20" rel="noopener noreferrer">.github/workflows/deploy-staging.yml:20</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0057:pkg:1633dc8b81d03c690f20f67d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0194:pkg:c76651dee8ca612c7ddff8a9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hmw2-7cc7-3qxx:pkg:b7ecfe36ec4fd3c96631003d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-58qx-3vcg-4xpx:pkg:ba90529056af7ce6d840dc82 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/.github/workflows/ci.yml#L30" rel="noopener noreferrer">.github/workflows/ci.yml:30</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4w7w-66w2-5vf9:pkg:cdcea1ddcbe6ed9555aaec70 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.node-shell</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/scripts/dev-server.js#L63" rel="noopener noreferrer">scripts/dev-server.js:63</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0417:pkg:38b1a8e2b331be3a60dc921d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/blob/84a067d667bef275f3bfc0381ab9272bdc9f04e8/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li></ul>
+    </details>
+    
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>206 files &middot; 50736262 bytes</dd>
+      <dt>Contextual coverage</dt><dd>101 of 101 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>135 files &middot; 1204126 bytes</dd>
+        <dt>X-Ray review families</dt><dd>8 warning occurrences compacted to 4 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>135 raw &middot; 31 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>135 raw signatures &middot; 16 raw AST &middot; 132 raw OpenGrep &middot; 31 derived signatures &middot; 0 derived AST &middot; 31 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>src/components/ThemeSelector.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/adventure/AdventureView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/adventure/CharacterCreationModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/character/ConcentrationIndicator.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/character/ConditionsDisplay.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/character/CustomEffectsDisplay.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/character/LevelUpModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/character/SpellBookView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/character/SpellSlotsDisplay.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/chat/CensorBlock.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/chat/Spoiler.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/chat/StreamingMessage.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/chat/ToolCallDisplay.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/common/ConditionBadge.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/common/ConfirmModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/common/SelectionStatusIndicator.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/common/XPBar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/AuraListPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/CharacterQuickView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/CombatHUD.test.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/CombatHUD.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/LootPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/PartyStatusBar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/QuickActionBar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/RestPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/SpellbookDrawer.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/hud/TurnOrderBar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/layout/AppLayout.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/layout/MainViewport.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/layout/NavBar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/layout/TerminalPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/npc/NpcMemoryTimeline.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/npc/NpcRelationshipCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/party/CharacterCreationModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/party/CharacterPickerModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/party/PartyCreatorModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/party/PartyPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/party/PartySelector.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/session/CampaignSetupWizard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/session/WorldGenerationModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/SettingsModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/terminal/ChatHistory.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/terminal/ChatInput.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/terminal/ChatSidebar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/AuraLayer.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/AuraRing.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/BattlemapCanvas.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/CameraControls.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/CharacterEditModal.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/CharacterHeader.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/CharacterSheetView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/EntityLayer.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/EntityTooltip.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/GridSystem.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/InventoryView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/LineOfSight.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/NotesView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/NpcJournalView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/POIDetailPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/SettingsView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/Terrain.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/TerrainTooltip.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/Token.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/VisualizationControls.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/WorldEnvironmentForm.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/WorldEnvironmentOverlay.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/WorldMapCanvas.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/WorldStateView.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/models/ConnectedWater.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/models/CreatureLibrary.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/models/ProceduralCreature.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/models/ProceduralProps.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/models/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/viewport/models/modelRegistry.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/visualizers/NationCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/visualizers/RegionCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/visualizers/WorldStateCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/visualizers/WorldVisualization.tsx</code> &mdash; raw-ast / parse</li><li><code>src/context/ThemeContext.tsx</code> &mdash; raw-ast / parse</li><li><code>src/data/dnd5eItems.ts</code> &mdash; raw-ast / parse</li><li><code>src/data/playerGuide.ts</code> &mdash; raw-ast / parse</li><li><code>src/data/startingGear.ts</code> &mdash; raw-ast / parse</li><li><code>src/data/tips.ts</code> &mdash; raw-ast / parse</li><li><code>src/data/xpTable.ts</code> &mdash; raw-ast / parse</li><li><code>src/hooks/useAutoScroll.ts</code> &mdash; raw-ast / parse</li><li><code>src/hooks/useStreamingText.ts</code> &mdash; raw-ast / parse</li><li><code>src/main.tsx</code> &mdash; raw-ast / parse</li><li><code>src/services/eventPoller.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/llm/LLMService.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/llm/contextBuilder.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/llm/providers/AnthropicProvider.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/llm/providers/GeminiProvider.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/llm/providers/OpenAIProvider.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/llm/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/mcpClient.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/toolRegistry.ts</code> &mdash; raw-ast / parse</li><li><code>src/services/watchdog.ts</code> &mdash; raw-ast / parse</li><li><code>src/stores/chatStore.ts</code> &mdash; raw-ast / parse</li><li><code>src/stores/combatStore.ts</code> &mdash; raw-ast / parse</li><li><code>src/stores/gameStateStore.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>OpenGrep could not parse some source files; findings from successfully analyzed files are included.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Mnehmos/mnehmos.quest-keeper.game/commit/84a067d667bef275f3bfc0381ab9272bdc9f04e8" rel="noopener noreferrer">84a067d667bef275f3bfc0381ab9272bdc9f04e8</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-24T08:59:41.018Z">Aug 24, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>Not used &mdash; deterministic policy</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>0 fresh / 0 reused groups &middot; 0 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>101 deterministic / 0 contextual candidates &middot; 0 contextual / 18 total behavior cases</dd>
+        <dt>Model budget</dt><dd>0 model calls &middot; 0 / 12 fresh cases &middot; 0 / 200000 estimated input &middot; 0 / 250000 actual input &middot; 0 / 40000 output tokens</dd>
+        
+        <dt>Review usage</dt><dd>0 input &middot; 0 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>57c8ac9fefebfba56e450b8b44601d38cab0d9204b21f258c53910ff29da9f73</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1101728981/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
