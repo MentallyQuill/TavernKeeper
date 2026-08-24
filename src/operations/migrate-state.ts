@@ -201,14 +201,7 @@ export function migrateOperationsState(
   });
   const seeded = reconcileCurrentScanQueue({
     manifest,
-    index: {
-      ...index,
-      reports: index.reports.filter(
-        (report) =>
-          targetByRepositoryId.get(report.repository_id)?.target_sha ===
-          report.target_sha,
-      ),
-    },
+    index,
     state: base,
     now: input.at,
     scannerPolicyVersion: input.scannerPolicyVersion,

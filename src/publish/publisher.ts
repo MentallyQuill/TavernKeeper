@@ -38,6 +38,10 @@ import {
   reportUrl,
 } from "./report-path.js";
 import { sanitizeReportV5 } from "./sanitize.js";
+import {
+  compareReportPreference,
+  nextRepositoryReportLineage,
+} from "./report-lineage.js";
 
 export interface PublishCandidatesInput {
   root: string;
@@ -191,13 +195,6 @@ export function projectReportToIndexV5(
   });
 }
 
-function preference(left: ReportIndexEntryV5, right: ReportIndexEntryV5) {
-  if (left.report_version !== right.report_version)
-    return left.report_version - right.report_version;
-  const time = Date.parse(left.completed_at) - Date.parse(right.completed_at);
-  return time === 0 ? left.report_id.localeCompare(right.report_id) : time;
-}
-
 function preferredIndex(
   existing: ReportIndexV5,
   reports: ScanReportV5[],
@@ -210,7 +207,7 @@ function preferredIndex(
   ]) {
     const key = `${entry.provider}:${entry.repository_id}`;
     const current = preferred.get(key);
-    if (current === undefined || preference(entry, current) > 0)
+    if (current === undefined || compareReportPreference(entry, current) > 0)
       preferred.set(key, entry);
   }
   return ReportIndexV5Schema.parse({
@@ -338,6 +335,16 @@ export async function publishCandidates({
   const indexPath = join(root, "reports", "index.json");
   const statePath = join(root, "operations", "state.json");
   const existingIndex = await readExistingIndex(indexPath, generatedAt);
+  for (const report of reports) {
+    const expected = nextRepositoryReportLineage(existingIndex, report);
+    if (
+      report.report_version !== expected.report_version ||
+      report.supersedes_report_id !== expected.supersedes_report_id
+    )
+      throw new Error(
+        `Report lineage does not advance the preferred repository report: ${report.provider}:${report.repository_id}.`,
+      );
+  }
   const index = preferredIndex(existingIndex, reports, generatedAt);
   const state = completedState(stateInput, reports, generatedAt);
   const indexContents = `${JSON.stringify(index, null, 2)}\n`;

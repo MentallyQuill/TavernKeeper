@@ -157,6 +157,7 @@ describe("JSON-only orchestration CLIs", () => {
     };
     const prior = {
       ...indexedReport(targetValue, "2026-07-31T17:55:00.000Z"),
+      report_version: 3,
       scanner_policy_version: "3",
       report_url: indexedReport(
         targetValue,
@@ -195,8 +196,8 @@ describe("JSON-only orchestration CLIs", () => {
       }).include[0],
     ).toMatchObject({
       reason: "policy",
-      report_version: 1,
-      supersedes_report_id: null,
+      report_version: 4,
+      supersedes_report_id: prior.report_id,
     });
     expect(
       buildTargetedMatrix({
@@ -206,7 +207,10 @@ describe("JSON-only orchestration CLIs", () => {
         repositoryId: 42,
         requestCreatedAt: now,
       }).include[0],
-    ).toMatchObject({ report_version: 1, supersedes_report_id: null });
+    ).toMatchObject({
+      report_version: 4,
+      supersedes_report_id: prior.report_id,
+    });
   });
 
   test("only complete target contextual failures prove shared provider recovery", () => {

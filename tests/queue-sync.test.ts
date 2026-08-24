@@ -178,7 +178,7 @@ function indexWithRepositoryReport(
 }
 
 describe("scan queue synchronization", () => {
-  test("queues only the current targets selected by a coverage campaign", () => {
+  test("queues coverage targets and ordinary targets missing a current report", () => {
     const first = target(41, 1, "a");
     const ordinary = target(42, 2, "b");
     const second = target(43, 3, "c");
@@ -207,6 +207,13 @@ describe("scan queue synchronization", () => {
       {
         repository_id: 41,
         target_sha: first.target_sha,
+        staff_requested: undefined,
+        catalog_change: undefined,
+        rescan_not_before: undefined,
+      },
+      {
+        repository_id: 42,
+        target_sha: ordinary.target_sha,
         staff_requested: undefined,
         catalog_change: undefined,
         rescan_not_before: undefined,
@@ -385,7 +392,7 @@ describe("scan queue synchronization", () => {
 
     const stable = syncScanQueue({
       manifest: manifest(selected),
-      index: emptyIndex,
+      index: postCampaignReport,
       state: completed,
       now: "2026-08-04T12:03:00.000Z",
       scannerPolicyVersion: "3",
@@ -395,7 +402,7 @@ describe("scan queue synchronization", () => {
     expect(stable.state.scan_queue.entries).toEqual([]);
   });
 
-  test("initializes an incremental baseline without scanning legacy entries", () => {
+  test("initializes catalog observation while retaining missing exact reports", () => {
     const legacy = manifest(target(41, 1), target(42, 2));
     const preBaseline = {
       ...appendQueuedTarget(
@@ -421,8 +428,14 @@ describe("scan queue synchronization", () => {
       scannerPolicyVersion: "4",
     });
 
-    expect(result.state.scan_queue.entries).toEqual([]);
-    expect(result.summary).toMatchObject({ seeded: 0, removed: 2 });
+    expect(result.state.scan_queue.entries).toEqual([
+      expect.objectContaining({ repository_id: 41 }),
+      expect.objectContaining({ repository_id: 42 }),
+    ]);
+    expect(result.state.scan_queue.entries[1]).not.toHaveProperty(
+      "staff_requested",
+    );
+    expect(result.summary).toMatchObject({ retained: 2, removed: 0 });
     expect(result.state.catalog_observation?.repositories).toEqual([
       { repository_id: 41, target_sha: target(41, 1).target_sha },
       { repository_id: 42, target_sha: target(42, 2).target_sha },
@@ -470,13 +483,19 @@ describe("scan queue synchronization", () => {
       scannerPolicyVersion: "4",
     }).state;
 
-    expect(synchronized.scan_queue.entries[0]).toMatchObject({
+    expect(
+      synchronized.scan_queue.entries.find(
+        ({ repository_id }) => repository_id === 43,
+      ),
+    ).toMatchObject({
       repository_id: 43,
       catalog_change: "new",
     });
-    expect(synchronized.scan_queue.entries[0]).not.toHaveProperty(
-      "rescan_not_before",
-    );
+    expect(
+      synchronized.scan_queue.entries.find(
+        ({ repository_id }) => repository_id === 43,
+      ),
+    ).not.toHaveProperty("rescan_not_before");
   });
 
   test("runs a removed and re-added repository immediately despite report history", () => {
@@ -502,7 +521,9 @@ describe("scan queue synchronization", () => {
       state: removed,
       now: "2026-08-04T12:02:00.000Z",
       scannerPolicyVersion: "4",
-    }).state.scan_queue.entries[0]!;
+    }).state.scan_queue.entries.find(
+      ({ repository_id }) => repository_id === 43,
+    )!;
 
     expect(readded).toMatchObject({
       repository_id: 43,
@@ -511,7 +532,7 @@ describe("scan queue synchronization", () => {
     expect(readded).not.toHaveProperty("rescan_not_before");
   });
 
-  test("queues an unreported SHA update after the incremental baseline", () => {
+  test("marks an unreported SHA update while preserving ordinary freshness work", () => {
     const baseline = syncScanQueue({
       manifest: manifest(target(41, 1, "a"), target(42, 2)),
       index: emptyIndex,
@@ -528,20 +549,21 @@ describe("scan queue synchronization", () => {
       scannerPolicyVersion: "4",
     }).state;
 
-    expect(synchronized.scan_queue.entries).toHaveLength(1);
+    expect(synchronized.scan_queue.entries).toHaveLength(2);
     expect(synchronized.scan_queue.entries[0]).toMatchObject({
       repository_id: 41,
       target_sha: "b".repeat(40),
       catalog_change: "updated",
     });
-    expect(
-      synchronized.scan_queue.entries.some(
-        ({ repository_id }) => repository_id === 42,
-      ),
-    ).toBe(false);
+    expect(synchronized.scan_queue.entries[1]).toMatchObject({
+      repository_id: 42,
+    });
+    expect(synchronized.scan_queue.entries[1]).not.toHaveProperty(
+      "catalog_change",
+    );
   });
 
-  test("does not queue an unchanged target only because its report uses an older policy", () => {
+  test("queues an unchanged target when its report uses an older scanner policy", () => {
     const baseline = syncScanQueue({
       manifest: manifest(target(41, 1, "a")),
       index: emptyIndex,
@@ -558,7 +580,28 @@ describe("scan queue synchronization", () => {
       scannerPolicyVersion: "4",
     }).state;
 
-    expect(synchronized.scan_queue.entries).toEqual([]);
+    expect(synchronized.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        target_sha: "a".repeat(40),
+      }),
+    ]);
+  });
+
+  test("queues an unchanged target when its contextual-review policy is stale", () => {
+    const value = target(41, 1, "a");
+    const synchronized = syncScanQueue({
+      manifest: manifest(value),
+      index: indexWithPreviousRepositoryReport,
+      state: stateObserving(value),
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+      contextualReviewPolicyVersion: "2",
+    }).state;
+
+    expect(synchronized.scan_queue.entries).toEqual([
+      expect.objectContaining({ repository_id: 41 }),
+    ]);
   });
 
   test("appends later arrivals after a previously requeued failure", () => {

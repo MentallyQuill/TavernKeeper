@@ -30,7 +30,7 @@ Publisher token; continuation dispatches use a separate Actions-only token.
 Tavernary target manifest (repository ID + exact SHA)
   -> input-free wake, repository-ID hint, or scheduled reconciliation
   -> TavernKeeper synchronizes the durable ticket queue
-  -> TavernKeeper selects at most 5 due targets in ticket order
+  -> TavernKeeper selects at most 2 due targets in ticket order
   -> at most 2 credential-free prepare jobs run concurrently
   -> exact checkout and portable-path inventory
   -> history, pinned scanners, and policy-5 JavaScript derivative analysis
@@ -138,11 +138,11 @@ only; identical corrective feedback is not retried indefinitely.
 
 Operations state schema V3 persists one monotonic ticket ledger. A target is
 current only when one preferred report matches its exact manifest SHA, scanner
-policy, and contextual-review policy, but a version mismatch alone is not an
-eligibility grant. Reconciliation admits newly submitted projects, newly
-updated projects, frozen coverage-cohort targets, and protected staff or policy
-work. Selection order is staff and policy work, new submissions, updates, then
-coverage. Failure and provider-hold deadlines remain authoritative.
+policy, and contextual-review policy. Reconciliation admits every missing exact
+tuple. Catalog observation preserves higher-priority new and updated provenance;
+selection order is staff and policy work, new submissions, updates, frozen
+coverage work, then the ordinary freshness tail. Failure and provider-hold
+deadlines remain authoritative.
 
 The coverage workflow calculates one fresh, fixed campaign from Tavernary's
 current top 20 projects by popularity plus latest 20 stable GitHub releases.
@@ -157,6 +157,12 @@ decrypts in ephemeral storage, validates the complete outcome, writes immutable
 V5 JSON and script-free HTML plus repository history, updates the preferred V5
 index and the repository's bounded `review-cache.json`, clears the target's
 claim, and rolls back partial writes on failure.
+
+Report version and supersession form one repository-global monotonic chain. A
+new request advances the current preferred repository report even when its SHA
+or policy changes. The publisher validates that exact next version and
+predecessor before any immutable write, while target and policy remain immutable
+report-address dimensions.
 
 Deterministic scanners always run from scratch for every target. Model-review
 reuse is a separate optimization keyed by a canonical digest of the complete

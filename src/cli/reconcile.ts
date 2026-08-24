@@ -19,6 +19,7 @@ import {
   CURRENT_CONTEXTUAL_REVIEW_POLICY_VERSION,
   CURRENT_SCANNER_POLICY_VERSION,
 } from "../config/policy.js";
+import { nextRepositoryReportLineage } from "../publish/report-lineage.js";
 
 export const TARGET_MANIFEST_URL =
   "https://tavernary.org/security/tavernkeeper-targets.json";
@@ -38,21 +39,14 @@ export function buildRequestsForPlannedTargets(input: {
     const repositoryReports = input.index.reports.filter(
       ({ repository_id }) => repository_id === target.repository_id,
     );
-    const prior = repositoryReports
-      .filter(
-        ({ target_sha, scanner_policy_version }) =>
-          target_sha === target.target_sha &&
-          scanner_policy_version === input.scannerPolicyVersion,
-      )
-      .sort((left, right) => right.report_version - left.report_version)[0];
+    const lineage = nextRepositoryReportLineage(input.index, target);
     const previousShas = [
       ...new Set(repositoryReports.map(({ target_sha }) => target_sha)),
     ].slice(0, 20);
     return ScanRequestSchema.parse({
       ...targetMetadata.get(target.repository_id),
       reason,
-      report_version: (prior?.report_version ?? 0) + 1,
-      supersedes_report_id: prior?.report_id ?? null,
+      ...lineage,
       previous_report_shas: previousShas,
       ...(recoveryFingerprint === undefined
         ? {}

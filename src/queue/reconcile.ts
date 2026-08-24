@@ -195,6 +195,26 @@ function automaticRescanNotBefore(input: {
   ).toISOString();
 }
 
+function hasExactCurrentReport(input: {
+  target: CurrentTarget;
+  report: ReportIndexV5["reports"][number] | undefined;
+  scannerPolicyVersion: string;
+  contextualReviewPolicyVersion: string;
+}) {
+  const {
+    target,
+    report,
+    scannerPolicyVersion,
+    contextualReviewPolicyVersion,
+  } = input;
+  return (
+    report !== undefined &&
+    report.target_sha === target.target_sha &&
+    report.scanner_policy_version === scannerPolicyVersion &&
+    report.contextual_review_policy_version === contextualReviewPolicyVersion
+  );
+}
+
 export function reconcileCurrentScanQueue(input: {
   manifest: CurrentTargetManifest;
   index: ReportIndexV5;
@@ -273,7 +293,12 @@ export function reconcileCurrentScanQueue(input: {
         (observationInitialized && entry?.staff_requested === true) ||
         entry?.catalog_change !== undefined ||
         detectedCatalogChange.has(target.repository_id) ||
-        (report !== undefined && report.target_sha !== target.target_sha)
+        !hasExactCurrentReport({
+          target,
+          report,
+          scannerPolicyVersion: input.scannerPolicyVersion,
+          contextualReviewPolicyVersion: input.contextualReviewPolicyVersion,
+        })
       );
     })
     .sort(targetOrder);

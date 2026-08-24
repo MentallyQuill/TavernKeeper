@@ -111,6 +111,38 @@ describe("atomic V5 publisher", () => {
     expect(history).toHaveLength(2);
   });
 
+  test("rejects a report that does not advance the preferred repository lineage", async () => {
+    const output = await root();
+    const first = await fixtureReportV5();
+    const stale = await fixtureReportV5({
+      target_sha: "b".repeat(40),
+      completed_at: "2026-08-03T12:00:00.000Z",
+      report_version: 1,
+      supersedes_report_id: null,
+    });
+    const state = initialOperationsState("2026-08-02T12:30:00.000Z");
+    await publishCandidates({
+      root: output,
+      candidates: [first],
+      reviewCaches: [fixtureReviewCache(first)],
+      state,
+      generatedAt: "2026-08-02T12:30:00.000Z",
+    });
+
+    await expect(
+      publishCandidates({
+        root: output,
+        candidates: [stale],
+        reviewCaches: [fixtureReviewCache(stale)],
+        state,
+        generatedAt: "2026-08-03T12:30:00.000Z",
+      }),
+    ).rejects.toThrow(/lineage/iu);
+    await expect(
+      access(join(output, ...reportPath(stale).split("/"))),
+    ).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   test("prevalidates a mixed batch before writing any immutable candidate", async () => {
     const output = await root();
     const report = await fixtureReportV5();
