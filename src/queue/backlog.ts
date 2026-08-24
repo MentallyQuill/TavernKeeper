@@ -88,7 +88,7 @@ function reasonFor(
     )
   )
     return "coverage";
-  return reports.length === 0 ? "new" : "staff";
+  return "changed";
 }
 
 function queuePriority(

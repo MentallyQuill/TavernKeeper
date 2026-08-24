@@ -94,10 +94,12 @@ finishes. Standard, retry, targeted, coverage, and policy-campaign scans
 converge on this same V5 publication path. A completed target dispatches fresh
 reconciliation independently of Pages deployment.
 
-Synchronization admits targets only when they are newly submitted, newly
-updated, members of the active frozen coverage campaign, or explicitly queued
-by protected staff or policy work. A preferred-report version mismatch alone
-does not make the rest of the catalog eligible.
+Synchronization considers a target current only when its preferred report
+matches the exact target SHA, scanner policy, and contextual-review policy.
+Every missing exact tuple is admitted. Catalog observation still marks new and
+updated work explicitly so it retains priority over the ordinary freshness tail;
+the active frozen coverage campaign and protected staff or policy work keep
+their existing authority.
 
 The queue is a durable monotonic ticket ledger reconciled against current
 eligibility. A target that advances before acquisition keeps its ticket while
@@ -121,7 +123,7 @@ the deduplicated membership, up to 40 repositories, so later catalog changes do
 not move the campaign boundary.
 
 Selection order is protected staff and policy work, new submissions, updated
-projects, then coverage. Any
+projects, frozen coverage work, then all other missing or stale exact tuples. Any
 failure removes that target from its old position and assigns it the next tail
 ticket behind every project currently assigned to be scanned. Later catalog
 deltas retain their priority class without bypassing an emergency stop,
@@ -159,6 +161,13 @@ For every exact target, TavernKeeper:
 12. atomically publishes immutable JSON/HTML, history, the preferred index, and
     `reports/github/<repository-id>/review-cache.json` for that complete
     successful target.
+
+Report versions and supersession are repository-global rather than scoped to a
+target SHA or policy. A first report is version 1. Every later request advances
+the current preferred repository report by exactly one and supersedes its report
+ID. The publisher checks that lineage before creating an immutable path, so a
+stale concurrent outcome fails closed instead of becoming invisible history or
+regressing the preferred index.
 
 Policy 5 starts cold: earlier-policy reports cannot seed its cache. On
 subsequent scans, a contextual cache hit requires an identical evidence-group digest, exact candidate

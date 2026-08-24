@@ -93,14 +93,13 @@ candidate's evidence hashes or drop an optional observation whose evidence or
 location is invalid; deterministic validation still decides whether the
 original review is accepted.
 
-Automatic eligibility is limited to newly submitted projects, newly updated
-projects, protected staff or policy work, and the frozen one-time coverage
-cohort selected from the current top 20 by popularity plus latest 20 stable
-GitHub releases. A missing current-version report alone does not queue the rest
-of the catalog. Protected staff and policy work runs first, followed by new
-submissions, updates, and coverage. Updated and coverage targets observe the
-ordinary 48-hour cooldown; durable retry and provider-hold deadlines remain
-authoritative. See
+Automatic eligibility continuously reconciles every Tavernary target to a
+preferred report for the exact current target SHA, scanner policy, and
+contextual-review policy. Protected staff and policy work runs first, followed
+by new submissions, updates, the frozen one-time coverage cohort, and all other
+missing or stale exact tuples. Updated and coverage targets observe the ordinary
+48-hour cooldown; durable retry and provider-hold deadlines remain authoritative.
+See
 [operations](docs/operations.md), [architecture](docs/architecture.md),
 [scanning policy](docs/SCANNING.md), and [rule documentation](docs/rules.md).
 

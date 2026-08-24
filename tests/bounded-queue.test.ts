@@ -107,7 +107,7 @@ describe("bounded catalog queue", () => {
     );
   });
 
-  test("prunes version-only backlog and keeps new, updated, and coverage work", () => {
+  test("keeps new, updated, coverage, and ordinary missing-report work", () => {
     const ordinary = target(41, 1);
     const selected = target(42, 2);
     const updatedBefore = target(43, 3, 430);
@@ -139,16 +139,17 @@ describe("bounded catalog queue", () => {
       synchronized.state.scan_queue.entries.map(
         ({ repository_id }) => repository_id,
       ),
-    ).toEqual([42, 43, 44]);
-    expect(synchronized.summary.removed).toBe(1);
+    ).toEqual([41, 42, 43, 44]);
+    expect(synchronized.summary.removed).toBe(0);
   });
 
-  test("prioritizes new, updated, then frozen coverage work", () => {
+  test("prioritizes new, updated, coverage, then ordinary freshness work", () => {
     const selected = target(41, 1);
     const updated = target(42, 2);
     const submitted = target(43, 3);
-    let state = observing([selected, updated, submitted]);
-    for (const value of [selected, updated, submitted])
+    const ordinary = target(44, 4);
+    let state = observing([selected, updated, submitted, ordinary]);
+    for (const value of [selected, updated, submitted, ordinary])
       state = appendQueuedTarget(state, value, {
         ...(value.repository_id === updated.repository_id
           ? { catalogChange: "updated" as const }
@@ -161,7 +162,7 @@ describe("bounded catalog queue", () => {
 
     expect(
       planBatch(
-        manifest(selected, updated, submitted),
+        manifest(selected, updated, submitted, ordinary),
         emptyIndex,
         state,
         now,
@@ -175,6 +176,7 @@ describe("bounded catalog queue", () => {
       [43, "new"],
       [42, "changed"],
       [41, "coverage"],
+      [44, "changed"],
     ]);
   });
 

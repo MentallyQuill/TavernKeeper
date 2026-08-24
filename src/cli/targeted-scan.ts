@@ -21,6 +21,7 @@ import {
   ScanRequestSchema,
   validateTargetedScanHint,
 } from "./staff-request.js";
+import { nextRepositoryReportLineage } from "../publish/report-lineage.js";
 
 export function buildTargetedMatrix({
   manifest: manifestInput,
@@ -71,14 +72,11 @@ export function buildTargetedMatrix({
   )
     return { include: [], coalesced: true };
 
-  const prior = matchingReports.sort(
-    (left, right) => right.report_version - left.report_version,
-  )[0];
+  const lineage = nextRepositoryReportLineage(index, target);
   const request = ScanRequestSchema.parse({
     ...target,
     reason: "staff",
-    report_version: (prior?.report_version ?? 0) + 1,
-    supersedes_report_id: prior?.report_id ?? null,
+    ...lineage,
     previous_report_shas: [
       ...new Set(previous.map(({ target_sha }) => target_sha)),
     ].slice(0, 20),

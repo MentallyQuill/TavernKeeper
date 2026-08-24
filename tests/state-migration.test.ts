@@ -308,7 +308,7 @@ describe("automatic operations-state migration", () => {
     ).toThrow();
   });
 
-  test("baselines ordinary catalog entries while restoring legacy retries", () => {
+  test("queues ordinary freshness while restoring exact legacy retries", () => {
     const failed = target(41, 1);
     const healthy = target(42, 2);
     const migrated = migrateOperationsState(v2State([failed]), {
@@ -321,7 +321,7 @@ describe("automatic operations-state migration", () => {
     expect(migrated.state).toMatchObject({
       schema_version: 3,
       emergency_stop: null,
-      scan_queue: { next_ticket: 2 },
+      scan_queue: { next_ticket: 3 },
     });
     expect(migrated.state.catalog_observation?.repositories).toEqual([
       { repository_id: 41, target_sha: failed.target_sha },
@@ -332,7 +332,10 @@ describe("automatic operations-state migration", () => {
         repository_id,
         ticket,
       ]),
-    ).toEqual([[41, 1]]);
+    ).toEqual([
+      [42, 1],
+      [41, 2],
+    ]);
     expect(
       migrated.state.scan_queue.entries.find(
         ({ repository_id }) => repository_id === 41,
@@ -345,7 +348,7 @@ describe("automatic operations-state migration", () => {
     });
   });
 
-  test("does not convert a stale reported retry into ordinary current-SHA work", () => {
+  test("drops a stale retry but queues its missing current-SHA report", () => {
     const stale = { ...target(41, 1), target_sha: "a".repeat(40) };
     const current = { ...stale, target_sha: "b".repeat(40) };
 
@@ -360,8 +363,16 @@ describe("automatic operations-state migration", () => {
       { repository_id: 41, target_sha: current.target_sha },
     ]);
     expect(migrated.state.scan_queue).toEqual({
-      next_ticket: 1,
-      entries: [],
+      next_ticket: 2,
+      entries: [
+        expect.objectContaining({
+          repository_id: 41,
+          target_sha: current.target_sha,
+          consecutive_failures: 0,
+          catalog_change: "updated",
+          rescan_not_before: "2026-08-06T08:00:00.000Z",
+        }),
+      ],
     });
     expect(migrated.summary.legacy_retries_preserved).toBe(0);
   });
@@ -400,7 +411,7 @@ describe("automatic operations-state migration", () => {
     }
   });
 
-  test("drops removed and mismatched legacy retries", () => {
+  test("drops removed and mismatched retries but queues current freshness", () => {
     const current = target(41, 1);
     const mismatched = { ...current, target_sha: "a".repeat(40) };
     const removed = target(42, 2);
@@ -417,7 +428,13 @@ describe("automatic operations-state migration", () => {
       },
     );
 
-    expect(migrated.state.scan_queue.entries).toEqual([]);
+    expect(migrated.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        target_sha: current.target_sha,
+        consecutive_failures: 0,
+      }),
+    ]);
     expect(migrated.summary.legacy_retries_preserved).toBe(0);
   });
 
