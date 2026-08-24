@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for vegu-ai/talemate at commit c12a829.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; vegu-ai/talemate</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/vegu-ai/talemate" rel="noopener noreferrer">vegu-ai/talemate</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/vegu-ai/talemate/commit/c12a82930e913816fdac21aedada1962ac45c3d7" rel="noopener noreferrer">c12a829</a></span>
+        <span>Reviewed <time datetime="2026-08-24T05:43:26.642Z">Aug 24, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>34 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (24)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L20" rel="noopener noreferrer">.github/workflows/ci.yml:20</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L70" rel="noopener noreferrer">.github/workflows/ci.yml:70</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L67" rel="noopener noreferrer">.github/workflows/ci.yml:67</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L32" rel="noopener noreferrer">.github/workflows/test.yml:32</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:29462f87d245964d2c009cb3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L62" rel="noopener noreferrer">.github/workflows/ci.yml:62</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L42" rel="noopener noreferrer">.github/workflows/ci.yml:42</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L37" rel="noopener noreferrer">.github/workflows/test-container-build.yml:37</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L10-L62" rel="noopener noreferrer">.github/workflows/test.yml:10-62</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:aca07d40b95977daa7f2c14c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:32565e5915130b51271b4195 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L18" rel="noopener noreferrer">.github/workflows/test.yml:18</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L44" rel="noopener noreferrer">.github/workflows/test-container-build.yml:44</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L15" rel="noopener noreferrer">.github/workflows/test-container-build.yml:15</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L62" rel="noopener noreferrer">.github/workflows/ci.yml:62</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test-container-build.yml#L15" rel="noopener noreferrer">.github/workflows/test-container-build.yml:15</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L18" rel="noopener noreferrer">.github/workflows/test.yml:18</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L70" rel="noopener noreferrer">.github/workflows/ci.yml:70</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:d681b9f3617b82bd6b835445 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/pnpm-lock.yaml" rel="noopener noreferrer">talemate_frontend/pnpm-lock.yaml</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L13" rel="noopener noreferrer">.github/workflows/ci.yml:13</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/test.yml#L21" rel="noopener noreferrer">.github/workflows/test.yml:21</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L12" rel="noopener noreferrer">.github/workflows/ci.yml:12</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L49" rel="noopener noreferrer">.github/workflows/ci.yml:49</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/.github/workflows/ci.yml#L20" rel="noopener noreferrer">.github/workflows/ci.yml:20</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (7)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner flagged a regular expression used to validate hex color values as potentially unsafe. The regex is simple and bounded with no risk of performance issues. It is used to check whether a color widget value is a valid hex color like #RRGGBB.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 340 contains the regex /^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/ used in a .test() call to validate whether a widget value is a valid hex color string. This regex is fully anchored (^ and $), uses fixed quantifiers ({6}, {2}), has no nested quantifiers, and no alternation that could cause catastrophic backtracking. The input (widget.value) is a local UI property, not network-supplied. The regex is not vulnerable to ReDoS. The scanner flag is a false positive on a simple, safe validation pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/utils/litegraphUtils.js#L340" rel="noopener noreferrer">talemate_frontend/src/utils/litegraphUtils.js:340</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code simply clears the terminal screen using either the &#39;cls&#39; or &#39;clear&#39; command depending on the operating system. No user input is involved, and the commands are hardcoded. This is completely harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Line 345 calls os.system with a hardcoded string: &#39;cls&#39; on Windows (os.name == &#39;nt&#39;) or &#39;clear&#39; on other platforms. Neither string contains user-controlled input or variable interpolation. The command solely clears the terminal display before printing startup text. There is no injection vector since the argument is a compile-time constant selected by the platform check. This is a benign UI utility call.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/server/run.py#L345" rel="noopener noreferrer">src/talemate/server/run.py:345</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged regular expression is a standard pattern for parsing ISO-8601 duration strings (like PT30M or P3D). It is anchored, uses simple non-overlapping digit groups, and does not create any risk of denial-of-service or other harm. The scanner signal is a false positive.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex on line 10 parses ISO-8601 duration strings. It is anchored with ^ and $, and each optional component uses a single (?:...) group containing (digit-group). There are no nested quantifiers, no overlapping alternations, and no backtracking-prone constructs that could cause catastrophic backtracking (ReDoS). The input is matched once per call with a bounded, linear pattern. No data exfiltration, execution, or persistence is involved. The scanner&#39;s unsafe-regex signal is a false positive on this straightforward duration parser.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/utils/time.js#L10" rel="noopener noreferrer">talemate_frontend/src/utils/time.js:10</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The project runs scenario-specific Python scripts using RestrictedPython, a library designed to limit what code can do. This is an intended feature for the roleplay platform&#39;s advanced scenario scripting. The scripts come from the user&#39;s own local scene files.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The exec_restricted function at line 47 uses RestrictedPython&#39;s compile_restricted to compile code before executing it with exec. The globals dictionary is populated with safe_globals, guarded iterators (default_guarded_getiter, default_guarded_getitem), safer_getattr, and a restricted _write_ policy. This is the intended use of RestrictedPython as a sandbox for executing user-authored scene modules (game.py) that provide gameplay hooks. The code source is local scene files on disk, not network input. RestrictedPython is specifically designed for this use case.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/game/engine/__init__.py#L47" rel="noopener noreferrer">src/talemate/game/engine/__init__.py:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This second exec call uses the same RestrictedPython sandbox as the first. It compiles and runs scene module code with the same safety guards in place. This is the expected behavior for the scenario scripting feature.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The compile_scene_module function at line 73 uses the same RestrictedPython compile_restricted and safe_globals pattern as exec_restricted. It compiles scene module code with identical guards (default_guarded_getiter, default_guarded_getitem, safer_getattr, guarded_iter_unpack_sequence) before executing. The module code is read from a local game.py file in the scene&#39;s save directory (line 186-187), representing user-authored scenario logic. The function returns only the &#39;game&#39; and &#39;on_generation_cancelled&#39; callables from the executed module, limiting exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/game/engine/__init__.py#L73" rel="noopener noreferrer">src/talemate/game/engine/__init__.py:73</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>malcontent reported anti-static-xor-terms</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>A scanner flagged a logo image file for containing obfuscated data. However, this is a PNG image file whose binary contents were not provided for review. Image files naturally contain compressed binary data that can trigger false positives in binary scanners. No malicious behavior is demonstrated.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule anti-static-xor-terms. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a PNG logo file with an XOR obfuscation rule, but this is a metadata-only assessment where the artifact bytes were not supplied. PNG files contain compressed pixel data and metadata chunks that can produce byte patterns matching XOR-related heuristics in binary analysis tools. The file is a static image asset in the frontend assets directory, not an executable. Without the raw artifact contents, no actual obfuscation, code execution, or data exfiltration can be demonstrated. Metadata-only evidence cannot support material or high risk per review policy.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>anti-static-xor-terms</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/assets/logo-11-final.png" rel="noopener noreferrer">talemate_frontend/src/assets/logo-11-final.png</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The installer script downloads Python and Node.js from their official websites and saves them as zip files on disk. It does not pipe or execute downloaded content directly. This is a standard, safe installer pattern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged curl usage on line 107, but the command `curl -L -# -o %PY_ZIP% %PY_URL%` downloads a Python embedded zip from python.org to a local file. The downloaded archive is then extracted via tar and verified by checking for python.exe existence before use. The URLs are hardcoded to official python.org and nodejs.org distribution endpoints, not user-controlled. No downloaded content is piped into a shell or executed immediately; the archive is saved, extracted, and the extracted python.exe is invoked as an interpreter. This matches the stated installer purpose and does not constitute download-and-execute.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/install.bat#L107" rel="noopener noreferrer">install.bat:107</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Node.js download follows same safe save-then-extract pattern</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The Node.js download on line 185 uses the same safe pattern as the Python download: save to a zip file, extract with tar, verify node.exe exists before use.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The Node.js download at line 185 follows the identical pattern: curl saves to a local zip, tar extracts it, and node.exe existence is verified. No download-and-execute pattern exists here either.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/install.bat#L107" rel="noopener noreferrer">install.bat:107</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Scene modules loaded from local files with RestrictedPython sandbox</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>Scene files can be shared between users. If someone shares a scene with a malicious game.py, the RestrictedPython sandbox may not block all attacks. Users should be cautious when importing scenes from untrusted sources.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Scene modules are loaded from local files (game.py in scene save_dir). If scenes can be imported or shared, a malicious game.py could be included. While RestrictedPython provides significant restrictions, it is not a formal security sandbox and has known bypass techniques in some configurations. The _write_ guard is set to a passthrough lambda, which could allow writes to mutable objects. This is a defense-in-depth consideration but not a demonstrated vulnerability since no attacker-controlled input path to the exec calls is shown in the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Document that scene game.py files execute in a RestrictedPython sandbox and may not be fully safe to load from untrusted sources.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/game/engine/__init__.py#L47" rel="noopener noreferrer">src/talemate/game/engine/__init__.py:47</a></li><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/src/talemate/game/engine/__init__.py#L73" rel="noopener noreferrer">src/talemate/game/engine/__init__.py:73</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>ISO-8601 duration regex is linear and safe</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The regex is a simple, well-structured ISO-8601 duration parser with no risk of catastrophic backtracking.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The regex /^P(?:(digit-group)Y)?(?:(digit-group)M)?...$/ is a linear, anchored pattern with independent optional groups. Each group matches at most one run of digits and there is no ambiguity or nested repetition that could cause exponential backtracking. This is a safe, standard ISO-8601 duration parsing approach.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vegu-ai/talemate/blob/c12a82930e913816fdac21aedada1962ac45c3d7/talemate_frontend/src/utils/time.js#L10" rel="noopener noreferrer">talemate_frontend/src/utils/time.js:10</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>2788 files &middot; 122549375 bytes</dd>
+      <dt>Contextual coverage</dt><dd>31 of 31 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>35 files &middot; 218679 bytes</dd>
+        <dt>X-Ray review families</dt><dd>2 warning occurrences compacted to 2 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>35 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>35 raw signatures &middot; 35 raw AST &middot; 35 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>One or more scanner candidates refer to non-text artifacts. Their size, digest, and scanner metadata were verified, but raw contents were not provided to the contextual model.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/vegu-ai/talemate/commit/c12a82930e913816fdac21aedada1962ac45c3d7" rel="noopener noreferrer">c12a82930e913816fdac21aedada1962ac45c3d7</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-24T05:43:26.642Z">Aug 24, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 7 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>24 deterministic / 7 contextual candidates &middot; 6 contextual / 11 total behavior cases</dd>
+        <dt>Model budget</dt><dd>3 model calls &middot; 6 / 12 fresh cases &middot; 75771 / 200000 estimated input &middot; 69031 / 250000 actual input &middot; 5699 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>3 model calls &middot; up to 5 groups and 6 candidates per call &middot; 1 retry call &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>69031 input &middot; 5699 output &middot; 2816 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>481786dc867a8a5e580e02c3b0fea29e188ddcede8831a2e3270f536827e4d5e</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/692674090/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
