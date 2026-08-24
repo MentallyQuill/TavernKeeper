@@ -370,7 +370,7 @@ describe("automatic operations-state migration", () => {
           target_sha: current.target_sha,
           consecutive_failures: 0,
           catalog_change: "updated",
-          rescan_not_before: "2026-08-06T08:00:00.000Z",
+          rescan_not_before: "2026-08-11T08:00:00.000Z",
         }),
       ],
     });

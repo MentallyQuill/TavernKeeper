@@ -112,10 +112,11 @@ rescan, and a same-SHA replacement may become preferred without erasing
 history.
 
 Changed-SHA automatic rescans and coverage rescans enter the durable queue
-immediately, but cannot run until 48 hours after the latest completed report.
-Further pushes replace the queued SHA without moving that deadline. Initial
-scans, protected staff scans, retry deadlines, and active policy campaigns keep
-their existing authority.
+immediately, but cannot run until seven days after the latest completed report.
+Further pushes replace the queued SHA without shortening that deadline, and a
+newer completed report extends it by another seven days. Initial scans with no
+report history, protected staff scans, retry deadlines, and active policy
+campaigns keep their existing authority.
 
 `coverage-campaign.yml` recalculates the current top 20 projects by popularity
 plus latest 20 stable GitHub releases exactly once for campaign V2. It commits

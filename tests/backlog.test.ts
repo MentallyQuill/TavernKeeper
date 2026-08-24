@@ -80,7 +80,7 @@ function withCoverageCampaign(
 }
 
 describe("durable backlog planning", () => {
-  test("keeps coverage work behind its 48-hour rescan deadline", () => {
+  test("keeps coverage work behind its automatic rescan deadline", () => {
     const selected = target(41, 1);
     const base = withCoverageCampaign(queued(selected), [41]);
     const state = {
