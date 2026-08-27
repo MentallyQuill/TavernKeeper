@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for valdoix/vellum-engine at commit 69eca23.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; valdoix/vellum-engine</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/valdoix/vellum-engine" rel="noopener noreferrer">valdoix/vellum-engine</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/valdoix/vellum-engine/commit/69eca239911b7224e3fccc279902eb43cb583339" rel="noopener noreferrer">69eca23</a></span>
+        <span>Reviewed <time datetime="2026-08-27T00:03:13.479Z">Aug 27, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>20 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (15)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:bcb01fa3f22fe943388f7142 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:c9523a0885d757426ed83e80 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:6f926e74aaf2969f045549e9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/.github/workflows/ci.yml#L8-L19" rel="noopener noreferrer">.github/workflows/ci.yml:8-19</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.short-identifiers</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/test/clock.test.ts#L1" rel="noopener noreferrer">test/clock.test.ts:1</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fx2h-pf6j-xcff:pkg:4d43116c7f40e099d5763941 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/.github/workflows/ci.yml#L11" rel="noopener noreferrer">.github/workflows/ci.yml:11</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:590275f7f1e65a0bda08b540 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/.github/workflows/ci.yml#L11" rel="noopener noreferrer">.github/workflows/ci.yml:11</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5xrq-8626-4rwp:pkg:9050b80cbfdd759d03b3d57f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g7r4-m6w7-qqqr:pkg:49d70202ab5a1e786e48c24f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/.github/workflows/ci.yml#L12" rel="noopener noreferrer">.github/workflows/ci.yml:12</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4w7w-66w2-5vf9:pkg:b05cf1d2fd08e11489a53642 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-67mh-4wv8-2f99:pkg:9f437f50cb9a95220530f4b0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v6wh-96g9-6wx3:pkg:c56121eae41b737e771f5dfe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/bun.lock" rel="noopener noreferrer">bun.lock</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (4)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged regexes are simple date, time, and text-matching patterns used to parse story content for the continuity tracker. They do not have the nested-quantifier structure that causes runaway regex hangs, and the scanned text is local story data, not attacker-controlled input. No security risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray unsafe-regex signal flags regular expressions heuristically. The visible patterns in this generated backend module are bounded literal/alternation regexes for date detection (e.g. /(?:Jan|Feb|...)[a-z]*?.../), time parsing (/d{1,2}:d{2}.../), and state-block delimiters (^caught up...). None exhibit catastrophic backtracking (no nested quantifiers over overlapping alternations). They operate on AI-generated story text and host chat state via the spindle API, which matches the project&#39;s stated continuity-engine purpose. No network, credential, or exfiltration data flow is present. The signal is a static heuristic, not demonstrated exploitable behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/dist/backend.js#L7" rel="noopener noreferrer">dist/backend.js:7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.suspicious-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a large base64 blob, but it is font data embedded directly in the file so fonts load without contacting any external server. The blob is never executed as code and never leaves the browser. This is normal and harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.suspicious-literal. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The suspicious-literal signal is triggered by the large base64 woff2 font payload embedded in FONT_FACES. The base64 content begins with d09GMgAB, the standard woff2 magic bytes, confirming it is a web font binary, not executable code. The data is used solely as a data: URI inside @font-face CSS declarations injected via the UI styling mechanism. There is no eval, no network fetch, no credential access, and no dynamic code generation. The comment in the file states the fonts are generated at build time from @fontsource packages and are self-hosted with no runtime network calls, which is consistent with the observed data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.suspicious-literal</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/src/ui/fonts.ts#L1" rel="noopener noreferrer">src/ui/fonts.ts:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner called this obfuscated code because of the huge encoded string, but it is just a font file embedded as text. It is loaded by the browser as a font, not run as a program, and it does not touch any credentials or send data anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The obfuscated-code signal is a false positive produced by the large base64-encoded woff2 font payload. The content is static CSS @font-face declarations with data: URIs, not obfuscated JavaScript. The base64 payload decodes to a woff2 font binary (d09GMgAB magic header) sourced from @fontsource at build time. There is no function construction, no string-to-code evaluation, no concealed control flow, and no external destination. The data flow is purely local: the string is injected as a style rule and consumed by the browser font renderer.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/src/ui/fonts.ts#L1" rel="noopener noreferrer">src/ui/fonts.ts:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged regexes are simple time-matching and UI template-substitution patterns used by the extension&#39;s frontend. They run on preset content and story text, not untrusted attacker input, and lack the structure that causes regex hangs. No security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The unsafe-regex signal flags heuristically suspect patterns. The visible frontend regexes are a time parser (/b(d{1,2})(?::(d{2}))?s*(am|pm)?b/i), a caught-up marker (^caught up...), and template helpers ({{var::...}}, {{if::...}} with .*? and the s flag, {{pick::...}}). These operate over extension/preset content strings and rendered UI text; none contain nested quantifiers that produce exponential backtracking on realistic inputs. The template .*? patterns are bounded by the template delimiters themselves. No credential, network, or exfiltration flow is present; behavior matches the stated UI/preset-engine purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/dist/frontend.js#L3" rel="noopener noreferrer">dist/frontend.js:3</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Base64 woff2 font payloads triggered static-analysis obfuscation signals</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Both scanner signals are explained by the same embedded font data. The fonts are bundled locally so no external request is needed, which is a privacy-friendly design choice for an AI roleplay extension.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The file exports a FONT_FACES array of CSS @font-face strings with inline base64 woff2 data URIs. The woff2 magic bytes (d09GMgAB) are visible at the start of each blob, confirming legitimate font binaries rather than executable or obfuscated code. The file header documents that these are build-time-generated @fontsource bundles loaded via the host UI styling helper, with no runtime network calls. No execution, exfiltration, persistence, or credential access is present.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/valdoix/vellum-engine/blob/69eca239911b7224e3fccc279902eb43cb583339/src/ui/fonts.ts#L1" rel="noopener noreferrer">src/ui/fonts.ts:1</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>217 files &middot; 11159429 bytes</dd>
+      <dt>Contextual coverage</dt><dd>19 of 19 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>190 files &middot; 3437573 bytes</dd>
+        <dt>X-Ray review families</dt><dd>12 warning occurrences compacted to 5 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>190 raw &middot; 565 decoded &middot; 26 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>189 raw signatures &middot; 16 raw AST &middot; 188 raw OpenGrep &middot; 591 derived signatures &middot; 53 derived AST &middot; 586 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>dist/backend.js</code> &mdash; derived-ast / parse</li><li><code>dist/backend.js</code> &mdash; literal-decode / derivative-limit</li><li><code>dist/backend.js</code> &mdash; normalize / derivative-limit</li><li><code>dist/backend.js</code> &mdash; normalize / parse</li><li><code>dist/backend.js</code> &mdash; normalize / unsupported</li><li><code>dist/frontend.js</code> &mdash; derived-ast / parse</li><li><code>dist/frontend.js</code> &mdash; literal-decode / derivative-limit</li><li><code>dist/frontend.js</code> &mdash; normalize / derivative-limit</li><li><code>dist/frontend.js</code> &mdash; normalize / parse</li><li><code>dist/frontend.js</code> &mdash; normalize / unsupported</li><li><code>dist/frontend.js</code> &mdash; raw-opengrep / parse</li><li><code>src/backend.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend.ts</code> &mdash; raw-opengrep / parse</li><li><code>src/bus/block-repair.ts</code> &mdash; raw-ast / parse</li><li><code>src/bus/extract.ts</code> &mdash; derived-ast / parse</li><li><code>src/bus/extract.ts</code> &mdash; normalize / parse</li><li><code>src/bus/extract.ts</code> &mdash; raw-ast / parse</li><li><code>src/bus/lifecycle.ts</code> &mdash; raw-ast / parse</li><li><code>src/bus/registry.ts</code> &mdash; raw-ast / parse</li><li><code>src/bus/summarize.ts</code> &mdash; derived-ast / parse</li><li><code>src/bus/summarize.ts</code> &mdash; normalize / parse</li><li><code>src/bus/summarize.ts</code> &mdash; raw-ast / parse</li><li><code>src/core/events.ts</code> &mdash; raw-ast / parse</li><li><code>src/core/ids.ts</code> &mdash; raw-ast / parse</li><li><code>src/core/migrate.ts</code> &mdash; raw-ast / parse</li><li><code>src/core/palette.ts</code> &mdash; raw-ast / parse</li><li><code>src/core/reduce.ts</code> &mdash; raw-ast / parse</li><li><code>src/core/result.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/aging.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/beats.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/cast-hygiene.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/category-util.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/category.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/chapter-vault.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/clock.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/commands.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/context-budget.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/continuity.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/core-feature.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/date-format.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/dialogue-colors.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/directive.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/drift.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/fact-merge.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/faction-vault.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/identity.ts</code> &mdash; derived-ast / parse</li><li><code>src/domain/identity.ts</code> &mdash; normalize / unsupported</li><li><code>src/domain/identity.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/locations.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/markdown.ts</code> &mdash; derived-ast / parse</li><li><code>src/domain/markdown.ts</code> &mdash; normalize / parse</li><li><code>src/domain/markdown.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/memory.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/mood.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/offscreen.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/plants.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/preset-budget.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/preset-macro-lite.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/promote.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/relation-lock.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/relations.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/stats.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/summarizer-config.ts</code> &mdash; derived-ast / parse</li><li><code>src/domain/summarizer-config.ts</code> &mdash; derived-opengrep / parse</li><li><code>src/domain/summarizer-config.ts</code> &mdash; normalize / parse</li><li><code>src/domain/summarizer-config.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/thread-catchup.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/thread-merge.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/tone.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/turnlog.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/domain/vault-intel.ts</code> &mdash; literal-decode / binary</li><li><code>src/domain/vault-intel.ts</code> &mdash; raw-ast / binary</li><li><code>src/domain/vault-intel.ts</code> &mdash; raw-signatures / binary</li><li><code>src/domain/vault.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/capability.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/chats.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/generation.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/hide.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/presets.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/user.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/validation.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/worldbooks.ts</code> &mdash; raw-ast / parse</li><li><code>src/parse/fallback-regex.ts</code> &mdash; raw-ast / parse</li><li><code>src/parse/parsed.ts</code> &mdash; raw-ast / parse</li><li><code>src/parse/state-block.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/budget.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/embed.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/fuse.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/invindex.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/lexical.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/recall.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/tokenize.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/traverse-tree.ts</code> &mdash; derived-opengrep / parse</li><li><code>src/retrieval/traverse-tree.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/traverse.ts</code> &mdash; derived-opengrep / parse</li><li><code>src/retrieval/traverse.ts</code> &mdash; raw-ast / parse</li><li><code>src/retrieval/tree.ts</code> &mdash; raw-ast / parse</li><li><code>src/store/chronicle.ts</code> &mdash; raw-ast / parse</li><li><code>src/store/import-legacy.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/valdoix/vellum-engine/commit/69eca239911b7224e3fccc279902eb43cb583339" rel="noopener noreferrer">69eca239911b7224e3fccc279902eb43cb583339</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-27T00:03:13.479Z">Aug 27, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>3 fresh / 0 reused groups &middot; 4 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>15 deterministic / 4 contextual candidates &middot; 3 contextual / 7 total behavior cases</dd>
+        <dt>Model budget</dt><dd>2 model calls &middot; 3 / 12 fresh cases &middot; 92377 / 200000 estimated input &middot; 113237 / 250000 actual input &middot; 3136 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>2 model calls &middot; up to 2 groups and 2 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>113237 input &middot; 3136 output &middot; 46394 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>3387f73d4dffed18e794955c029d5dfa690f9e2dc35521579f7d656a2f9b0755</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1281396724/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
