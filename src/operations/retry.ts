@@ -17,8 +17,8 @@ import {
 export interface FailureTransition {
   state: OperationsState;
   entry: ScanQueueEntry;
-  notification: "none" | "chronic";
-  terminal: false;
+  notification: "none" | "chronic" | "unscannable";
+  terminal: boolean;
 }
 
 export function recordFailure(
@@ -53,6 +53,7 @@ export function recordFailure(
             ),
           }),
           entry,
+          terminal: false as const,
         };
       })();
   let automaticHolds = [...transitioned.state.automatic_holds];
@@ -112,10 +113,12 @@ export function recordFailure(
     state: nextState,
     entry: transitioned.entry,
     notification:
-      (targetFailure && transitioned.entry.chronic) || automaticChronic
-        ? "chronic"
-        : "none",
-    terminal: false,
+      targetFailure && transitioned.terminal
+        ? "unscannable"
+        : (targetFailure && transitioned.entry.chronic) || automaticChronic
+          ? "chronic"
+          : "none",
+    terminal: transitioned.terminal,
   };
 }
 

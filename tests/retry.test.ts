@@ -114,9 +114,10 @@ describe("automatic scan recovery", () => {
     }
   });
 
-  test("the fifth failure is chronic but remains nonterminal and retryable", () => {
+  test("the second target failure cools and the third becomes unscannable", () => {
     let state = queuedState();
-    for (let attempt = 1; attempt <= 5; attempt += 1) {
+    const transitions = [];
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
       const failed = recordFailure(state, {
         target,
         failure: {
@@ -124,25 +125,38 @@ describe("automatic scan recovery", () => {
           domain: "target",
           component: "opengrep",
         },
-        at: new Date(Date.UTC(2026, 7, 4, attempt)).toISOString(),
+        at:
+          attempt < 3
+            ? new Date(Date.UTC(2026, 7, 4, attempt)).toISOString()
+            : "2026-08-11T02:00:00.000Z",
       });
       state = failed.state;
-      expect(failed.terminal).toBe(false);
-      expect(failed.notification).toBe(attempt === 5 ? "chronic" : "none");
+      transitions.push({
+        terminal: failed.terminal,
+        notification: failed.notification,
+        notBefore: failed.entry.not_before,
+      });
     }
 
-    expect(state.scan_queue.entries[0]).toMatchObject({
-      consecutive_failures: 5,
-      chronic: true,
-      ticket: 6,
-      not_before: "2026-08-04T11:00:00.000Z",
-    });
+    expect(transitions).toEqual([
+      { terminal: false, notification: "none", notBefore: null },
+      {
+        terminal: false,
+        notification: "chronic",
+        notBefore: "2026-08-11T02:00:00.000Z",
+      },
+      { terminal: true, notification: "unscannable", notBefore: null },
+    ]);
+    expect(state.scan_queue.entries).toEqual([]);
+    expect(state.unscannable_targets).toEqual([
+      expect.objectContaining({ repository_id: 42, consecutive_failures: 3 }),
+    ]);
   });
 
-  test("cooldowns use the latest failure and cap at six hours", () => {
+  test("target retries are immediate once and then cool for exactly seven days", () => {
     let state = queuedState();
     const nextRetries: Array<string | null> = [];
-    for (let attempt = 0; attempt < 5; attempt += 1) {
+    for (let attempt = 0; attempt < 2; attempt += 1) {
       const at = new Date(Date.UTC(2026, 7, 4, attempt)).toISOString();
       const result = recordFailure(state, {
         target,
@@ -158,11 +172,8 @@ describe("automatic scan recovery", () => {
     }
 
     expect(nextRetries).toEqual([
-      "2026-08-04T00:05:00.000Z",
-      "2026-08-04T01:30:00.000Z",
-      "2026-08-04T04:00:00.000Z",
-      "2026-08-04T09:00:00.000Z",
-      "2026-08-04T10:00:00.000Z",
+      null,
+      "2026-08-11T01:00:00.000Z",
     ]);
   });
 

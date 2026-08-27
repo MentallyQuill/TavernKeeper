@@ -5,11 +5,12 @@ import {
   failureFingerprint,
   type FailureDescriptor,
 } from "../operations/failure.js";
-import { scanRetryAt } from "../operations/retry-schedule.js";
+import { targetRetryNotBefore } from "../operations/retry-schedule.js";
 import {
   OperationsStateSchema,
   type OperationsState,
   type ScanQueueEntry,
+  type UnscannableTarget,
 } from "../operations/state.js";
 
 function targetMatches(
@@ -84,6 +85,12 @@ export function appendQueuedTarget(
 ) {
   const state = OperationsStateSchema.parse(stateInput);
   const target = parseTargetIdentity(targetInput);
+  if (
+    state.unscannable_targets.some(
+      ({ repository_id }) => repository_id === target.repository_id,
+    )
+  )
+    throw new Error("Unscannable repository requires protected add-back.");
   const existing = state.scan_queue.entries.find(
     ({ repository_id }) => repository_id === target.repository_id,
   );
@@ -242,13 +249,19 @@ export function rotateFailedTarget(
     ...current,
     source_id: target.source_id,
     repository: target.repository,
-    ticket: state.scan_queue.next_ticket,
+    ticket:
+      consecutiveFailures >= 3
+        ? current.ticket
+        : state.scan_queue.next_ticket,
     consecutive_failures: consecutiveFailures,
     total_failures: current.total_failures + 1,
-    not_before: scanRetryAt(input.at, consecutiveFailures),
+    not_before:
+      consecutiveFailures >= 3
+        ? null
+        : targetRetryNotBefore(input.at, consecutiveFailures),
     last_failure: failure,
     last_failed_at: input.at,
-    chronic: consecutiveFailures >= 5,
+    chronic: consecutiveFailures >= 2,
     failure_history: [
       ...(current.failure_history ?? []),
       {
@@ -258,6 +271,46 @@ export function rotateFailedTarget(
       },
     ].slice(-4),
   };
+  if (consecutiveFailures >= 3) {
+    const unscannable: UnscannableTarget = {
+      source_id: entry.source_id,
+      repository_id: entry.repository_id,
+      repository: entry.repository,
+      target_sha: entry.target_sha,
+      unscannable_at: input.at,
+      consecutive_failures: entry.consecutive_failures,
+      total_failures: entry.total_failures,
+      last_failure: failure,
+      last_failed_at: input.at,
+      failure_history: entry.failure_history!,
+    };
+    const terminalState = OperationsStateSchema.parse({
+      ...state,
+      updated_at: input.at,
+      unscannable_targets: [
+        ...state.unscannable_targets.filter(
+          ({ repository_id }) => repository_id !== target.repository_id,
+        ),
+        unscannable,
+      ],
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.filter(
+          ({ repository_id }) => repository_id !== target.repository_id,
+        ),
+      },
+      active_scans: state.active_scans.filter(
+        ({ repository_id }) => repository_id !== target.repository_id,
+      ),
+    });
+    return {
+      state: terminalState,
+      entry,
+      becameChronic: false,
+      terminal: true,
+      unscannable,
+    } as const;
+  }
   const nextState = OperationsStateSchema.parse({
     ...state,
     updated_at: input.at,
@@ -277,8 +330,9 @@ export function rotateFailedTarget(
   return {
     state: nextState,
     entry,
-    becameChronic: consecutiveFailures === 5,
-  };
+    becameChronic: consecutiveFailures === 2,
+    terminal: false,
+  } as const;
 }
 
 export function replaceQueuedTargetSha(
