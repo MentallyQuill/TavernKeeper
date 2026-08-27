@@ -51,6 +51,12 @@ export function buildTargetedMatrix({
   const requestCreatedAtMs = Date.parse(requestCreatedAt);
   if (!Number.isFinite(requestCreatedAtMs))
     throw new Error("Targeted workflow creation time is invalid.");
+  if (
+    state.unscannable_targets.some(
+      ({ repository_id }) => repository_id === target.repository_id,
+    )
+  )
+    return { include: [], coalesced: true };
   const previous = index.reports.filter(
     ({ repository_id }) => repository_id === target.repository_id,
   );
@@ -122,6 +128,19 @@ export function buildTargetedQueueUpdate({
     throw new Error("Targeted workflow creation time is invalid.");
   if (!Number.isFinite(Date.parse(now)))
     throw new Error("Targeted queue time is invalid.");
+
+  if (
+    synchronized.state.unscannable_targets.some(
+      ({ repository_id }) => repository_id === target.repository_id,
+    )
+  )
+    return {
+      state: synchronized.state,
+      accepted: false,
+      coalesced: true,
+      changed: synchronized.changed,
+      ticket: null,
+    };
 
   const completedAfterRequest = index.reports.some(
     ({ repository_id, target_sha, scanner_policy_version, completed_at }) =>

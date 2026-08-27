@@ -343,7 +343,7 @@ describe("automatic operations-state migration", () => {
     ).toMatchObject({
       consecutive_failures: 4,
       total_failures: 4,
-      chronic: false,
+      chronic: true,
       last_failure: { component: "opengrep" },
     });
   });

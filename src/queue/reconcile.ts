@@ -12,7 +12,10 @@ import {
   OperationsStateSchema,
   type OperationsState,
   type ScanQueueEntry,
+  type UnscannableTarget,
 } from "../operations/state.js";
+import { failureFingerprint } from "../operations/failure.js";
+import { targetRetryNotBefore } from "../operations/retry-schedule.js";
 
 export interface QueueSyncSummary {
   seeded: number;
@@ -23,6 +26,88 @@ export interface QueueSyncSummary {
   automatic_stops_cleared: number;
   automatic_holds_preserved: number;
   legacy_retries_preserved: number;
+  terminalized: number;
+}
+
+function normalizeRetryPolicyEntries(state: OperationsState, at: string) {
+  let retryPolicyNormalized = 0;
+  const retryEntries = state.scan_queue.entries.map((entry) => {
+    if (
+      entry.consecutive_failures < 1 ||
+      entry.consecutive_failures > 2
+    )
+      return entry;
+    const notBefore = targetRetryNotBefore(
+      entry.last_failed_at!,
+      entry.consecutive_failures,
+    );
+    const chronic = entry.consecutive_failures >= 2;
+    if (entry.not_before === notBefore && entry.chronic === chronic)
+      return entry;
+    retryPolicyNormalized += 1;
+    return { ...entry, not_before: notBefore, chronic };
+  });
+  const retryState =
+    retryPolicyNormalized === 0
+      ? state
+      : OperationsStateSchema.parse({
+          ...state,
+          updated_at: at,
+          scan_queue: { ...state.scan_queue, entries: retryEntries },
+        });
+  const terminalEntries = retryState.scan_queue.entries.filter(
+    ({ consecutive_failures }) => consecutive_failures >= 3,
+  );
+  if (terminalEntries.length === 0)
+    return { state: retryState, retryPolicyNormalized, terminalized: 0 };
+  const terminalRepositoryIds = new Set(
+    terminalEntries.map(({ repository_id }) => repository_id),
+  );
+  const unscannableTargets: UnscannableTarget[] = terminalEntries.map(
+    (entry) => {
+      const lastFailure = entry.last_failure!;
+      const lastFailedAt = entry.last_failed_at!;
+      return {
+        source_id: entry.source_id,
+        repository_id: entry.repository_id,
+        repository: entry.repository,
+        target_sha: entry.target_sha,
+        unscannable_at: at,
+        consecutive_failures: entry.consecutive_failures,
+        total_failures: entry.total_failures,
+        last_failure: lastFailure,
+        last_failed_at: lastFailedAt,
+        failure_history: entry.failure_history ?? [
+          {
+            failed_at: lastFailedAt,
+            failure: lastFailure,
+            error_fingerprint: failureFingerprint(lastFailure),
+          },
+        ],
+      };
+    },
+  );
+  return {
+    state: OperationsStateSchema.parse({
+      ...retryState,
+      updated_at: at,
+      unscannable_targets: [
+        ...retryState.unscannable_targets,
+        ...unscannableTargets,
+      ],
+      scan_queue: {
+        ...retryState.scan_queue,
+        entries: retryState.scan_queue.entries.filter(
+          ({ repository_id }) => !terminalRepositoryIds.has(repository_id),
+        ),
+      },
+      active_scans: retryState.active_scans.filter(
+        ({ repository_id }) => !terminalRepositoryIds.has(repository_id),
+      ),
+    }),
+    retryPolicyNormalized,
+    terminalized: terminalEntries.length,
+  };
 }
 
 function parseCurrentManifest(input: CurrentTargetManifest) {
@@ -106,12 +191,16 @@ function advancePolicyCampaigns(
   manifest: CurrentTargetManifest,
   index: ReportIndexV5,
 ) {
+  const unscannableRepositoryIds = new Set(
+    state.unscannable_targets.map(({ repository_id }) => repository_id),
+  );
   const targetByRepositoryId = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
   return state.policy_campaigns.map((campaign) => {
     if (campaign.status === "completed") return campaign;
     const remaining = campaign.repository_ids.filter((repositoryId) => {
+      if (unscannableRepositoryIds.has(repositoryId)) return false;
       const target = targetByRepositoryId.get(repositoryId);
       if (target === undefined) return false;
       return !index.reports.some(
@@ -136,6 +225,9 @@ function advanceCoverageCampaigns(
   index: ReportIndexV5,
   contextualReviewPolicyVersion: string,
 ) {
+  const unscannableRepositoryIds = new Set(
+    state.unscannable_targets.map(({ repository_id }) => repository_id),
+  );
   const targetByRepositoryId = new Map(
     manifest.repositories.map((target) => [target.repository_id, target]),
   );
@@ -143,6 +235,7 @@ function advanceCoverageCampaigns(
     if (campaign.status === "completed") return campaign;
     const remainingRepositoryIds = campaign.remaining_repository_ids.filter(
       (repositoryId) => {
+        if (unscannableRepositoryIds.has(repositoryId)) return false;
         const target = targetByRepositoryId.get(repositoryId);
         if (target === undefined) return false;
         return !index.reports.some(
@@ -225,9 +318,14 @@ export function reconcileCurrentScanQueue(input: {
 }) {
   const manifest = parseCurrentManifest(input.manifest);
   const index = ReportIndexV5Schema.parse(input.index);
-  const state = OperationsStateSchema.parse(input.state);
+  const parsedState = OperationsStateSchema.parse(input.state);
   if (!Number.isFinite(Date.parse(input.now)))
     throw new Error("Queue synchronization time is invalid.");
+  const normalizedTerminal = normalizeRetryPolicyEntries(
+    parsedState,
+    input.now,
+  );
+  const state = normalizedTerminal.state;
 
   const policyCampaigns = advancePolicyCampaigns(state, manifest, index);
   const coverageCampaigns = advanceCoverageCampaigns(
@@ -275,7 +373,16 @@ export function reconcileCurrentScanQueue(input: {
       entry,
     ]),
   );
+  const unscannableRepositoryIds = new Set(
+    campaignState.unscannable_targets.map(
+      ({ repository_id }) => repository_id,
+    ),
+  );
   const eligibleTargets = manifest.repositories
+    .filter(
+      ({ repository_id }) =>
+        !unscannableRepositoryIds.has(repository_id),
+    )
     .filter((target) => {
       const entry = existingEntryByRepositoryId.get(target.repository_id);
       const report = preferredReportByRepositoryId.get(target.repository_id);
@@ -367,9 +474,23 @@ export function reconcileCurrentScanQueue(input: {
           ? durableRescanDeadline
           : reportRescanDeadline;
     if (entry.target_sha !== target.target_sha) {
+      const {
+        rescan_not_before: _ignoredRescanDeadline,
+        catalog_change: _ignoredCatalogChange,
+        staff_requested: _ignoredStaffRequest,
+        ...durableFailureEntry
+      } = entry;
       entries.push({
-        ...blankEntry(target, entry.ticket, rescanNotBefore, catalogChange),
-        total_failures: entry.total_failures,
+        ...durableFailureEntry,
+        source_id: target.source_id,
+        repository: target.repository,
+        target_sha: target.target_sha,
+        ...(rescanNotBefore === undefined
+          ? {}
+          : { rescan_not_before: rescanNotBefore }),
+        ...(catalogChange === undefined
+          ? {}
+          : { catalog_change: catalogChange }),
         ...(staffRequested ? { staff_requested: true } : {}),
       });
       replaced += 1;
@@ -446,6 +567,8 @@ export function reconcileCurrentScanQueue(input: {
     JSON.stringify(catalogObservation) !==
     JSON.stringify(campaignState.catalog_observation);
   const changed =
+    normalizedTerminal.retryPolicyNormalized > 0 ||
+    normalizedTerminal.terminalized > 0 ||
     campaignsChanged ||
     observationChanged ||
     seeded > 0 ||
@@ -482,6 +605,7 @@ export function reconcileCurrentScanQueue(input: {
       automatic_stops_cleared: 0,
       automatic_holds_preserved: 0,
       legacy_retries_preserved: 0,
+      terminalized: normalizedTerminal.terminalized,
     } satisfies QueueSyncSummary,
   };
 }

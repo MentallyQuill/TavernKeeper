@@ -255,7 +255,7 @@ describe("artifact batch publication", () => {
     });
   });
 
-  test("a failed-only batch remains an automatic queued outcome", async () => {
+  test("a first failed-only batch remains immediately retryable", async () => {
     const { root, artifactsRoot } = await batchRoot();
     const report = await reportFor(46, "e");
     await writeOutcome(
@@ -277,7 +277,7 @@ describe("artifact batch publication", () => {
       reports: 0,
       failures: 1,
       queue_remaining: 1,
-      queue_delayed: 1,
+      queue_delayed: 0,
       chronic_failures: 0,
     });
     expect(result).not.toHaveProperty("continuation_blocked");

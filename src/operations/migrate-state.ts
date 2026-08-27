@@ -264,7 +264,7 @@ export function migrateOperationsState(
       not_before: futureCooldown,
       last_failure: retry.failure,
       last_failed_at: retry.last_failed_at,
-      chronic: consecutiveFailures >= 5,
+      chronic: consecutiveFailures >= 2,
     };
   });
 

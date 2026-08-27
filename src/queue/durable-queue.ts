@@ -358,14 +358,10 @@ export function replaceQueuedTargetSha(
       entries: state.scan_queue.entries.map((entry) =>
         entry.repository_id === target.repository_id
           ? {
-              ...entryForTarget(target, entry.ticket),
-              total_failures: entry.total_failures,
-              ...(entry.staff_requested === true
-                ? { staff_requested: true }
-                : {}),
-              ...(entry.catalog_change !== undefined
-                ? { catalog_change: entry.catalog_change }
-                : {}),
+              ...entry,
+              source_id: target.source_id,
+              repository: target.repository,
+              target_sha: target.target_sha,
             }
           : entry,
       ),

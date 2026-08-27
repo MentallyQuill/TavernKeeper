@@ -274,33 +274,37 @@ describe("durable scan ticket operations", () => {
     expect(JSON.stringify(history)).not.toContain("private/source.ts");
   });
 
-  test("replacing a SHA preserves its ticket and resets its streak", () => {
+  test("replacing a SHA preserves its repository failure episode", () => {
     let state = appendQueuedTarget(initialOperationsState(at), target(42));
     state = rotateFailedTarget(state, {
       target: target(42),
       failure,
       at,
     }).state;
+    state = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at: "2026-08-04T00:01:00.000Z",
+    }).state;
+    const before = state.scan_queue.entries[0]!;
 
     const replaced = replaceQueuedTargetSha(
       state,
       target(42, "b"),
-      "2026-08-04T00:01:00.000Z",
+      "2026-08-04T00:02:00.000Z",
     );
 
     expect(replaced.scan_queue.entries[0]).toMatchObject({
       target_sha: "b".repeat(40),
-      ticket: 2,
-      consecutive_failures: 0,
-      total_failures: 1,
-      not_before: null,
-      last_failure: null,
-      last_failed_at: null,
-      chronic: false,
+      ticket: before.ticket,
+      consecutive_failures: 2,
+      total_failures: 2,
+      not_before: "2026-08-11T00:01:00.000Z",
+      last_failure: failure,
+      last_failed_at: "2026-08-04T00:01:00.000Z",
+      chronic: true,
+      failure_history: before.failure_history,
     });
-    expect(replaced.scan_queue.entries[0]).not.toHaveProperty(
-      "failure_history",
-    );
   });
 
   test("replacing a SHA preserves updated-catalog provenance and queue history", () => {
