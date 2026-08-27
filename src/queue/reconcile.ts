@@ -29,7 +29,10 @@ export interface QueueSyncSummary {
   terminalized: number;
 }
 
-function normalizeRetryPolicyEntries(state: OperationsState, at: string) {
+export function normalizeRetryPolicyEntries(
+  state: OperationsState,
+  at: string,
+) {
   let retryPolicyNormalized = 0;
   const retryEntries = state.scan_queue.entries.map((entry) => {
     if (entry.consecutive_failures < 1 || entry.consecutive_failures > 2)

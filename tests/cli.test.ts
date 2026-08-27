@@ -313,7 +313,15 @@ describe("JSON-only orchestration CLIs", () => {
     );
 
     expect(addedBack.unscannable_targets).toEqual([]);
-    expect(addedBack.scan_queue.entries).toEqual([]);
+    expect(addedBack.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        consecutive_failures: 0,
+        total_failures: 3,
+        not_before: null,
+        staff_requested: true,
+      }),
+    ]);
     expect(addedBack.updated_at).toBe(addedBackAt);
     expect(() =>
       applyRetryOperation(

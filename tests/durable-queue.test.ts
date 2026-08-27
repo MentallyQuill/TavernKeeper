@@ -159,7 +159,7 @@ describe("durable scan ticket operations", () => {
     );
   });
 
-  test("adds back exactly one unscannable repository", () => {
+  test("adds back exactly one unscannable repository as fresh staff work", () => {
     let state = initialOperationsState(at);
     for (const repositoryId of [42, 43]) {
       state = appendQueuedTarget(state, target(repositoryId));
@@ -180,9 +180,58 @@ describe("durable scan ticket operations", () => {
     expect(
       addedBack.unscannable_targets.map(({ repository_id }) => repository_id),
     ).toEqual([43]);
+    expect(addedBack.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        target_sha: target(42).target_sha,
+        ticket: state.scan_queue.next_ticket,
+        consecutive_failures: 0,
+        total_failures: 3,
+        not_before: null,
+        last_failure: null,
+        last_failed_at: null,
+        chronic: false,
+        staff_requested: true,
+      }),
+    ]);
+    expect(addedBack.scan_queue.next_ticket).toBe(
+      state.scan_queue.next_ticket + 1,
+    );
     expect(() => addBackUnscannableTarget(addedBack, 42)).toThrow(
       /not unscannable/iu,
     );
+  });
+
+  test("terminalizes a third failure even when ticket space is exhausted", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    for (const failedAt of [
+      "2026-08-04T00:00:00.000Z",
+      "2026-08-04T00:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: target(42),
+        failure,
+        at: failedAt,
+      }).state;
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        next_ticket: Number.MAX_SAFE_INTEGER,
+      },
+    };
+
+    const terminal = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at: "2026-08-11T00:01:00.000Z",
+    });
+
+    expect(terminal.terminal).toBe(true);
+    expect(terminal.state.scan_queue.entries).toEqual([]);
+    expect(terminal.state.unscannable_targets).toEqual([
+      expect.objectContaining({ repository_id: 42, consecutive_failures: 3 }),
+    ]);
   });
 
   test("moves each failure exactly once to the current tail", () => {

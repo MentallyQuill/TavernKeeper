@@ -12,6 +12,7 @@ import {
 } from "../src/operations/state.js";
 import { planBatch } from "../src/queue/backlog.js";
 import {
+  addBackUnscannableTarget,
   appendQueuedTarget,
   removeSuccessfulTarget,
   rotateFailedTarget,
@@ -888,6 +889,45 @@ describe("scan queue synchronization", () => {
       remaining_repository_ids: [],
       status: "completed",
     });
+  });
+
+  test("keeps protected add-back eligible despite an exact current report", () => {
+    const selected = target(41, 1, "a");
+    let state = appendQueuedTarget(stateObserving(selected), selected);
+    for (const failedAt of [
+      "2026-08-04T12:00:00.000Z",
+      "2026-08-04T12:01:00.000Z",
+      "2026-08-11T12:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: failedAt,
+      }).state;
+
+    const addedBack = addBackUnscannableTarget(state, selected.repository_id);
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: indexWithRepositoryReport(41, "a"),
+      state: addedBack,
+      now: "2026-08-11T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.unscannable_targets).toEqual([]);
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        target_sha: selected.target_sha,
+        consecutive_failures: 0,
+        staff_requested: true,
+        not_before: null,
+      }),
+    ]);
   });
 
   test("defers an automatic changed-SHA rescan for seven days after its report", () => {

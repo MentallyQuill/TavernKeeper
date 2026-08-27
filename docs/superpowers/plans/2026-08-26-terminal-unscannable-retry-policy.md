@@ -16,10 +16,12 @@
 - Failure one has `not_before: null`; failure two has a deadline exactly seven days after `last_failed_at`; failure three removes the repository from queue and active scans.
 - Tombstones are keyed by repository source identity and block SHA changes, policy campaigns, coverage campaigns, catalog changes, and targeted wakes.
 - Existing schema-version-3 files without `unscannable_targets` are upgraded in memory and serialized canonically without a schema-version bump.
-- Existing queued targets with at least three consecutive failures become tombstones during reconciliation without another scan.
+- Existing queued targets with at least three consecutive failures become tombstones during migration or reconciliation without another scan; attempts one and two receive the new deadlines immediately.
 - Only the protected `add-back` operation removes a tombstone.
+- Protected `add-back` also seeds fresh staff-requested work so an exact current report cannot suppress the requested scan.
 - Shared, security, and provider hold behavior remains unchanged.
 - Terminal reconciliation updates and closes an existing incident but does not create a closed-only legacy issue.
+- Incident reconciliation runs after both committed queue reconciliation and committed publication, and resumes partially applied label/close operations.
 
 ---
 

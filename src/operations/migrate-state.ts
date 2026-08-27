@@ -15,6 +15,7 @@ import {
   CURRENT_SCANNER_POLICY_VERSION,
 } from "../config/policy.js";
 import {
+  normalizeRetryPolicyEntries,
   reconcileCurrentScanQueue,
   type QueueSyncSummary,
 } from "../queue/reconcile.js";
@@ -276,14 +277,17 @@ export function migrateOperationsState(
       entries: [...normalizedHealthy, ...normalizedRetries],
     },
   });
+  const normalizedRetryPolicy = normalizeRetryPolicyEntries(state, input.at);
   return {
-    state,
+    state: normalizedRetryPolicy.state,
     summary: {
       ...seeded.summary,
       migrated_from: 2,
       automatic_stops_cleared: legacy.pause?.kind === "system" ? 1 : 0,
       automatic_holds_preserved: automaticHolds.length,
       legacy_retries_preserved: normalizedRetries.length,
+      terminalized:
+        seeded.summary.terminalized + normalizedRetryPolicy.terminalized,
     },
   };
 }

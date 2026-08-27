@@ -57,8 +57,9 @@ also preserve its consecutive failure state when the catalog SHA changes. A
 push must not evade the attempt budget. The queued target SHA may advance to
 the current catalog SHA, but the repository-level failure episode continues.
 
-When legacy state first reconciles under this policy, any queued target that
-already has three or more consecutive target failures is converted to an
+When legacy state first migrates or reconciles under this policy, attempts one
+and two receive the new immediate/seven-day deadlines, while any queued target
+that already has three or more consecutive target failures is converted to an
 unscannable tombstone. This bounds the existing backlog without paying for
 another scan solely because the old policy permitted unlimited retries.
 
@@ -84,11 +85,12 @@ fake queue entries.
 ## Manual Add-Back
 
 The protected staff-operations workflow gains an `add-back` operation that
-requires the repository source ID. It removes only that repository's
-unscannable tombstone and then dispatches normal reconciliation. Reconciliation
-enrolls the catalog's current commit with a fresh consecutive-failure cycle.
-Lifetime failure history remains available in repository history and reports;
-the new queue episode starts at zero.
+requires the repository source ID. It atomically removes only that repository's
+unscannable tombstone, seeds a staff-requested queue entry, and then dispatches
+normal reconciliation. The explicit staff request remains eligible even when
+an exact current report already exists, and reconciliation advances it to the
+catalog's current commit if necessary. Lifetime failure totals remain on the
+queue entry while the new consecutive-failure episode starts at zero.
 
 The existing staff `retry` action remains for repositories that are still in
 the queue. It cannot bypass an unscannable tombstone. This keeps manual recovery
@@ -115,10 +117,16 @@ This makes the issue pool a view of canonical operations state, not the
 blocklist itself. The backlog drain is therefore reproducible and does not rely
 on bulk-closing issues.
 
+The same secret-free incident command runs after both committed queue claims
+and committed scan publications. A legacy-only drain therefore still updates
+issues when it produces tombstones but no child scans. Terminal updates are
+resumable: an issue is considered complete only when it is both labeled
+`scanner-unscannable` and closed.
+
 ## Rollout and Safety
 
-The change extends the existing weekly cooldown pull request so there is one
-coherent retry-policy change. On merge, the next reconciliation run normalizes
+The change follows the merged weekly-cooldown pull request with one focused
+terminal-policy pull request. On merge, the next reconciliation run normalizes
 legacy chronic queue entries, seeds unscannable tombstones, and reconciles their
 issues. No live state file is rewritten by hand.
 

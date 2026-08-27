@@ -177,17 +177,38 @@ export function addBackUnscannableTarget(
   const state = OperationsStateSchema.parse(stateInput);
   if (!Number.isSafeInteger(repositoryId) || repositoryId < 1)
     throw new Error("Staff add-back repository ID is invalid.");
-  if (
-    !state.unscannable_targets.some(
-      ({ repository_id }) => repository_id === repositoryId,
-    )
-  )
+  const unscannable = state.unscannable_targets.find(
+    ({ repository_id }) => repository_id === repositoryId,
+  );
+  if (unscannable === undefined)
     throw new Error("Staff add-back repository is not unscannable.");
+  if (state.scan_queue.next_ticket >= Number.MAX_SAFE_INTEGER)
+    throw new Error("Scan queue ticket space is exhausted.");
   return OperationsStateSchema.parse({
     ...state,
     unscannable_targets: state.unscannable_targets.filter(
       ({ repository_id }) => repository_id !== repositoryId,
     ),
+    scan_queue: {
+      next_ticket: state.scan_queue.next_ticket + 1,
+      entries: [
+        ...state.scan_queue.entries,
+        {
+          source_id: unscannable.source_id,
+          repository_id: unscannable.repository_id,
+          repository: unscannable.repository,
+          target_sha: unscannable.target_sha,
+          ticket: state.scan_queue.next_ticket,
+          consecutive_failures: 0,
+          total_failures: unscannable.total_failures,
+          not_before: null,
+          last_failure: null,
+          last_failed_at: null,
+          chronic: false,
+          staff_requested: true,
+        },
+      ],
+    },
   });
 }
 
@@ -262,9 +283,6 @@ export function rotateFailedTarget(
       targetMatches(entry, target),
     )!;
   }
-  if (state.scan_queue.next_ticket >= Number.MAX_SAFE_INTEGER)
-    throw new Error("Scan queue ticket space is exhausted.");
-
   const consecutiveFailures = current.consecutive_failures + 1;
   const entry: ScanQueueEntry = {
     ...current,
@@ -330,6 +348,8 @@ export function rotateFailedTarget(
       unscannable,
     } as const;
   }
+  if (state.scan_queue.next_ticket >= Number.MAX_SAFE_INTEGER)
+    throw new Error("Scan queue ticket space is exhausted.");
   const nextState = OperationsStateSchema.parse({
     ...state,
     updated_at: input.at,

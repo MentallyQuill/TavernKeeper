@@ -321,7 +321,7 @@ const permissionProfiles = {
       actions: "write",
     },
     jobs: {
-      claim: { contents: "read", actions: "write" },
+      claim: { contents: "read", actions: "write", issues: "write" },
       "probe-provider": { contents: "read", actions: "write" },
       run: undefined,
     },
