@@ -170,6 +170,27 @@ export function dueQueueEntries(
     .slice(0, limit);
 }
 
+export function addBackUnscannableTarget(
+  stateInput: OperationsState,
+  repositoryId: number,
+) {
+  const state = OperationsStateSchema.parse(stateInput);
+  if (!Number.isSafeInteger(repositoryId) || repositoryId < 1)
+    throw new Error("Staff add-back repository ID is invalid.");
+  if (
+    !state.unscannable_targets.some(
+      ({ repository_id }) => repository_id === repositoryId,
+    )
+  )
+    throw new Error("Staff add-back repository is not unscannable.");
+  return OperationsStateSchema.parse({
+    ...state,
+    unscannable_targets: state.unscannable_targets.filter(
+      ({ repository_id }) => repository_id !== repositoryId,
+    ),
+  });
+}
+
 export function prioritizeQueuedTargetRetry(
   stateInput: OperationsState,
   repositoryId: number,

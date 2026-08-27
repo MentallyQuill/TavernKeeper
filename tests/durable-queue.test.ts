@@ -4,6 +4,7 @@ import type { Target } from "../src/contracts/targets.js";
 import { failureFingerprint } from "../src/operations/failure.js";
 import { initialOperationsState } from "../src/operations/state.js";
 import {
+  addBackUnscannableTarget,
   appendQueuedTarget,
   dueQueueEntries,
   prioritizeQueuedTargetRetry,
@@ -155,6 +156,32 @@ describe("durable scan ticket operations", () => {
     expect(revokeQueuedTargetStaffRequest(revoked, 42)).toStrictEqual(revoked);
     expect(() => revokeQueuedTargetStaffRequest(state, 404)).toThrow(
       /not queued/iu,
+    );
+  });
+
+  test("adds back exactly one unscannable repository", () => {
+    let state = initialOperationsState(at);
+    for (const repositoryId of [42, 43]) {
+      state = appendQueuedTarget(state, target(repositoryId));
+      for (const failedAt of [
+        "2026-08-04T00:00:00.000Z",
+        "2026-08-04T00:01:00.000Z",
+        "2026-08-11T00:01:00.000Z",
+      ])
+        state = rotateFailedTarget(state, {
+          target: target(repositoryId),
+          failure,
+          at: failedAt,
+        }).state;
+    }
+
+    const addedBack = addBackUnscannableTarget(state, 42);
+
+    expect(
+      addedBack.unscannable_targets.map(({ repository_id }) => repository_id),
+    ).toEqual([43]);
+    expect(() => addBackUnscannableTarget(addedBack, 42)).toThrow(
+      /not unscannable/iu,
     );
   });
 

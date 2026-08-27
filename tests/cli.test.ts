@@ -302,6 +302,28 @@ describe("JSON-only orchestration CLIs", () => {
     ).toStrictEqual(revoked);
   });
 
+  test("staff add-back clears one tombstone and starts a fresh state episode", () => {
+    const state = unscannableState(42);
+    const addedBackAt = "2026-08-08T18:00:00.000Z";
+
+    const addedBack = applyRetryOperation(
+      state,
+      { operation: "add-back", repository_id: 42 },
+      addedBackAt,
+    );
+
+    expect(addedBack.unscannable_targets).toEqual([]);
+    expect(addedBack.scan_queue.entries).toEqual([]);
+    expect(addedBack.updated_at).toBe(addedBackAt);
+    expect(() =>
+      applyRetryOperation(
+        initialOperationsState(now),
+        { operation: "add-back", repository_id: 42 },
+        addedBackAt,
+      ),
+    ).toThrow(/not unscannable/iu);
+  });
+
   test("reconcile emits no more than five self-contained scan requests", () => {
     const manifest: TargetManifestV2 = {
       schema_version: 2,

@@ -6,10 +6,10 @@ on:
       operation:
         description: Reviewed queue operation
         type: choice
-        options: [pause, resume, retry, revoke, migrate]
+        options: [pause, resume, retry, revoke, add-back, migrate]
         required: true
       repository_id:
-        description: Tavernary repository ID for retry or revoke
+        description: Tavernary repository ID for retry, revoke, or add-back
         type: number
         required: false
       reason_code:
@@ -68,7 +68,7 @@ jobs:
             elif [[ "$OPERATION" = "pause" ]]; then
               request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" '{operation:$operation,reason_code:$reason_code}')"
               env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
-            elif [[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" ]]; then
+            elif [[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" || "$OPERATION" = "add-back" ]]; then
               request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" '{operation:$operation,repository_id:$repository_id}')"
               env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry
             else

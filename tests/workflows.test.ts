@@ -686,7 +686,7 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
-  test("staff can revoke a queued scan without reopening reconciliation", async () => {
+  test("staff can revoke queued work or add back an unscannable target", async () => {
     const value = await workflow("staff-operations.yml");
     const inputs = value.on.workflow_dispatch.inputs;
     const operate = (value.jobs.operate.steps as Workflow[]).find(
@@ -697,9 +697,12 @@ describe("GitHub workflow security policy", () => {
     );
 
     expect(inputs.operation.options).toContain("revoke");
-    expect(inputs.repository_id.description).toMatch(/retry or revoke/iu);
+    expect(inputs.operation.options).toContain("add-back");
+    expect(inputs.repository_id.description).toMatch(
+      /retry, revoke, or add-back/iu,
+    );
     expect(operate?.run).toContain(
-      '[[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" ]]',
+      '[[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" || "$OPERATION" = "add-back" ]]',
     );
     expect(reconcile?.if).toContain("inputs.operation != 'revoke'");
   });
