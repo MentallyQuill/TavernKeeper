@@ -191,7 +191,7 @@ function automaticRescanNotBefore(input: {
   )
     return undefined;
   return new Date(
-    Date.parse(report.completed_at) + 48 * 60 * 60 * 1_000,
+    Date.parse(report.completed_at) + 7 * 24 * 60 * 60 * 1_000,
   ).toISOString();
 }
 
@@ -344,23 +344,28 @@ export function reconcileCurrentScanQueue(input: {
       report.target_sha !== target.target_sha
         ? "updated"
         : undefined);
-    const clearsRescanDeadline =
-      staffRequested || campaignRequested || catalogChange === "new";
+    const clearsRescanDeadline = staffRequested || campaignRequested;
     const durableRescanDeadline =
       catalogChange === undefined && !coverageRequested
         ? undefined
         : entry.rescan_not_before;
+    const reportRescanDeadline = automaticRescanNotBefore({
+      target,
+      report,
+      state: campaignState,
+      scannerPolicyVersion: input.scannerPolicyVersion,
+      staffRequested,
+      coverageRequested,
+    });
     const rescanNotBefore = clearsRescanDeadline
       ? undefined
-      : (durableRescanDeadline ??
-        automaticRescanNotBefore({
-          target,
-          report,
-          state: campaignState,
-          scannerPolicyVersion: input.scannerPolicyVersion,
-          staffRequested,
-          coverageRequested,
-        }));
+      : durableRescanDeadline === undefined
+        ? reportRescanDeadline
+        : reportRescanDeadline === undefined ||
+            Date.parse(durableRescanDeadline) >=
+              Date.parse(reportRescanDeadline)
+          ? durableRescanDeadline
+          : reportRescanDeadline;
     if (entry.target_sha !== target.target_sha) {
       entries.push({
         ...blankEntry(target, entry.ticket, rescanNotBefore, catalogChange),
@@ -414,16 +419,14 @@ export function reconcileCurrentScanQueue(input: {
       blankEntry(
         target,
         nextTicket,
-        catalogChange === "new"
-          ? undefined
-          : automaticRescanNotBefore({
-              target,
-              report,
-              state: campaignState,
-              scannerPolicyVersion: input.scannerPolicyVersion,
-              staffRequested: false,
-              coverageRequested,
-            }),
+        automaticRescanNotBefore({
+          target,
+          report,
+          state: campaignState,
+          scannerPolicyVersion: input.scannerPolicyVersion,
+          staffRequested: false,
+          coverageRequested,
+        }),
         catalogChange,
       ),
     );

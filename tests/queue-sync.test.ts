@@ -228,7 +228,7 @@ describe("scan queue synchronization", () => {
     ]);
   });
 
-  test("delays a selected same-SHA target for 48 hours after its pre-campaign report", () => {
+  test("delays a selected same-SHA target for seven days after its pre-campaign report", () => {
     const selected = target(41, 1, "a");
     const reportAt = "2026-08-04T08:00:00.000Z";
     const state = {
@@ -251,7 +251,7 @@ describe("scan queue synchronization", () => {
     expect(synchronized.state.scan_queue.entries).toEqual([
       expect.objectContaining({
         repository_id: 41,
-        rescan_not_before: "2026-08-06T08:00:00.000Z",
+        rescan_not_before: "2026-08-11T08:00:00.000Z",
       }),
     ]);
   });
@@ -275,7 +275,7 @@ describe("scan queue synchronization", () => {
       expect.objectContaining({
         repository_id: 41,
         target_sha: selected.target_sha,
-        rescan_not_before: "2026-08-06T08:00:00.000Z",
+        rescan_not_before: "2026-08-11T08:00:00.000Z",
       }),
     ]);
     expect(synchronized.state.scan_queue.entries[0]).not.toHaveProperty(
@@ -462,11 +462,11 @@ describe("scan queue synchronization", () => {
     expect(synchronized).toMatchObject({
       repository_id: 41,
       target_sha: "b".repeat(40),
-      rescan_not_before: "2026-08-04T12:00:00.000Z",
+      rescan_not_before: "2026-08-09T12:00:00.000Z",
     });
   });
 
-  test("queues a repository first observed after the incremental baseline", () => {
+  test("cools a newly observed repository that already has report history", () => {
     const baseline = syncScanQueue({
       manifest: manifest(target(41, 1)),
       index: emptyIndex,
@@ -490,15 +490,11 @@ describe("scan queue synchronization", () => {
     ).toMatchObject({
       repository_id: 43,
       catalog_change: "new",
+      rescan_not_before: "2026-08-09T12:00:00.000Z",
     });
-    expect(
-      synchronized.scan_queue.entries.find(
-        ({ repository_id }) => repository_id === 43,
-      ),
-    ).not.toHaveProperty("rescan_not_before");
   });
 
-  test("runs a removed and re-added repository immediately despite report history", () => {
+  test("keeps a removed and re-added repository behind its weekly cooldown", () => {
     const original = target(43, 3, "a");
     const baseline = syncScanQueue({
       manifest: manifest(target(41, 1), original),
@@ -528,8 +524,8 @@ describe("scan queue synchronization", () => {
     expect(readded).toMatchObject({
       repository_id: 43,
       catalog_change: "new",
+      rescan_not_before: "2026-08-09T12:00:00.000Z",
     });
-    expect(readded).not.toHaveProperty("rescan_not_before");
   });
 
   test("marks an unreported SHA update while preserving ordinary freshness work", () => {
@@ -691,7 +687,7 @@ describe("scan queue synchronization", () => {
     });
   });
 
-  test("defers an automatic changed-SHA rescan for 48 hours after its report", () => {
+  test("defers an automatic changed-SHA rescan for seven days after its report", () => {
     const synchronized = syncScanQueue({
       manifest: manifest(target(41, 1, "b")),
       index: indexWithPreviousRepositoryReport,
@@ -704,7 +700,7 @@ describe("scan queue synchronization", () => {
       {
         target_sha: "b".repeat(40),
         catalog_change: "updated",
-        rescan_not_before: "2026-08-04T12:00:00.000Z",
+        rescan_not_before: "2026-08-09T12:00:00.000Z",
       },
     ]);
   });
@@ -724,20 +720,20 @@ describe("scan queue synchronization", () => {
         manifest(changed),
         indexWithPreviousRepositoryReport,
         synchronized,
-        "2026-08-04T11:59:59.999Z",
+        "2026-08-09T11:59:59.999Z",
         "3",
       ),
     ).toMatchObject({
       targets: [],
       delayedEntries: 1,
-      nextWakeAt: "2026-08-04T12:00:00.000Z",
+      nextWakeAt: "2026-08-09T12:00:00.000Z",
     });
     expect(
       planBatch(
         manifest(changed),
         indexWithPreviousRepositoryReport,
         synchronized,
-        "2026-08-04T12:00:00.000Z",
+        "2026-08-09T12:00:00.000Z",
         "3",
       ).targets,
     ).toEqual([
@@ -748,7 +744,7 @@ describe("scan queue synchronization", () => {
     ]);
   });
 
-  test("retains the automatic rescan deadline when the manifest SHA changes again", () => {
+  test("retains the deadline across SHA churn and extends it after a newer report", () => {
     const first = syncScanQueue({
       manifest: manifest(target(41, 1, "b")),
       index: indexWithPreviousRepositoryReport,
@@ -760,7 +756,7 @@ describe("scan queue synchronization", () => {
     expect(firstEntry).toMatchObject({
       target_sha: "b".repeat(40),
       catalog_change: "updated",
-      rescan_not_before: "2026-08-04T12:00:00.000Z",
+      rescan_not_before: "2026-08-09T12:00:00.000Z",
     });
 
     const synchronized = syncScanQueue({
@@ -776,7 +772,7 @@ describe("scan queue synchronization", () => {
         target_sha: "c".repeat(40),
         ticket: firstEntry.ticket,
         catalog_change: "updated",
-        rescan_not_before: "2026-08-04T12:00:00.000Z",
+        rescan_not_before: "2026-08-09T12:00:00.000Z",
       },
     ]);
 
@@ -793,7 +789,7 @@ describe("scan queue synchronization", () => {
         target_sha: "c".repeat(40),
         ticket: firstEntry.ticket,
         catalog_change: "updated",
-        rescan_not_before: "2026-08-04T12:00:00.000Z",
+        rescan_not_before: "2026-08-11T12:01:30.000Z",
       },
     ]);
   });

@@ -180,7 +180,7 @@ describe("bounded catalog queue", () => {
     ]);
   });
 
-  test("keeps a selected current SHA behind the 48-hour deadline", async () => {
+  test("keeps a selected current SHA behind the seven-day deadline", async () => {
     const selected = target(41, 1);
     const report = await fixtureReportV5({
       source_id: selected.source_id,
@@ -211,7 +211,7 @@ describe("bounded catalog queue", () => {
 
     expect(synchronized.state.scan_queue.entries).toHaveLength(1);
     expect(synchronized.state.scan_queue.entries[0]?.rescan_not_before).toBe(
-      "2026-08-12T13:00:00.000Z",
+      "2026-08-17T13:00:00.000Z",
     );
     expect(
       planBatch(

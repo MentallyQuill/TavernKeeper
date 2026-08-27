@@ -606,7 +606,7 @@ describe("JSON-only orchestration CLIs", () => {
     }).state;
 
     expect(automaticState.scan_queue.entries[0]).toMatchObject({
-      rescan_not_before: "2026-08-01T18:00:00.000Z",
+      rescan_not_before: "2026-08-06T18:00:00.000Z",
     });
 
     const queued = buildTargetedQueueUpdate({
