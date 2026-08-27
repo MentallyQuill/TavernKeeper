@@ -28,6 +28,50 @@ function entry(repositoryId: number, ticket: number) {
   } as const;
 }
 
+const targetFailure = {
+  code: "SCANNER_FAILED",
+  domain: "target" as const,
+  component: "opengrep" as const,
+  diagnostic: "parser_syntax" as const,
+};
+
+function failedEntry(repositoryId: number, failures: number) {
+  const failedAt = `2026-08-04T00:0${failures}:00.000Z`;
+  return {
+    ...entry(repositoryId, repositoryId),
+    consecutive_failures: failures,
+    total_failures: failures,
+    not_before:
+      failures === 1 ? null : "2026-08-11T00:02:00.000Z",
+    last_failure: targetFailure,
+    last_failed_at: failedAt,
+    chronic: failures >= 2,
+    failure_history: [
+      {
+        failed_at: failedAt,
+        failure: targetFailure,
+        error_fingerprint: failureFingerprint(targetFailure),
+      },
+    ],
+  } as const;
+}
+
+function unscannable(repositoryId: number) {
+  const failed = failedEntry(repositoryId, 3);
+  return {
+    source_id: failed.source_id,
+    repository_id: failed.repository_id,
+    repository: failed.repository,
+    target_sha: failed.target_sha,
+    unscannable_at: failed.last_failed_at,
+    consecutive_failures: failed.consecutive_failures,
+    total_failures: failed.total_failures,
+    last_failure: failed.last_failure,
+    last_failed_at: failed.last_failed_at,
+    failure_history: failed.failure_history,
+  };
+}
+
 describe("secret-free operations state V3", () => {
   test("creates a strict durable queue with bounded automatic recovery", () => {
     const state = initialOperationsState(at);
@@ -36,6 +80,7 @@ describe("secret-free operations state V3", () => {
       schema_version: 3,
       emergency_stop: null,
       automatic_holds: [],
+      unscannable_targets: [],
       scan_queue: { next_ticket: 1, entries: [] },
     });
     expect(state).not.toHaveProperty("pause");
@@ -132,6 +177,77 @@ describe("secret-free operations state V3", () => {
     );
     expect(serialized).not.toMatch(
       /api[_-]?key|credential|raw[_-]?error|response[_-]?body|prompt/iu,
+    );
+  });
+
+  test("accepts and canonically sorts repository-level unscannable targets", () => {
+    const parsed = parseOperationsState({
+      ...initialOperationsState(at),
+      unscannable_targets: [unscannable(43), unscannable(42)],
+    });
+    const serialized = JSON.parse(serializeOperationsState(parsed)) as {
+      unscannable_targets: { repository_id: number }[];
+    };
+
+    expect(
+      serialized.unscannable_targets.map(
+        ({ repository_id }) => repository_id,
+      ),
+    ).toEqual([42, 43]);
+  });
+
+  test("rejects duplicate unscannable repository identities", () => {
+    expect(() =>
+      parseOperationsState({
+        ...initialOperationsState(at),
+        unscannable_targets: [unscannable(42), unscannable(42)],
+      }),
+    ).toThrow();
+  });
+
+  test.each(["queued", "active"])(
+    "rejects an unscannable repository that is also %s",
+    (overlap) => {
+      const failed = unscannable(42);
+      expect(() =>
+        parseOperationsState({
+          ...initialOperationsState(at),
+          unscannable_targets: [failed],
+          ...(overlap === "queued"
+            ? {
+                scan_queue: {
+                  next_ticket: 43,
+                  entries: [entry(42, 42)],
+                },
+              }
+            : {
+                active_scans: [
+                  {
+                    source_id: failed.source_id,
+                    repository_id: failed.repository_id,
+                    target_sha: failed.target_sha,
+                    started_at: at,
+                    run_id: "run-42",
+                  },
+                ],
+              }),
+        }),
+      ).toThrow();
+    },
+  );
+
+  test("normalizes pre-policy chronic flags before strict validation", () => {
+    const legacy = {
+      ...initialOperationsState(at),
+      scan_queue: {
+        next_ticket: 43,
+        entries: [{ ...failedEntry(42, 2), chronic: false }],
+      },
+    };
+    delete (legacy as { unscannable_targets?: unknown }).unscannable_targets;
+
+    expect(parseOperationsState(legacy).scan_queue.entries[0]?.chronic).toBe(
+      true,
     );
   });
 
