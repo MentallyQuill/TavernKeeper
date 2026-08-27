@@ -48,6 +48,10 @@ This prevents a new commit from silently resetting the expensive failure cycle.
 The field defaults to an empty collection so existing schema-version-3 state
 can be read without an unrelated state migration.
 
+Active policy and coverage campaigns must also drop tombstoned repository IDs
+from their remaining work. Otherwise an intentionally removed repository would
+leave a campaign permanently active even though it can no longer be selected.
+
 While a repository is still in its retry/cooldown cycle, reconciliation must
 also preserve its consecutive failure state when the catalog SHA changes. A
 push must not evade the attempt budget. The queued target SHA may advance to
@@ -98,9 +102,10 @@ stable target key:
 
 - after the second failure, create or update its scanner incident with the
   seven-day cooldown and remaining final attempt;
-- after terminal failure or legacy normalization, update the incident to say
-  the repository was removed from automatic scans and requires protected
-  manual add-back, apply a `scanner-unscannable` label, and close it;
+- after terminal failure or legacy normalization, update any matching incident
+  to say the repository was removed from automatic scans and requires protected
+  manual add-back, apply a `scanner-unscannable` label, and close it without
+  creating new closed-only issues for legacy targets that never had one;
 - after successful recovery, close a still-open cooling incident with the
   existing recovery explanation; and
 - leave unrelated safety and scanner-review issues to their existing
