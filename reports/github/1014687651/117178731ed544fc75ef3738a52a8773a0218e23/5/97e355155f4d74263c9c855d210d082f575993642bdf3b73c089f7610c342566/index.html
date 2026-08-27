@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for p-e-w/waidrin at commit 1171787.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; p-e-w/waidrin</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/p-e-w/waidrin" rel="noopener noreferrer">p-e-w/waidrin</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/p-e-w/waidrin/commit/117178731ed544fc75ef3738a52a8773a0218e23" rel="noopener noreferrer">1171787</a></span>
+        <span>Reviewed <time datetime="2026-08-27T11:47:11.947Z">Aug 27, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>63 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (62)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>Dependency advisory GHSA-qffp-2rhf-9h96:pkg:b8a9dfa218123c667676179f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-89xv-2m56-2m9x:pkg:5b1ac1fd9db08f5b86ebaafe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8h8q-6873-q5fj:pkg:f77a6eb5f2ac7549ef4877f3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c4j6-fc7j-m34r:pkg:bdac127f23e350f80a3d1dbd applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mg66-mrh9-m8jx:pkg:4cf9e9e6591eaa696b5e4a33 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3x4c-7xq6-9pq8:pkg:4b733a691492176e97e3f072 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p9j2-gv94-2wf4:pkg:1d22bffd3d5eac077b08ffa7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-gx5p-jg67-6x7h:pkg:d57da893be68205fe3b77c3e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-83g3-92jg-28cx:pkg:36f09712c5b19d62e2f59e39 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-ffhc-5mcf-pf4q:pkg:372ee89e8a3bfd1d98f225e9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vfv6-92ff-j949:pkg:2554c23a948730e2e9cefe59 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w8wr-v893-vjvp:pkg:7da9495751fdc3bf9c299678 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:7959fb9a1bc8af5373375c68 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:360555c0ae88de313e4744d6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-wfc6-r584-vfw7:pkg:5df144f11378a6de2a304d35 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r292-9mhp-454m:pkg:8aad2ce7479d51345c7e63a2 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/.github/workflows/code-quality.yml#L14" rel="noopener noreferrer">.github/workflows/code-quality.yml:14</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hmw2-7cc7-3qxx:pkg:3e7f45362673a63a999c49dc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:70fb8de3530fd7e78865a130 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/.github/workflows/code-quality.yml#L8-L17" rel="noopener noreferrer">.github/workflows/code-quality.yml:8-17</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-ggv3-7p47-pfv8:pkg:b3e02dfcc9fde865a31a9192 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-267c-6grr-h53f:pkg:7b05c31c29a7d4d0e079950b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-36qx-fr4f-26g5:pkg:1a7f97cc5949b4d6e6094cc2 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-34x7-hfp2-rc4v:pkg:7d77323718139b4267d31b2f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qx2v-qp2m-jg93:pkg:e21c031ac1b5a36fba7dab3b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:38ebb15695df9277a6893d88 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/.github/workflows/code-quality.yml#L12" rel="noopener noreferrer">.github/workflows/code-quality.yml:12</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r6q2-hw4h-h46w:pkg:2f480be16e90e43ab1f41308 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-955p-x3mx-jcvp:pkg:59ac450044b7d40ca1fa6b7e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8x88-c5mf-7j5w:pkg:b62ceba241cb26d52e12cb4d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6g55-p6wh-862q:pkg:a8b590e130400cc9d5d7c34a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9qr9-h5gf-34mp:pkg:3ae60a5607057aa4655e7779 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f88m-g3jw-g9cj:pkg:ec0392f9cb3406d583b7ad8b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6g55-p6wh-862q:pkg:1462d68968dddb5a77b9811d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mwv6-3258-q52c:pkg:d51f28e828662666bae1f821 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r5fr-rjxr-66jc:pkg:acc54e333efad0fdcbcc3646 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-gvwx-54wh-qm9j:pkg:9f7caa8dc32d63903b95a9a9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-26hh-7cqf-hhc6:pkg:ca74400e969a6ca7726763b5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9ppj-qmqm-q256:pkg:1639a1de3213e0c21e655085 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4fh9-h7wg-q85m:pkg:4d8459dc2ecf00c2431e57c8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w37m-7fhw-fmv9:pkg:41fc7a0f6f66d267193d1861 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4633-3j49-mh5q:pkg:64a25a01f17e6e83f0dd52e3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:006e2a19c763cc0fc17b9679 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-q4gf-8mx6-v5v3:pkg:f3eeaa8a565065e473679cd5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vmf3-w455-68vh:pkg:dd6d5893824d975d2c6210e6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m99w-x7hq-7vfj:pkg:4595a0ef7c52b552590f1790 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:a9b17cadf83e3a5de547592b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-h64f-5h5j-jqjh:pkg:7d307610f7130aa3b7143037 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xxjr-mmjv-4gpg:pkg:e49a21569220bc1e9110dc78 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9g9p-9gw9-jx7f:pkg:672999e862e7cb864158084e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4c39-4ccg-62r3:pkg:6bd4d03d799f2e8456398f1e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c2c7-rcm5-vvqj:pkg:09f761f2e2a83fdc7890eb5a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-23hp-3jrh-7fpw:pkg:d289a4bb35ce0915785e983b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-h25m-26qc-wcjf:pkg:5a8b9d46861e3d04fe3dd2d6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3v7f-55p6-f55p:pkg:972939a004a2a625fbda61c7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-68g3-v927-f742:pkg:f3e6099978d352bf35aca521 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qx2v-qp2m-jg93:pkg:09f18d20b7749a3207eefd02 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8qq5-rm4j-mr97:pkg:710f4f4c5e1ba205aa530c13 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f23m-r3pf-42rh:pkg:bf40c9910aa3de0f3855d6c9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3g8h-86w9-wvmq:pkg:a2084b16e1bbcb64748fe80b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/.github/workflows/code-quality.yml#L11-L12" rel="noopener noreferrer">.github/workflows/code-quality.yml:11-12</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-492v-c6pp-mqqv:pkg:d992343c14ae361674c2ac9a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (1)</summary>
+      <article class="finding risk-low">
+    <h3>malcontent reported anti-static-xor-terms</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a picture file used in the game&#39;s interface, thinking it contained hidden obfuscated text. Picture files contain compressed binary data that can randomly look like patterns scanners associate with hidden code. Since only the file&#39;s size and hash were provided—not its actual contents—there is no way to confirm anything suspicious. This image is exactly the kind of artwork the project description says it includes, and a picture file cannot run code on its own.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule anti-static-xor-terms. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is a metadata-only scanner match on a PNG image asset (male-elf.png) in a role-playing game frontend project. The scanner rule targets XOR-based string obfuscation in binaries, but compressed image data routinely contains byte sequences that coincidentally match such patterns. The artifact raw contents were not supplied, so no actual obfuscated code, executable behavior, or suspicious data flow can be confirmed. A static image served by a Next.js frontend has no code execution path, and the project&#39;s stated purpose explicitly includes AI-generated artwork for atmosphere. This is consistent with a false positive from binary pattern matching on a non-executable media file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>anti-static-xor-terms</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/p-e-w/waidrin/blob/117178731ed544fc75ef3738a52a8773a0218e23/public/images/male-elf.png" rel="noopener noreferrer">public/images/male-elf.png</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>60 files &middot; 16306904 bytes</dd>
+      <dt>Contextual coverage</dt><dd>63 of 63 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>35 files &middot; 100215 bytes</dd>
+        <dt>X-Ray review families</dt><dd>0 warning occurrences compacted to 0 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>35 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>35 raw signatures &middot; 4 raw AST &middot; 35 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>app/layout.tsx</code> &mdash; raw-ast / parse</li><li><code>app/page.tsx</code> &mdash; raw-ast / parse</li><li><code>app/plugins.ts</code> &mdash; raw-ast / parse</li><li><code>app/plugins/[...path]/route.ts</code> &mdash; raw-ast / parse</li><li><code>app/plugins/route.ts</code> &mdash; raw-ast / parse</li><li><code>components/ActionChoice.tsx</code> &mdash; raw-ast / parse</li><li><code>components/ActionEventView.tsx</code> &mdash; raw-ast / parse</li><li><code>components/CharacterIntroductionEventView.tsx</code> &mdash; raw-ast / parse</li><li><code>components/CharacterView.tsx</code> &mdash; raw-ast / parse</li><li><code>components/ErrorBar.tsx</code> &mdash; raw-ast / parse</li><li><code>components/ErrorPopup.tsx</code> &mdash; raw-ast / parse</li><li><code>components/EventView.tsx</code> &mdash; raw-ast / parse</li><li><code>components/ImageOption.tsx</code> &mdash; raw-ast / parse</li><li><code>components/LocationChangeEventView.tsx</code> &mdash; raw-ast / parse</li><li><code>components/NarrationEventView.tsx</code> &mdash; raw-ast / parse</li><li><code>components/ProcessingBar.tsx</code> &mdash; raw-ast / parse</li><li><code>components/ProcessingOverlay.tsx</code> &mdash; raw-ast / parse</li><li><code>components/StateDebugger.tsx</code> &mdash; raw-ast / parse</li><li><code>components/WizardStep.tsx</code> &mdash; raw-ast / parse</li><li><code>lib/backend.ts</code> &mdash; raw-ast / parse</li><li><code>lib/context.ts</code> &mdash; raw-ast / parse</li><li><code>lib/engine.ts</code> &mdash; raw-ast / parse</li><li><code>lib/prompts.ts</code> &mdash; raw-ast / parse</li><li><code>lib/state.ts</code> &mdash; raw-ast / parse</li><li><code>next.config.ts</code> &mdash; raw-ast / parse</li><li><code>views/CharacterSelect.tsx</code> &mdash; raw-ast / parse</li><li><code>views/Chat.tsx</code> &mdash; raw-ast / parse</li><li><code>views/ConnectionSetup.tsx</code> &mdash; raw-ast / parse</li><li><code>views/GenreSelect.tsx</code> &mdash; raw-ast / parse</li><li><code>views/ScenarioSetup.tsx</code> &mdash; raw-ast / parse</li><li><code>views/Welcome.tsx</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li><li>One or more scanner candidates refer to non-text artifacts. Their size, digest, and scanner metadata were verified, but raw contents were not provided to the contextual model.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/p-e-w/waidrin/commit/117178731ed544fc75ef3738a52a8773a0218e23" rel="noopener noreferrer">117178731ed544fc75ef3738a52a8773a0218e23</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-08-27T11:47:11.947Z">Aug 27, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>1 fresh / 0 reused groups &middot; 1 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>62 deterministic / 1 contextual candidates &middot; 1 contextual / 10 total behavior cases</dd>
+        <dt>Model budget</dt><dd>1 model call &middot; 1 / 12 fresh cases &middot; 6513 / 200000 estimated input &middot; 3536 / 250000 actual input &middot; 678 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>1 model call &middot; up to 1 groups and 1 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>3536 input &middot; 678 output &middot; 10 cache read &middot; 202 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>97e355155f4d74263c9c855d210d082f575993642bdf3b73c089f7610c342566</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1014687651/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
