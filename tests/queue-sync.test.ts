@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest";
 
 import type { ReportIndexV5 } from "../src/contracts/reports-v5.js";
 import type { TargetManifestV3, TargetV3 } from "../src/contracts/targets.js";
+import { failureFingerprint } from "../src/operations/failure.js";
 import {
   COVERAGE_CAMPAIGN_ID,
   initialOperationsState,
@@ -11,6 +12,7 @@ import {
 } from "../src/operations/state.js";
 import { planBatch } from "../src/queue/backlog.js";
 import {
+  addBackUnscannableTarget,
   appendQueuedTarget,
   removeSuccessfulTarget,
   rotateFailedTarget,
@@ -646,7 +648,7 @@ describe("scan queue synchronization", () => {
     ]);
   });
 
-  test("preserves a ticket while replacing a changed SHA", () => {
+  test("preserves a failure episode while replacing a changed SHA", () => {
     const original = target(41, 1, "a");
     let state = appendQueuedTarget(
       {
@@ -669,22 +671,263 @@ describe("scan queue synchronization", () => {
       },
       at: now,
     }).state;
+    state = rotateFailedTarget(state, {
+      target: original,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: "2026-08-04T12:01:00.000Z",
+    }).state;
+    const before = state.scan_queue.entries[0]!;
 
     const synchronized = syncScanQueue({
       manifest: manifest(target(41, 1, "b")),
       index: emptyIndex,
       state,
-      now: "2026-08-04T12:01:00.000Z",
+      now: "2026-08-04T12:02:00.000Z",
       scannerPolicyVersion: "3",
     }).state;
 
     expect(synchronized.scan_queue.entries[0]).toMatchObject({
       target_sha: "b".repeat(40),
-      ticket: 2,
-      consecutive_failures: 0,
-      total_failures: 1,
-      not_before: null,
+      ticket: before.ticket,
+      consecutive_failures: 2,
+      total_failures: 2,
+      not_before: "2026-08-11T12:01:00.000Z",
+      last_failure: before.last_failure,
+      last_failed_at: before.last_failed_at,
+      failure_history: before.failure_history,
     });
+  });
+
+  test("converts a legacy third failure to a tombstone without reseeding", () => {
+    const selected = target(41, 1, "a");
+    let state = appendQueuedTarget(stateObserving(selected), selected);
+    for (const failedAt of [
+      "2026-08-04T12:00:00.000Z",
+      "2026-08-04T12:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: failedAt,
+      }).state;
+    const cooling = state.scan_queue.entries[0]!;
+    const terminalAt = "2026-08-11T12:01:00.000Z";
+    const terminalHistory = [
+      ...(cooling.failure_history ?? []),
+      {
+        failed_at: terminalAt,
+        failure: cooling.last_failure!,
+        error_fingerprint: failureFingerprint(cooling.last_failure!),
+      },
+    ];
+    const legacyState = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        entries: [
+          {
+            ...cooling,
+            consecutive_failures: 3,
+            total_failures: 3,
+            not_before: "2026-08-11T18:01:00.000Z",
+            last_failed_at: terminalAt,
+            failure_history: terminalHistory,
+          },
+        ],
+      },
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state: legacyState,
+      now: "2026-08-11T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries).toEqual([]);
+    expect(synchronized.state.unscannable_targets).toEqual([
+      expect.objectContaining({
+        repository_id: selected.repository_id,
+        target_sha: selected.target_sha,
+        consecutive_failures: 3,
+        unscannable_at: "2026-08-11T12:02:00.000Z",
+      }),
+    ]);
+    expect(synchronized.summary.terminalized).toBe(1);
+  });
+
+  test("makes a legacy first failure immediately retryable", () => {
+    const selected = target(41, 1, "a");
+    let state = rotateFailedTarget(
+      appendQueuedTarget(stateObserving(selected), selected),
+      {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: "2026-08-04T12:00:00.000Z",
+      },
+    ).state;
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.map((entry) => ({
+          ...entry,
+          not_before: "2026-08-04T12:05:00.000Z",
+        })),
+      },
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state,
+      now: "2026-08-04T12:01:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries[0]?.not_before).toBeNull();
+  });
+
+  test("gives a legacy second failure a full seven-day cooldown", () => {
+    const selected = target(41, 1, "a");
+    let state = appendQueuedTarget(stateObserving(selected), selected);
+    for (const failedAt of [
+      "2026-08-04T12:00:00.000Z",
+      "2026-08-04T12:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: failedAt,
+      }).state;
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        entries: state.scan_queue.entries.map((entry) => ({
+          ...entry,
+          not_before: "2026-08-04T12:31:00.000Z",
+        })),
+      },
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: emptyIndex,
+      state,
+      now: "2026-08-04T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries[0]?.not_before).toBe(
+      "2026-08-11T12:01:00.000Z",
+    );
+  });
+
+  test("does not re-enroll a tombstone for SHA, policy, or coverage demand", () => {
+    const original = target(41, 1, "a");
+    let state = appendQueuedTarget(stateObserving(original), original);
+    for (const failedAt of [
+      "2026-08-04T12:00:00.000Z",
+      "2026-08-04T12:01:00.000Z",
+      "2026-08-11T12:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: original,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: failedAt,
+      }).state;
+    state = {
+      ...state,
+      policy_campaigns: [
+        {
+          id: "policy-3-terminal",
+          scanner_policy_version: "3",
+          repository_ids: [41],
+          created_at: now,
+          status: "active" as const,
+        },
+      ],
+      coverage_campaigns: [coverageCampaign([41])],
+    };
+
+    const synchronized = syncScanQueue({
+      manifest: manifest(target(41, 1, "b")),
+      index: emptyIndex,
+      state,
+      now: "2026-08-11T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.scan_queue.entries).toEqual([]);
+    expect(synchronized.state.policy_campaigns[0]).toMatchObject({
+      repository_ids: [],
+      status: "completed",
+    });
+    expect(synchronized.state.coverage_campaigns[0]).toMatchObject({
+      remaining_repository_ids: [],
+      status: "completed",
+    });
+  });
+
+  test("keeps protected add-back eligible despite an exact current report", () => {
+    const selected = target(41, 1, "a");
+    let state = appendQueuedTarget(stateObserving(selected), selected);
+    for (const failedAt of [
+      "2026-08-04T12:00:00.000Z",
+      "2026-08-04T12:01:00.000Z",
+      "2026-08-11T12:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: selected,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+        },
+        at: failedAt,
+      }).state;
+
+    const addedBack = addBackUnscannableTarget(state, selected.repository_id);
+    const synchronized = syncScanQueue({
+      manifest: manifest(selected),
+      index: indexWithRepositoryReport(41, "a"),
+      state: addedBack,
+      now: "2026-08-11T12:02:00.000Z",
+      scannerPolicyVersion: "3",
+    });
+
+    expect(synchronized.state.unscannable_targets).toEqual([]);
+    expect(synchronized.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        target_sha: selected.target_sha,
+        consecutive_failures: 0,
+        staff_requested: true,
+        not_before: null,
+      }),
+    ]);
   });
 
   test("defers an automatic changed-SHA rescan for seven days after its report", () => {

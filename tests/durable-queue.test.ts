@@ -4,6 +4,7 @@ import type { Target } from "../src/contracts/targets.js";
 import { failureFingerprint } from "../src/operations/failure.js";
 import { initialOperationsState } from "../src/operations/state.js";
 import {
+  addBackUnscannableTarget,
   appendQueuedTarget,
   dueQueueEntries,
   prioritizeQueuedTargetRetry,
@@ -158,6 +159,81 @@ describe("durable scan ticket operations", () => {
     );
   });
 
+  test("adds back exactly one unscannable repository as fresh staff work", () => {
+    let state = initialOperationsState(at);
+    for (const repositoryId of [42, 43]) {
+      state = appendQueuedTarget(state, target(repositoryId));
+      for (const failedAt of [
+        "2026-08-04T00:00:00.000Z",
+        "2026-08-04T00:01:00.000Z",
+        "2026-08-11T00:01:00.000Z",
+      ])
+        state = rotateFailedTarget(state, {
+          target: target(repositoryId),
+          failure,
+          at: failedAt,
+        }).state;
+    }
+
+    const addedBack = addBackUnscannableTarget(state, 42);
+
+    expect(
+      addedBack.unscannable_targets.map(({ repository_id }) => repository_id),
+    ).toEqual([43]);
+    expect(addedBack.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        target_sha: target(42).target_sha,
+        ticket: state.scan_queue.next_ticket,
+        consecutive_failures: 0,
+        total_failures: 3,
+        not_before: null,
+        last_failure: null,
+        last_failed_at: null,
+        chronic: false,
+        staff_requested: true,
+      }),
+    ]);
+    expect(addedBack.scan_queue.next_ticket).toBe(
+      state.scan_queue.next_ticket + 1,
+    );
+    expect(() => addBackUnscannableTarget(addedBack, 42)).toThrow(
+      /not unscannable/iu,
+    );
+  });
+
+  test("terminalizes a third failure even when ticket space is exhausted", () => {
+    let state = appendQueuedTarget(initialOperationsState(at), target(42));
+    for (const failedAt of [
+      "2026-08-04T00:00:00.000Z",
+      "2026-08-04T00:01:00.000Z",
+    ])
+      state = rotateFailedTarget(state, {
+        target: target(42),
+        failure,
+        at: failedAt,
+      }).state;
+    state = {
+      ...state,
+      scan_queue: {
+        ...state.scan_queue,
+        next_ticket: Number.MAX_SAFE_INTEGER,
+      },
+    };
+
+    const terminal = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at: "2026-08-11T00:01:00.000Z",
+    });
+
+    expect(terminal.terminal).toBe(true);
+    expect(terminal.state.scan_queue.entries).toEqual([]);
+    expect(terminal.state.unscannable_targets).toEqual([
+      expect.objectContaining({ repository_id: 42, consecutive_failures: 3 }),
+    ]);
+  });
+
   test("moves each failure exactly once to the current tail", () => {
     let state = initialOperationsState(at);
     state = appendQueuedTarget(state, target(42));
@@ -196,32 +272,61 @@ describe("durable scan ticket operations", () => {
     });
   });
 
-  test("a fifth and sixth failure remain queued and rotate again", () => {
+  test("allows one immediate retry, cools for seven days, then terminates", () => {
     let state = appendQueuedTarget(initialOperationsState(at), target(42));
-    for (let attempt = 1; attempt <= 6; attempt += 1) {
-      const result = rotateFailedTarget(state, {
-        target: target(42),
-        failure,
-        at: new Date(Date.UTC(2026, 7, 4, attempt)).toISOString(),
-      });
-      state = result.state;
-      expect(result.entry.ticket).toBe(attempt + 1);
-      expect(result.entry.consecutive_failures).toBe(attempt);
-      expect(result.entry.chronic).toBe(attempt >= 5);
-      expect(result.becameChronic).toBe(attempt === 5);
-    }
-    expect(state.scan_queue.entries).toHaveLength(1);
+    const first = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at: "2026-08-04T01:00:00.000Z",
+    });
+    expect(first).toMatchObject({ terminal: false, becameChronic: false });
+    expect(first.entry).toMatchObject({
+      ticket: 2,
+      consecutive_failures: 1,
+      not_before: null,
+      chronic: false,
+    });
+
+    const second = rotateFailedTarget(first.state, {
+      target: target(42),
+      failure,
+      at: "2026-08-04T02:00:00.000Z",
+    });
+    expect(second).toMatchObject({ terminal: false, becameChronic: true });
+    expect(second.entry).toMatchObject({
+      ticket: 3,
+      consecutive_failures: 2,
+      not_before: "2026-08-11T02:00:00.000Z",
+      chronic: true,
+    });
+
+    const third = rotateFailedTarget(second.state, {
+      target: target(42),
+      failure,
+      at: "2026-08-11T02:00:00.000Z",
+    });
+    expect(third).toMatchObject({ terminal: true, becameChronic: false });
+    expect(third.state.scan_queue.entries).toEqual([]);
+    expect(third.state.active_scans).toEqual([]);
+    expect(third.state.unscannable_targets).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        consecutive_failures: 3,
+        total_failures: 3,
+        unscannable_at: "2026-08-11T02:00:00.000Z",
+      }),
+    ]);
+    expect(() => appendQueuedTarget(third.state, target(42, "b"))).toThrow(
+      /unscannable/iu,
+    );
   });
 
-  test("retains only the latest four sanitized failures", () => {
+  test("retains sanitized failure history in the terminal tombstone", () => {
     let state = appendQueuedTarget(initialOperationsState(at), target(42));
     const diagnostics = [
       "parser_syntax",
       "rule_timeout",
       "parser_syntax",
-      "rule_timeout",
-      "parser_syntax",
-      "rule_timeout",
     ] as const;
     for (const [index, diagnostic] of diagnostics.entries()) {
       state = rotateFailedTarget(state, {
@@ -231,10 +336,10 @@ describe("durable scan ticket operations", () => {
       }).state;
     }
 
-    const history = state.scan_queue.entries[0]?.failure_history;
-    expect(history).toHaveLength(4);
+    const history = state.unscannable_targets[0]?.failure_history;
+    expect(history).toHaveLength(3);
     expect(history?.map((entry) => entry.failure.diagnostic)).toEqual(
-      diagnostics.slice(-4),
+      diagnostics,
     );
     expect(
       history?.every(
@@ -245,33 +350,37 @@ describe("durable scan ticket operations", () => {
     expect(JSON.stringify(history)).not.toContain("private/source.ts");
   });
 
-  test("replacing a SHA preserves its ticket and resets its streak", () => {
+  test("replacing a SHA preserves its repository failure episode", () => {
     let state = appendQueuedTarget(initialOperationsState(at), target(42));
     state = rotateFailedTarget(state, {
       target: target(42),
       failure,
       at,
     }).state;
+    state = rotateFailedTarget(state, {
+      target: target(42),
+      failure,
+      at: "2026-08-04T00:01:00.000Z",
+    }).state;
+    const before = state.scan_queue.entries[0]!;
 
     const replaced = replaceQueuedTargetSha(
       state,
       target(42, "b"),
-      "2026-08-04T00:01:00.000Z",
+      "2026-08-04T00:02:00.000Z",
     );
 
     expect(replaced.scan_queue.entries[0]).toMatchObject({
       target_sha: "b".repeat(40),
-      ticket: 2,
-      consecutive_failures: 0,
-      total_failures: 1,
-      not_before: null,
-      last_failure: null,
-      last_failed_at: null,
-      chronic: false,
+      ticket: before.ticket,
+      consecutive_failures: 2,
+      total_failures: 2,
+      not_before: "2026-08-11T00:01:00.000Z",
+      last_failure: failure,
+      last_failed_at: "2026-08-04T00:01:00.000Z",
+      chronic: true,
+      failure_history: before.failure_history,
     });
-    expect(replaced.scan_queue.entries[0]).not.toHaveProperty(
-      "failure_history",
-    );
   });
 
   test("replacing a SHA preserves updated-catalog provenance and queue history", () => {

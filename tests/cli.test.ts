@@ -48,6 +48,26 @@ function target(repositoryId: number) {
   };
 }
 
+function unscannableState(repositoryId: number) {
+  const targetValue = target(repositoryId);
+  let state = initialOperationsState(now);
+  for (const failedAt of [
+    "2026-07-31T18:00:00.000Z",
+    "2026-07-31T18:01:00.000Z",
+    "2026-08-07T18:01:00.000Z",
+  ])
+    state = recordFailure(state, {
+      target: targetValue,
+      failure: {
+        code: "SCANNER_FAILED",
+        domain: "target",
+        component: "opengrep",
+      },
+      at: failedAt,
+    }).state;
+  return state;
+}
+
 function indexedReport(
   targetValue: ReturnType<typeof target>,
   completedAt: string,
@@ -282,6 +302,36 @@ describe("JSON-only orchestration CLIs", () => {
     ).toStrictEqual(revoked);
   });
 
+  test("staff add-back clears one tombstone and starts a fresh state episode", () => {
+    const state = unscannableState(42);
+    const addedBackAt = "2026-08-08T18:00:00.000Z";
+
+    const addedBack = applyRetryOperation(
+      state,
+      { operation: "add-back", repository_id: 42 },
+      addedBackAt,
+    );
+
+    expect(addedBack.unscannable_targets).toEqual([]);
+    expect(addedBack.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 42,
+        consecutive_failures: 0,
+        total_failures: 3,
+        not_before: null,
+        staff_requested: true,
+      }),
+    ]);
+    expect(addedBack.updated_at).toBe(addedBackAt);
+    expect(() =>
+      applyRetryOperation(
+        initialOperationsState(now),
+        { operation: "add-back", repository_id: 42 },
+        addedBackAt,
+      ),
+    ).toThrow(/not unscannable/iu);
+  });
+
   test("reconcile emits no more than five self-contained scan requests", () => {
     const manifest: TargetManifestV2 = {
       schema_version: 2,
@@ -441,6 +491,60 @@ describe("JSON-only orchestration CLIs", () => {
     });
 
     expect(matrix).toEqual({ include: [], coalesced: true });
+  });
+
+  test("targeted scans coalesce an unscannable repository", () => {
+    const targetValue = target(42);
+    const manifest = {
+      schema_version: 2 as const,
+      generated_at: now,
+      repositories: [targetValue],
+    };
+    const index = {
+      schema_version: 5 as const,
+      generated_at: now,
+      reports: [],
+    };
+    const state = {
+      ...unscannableState(42),
+      catalog_observation: {
+        initialized_at: now,
+        repositories: [
+          {
+            repository_id: targetValue.repository_id,
+            target_sha: targetValue.target_sha,
+          },
+        ],
+      },
+    };
+
+    expect(
+      buildTargetedMatrix({
+        manifest,
+        index,
+        state,
+        repositoryId: 42,
+        scannerPolicyVersion: "2",
+        requestCreatedAt: now,
+      }),
+    ).toEqual({ include: [], coalesced: true });
+    expect(
+      buildTargetedQueueUpdate({
+        manifest,
+        index,
+        state,
+        repositoryId: 42,
+        scannerPolicyVersion: "2",
+        requestCreatedAt: now,
+        now: "2026-08-07T18:02:00.000Z",
+      }),
+    ).toMatchObject({
+      state,
+      accepted: false,
+      coalesced: true,
+      changed: false,
+      ticket: null,
+    });
   });
 
   test("coalesces a queued request completed after the workflow was created", async () => {

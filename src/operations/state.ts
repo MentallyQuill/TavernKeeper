@@ -57,6 +57,69 @@ export const ScanFailureHistoryEntrySchema = z
     },
   );
 
+export const UnscannableTargetSchema = z
+  .strictObject({
+    source_id: SourceIdSchema,
+    repository_id: SafePositiveIntegerSchema,
+    repository: RepositorySchema,
+    target_sha: FullShaSchema,
+    unscannable_at: z.iso.datetime(),
+    consecutive_failures: SafePositiveIntegerSchema.refine(
+      (value) => value >= 3,
+      "An unscannable target requires at least three consecutive failures.",
+    ),
+    total_failures: SafePositiveIntegerSchema,
+    last_failure: FailureDescriptorSchema.refine(
+      ({ domain }) => domain === "target",
+      "An unscannable target requires a target-local failure.",
+    ),
+    last_failed_at: z.iso.datetime(),
+    failure_history: z.array(ScanFailureHistoryEntrySchema).min(1).max(4),
+  })
+  .superRefine((entry, context) => {
+    if (entry.source_id !== `github-${entry.repository_id}`)
+      context.addIssue({
+        code: "custom",
+        path: ["source_id"],
+        message: "Unscannable source ID must match repository ID.",
+      });
+    if (entry.total_failures < entry.consecutive_failures)
+      context.addIssue({
+        code: "custom",
+        path: ["total_failures"],
+        message: "Total failures cannot be below the terminal streak.",
+      });
+    if (
+      entry.failure_history.some(
+        (failure, index) =>
+          index > 0 &&
+          Date.parse(entry.failure_history[index - 1]!.failed_at) >
+            Date.parse(failure.failed_at),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["failure_history"],
+        message: "Unscannable failure history must be chronological.",
+      });
+    const latest = entry.failure_history.at(-1)!;
+    if (
+      latest.failed_at !== entry.last_failed_at ||
+      latest.error_fingerprint !== failureFingerprint(entry.last_failure)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["failure_history"],
+        message: "Terminal history must end with the latest failure.",
+      });
+    if (Date.parse(entry.unscannable_at) < Date.parse(entry.last_failed_at))
+      context.addIssue({
+        code: "custom",
+        path: ["unscannable_at"],
+        message: "An unscannable timestamp cannot precede its last failure.",
+      });
+  });
+
 export const AutomaticRecoveryHoldSchema = z
   .strictObject({
     error_fingerprint: FingerprintSchema,
@@ -152,7 +215,7 @@ export const ScanQueueEntrySchema = z
         path: ["failure_history"],
         message: "Failure history must be chronological.",
       });
-    if (entry.chronic !== entry.consecutive_failures >= 5)
+    if (entry.chronic !== entry.consecutive_failures >= 2)
       context.addIssue({
         code: "custom",
         path: ["chronic"],
@@ -340,6 +403,7 @@ export const OperationsStateSchema = z
     coverage_started_at: z.iso.datetime().nullable(),
     emergency_stop: EmergencyStopSchema.nullable(),
     automatic_holds: z.array(AutomaticRecoveryHoldSchema),
+    unscannable_targets: z.array(UnscannableTargetSchema).default([]),
     catalog_observation: CatalogObservationSchema.nullable().optional(),
     scan_queue: ScanQueueSchema,
     active_scans: z.array(ActiveScanSchema),
@@ -355,6 +419,38 @@ export const OperationsStateSchema = z
         code: "custom",
         path: ["automatic_holds"],
         message: "Automatic hold fingerprints must be unique.",
+      });
+    const unscannableRepositoryIds = state.unscannable_targets.map(
+      ({ repository_id }) => repository_id,
+    );
+    if (
+      new Set(unscannableRepositoryIds).size !== unscannableRepositoryIds.length
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["unscannable_targets"],
+        message: "Each repository may have only one unscannable tombstone.",
+      });
+    const unscannableSet = new Set(unscannableRepositoryIds);
+    if (
+      state.scan_queue.entries.some(({ repository_id }) =>
+        unscannableSet.has(repository_id),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["scan_queue"],
+        message: "An unscannable repository cannot remain queued.",
+      });
+    if (
+      state.active_scans.some(({ repository_id }) =>
+        unscannableSet.has(repository_id),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["active_scans"],
+        message: "An unscannable repository cannot remain active.",
       });
     const activeIdentities = state.active_scans.map(
       (entry) => `${entry.repository_id}:${entry.target_sha}`,
@@ -391,6 +487,7 @@ export const OperationsStateSchema = z
 export type ScanQueueEntry = z.infer<typeof ScanQueueEntrySchema>;
 export type ScanQueue = z.infer<typeof ScanQueueSchema>;
 export type AutomaticRecoveryHold = z.infer<typeof AutomaticRecoveryHoldSchema>;
+export type UnscannableTarget = z.infer<typeof UnscannableTargetSchema>;
 export type CatalogChange = z.infer<typeof CatalogChangeSchema>;
 export type CatalogObservation = z.infer<typeof CatalogObservationSchema>;
 export type CoverageCampaign = z.infer<typeof CoverageCampaignSchema>;
@@ -403,6 +500,7 @@ export function initialOperationsState(now: string): OperationsState {
     coverage_started_at: null,
     emergency_stop: null,
     automatic_holds: [],
+    unscannable_targets: [],
     catalog_observation: null,
     scan_queue: { next_ticket: 1, entries: [] },
     active_scans: [],
@@ -411,8 +509,45 @@ export function initialOperationsState(now: string): OperationsState {
   });
 }
 
+function normalizeLegacyRetryPolicyState(value: unknown): unknown {
+  if (value === null || typeof value !== "object" || Array.isArray(value))
+    return value;
+  const state = value as Record<string, unknown>;
+  if (
+    state.schema_version !== 3 ||
+    Object.prototype.hasOwnProperty.call(state, "unscannable_targets")
+  )
+    return value;
+  const scanQueue = state.scan_queue;
+  if (
+    scanQueue === null ||
+    typeof scanQueue !== "object" ||
+    Array.isArray(scanQueue)
+  )
+    return { ...state, unscannable_targets: [] };
+  const queue = scanQueue as Record<string, unknown>;
+  const entries = Array.isArray(queue.entries)
+    ? queue.entries.map((entry) => {
+        if (entry === null || typeof entry !== "object" || Array.isArray(entry))
+          return entry;
+        const queueEntry = entry as Record<string, unknown>;
+        return typeof queueEntry.consecutive_failures === "number"
+          ? {
+              ...queueEntry,
+              chronic: queueEntry.consecutive_failures >= 2,
+            }
+          : entry;
+      })
+    : queue.entries;
+  return {
+    ...state,
+    unscannable_targets: [],
+    scan_queue: { ...queue, entries },
+  };
+}
+
 export function parseOperationsState(value: unknown) {
-  return OperationsStateSchema.parse(value);
+  return OperationsStateSchema.parse(normalizeLegacyRetryPolicyState(value));
 }
 
 export function serializeOperationsState(state: OperationsState) {
@@ -421,6 +556,9 @@ export function serializeOperationsState(state: OperationsState) {
     ...parsed,
     automatic_holds: [...parsed.automatic_holds].sort((left, right) =>
       left.error_fingerprint.localeCompare(right.error_fingerprint),
+    ),
+    unscannable_targets: [...parsed.unscannable_targets].sort(
+      (left, right) => left.repository_id - right.repository_id,
     ),
     scan_queue: {
       ...parsed.scan_queue,

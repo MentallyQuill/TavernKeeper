@@ -348,6 +348,7 @@ describe("GitHub workflow security policy", () => {
     expect(reconcile.jobs.claim.permissions).toEqual({
       contents: "read",
       actions: "write",
+      issues: "write",
     });
     expect(reconcile.jobs.run.strategy["max-parallel"]).toBe(2);
     const scheduleWake = reconcile.jobs.claim.steps.find(
@@ -627,19 +628,74 @@ describe("GitHub workflow security policy", () => {
     expect(JSON.stringify(incident)).not.toMatch(/secrets\./u);
   });
 
-  test("reconciles chronic incidents by exact immutable target", async () => {
-    const value = await workflow("scan-and-publish.yml");
-    const reconcile = (value.jobs.publish.steps as Workflow[]).find(
+  test("reconciles cooling and terminal incidents by exact immutable target", async () => {
+    const [scan, queue, incidentScript] = await Promise.all([
+      workflow("scan-and-publish.yml"),
+      workflow("reconcile.yml"),
+      readFile(
+        new URL(
+          "../scripts/reconcile-operational-incidents.sh",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+    ]);
+    const scanSteps = scan.jobs.publish.steps as Workflow[];
+    const scanReconcile = scanSteps.find(
       (step) => step.name === "Reconcile secret-free operational incidents",
     );
+    const queueSteps = queue.jobs.claim.steps as Workflow[];
+    const queueReconcile = queueSteps.find(
+      (step) => step.name === "Reconcile secret-free operational incidents",
+    );
+    const scanCommit = scanSteps.findIndex(
+      (step) => step.name === "Commit report and state",
+    );
+    const scanIncident = scanSteps.indexOf(scanReconcile!);
 
-    expect(reconcile?.run).toContain(".target_incident_key");
-    expect(reconcile?.run).toContain("Target incident key:");
-    expect(reconcile?.run).toContain(".failure_history");
-    expect(reconcile?.run).toContain("gh issue list --state all");
-    expect(reconcile?.run).toContain("gh issue reopen");
-    expect(reconcile?.run).toContain("gh issue close");
-    expect(reconcile?.run).not.toContain(
+    expect(scanReconcile?.run).toBe(
+      "bash scripts/reconcile-operational-incidents.sh",
+    );
+    expect(queueReconcile?.run).toBe(
+      "bash scripts/reconcile-operational-incidents.sh",
+    );
+    expect(scan.jobs.publish.permissions).toMatchObject({ issues: "write" });
+    expect(queue.jobs.claim.permissions).toMatchObject({ issues: "write" });
+    expect(scanIncident).toBeGreaterThan(scanCommit);
+    expect(incidentScript).toContain(".target_incident_key");
+    expect(incidentScript).toContain("Target incident key:");
+    expect(incidentScript).toContain(".failure_history");
+    expect(incidentScript).toContain("gh issue list --state all");
+    expect(incidentScript).toContain("gh issue reopen");
+    expect(incidentScript).toContain("gh issue close");
+    expect(incidentScript).toContain(".unscannable_targets[]");
+    expect(incidentScript).toContain("scanner-unscannable");
+    expect(incidentScript).toContain("protected `add-back`");
+    expect(incidentScript).toContain("cooling_target_keys");
+    expect(incidentScript).toContain("terminal_target_keys");
+    expect(incidentScript).toContain("number,state,body,createdAt,labels");
+    expect(incidentScript).toContain("already_terminal");
+    expect(incidentScript).toContain(
+      'gh issue edit "$existing" --remove-label scanner-unscannable',
+    );
+    expect(incidentScript).toContain(
+      'if [[ "$already_terminal" == "true" && "$existing_state" == "CLOSED" ]]; then',
+    );
+    expect(incidentScript).toContain(
+      'if [[ "$already_terminal" != "true" ]]; then',
+    );
+    const terminalStart = incidentScript.indexOf(
+      "jq -c '.unscannable_targets[]'",
+    );
+    const recoveryStart = incidentScript.indexOf(
+      'jq -c \'.[] | select(.state == "OPEN")',
+    );
+    expect(terminalStart).toBeGreaterThan(-1);
+    expect(recoveryStart).toBeGreaterThan(terminalStart);
+    expect(incidentScript.slice(terminalStart, recoveryStart)).not.toContain(
+      "gh issue create",
+    );
+    expect(incidentScript).not.toContain(
       'gh issue list --state open --label scanner-operations --search "$repository_id $target in:body"',
     );
   });
@@ -686,7 +742,7 @@ describe("GitHub workflow security policy", () => {
     );
   });
 
-  test("staff can revoke a queued scan without reopening reconciliation", async () => {
+  test("staff can revoke queued work or add back an unscannable target", async () => {
     const value = await workflow("staff-operations.yml");
     const inputs = value.on.workflow_dispatch.inputs;
     const operate = (value.jobs.operate.steps as Workflow[]).find(
@@ -697,9 +753,12 @@ describe("GitHub workflow security policy", () => {
     );
 
     expect(inputs.operation.options).toContain("revoke");
-    expect(inputs.repository_id.description).toMatch(/retry or revoke/iu);
+    expect(inputs.operation.options).toContain("add-back");
+    expect(inputs.repository_id.description).toMatch(
+      /retry, revoke, or add-back/iu,
+    );
     expect(operate?.run).toContain(
-      '[[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" ]]',
+      '[[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" || "$OPERATION" = "add-back" ]]',
     );
     expect(reconcile?.if).toContain("inputs.operation != 'revoke'");
   });

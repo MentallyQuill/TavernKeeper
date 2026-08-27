@@ -28,6 +28,7 @@ jobs:
     permissions:
       contents: read
       actions: write
+      issues: write
     outputs:
       requests_json: ${{ steps.claim.outputs.requests_json }}
       total_remaining: ${{ steps.claim.outputs.total_remaining }}
@@ -123,6 +124,12 @@ jobs:
             echo "- Expired claims recovered: $(jq -r '.expired_claims' <<< "$claim_result")"
             echo "- Staff emergency stop: $(jq -r '.emergency_stopped' <<< "$claim_result")"
           } >> "$GITHUB_STEP_SUMMARY"
+      - name: Reconcile secret-free operational incidents
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: bash scripts/reconcile-operational-incidents.sh
       - name: Schedule deterministic delayed wake
         if: ${{ fromJSON(steps.claim.outputs.requests_json)[0] == null && steps.claim.outputs.total_remaining != '0' && steps.claim.outputs.next_wake_at != '' }}
         env:

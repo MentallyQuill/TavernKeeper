@@ -308,7 +308,7 @@ describe("automatic operations-state migration", () => {
     ).toThrow();
   });
 
-  test("queues ordinary freshness while restoring exact legacy retries", () => {
+  test("queues ordinary freshness while terminalizing an exhausted legacy retry", () => {
     const failed = target(41, 1);
     const healthy = target(42, 2);
     const migrated = migrateOperationsState(v2State([failed]), {
@@ -332,19 +332,67 @@ describe("automatic operations-state migration", () => {
         repository_id,
         ticket,
       ]),
-    ).toEqual([
-      [42, 1],
-      [41, 2],
+    ).toEqual([[42, 1]]);
+    expect(migrated.state.unscannable_targets).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        consecutive_failures: 4,
+        total_failures: 4,
+        last_failure: expect.objectContaining({ component: "opengrep" }),
+      }),
+    ]);
+    expect(migrated.summary.terminalized).toBe(1);
+  });
+
+  test("normalizes legacy attempts one through four in the migration result", () => {
+    const targets = [1, 2, 3, 4].map((attempt) =>
+      target(40 + attempt, attempt),
+    );
+    const targetRetries = targets.map((targetValue, index) => ({
+      ...v2Retry(targetValue),
+      attempt: index + 1,
+      exhausted: index === 3,
+      next_retry_at: index === 3 ? null : "2026-08-04T10:00:00.000Z",
+    }));
+
+    const migrated = migrateOperationsState(
+      { ...v2State([]), target_retries: targetRetries },
+      {
+        manifest: manifest(...targets),
+        index: emptyIndex,
+        at,
+        scannerPolicyVersion: "3",
+      },
+    );
+
+    expect(migrated.state.scan_queue.entries).toEqual([
+      expect.objectContaining({
+        repository_id: 41,
+        consecutive_failures: 1,
+        not_before: null,
+        chronic: false,
+      }),
+      expect.objectContaining({
+        repository_id: 42,
+        consecutive_failures: 2,
+        not_before: "2026-08-11T08:00:00.000Z",
+        chronic: true,
+      }),
     ]);
     expect(
-      migrated.state.scan_queue.entries.find(
-        ({ repository_id }) => repository_id === 41,
+      migrated.state.unscannable_targets.map(
+        ({ repository_id, consecutive_failures }) => [
+          repository_id,
+          consecutive_failures,
+        ],
       ),
-    ).toMatchObject({
-      consecutive_failures: 4,
-      total_failures: 4,
-      chronic: false,
-      last_failure: { component: "opengrep" },
+    ).toEqual([
+      [43, 3],
+      [44, 4],
+    ]);
+    expect(migrated.summary).toMatchObject({
+      legacy_retries_preserved: 4,
+      terminalized: 2,
     });
   });
 
@@ -399,7 +447,8 @@ describe("automatic operations-state migration", () => {
         },
       );
 
-      expect(migrated.state.scan_queue.entries).toEqual([
+      expect(migrated.state.scan_queue.entries).toEqual([]);
+      expect(migrated.state.unscannable_targets).toEqual([
         expect.objectContaining({
           repository_id: 41,
           target_sha: current.target_sha,
@@ -466,7 +515,8 @@ describe("automatic operations-state migration", () => {
         chronic: false,
       }),
     ]);
-    expect(migrated.state.scan_queue.entries).toEqual([
+    expect(migrated.state.scan_queue.entries).toEqual([]);
+    expect(migrated.state.unscannable_targets).toEqual([
       expect.objectContaining({ repository_id: 41, consecutive_failures: 4 }),
     ]);
     expect(migrated.summary).toMatchObject({

@@ -15,6 +15,7 @@ import {
   recordAutomaticProbeSuccess,
 } from "../operations/retry.js";
 import {
+  addBackUnscannableTarget,
   prioritizeQueuedTargetRetry,
   revokeQueuedTargetStaffRequest,
 } from "../queue/durable-queue.js";
@@ -51,6 +52,10 @@ const OperationSchema = z.discriminatedUnion("operation", [
     operation: z.literal("revoke"),
     repository_id: z.number().int().positive(),
   }),
+  z.strictObject({
+    operation: z.literal("add-back"),
+    repository_id: z.number().int().positive(),
+  }),
 ]);
 
 export function applyRetryOperation(
@@ -83,6 +88,11 @@ export function applyRetryOperation(
           operation.probed_at,
         );
   }
+  if (operation.operation === "add-back")
+    return parseOperationsState({
+      ...addBackUnscannableTarget(state, operation.repository_id),
+      updated_at: now,
+    });
   if (operation.operation === "revoke") {
     const hasStaffRequest = state.scan_queue.entries.some(
       (entry) =>

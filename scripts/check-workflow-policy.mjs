@@ -143,7 +143,7 @@ const canonicalStaffPublisherRun =
     '  elif [[ "$OPERATION" = "pause" ]]; then',
     '    request="$(jq -nc --arg operation "$OPERATION" --arg reason_code "$REASON_CODE" \'{operation:$operation,reason_code:$reason_code}\')"',
     '    env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry',
-    '  elif [[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" ]]; then',
+    '  elif [[ "$OPERATION" = "retry" || "$OPERATION" = "revoke" || "$OPERATION" = "add-back" ]]; then',
     '    request="$(jq -nc --arg operation "$OPERATION" --argjson repository_id "$REPOSITORY_ID" \'{operation:$operation,repository_id:$repository_id}\')"',
     '    env -u GH_TOKEN -u GITHUB_TOKEN TAVERNKEEPER_OPERATION="$request" npm run --silent retry',
     "  else",
@@ -321,7 +321,7 @@ const permissionProfiles = {
       actions: "write",
     },
     jobs: {
-      claim: { contents: "read", actions: "write" },
+      claim: { contents: "read", actions: "write", issues: "write" },
       "probe-provider": { contents: "read", actions: "write" },
       run: undefined,
     },

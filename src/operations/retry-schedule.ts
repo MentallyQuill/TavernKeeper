@@ -1,6 +1,7 @@
 const targetRetryMinutes = [5, 30, 120] as const;
 const sharedProbeMinutes = [5, 15, 30, 60, 180] as const;
 const scanRetryMinutes = [5, 30, 120, 360] as const;
+const targetCooldownMinutes = 7 * 24 * 60;
 
 function addMinutes(value: string, minutes: number) {
   const milliseconds = Date.parse(value);
@@ -13,6 +14,22 @@ export function targetRetryAt(initialFailedAt: string, attempt: number) {
   if (minutes === undefined)
     throw new Error("Target retry attempt is not schedulable.");
   return addMinutes(initialFailedAt, minutes);
+}
+
+export function targetRetryNotBefore(
+  lastFailedAt: string,
+  consecutiveFailures: number,
+) {
+  if (!Number.isSafeInteger(consecutiveFailures) || consecutiveFailures < 1)
+    throw new Error("Target failure count is invalid.");
+  if (consecutiveFailures === 1) {
+    if (!Number.isFinite(Date.parse(lastFailedAt)))
+      throw new Error("Retry time is invalid.");
+    return null;
+  }
+  if (consecutiveFailures === 2)
+    return addMinutes(lastFailedAt, targetCooldownMinutes);
+  throw new Error("Terminal target failure has no retry deadline.");
 }
 
 export function sharedProbeAt(lastFailedAt: string, consecutive: number) {
