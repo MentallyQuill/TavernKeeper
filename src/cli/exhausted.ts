@@ -46,6 +46,13 @@ export function operationalIncidents(stateInput: unknown) {
           ],
         }),
       ),
+    unscannable_targets: state.unscannable_targets.map((entry) => ({
+      target_incident_key: targetIncidentKey(
+        entry.repository_id,
+        entry.target_sha,
+      ),
+      ...entry,
+    })),
   };
 }
 

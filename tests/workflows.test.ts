@@ -627,7 +627,7 @@ describe("GitHub workflow security policy", () => {
     expect(JSON.stringify(incident)).not.toMatch(/secrets\./u);
   });
 
-  test("reconciles chronic incidents by exact immutable target", async () => {
+  test("reconciles cooling and terminal incidents by exact immutable target", async () => {
     const value = await workflow("scan-and-publish.yml");
     const reconcile = (value.jobs.publish.steps as Workflow[]).find(
       (step) => step.name === "Reconcile secret-free operational incidents",
@@ -639,6 +639,30 @@ describe("GitHub workflow security policy", () => {
     expect(reconcile?.run).toContain("gh issue list --state all");
     expect(reconcile?.run).toContain("gh issue reopen");
     expect(reconcile?.run).toContain("gh issue close");
+    expect(reconcile?.run).toContain(".unscannable_targets[]");
+    expect(reconcile?.run).toContain("scanner-unscannable");
+    expect(reconcile?.run).toContain("protected `add-back`");
+    expect(reconcile?.run).toContain("cooling_target_keys");
+    expect(reconcile?.run).toContain("terminal_target_keys");
+    expect(reconcile?.run).toContain("number,state,body,createdAt,labels");
+    expect(reconcile?.run).toContain("already_terminal");
+    expect(reconcile?.run).toContain(
+      'gh issue edit "$existing" --remove-label scanner-unscannable',
+    );
+    expect(reconcile?.run).toContain(
+      'if [[ "$already_terminal" == "true" ]]; then',
+    );
+    const terminalStart = reconcile?.run.indexOf(
+      "jq -c '.unscannable_targets[]'",
+    );
+    const recoveryStart = reconcile?.run.indexOf(
+      "jq -c '.[] | select(.state == \"OPEN\")",
+    );
+    expect(terminalStart).toBeGreaterThan(-1);
+    expect(recoveryStart).toBeGreaterThan(terminalStart ?? -1);
+    expect(
+      reconcile?.run.slice(terminalStart, recoveryStart),
+    ).not.toContain("gh issue create");
     expect(reconcile?.run).not.toContain(
       'gh issue list --state open --label scanner-operations --search "$repository_id $target in:body"',
     );

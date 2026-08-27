@@ -29,12 +29,12 @@ describe("operational incident identities", () => {
     expect(targetIncidentKey(42, "b".repeat(40))).not.toBe(first);
   });
 
-  test("exports one exact chronic target incident with bounded history", () => {
+  test("exports one exact cooling target incident with bounded history", () => {
     let state = appendQueuedTarget(
       initialOperationsState("2026-08-04T00:00:00.000Z"),
       target,
     );
-    for (let attempt = 0; attempt < 6; attempt += 1)
+    for (let attempt = 0; attempt < 2; attempt += 1)
       state = rotateFailedTarget(state, {
         target,
         failure: {
@@ -51,14 +51,48 @@ describe("operational incident identities", () => {
         target_incident_key: targetIncidentKey(42, target.target_sha),
         repository_id: 42,
         target_sha: target.target_sha,
-        consecutive_failures: 6,
+        consecutive_failures: 2,
         failure_history: [
-          { failure: { diagnostic: "parser_syntax" } },
-          { failure: { diagnostic: "rule_timeout" } },
           { failure: { diagnostic: "parser_syntax" } },
           { failure: { diagnostic: "rule_timeout" } },
         ],
       },
+    ]);
+  });
+
+  test("exports a terminal target separately from cooling work", () => {
+    let state = appendQueuedTarget(
+      initialOperationsState("2026-08-04T00:00:00.000Z"),
+      target,
+    );
+    for (const [attempt, failedAt] of [
+      "2026-08-04T01:00:00.000Z",
+      "2026-08-04T02:00:00.000Z",
+      "2026-08-11T02:00:00.000Z",
+    ].entries())
+      state = rotateFailedTarget(state, {
+        target,
+        failure: {
+          code: "SCANNER_FAILED",
+          domain: "target",
+          component: "opengrep",
+          diagnostic: attempt % 2 === 0 ? "parser_syntax" : "rule_timeout",
+        },
+        at: failedAt,
+      }).state;
+
+    const incidents = operationalIncidents(state);
+
+    expect(incidents.chronic_failures).toEqual([]);
+    expect(incidents.unscannable_targets).toEqual([
+      expect.objectContaining({
+        target_incident_key: targetIncidentKey(42, target.target_sha),
+        repository_id: 42,
+        repository: target.repository,
+        target_sha: target.target_sha,
+        consecutive_failures: 3,
+        unscannable_at: "2026-08-11T02:00:00.000Z",
+      }),
     ]);
   });
 
