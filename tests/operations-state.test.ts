@@ -41,8 +41,7 @@ function failedEntry(repositoryId: number, failures: number) {
     ...entry(repositoryId, repositoryId),
     consecutive_failures: failures,
     total_failures: failures,
-    not_before:
-      failures === 1 ? null : "2026-08-11T00:02:00.000Z",
+    not_before: failures === 1 ? null : "2026-08-11T00:02:00.000Z",
     last_failure: targetFailure,
     last_failed_at: failedAt,
     chronic: failures >= 2,
@@ -190,9 +189,7 @@ describe("secret-free operations state V3", () => {
     };
 
     expect(
-      serialized.unscannable_targets.map(
-        ({ repository_id }) => repository_id,
-      ),
+      serialized.unscannable_targets.map(({ repository_id }) => repository_id),
     ).toEqual([42, 43]);
   });
 

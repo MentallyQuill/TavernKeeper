@@ -171,10 +171,7 @@ describe("automatic scan recovery", () => {
       nextRetries.push(result.entry.not_before);
     }
 
-    expect(nextRetries).toEqual([
-      null,
-      "2026-08-11T01:00:00.000Z",
-    ]);
+    expect(nextRetries).toEqual([null, "2026-08-11T01:00:00.000Z"]);
   });
 
   test("due retries follow ticket order and honor only explicit staff stop", () => {

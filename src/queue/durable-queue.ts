@@ -271,9 +271,7 @@ export function rotateFailedTarget(
     source_id: target.source_id,
     repository: target.repository,
     ticket:
-      consecutiveFailures >= 3
-        ? current.ticket
-        : state.scan_queue.next_ticket,
+      consecutiveFailures >= 3 ? current.ticket : state.scan_queue.next_ticket,
     consecutive_failures: consecutiveFailures,
     total_failures: current.total_failures + 1,
     not_before:

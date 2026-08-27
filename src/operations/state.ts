@@ -424,8 +424,7 @@ export const OperationsStateSchema = z
       ({ repository_id }) => repository_id,
     );
     if (
-      new Set(unscannableRepositoryIds).size !==
-      unscannableRepositoryIds.length
+      new Set(unscannableRepositoryIds).size !== unscannableRepositoryIds.length
     )
       context.addIssue({
         code: "custom",

@@ -32,10 +32,7 @@ export interface QueueSyncSummary {
 function normalizeRetryPolicyEntries(state: OperationsState, at: string) {
   let retryPolicyNormalized = 0;
   const retryEntries = state.scan_queue.entries.map((entry) => {
-    if (
-      entry.consecutive_failures < 1 ||
-      entry.consecutive_failures > 2
-    )
+    if (entry.consecutive_failures < 1 || entry.consecutive_failures > 2)
       return entry;
     const notBefore = targetRetryNotBefore(
       entry.last_failed_at!,
@@ -374,15 +371,10 @@ export function reconcileCurrentScanQueue(input: {
     ]),
   );
   const unscannableRepositoryIds = new Set(
-    campaignState.unscannable_targets.map(
-      ({ repository_id }) => repository_id,
-    ),
+    campaignState.unscannable_targets.map(({ repository_id }) => repository_id),
   );
   const eligibleTargets = manifest.repositories
-    .filter(
-      ({ repository_id }) =>
-        !unscannableRepositoryIds.has(repository_id),
-    )
+    .filter(({ repository_id }) => !unscannableRepositoryIds.has(repository_id))
     .filter((target) => {
       const entry = existingEntryByRepositoryId.get(target.repository_id);
       const report = preferredReportByRepositoryId.get(target.repository_id);

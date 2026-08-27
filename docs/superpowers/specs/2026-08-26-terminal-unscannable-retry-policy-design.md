@@ -66,11 +66,11 @@ another scan solely because the old policy permitted unlimited retries.
 
 Target failure transitions are deterministic:
 
-| Consecutive failure | Queue result | Incident state |
-| --- | --- | --- |
-| 1 | Move to queue tail with `not_before: null` | No chronic incident |
-| 2 | Move to queue tail with `not_before` seven days later | Cooling down |
-| 3 | Remove from queue and active scans; write tombstone | Unscannable |
+| Consecutive failure | Queue result                                          | Incident state      |
+| ------------------- | ----------------------------------------------------- | ------------------- |
+| 1                   | Move to queue tail with `not_before: null`            | No chronic incident |
+| 2                   | Move to queue tail with `not_before` seven days later | Cooling down        |
+| 3                   | Remove from queue and active scans; write tombstone   | Unscannable         |
 
 Successful publication removes the queue entry as it does today. A successful
 scan after the cooldown therefore ends the failure episode without creating a

@@ -656,13 +656,13 @@ describe("GitHub workflow security policy", () => {
       "jq -c '.unscannable_targets[]'",
     );
     const recoveryStart = reconcile?.run.indexOf(
-      "jq -c '.[] | select(.state == \"OPEN\")",
+      'jq -c \'.[] | select(.state == "OPEN")',
     );
     expect(terminalStart).toBeGreaterThan(-1);
     expect(recoveryStart).toBeGreaterThan(terminalStart ?? -1);
-    expect(
-      reconcile?.run.slice(terminalStart, recoveryStart),
-    ).not.toContain("gh issue create");
+    expect(reconcile?.run.slice(terminalStart, recoveryStart)).not.toContain(
+      "gh issue create",
+    );
     expect(reconcile?.run).not.toContain(
       'gh issue list --state open --label scanner-operations --search "$repository_id $target in:body"',
     );

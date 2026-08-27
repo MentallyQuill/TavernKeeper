@@ -26,10 +26,12 @@
 ### Task 1: Canonical Unscannable State
 
 **Files:**
+
 - Modify: `src/operations/state.ts`
 - Modify: `tests/operations-state.test.ts`
 
 **Interfaces:**
+
 - Produces: `UnscannableTargetSchema`, `UnscannableTarget`, and `OperationsState.unscannable_targets`.
 - Produces: compatibility behavior in `parseOperationsState(value)` for schema-version-3 state written before this policy.
 - Consumes: `ScanFailureHistoryEntrySchema`, `FailureDescriptorSchema`, and the existing source/repository/SHA validation.
@@ -151,6 +153,7 @@ git commit -m "feat: track unscannable scan targets"
 ### Task 2: Bounded Target-Failure Transitions
 
 **Files:**
+
 - Modify: `src/operations/retry-schedule.ts`
 - Modify: `src/queue/durable-queue.ts`
 - Modify: `src/operations/retry.ts`
@@ -158,6 +161,7 @@ git commit -m "feat: track unscannable scan targets"
 - Modify: `tests/retry.test.ts`
 
 **Interfaces:**
+
 - Consumes: `OperationsState.unscannable_targets` and `UnscannableTarget` from Task 1.
 - Produces: `targetRetryNotBefore(failedAt, consecutiveFailures): string | null`.
 - Produces: `rotateFailedTarget(...)` result with `terminal`, `entry`, and optional `unscannable` evidence.
@@ -257,6 +261,7 @@ git commit -m "feat: bound target scan retries"
 ### Task 3: Reconciliation, SHA Churn, and Legacy Drain
 
 **Files:**
+
 - Modify: `src/queue/reconcile.ts`
 - Modify: `src/queue/durable-queue.ts`
 - Modify: `src/cli/targeted-scan.ts`
@@ -264,6 +269,7 @@ git commit -m "feat: bound target scan retries"
 - Modify: `tests/cli.test.ts`
 
 **Interfaces:**
+
 - Consumes: terminal tombstones and the queue transition state from Tasks 1 and 2.
 - Produces: `normalizeTerminalQueueEntries(state, at)` inside queue reconciliation.
 - Produces: SHA replacement that preserves the full consecutive failure episode.
@@ -325,8 +331,16 @@ const eligibleTargets = manifest.repositories
     const entry = existingEntryByRepositoryId.get(target.repository_id);
     const report = preferredReportByRepositoryId.get(target.repository_id);
     return (
-      hasActivePolicyCampaign(target, campaignState, input.scannerPolicyVersion) ||
-      hasActiveCoverageCampaign(target, campaignState, input.scannerPolicyVersion) ||
+      hasActivePolicyCampaign(
+        target,
+        campaignState,
+        input.scannerPolicyVersion,
+      ) ||
+      hasActiveCoverageCampaign(
+        target,
+        campaignState,
+        input.scannerPolicyVersion,
+      ) ||
       (observationInitialized && entry?.staff_requested === true) ||
       entry?.catalog_change !== undefined ||
       detectedCatalogChange.has(target.repository_id) ||
@@ -374,6 +388,7 @@ git commit -m "feat: drain terminal scan failures"
 ### Task 4: Protected Manual Add-Back
 
 **Files:**
+
 - Modify: `src/queue/durable-queue.ts`
 - Modify: `src/cli/retry.ts`
 - Modify: `.github/workflows/staff-operations.yml`
@@ -382,6 +397,7 @@ git commit -m "feat: drain terminal scan failures"
 - Modify: `tests/workflows.test.ts`
 
 **Interfaces:**
+
 - Produces: `addBackUnscannableTarget(state, repositoryId): OperationsState`.
 - Produces: retry CLI input `{ operation: "add-back", repository_id: number }`.
 - Consumes: protected `tavernkeeper-staff` environment and ordinary reconciliation dispatch.
@@ -395,16 +411,22 @@ test("add-back removes exactly one tombstone and updates state time", () => {
     { operation: "add-back", repository_id: 42 },
     now,
   );
-  expect(next.unscannable_targets.map(({ repository_id }) => repository_id)).toEqual([43]);
+  expect(
+    next.unscannable_targets.map(({ repository_id }) => repository_id),
+  ).toEqual([43]);
   expect(next.updated_at).toBe(now);
 });
 
 test("add-back rejects a repository that is not unscannable", () => {
   expect(() =>
-    applyRetryOperation(initialOperationsState(now), {
-      operation: "add-back",
-      repository_id: 42,
-    }, now),
+    applyRetryOperation(
+      initialOperationsState(now),
+      {
+        operation: "add-back",
+        repository_id: 42,
+      },
+      now,
+    ),
   ).toThrow(/not unscannable/iu);
 });
 ```
@@ -447,12 +469,14 @@ git commit -m "feat: add protected scan add-back"
 ### Task 5: Cooling and Terminal Incident Reconciliation
 
 **Files:**
+
 - Modify: `src/cli/exhausted.ts`
 - Modify: `.github/workflows/scan-and-publish.yml`
 - Modify: `tests/incidents.test.ts`
 - Modify: `tests/workflows.test.ts`
 
 **Interfaces:**
+
 - Produces: `operationalIncidents(...).chronic_failures` for queued cooling targets at failure two.
 - Produces: `operationalIncidents(...).unscannable_targets` with stable target incident keys.
 - Consumes: exact target incident keys and the existing `scanner-operations` issue inventory.
@@ -511,9 +535,11 @@ git commit -m "feat: close terminal scan incidents"
 ### Task 6: Integrated Verification and Pull Request Delivery
 
 **Files:**
+
 - No repository changes are expected; any scoped correction repeats its owning task's focused RED/GREEN cycle before this gate is rerun.
 
 **Interfaces:**
+
 - Consumes: all prior tasks.
 - Produces: a green PR #222, merged to `main`, plus live reconciliation evidence.
 
