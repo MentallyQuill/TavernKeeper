@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ZDOSt/Story-Engine at commit 4d0d798.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ZDOSt/Story-Engine</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ZDOSt/Story-Engine" rel="noopener noreferrer">ZDOSt/Story-Engine</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ZDOSt/Story-Engine/commit/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5" rel="noopener noreferrer">4d0d798</a></span>
+        <span>Reviewed <time datetime="2026-09-02T20:53:14.174Z">Sep 2, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>22 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/character-sheet-validation.js#L108" rel="noopener noreferrer">character-sheet-validation.js:108</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/pre-flight.js#L1235" rel="noopener noreferrer">pre-flight.js:1235</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/scene-item-state.js#L443" rel="noopener noreferrer">scene-item-state.js:443</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/deterministic-runner.js#L852" rel="noopener noreferrer">deterministic-runner.js:852</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/index.js#L3804" rel="noopener noreferrer">index.js:3804</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/narration-sanitizer.js#L67" rel="noopener noreferrer">narration-sanitizer.js:67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/prose-guard-edits.js#L294" rel="noopener noreferrer">prose-guard-edits.js:294</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/character-sheet-generation.js#L183" rel="noopener noreferrer">character-sheet-generation.js:183</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/semantic-extractor.js#L425" rel="noopener noreferrer">semantic-extractor.js:425</a></dd>
+      </dl>
+    </details>
+  </article>
+    
+    <details class="expected">
+      <summary>Contextual expected matches (12)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>An automated scanner thought a text-matching rule in the project&#39;s own test tool might hang on crafted input. The rule is actually simple and finishes quickly, it only ever processes the project&#39;s own test data, and this tool runs only when a developer runs it locally, not when the extension is used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged pattern-match expression resolves dotted report paths against a ledger object inside a standalone golden-output evaluation script. Examining the expression itself, it consists of a literal prefix, one negated character class, and a single greedy wildcard segment; there are no nested quantifiers or interleaved alternations that could produce exponential backtracking, so the scanner heuristic does not correspond to a real catastrophic-backtracking condition. The matched input originates from the project&#39;s own committed fixture rules rather than attacker-controlled data, and the file executes only as a local command-line evaluation harness, not in the SillyTavern extension runtime.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/semantic-golden-evaluator.mjs#L44" rel="noopener noreferrer">semantic-golden-evaluator.mjs:44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A scanner flagged code that writes code at runtime. In this test file, the tests take the extension&#39;s own code from the repository and wrap pieces of it in small throwaway functions so they can be exercised outside the browser. Nothing a user or outsider provides ever flows into this process, and this file only runs when a developer runs the test suite locally, never when the extension is installed and used.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged dynamic function construction appears in a Node-based behavior test harness, not in the script the extension manifest loads at runtime. The test reads the extension&#39;s committed entry script from disk, slices out pure widget size and position clamping helpers, compiles them into isolated testable units, and invokes them with synthetic viewport dimensions. The only content ever compiled is the project&#39;s own already-executable source; no chat text, network data, saved configuration, or other untrusted input reaches the constructor. An adversary able to alter that committed source would already possess arbitrary code execution in the project, so this construction introduces no new execution path, destination, or persistence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L11983-L11989" rel="noopener noreferrer">test-behavior.mjs:11983-11989</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is part of the developer&#39;s own testing script. It copies a few math-only layout functions out of the extension&#39;s main file and runs them with fake screen sizes to check that on-screen panels position and resize correctly. The only code it ever runs is the project&#39;s own, already-public source; nothing from users, chats, or the internet is executed. This is a normal way to test a hobby project, not a hidden or dangerous behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22661-L22676" rel="noopener noreferrer">test-behavior.mjs:22661-22676</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same testing pattern flagged again: the tests pull one of the extension&#39;s own helper functions out of its source file and run it against made-up settings values to confirm it fixes bad data. It only ever uses the project&#39;s own code and only runs during local development testing.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This flagged dynamic function construction sits in the same local test harness and compiles the project&#39;s own settings-migration helper extracted from the committed entry script, then calls it with synthetic malformed settings objects to verify defaults are repaired. The compiled content is entirely repository-authored source, the invocation is developer-initiated test execution, and no untrusted or user-controlled data reaches the constructor. There is no network retrieval, obfuscation, or runtime path from the SillyTavern extension into this code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L11973-L11982" rel="noopener noreferrer">test-behavior.mjs:11973-11982</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>One more instance of the same test technique: a formatting helper from the extension&#39;s own code is wrapped in a temporary function and checked with a simple stand-in routine. Only the project&#39;s own code is involved, and only when a developer runs the tests.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This third flagged construction follows the identical pattern in the same test harness: an item display-name formatter extracted from the project&#39;s committed entry script is compiled for isolated testing and invoked with a developer-supplied stub sanitizer. The sole input to the dynamic construction is the repository&#39;s own source text, execution occurs only when the developer runs the test suite, and the extension manifest never loads this file. No attacker-influenced data flow, concealed execution, or additional capability is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L11990-L11993" rel="noopener noreferrer">test-behavior.mjs:11990-11993</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw text that resembles an API key, but it is a deliberately made-up sample used by a test that verifies the program hides secret-looking text from error messages. It is not a real key, and nothing sensitive is exposed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line is a synthetic fixture inside the self-test harness. It fabricates an error message containing placeholder credential-shaped strings and a reserved example-invalid endpoint, then asserts that the diagnostic formatter redacts all of them before anything is displayed or logged. The strings are invented markers with no connection to any real account or service; the test exists specifically to prove credential-like text is scrubbed from diagnostics. No current or usable secret is present, and the fixture never leaves the test run.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L18591" rel="noopener noreferrer">test-behavior.mjs:18591</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test that lifts one function out of the project&#39;s own code and runs it by itself with fake inputs, to check that obsolete settings get cleaned up correctly. The security scanner flags the technique used to run the code, but the only code being run is the project&#39;s own, so there is no way for an outsider to sneak anything in through it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged dynamic construction sits inside the project&#39;s self-test harness. That harness reads the project&#39;s own committed main script from disk, extracts a single settings-migration function by index boundaries, compiles it with the Function constructor, and invokes it with locally defined mock arguments to verify retired settings are removed and the save routine runs exactly once. The executed text originates solely from the repository&#39;s own source file; no user chat content, remote data, or environment input flows into the executed string. The dynamic compilation runs only when the test harness is invoked, not during normal extension generation, and the extension manifest loads only the main script.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L17781-L17793" rel="noopener noreferrer">test-behavior.mjs:17781-17793</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The project&#39;s self-check test pulls one of its own helper functions out of its main script and runs it in isolation with stand-in values to confirm the widget placement math is correct. Only the project&#39;s own code is executed, nothing from users, chats, or the internet. This is a harmless testing technique.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched construct builds a function at runtime inside the project&#39;s behavior test suite. The test reads the extension&#39;s own entry script from disk, extracts the widget layout calculator by name, and evaluates that excerpt with numeric constants, simple stub helper closures, a stubbed viewport object, and panel preference values in order to assert layout math. The only input to the dynamically evaluated code is the project&#39;s own committed first-party source plus literals defined in the test itself. There is no path from chat content, model output, network data, user input, or credentials into the evaluated code, no network access, no persistence, and no obfuscation. The extension manifest declares only the entry script for loading, so this file has no role in the SillyTavern runtime. The scanner matched the dynamic-execution capability; capability alone is not evidence of danger, and here it is a test-harness technique with no untrusted data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22513-L22528" rel="noopener noreferrer">test-behavior.mjs:22513-22528</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The project&#39;s test file takes one of its own lookup functions and runs it with simple fake data to verify it finds the right entry. Nothing from outside the project is executed, so there is no safety concern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched construct builds a function at runtime inside the behavior test suite. The test extracts the latest handoff-entry lookup from the extension&#39;s own entry script and evaluates that excerpt with two small stub predicates that operate on plain in-test message objects. The evaluated code is first-party committed source only; no chat content, model output, network data, credentials, or other untrusted input reaches it, and no network, persistence, or obfuscation is involved. The file is a test harness and is not referenced by the extension manifest&#39;s loading entry point, so it does not execute in the SillyTavern runtime. The scanner flag reflects the dynamic-execution pattern, not a demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22505-L22509" rel="noopener noreferrer">test-behavior.mjs:22505-22509</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The project&#39;s test file runs one of its own number-checking helpers with a few sample numbers to confirm the size limits work. Only the project&#39;s own code runs, so this is harmless.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched construct builds a function at runtime inside the behavior test suite. The test extracts the saved-dimension normalizer from the extension&#39;s own entry script, evaluates it with no injected dependencies, and asserts expected clamping results using literal numeric arguments. The evaluated code is exclusively first-party committed source; there is no untrusted input path, network access, credential handling, persistence, or obfuscation. The construct lives in a standalone test file that the extension manifest does not load. The dynamic-execution match reflects a test technique, not a demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22488-L22493" rel="noopener noreferrer">test-behavior.mjs:22488-22493</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The project&#39;s test file runs one of its own settings-upgrade functions with fixed sample values to make sure saved preferences convert correctly. Nothing outside the project&#39;s own code is executed, so there is no risk to users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched construct builds a function at runtime inside the behavior test suite. The test extracts the settings migration routine from the extension&#39;s own entry script and evaluates that excerpt with the previously built normalizer, literal version and size constants, a panel preference map, and a trivial coordinate stub, so the migration logic can be exercised against known inputs. The evaluated code derives entirely from the project&#39;s own committed source and test literals; no user, chat, model, or network data flows into it, and no credentials, persistence, network calls, or obfuscation are present. The test file is not part of the runtime entry point declared by the extension manifest. The scanner match identifies the dynamic-execution pattern, not a concrete exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22496-L22504" rel="noopener noreferrer">test-behavior.mjs:22496-22504</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The project&#39;s test file takes one of its own small setting-checking functions and runs it with sample values to confirm invalid settings fall back correctly. Only the project&#39;s own code runs, so this is not a threat.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched construct builds a function at runtime inside the behavior test suite. The test reads the extension&#39;s own entry script from disk, extracts the display-mode normalizer by name, and evaluates that excerpt with a stubbed constants object representing the two supported display modes. The executed code is first-party committed source only; the surrounding assertions verify mode normalization with literal arguments. No chat content, model output, network data, credentials, or user-controlled input reaches the evaluated code, and there is no network access, persistence, or obfuscation. The file is a standalone test harness that the extension manifest does not load into the SillyTavern runtime. The dynamic-execution flag reflects the mechanism, not demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22484-L22487" rel="noopener noreferrer">test-behavior.mjs:22484-22487</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>All five dynamic-execution matches are one test-harness extraction pattern over first-party source</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>All five flags point at the same thing: a self-test that lifts small pieces of the project&#39;s own code and runs them with fake values to check they work. Nothing from users, chats, or the internet is ever executed, so this is not a danger.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All five candidates sit inside a single behavior test case. The test reads the extension&#39;s own entry script from the repository, slices out several named pure helper functions covering display-mode normalization, dimension clamping, settings migration, latest-entry lookup, and widget layout, then constructs functions at runtime from those excerpts with stubbed dependencies so their logic can be asserted in isolation under Node. The evaluated text originates exclusively from the project&#39;s own committed source; no chat content, model output, network data, user input, or credentials flow into it, and there is no network access, persistence, or obfuscation. The extension manifest declares only the main entry script for loading, so this test file does not execute in the SillyTavern runtime. The scanner flags the runtime code-construction mechanism, which here is a deliberate and contained testing technique rather than a demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Review the cited evidence and confirm the intended behavior.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22484-L22487" rel="noopener noreferrer">test-behavior.mjs:22484-22487</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22488-L22493" rel="noopener noreferrer">test-behavior.mjs:22488-22493</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22496-L22504" rel="noopener noreferrer">test-behavior.mjs:22496-22504</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22505-L22509" rel="noopener noreferrer">test-behavior.mjs:22505-22509</a></li><li><a href="https://github.com/ZDOSt/Story-Engine/blob/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5/test-behavior.mjs#L22513-L22528" rel="noopener noreferrer">test-behavior.mjs:22513-22528</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>32 files &middot; 3590352 bytes</dd>
+      <dt>Contextual coverage</dt><dd>21 of 21 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>26 files &middot; 3565740 bytes</dd>
+        <dt>X-Ray review families</dt><dd>43 warning occurrences compacted to 10 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>26 raw &middot; 40 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>26 raw signatures &middot; 26 raw AST &middot; 25 raw OpenGrep &middot; 40 derived signatures &middot; 0 derived AST &middot; 39 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>deterministic-runner.js</code> &mdash; derived-ast / parse</li><li><code>deterministic-runner.js</code> &mdash; normalize / parse</li><li><code>index.js</code> &mdash; derived-opengrep / parse</li><li><code>index.js</code> &mdash; raw-opengrep / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ZDOSt/Story-Engine/commit/4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5" rel="noopener noreferrer">4d0d798f1ac3e6b44ee2f3cefc615d9cfa3d41c5</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-02T20:53:14.174Z">Sep 2, 2026</time></dd>
+        <dt>History depth</dt><dd>10 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 12 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>9 deterministic / 12 contextual candidates &middot; 6 contextual / 15 total behavior cases</dd>
+        <dt>Model budget</dt><dd>4 model calls &middot; 6 / 12 fresh cases &middot; 141898 / 200000 estimated input &middot; 100038 / 250000 actual input &middot; 15203 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>4 model calls &middot; up to 2 groups and 5 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>100038 input &middot; 15203 output &middot; 4032 cache read &middot; 7935 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>3fa843757014fa47041108a2ec25624bf14ee203a9773e560963f36c1857f30c</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1225640741/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
