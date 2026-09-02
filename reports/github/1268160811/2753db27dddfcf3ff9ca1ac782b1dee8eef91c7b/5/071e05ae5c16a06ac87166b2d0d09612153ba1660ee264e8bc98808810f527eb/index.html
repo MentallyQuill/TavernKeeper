@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for enclavum/otaku at commit 2753db2.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; enclavum/otaku</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/enclavum/otaku" rel="noopener noreferrer">enclavum/otaku</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/enclavum/otaku/commit/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b" rel="noopener noreferrer">2753db2</a></span>
+        <span>Reviewed <time datetime="2026-09-02T12:28:37.178Z">Sep 2, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>13 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    
+    <details class="expected">
+      <summary>Contextual expected matches (11)</summary>
+      <article class="finding risk-low">
+    <h3>malcontent reported evasion-bypass_security-executionpolicy_bypass</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw wording about bypassing a Windows safety check, but it is only advice printed for Windows users explaining how to run this project&#39;s official Windows installer. Nothing in this script runs PowerShell or disables any protection.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule evasion-bypass_security-executionpolicy_bypass. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged capability string appears only inside a fatal-error message that the script prints when it detects an unsupported Windows-like environment. That message tells the user how to run the project&#39;s separate Windows installer in PowerShell, and the suggested flag is the standard per-process convention for invoking an unsigned install script. The script itself never invokes PowerShell, never changes any execution policy, and never executes the suggested command; it merely prints instructions the user may choose to follow. No security control on the host is bypassed by this script.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>evasion-bypass_security-executionpolicy_bypass</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh" rel="noopener noreferrer">install.sh</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>malcontent reported c2-tool_transfer-exe_url</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged web address belongs to this project&#39;s own website and points to its Windows installer. It only appears in a help message, and nothing downloads it automatically.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> malcontent matched behavioral-analysis rule c2-tool_transfer-exe_url. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched endpoint is the project&#39;s own Windows installer address, referenced only in the same diagnostic message and corroborated by the project documentation, which advertises the Windows one-liner. This script does not download or execute that endpoint; it is fetched only if the user deliberately runs the suggested command on Windows. Destination, stated purpose, and disclosure align, and no staging, covert channel, or command-and-control behavior is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>malcontent 1.25.7</dd>
+        <dt>Rule</dt><dd>c2-tool_transfer-exe_url</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh" rel="noopener noreferrer">install.sh</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The demo&#39;s fake backend keeps a list of where real AI services would live — local programs on your own machine and two well-known cloud services the app says it supports. It only shows these addresses to the user; it never contacts them. This matches exactly what the project advertises.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged five literal URL strings in the demo&#39;s provider catalog. The flagged lines are static endpoint addresses for local inference engines (loopback hosts with fixed ports) and the two cloud model services the project&#39;s README explicitly names as supported providers. These strings are returned as data describing engine entries to the demo UI; no network request is initiated by this file, no credentials are attached (every entry reports no key), and the destinations match the project&#39;s stated purpose exactly. The localhost URLs use plain HTTP, but that is normal for local engine endpoints and nothing in this file connects to them. This is a keyword-level match with no dangerous data flow behind it.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/demo/web/store.js#L183" rel="noopener noreferrer">demo/web/store.js:183</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged pattern is the familiar download-and-run one-liner that this project openly advertises as its install method. The script itself actually takes a safer approach than the flagged pattern: it downloads its helper installer to a file, checks that the file is not empty, and only then runs it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched pipeline is the project&#39;s documented one-line install command, shown in a comment at the top of the file and repeated in the README; it is how the user obtains and runs this very script, not code the script executes. Internally the script is more conservative than the flagged pattern: the dependency installer is downloaded to a temporary file, verified to be non-empty, and only then executed, with an explicit comment noting that piping a download straight into a shell was avoided. The behavior matches the stated one-command installation purpose, is disclosed to users, and has no attacker-controlled trigger beyond the user&#39;s own decision to run the advertised command.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optionally publish a checksum of the installer so users can verify what they pipe to the shell before running it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L4-L5" rel="noopener noreferrer">install.sh:4-5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a help message, not code. When the Windows installer detects it is running on Mac or Linux, it prints a suggestion telling the user how to run the other installer. Nothing is downloaded or executed at this spot.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match sits inside a here-string passed to the script&#39;s own error-reporting function. The text is advice printed to a user who ran the Windows installer on a non-Windows platform; the script does not execute the pipeline it quotes. There is no invocation of a download command, no pipe to a shell, and no execution path at this location — the literal text merely suggests the project&#39;s documented macOS/Linux one-line install. The full-file expansion confirms this script itself installs via a package-manager tool from a fixed HTTPS URL, writes only inside the user profile, and does not invoke piped shell execution anywhere.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.ps1#L228-L229" rel="noopener noreferrer">install.ps1:228-229</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is simply the project&#39;s instructions for installing its app with a single command, the same common style used by many popular developer tools. The command downloads the project&#39;s own installer from its official website and runs it, the page explains what the installer does, and other ways to install are listed. Nothing in the evidence suggests anything hidden or harmful; the only caveat is the ordinary one that any one-command installer asks you to trust the project&#39;s website.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a shell download-and-execute pipeline pattern, but the matched text is installation documentation, not shipped executable code. The documented one-command installer for macOS and Linux fetches the project&#39;s install script from the project&#39;s own website and pipes it into the shell. This is a standard, widely used installation idiom, fully visible to the user before they choose to run it, and proportionate to the project&#39;s stated purpose of one-command installation. The documentation additionally discloses what the installer does (installs a package manager if absent, then installs the tool) and offers alternative installation channels. The evidence shows no third-party or concealed destination, no obfuscation, and no attacker-controlled trigger or untrusted-input path; the installer script&#39;s own contents were not supplied, so no harmful behavior is demonstrated. The residual consideration is the generic supply-chain trust decision inherent to any remote-installer pattern, not a project-specific flaw, and it does not constitute demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/README.md#L66-L67" rel="noopener noreferrer">README.md:66-67</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The installer adds one clearly labeled line to your shell settings so the newly installed command can be found in new terminals. This is the normal, announced step that virtually every command-line installer takes, and it affects only your own user account.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched line only selects which zsh configuration file will receive a PATH export. The subsequent append adds a single, labeled, idempotent line that places the tool&#39;s own binary directory on the user&#39;s PATH, guarded by a duplicate check so it is not added twice. The write is confined to the user&#39;s home directory, is announced in the script&#39;s output, and matches the stated purpose of installing a command-line tool. This is user-level PATH setup, not covert startup execution: nothing beyond a directory lookup runs at shell start, and no system-wide or hidden persistence mechanism is created.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L244" rel="noopener noreferrer">install.sh:244</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line just picks the correct settings file for bash users and adds the same single, clearly marked path setting described above, labeled as added by this installer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L251" rel="noopener noreferrer">install.sh:251</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Again, this is printed advice rather than an action. If the install fails on certain ARM-based Windows machines, the script shows the user alternative ways to install, including a suggested command they could type themselves under a Linux environment. The script does not download or execute anything here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched lines are inside a quoted error message emitted when an installation fails on an ARM64 Windows machine. The script prints fallback advice, including the project&#39;s documented one-line install for use under a Linux subsystem, but does not run it. No download or execution occurs at this location; the surrounding function delegates all installation to an already-present package-manager binary, and the script&#39;s own execution flow never constructs a shell pipeline.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.ps1#L509-L510" rel="noopener noreferrer">install.ps1:509-510</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.python-eval-or-shell</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The app lets you tell it a command of your own that prints your encryption key, and it runs that command when it starts up. It only runs what you yourself wrote in your own settings file, and it only reads the key the command prints. It never takes commands from the internet, from chats, or from imported content. This is like a text editor launching the helper program you configured — a visible, documented feature, not a hidden trick.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.python-eval-or-shell. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged subprocess call is the command-based key provider for the at-rest encryption feature. It executes a single command string that the user authors in their own local configuration file, runs it to read a base64-encoded key-encryption key from standard output, and validates the output length before use. The command value never originates from remote content, story text, or imported data; the code path is selected only by the user&#39;s own configuration and the local keystore file, both of which require local machine control that already implies arbitrary execution. Shell interpretation of the configured string is the documented purpose, enabling password-manager and hardware-token helper integrations. No untrusted data is concatenated into or substituted within the command, output is captured rather than displayed or forwarded, and nothing is sent anywhere. The provider is also purely optional, with three non-command alternatives offered.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.python-eval-or-shell</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/otaku/encryption/data.py#L243" rel="noopener noreferrer">otaku/encryption/data.py:243</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner mistook a small piece of text used to read the app&#39;s own streamed replies — the same wording browsers use for live updates — for a suspicious link. The code around it only talks to the copy of the app running on your own computer, and nothing is sent anywhere else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is part of a streaming-reply parser for the app&#39;s own web backend. It looks for the standard server-sent-events field marker inside frames the local backend produced; the heuristic likely reacted because that literal resembles a URI scheme. The module contains no external network destination at all: every request is made to a relative same-origin path served by the app on the user&#39;s machine, no credentials or story content are sent off-host, and the parser only splits frames already delivered by that same local connection. No attacker-controlled data reaches a network sink through this code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/otaku/web/static/js/api.js#L215" rel="noopener noreferrer">otaku/web/static/js/api.js:215</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Advertised one-liner and Windows instructions are standard installer practice</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>These scanner flags all come from normal, openly advertised install instructions rather than hidden behavior.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All three candidates trace to the same installer narrative: a documented one-command install, a pointer to the sibling Windows installer, and the PowerShell invocation convention printed for users who land on an unsupported shell type. Each is user-initiated, disclosed in the project documentation, matches the stated one-command installation purpose, and involves no concealed execution, no credential access, and no undisclosed destination. The actual dependency installation deliberately avoids piping a download directly into a shell.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L1" rel="noopener noreferrer">install.sh:1</a></li><li><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L4-L5" rel="noopener noreferrer">install.sh:4-5</a></li></ul>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>PATH persistence is a single labeled, idempotent shell-configuration edit</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The installer makes one small, clearly marked change to your shell settings so its command works in new terminals. Nothing runs in the background because of it, and only your own account is affected.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L244" rel="noopener noreferrer">install.sh:244</a></li><li><a href="https://github.com/enclavum/otaku/blob/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b/install.sh#L251" rel="noopener noreferrer">install.sh:251</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>282 files &middot; 6597783 bytes</dd>
+      <dt>Contextual coverage</dt><dd>11 of 11 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>26 files &middot; 281003 bytes</dd>
+        <dt>X-Ray review families</dt><dd>6 warning occurrences compacted to 2 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>26 raw &middot; 11 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>26 raw signatures &middot; 26 raw AST &middot; 26 raw OpenGrep &middot; 11 derived signatures &middot; 0 derived AST &middot; 11 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/enclavum/otaku/commit/2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b" rel="noopener noreferrer">2753db27dddfcf3ff9ca1ac782b1dee8eef91c7b</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-02T12:28:37.178Z">Sep 2, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>8 fresh / 0 reused groups &middot; 11 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>0 deterministic / 11 contextual candidates &middot; 8 contextual / 8 total behavior cases</dd>
+        <dt>Model budget</dt><dd>4 model calls &middot; 8 / 12 fresh cases &middot; 143321 / 200000 estimated input &middot; 112898 / 250000 actual input &middot; 16038 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>4 model calls &middot; up to 3 groups and 5 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>112898 input &middot; 16038 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>071e05ae5c16a06ac87166b2d0d09612153ba1660ee264e8bc98808810f527eb</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1268160811/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
