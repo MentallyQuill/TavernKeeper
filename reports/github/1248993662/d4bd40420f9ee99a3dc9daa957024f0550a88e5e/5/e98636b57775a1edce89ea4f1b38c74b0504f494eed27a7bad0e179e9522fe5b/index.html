@@ -1,0 +1,786 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for vevan/arousalPub at commit d4bd404.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; vevan/arousalPub</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/vevan/arousalPub" rel="noopener noreferrer">vevan/arousalPub</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/vevan/arousalPub/commit/d4bd40420f9ee99a3dc9daa957024f0550a88e5e" rel="noopener noreferrer">d4bd404</a></span>
+        <span>Reviewed <time datetime="2026-09-02T19:26:02.762Z">Sep 2, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>65 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (55)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>Dependency advisory GHSA-3m5p-2c4r-xxw2:pkg:3295c544e7763c1467b3b71a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/verify-host-build-without-bundled.mjs#L29" rel="noopener noreferrer">scripts/verify-host-build-without-bundled.mjs:29</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches-audit.integration.test.ts#L33" rel="noopener noreferrer">server/test/conversation-branches-audit.integration.test.ts:33</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.short-identifiers</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches.test.ts#L1" rel="noopener noreferrer">server/test/conversation-branches.test.ts:1</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/lance-manifest-migrate.test.ts#L3" rel="noopener noreferrer">server/test/lance-manifest-migrate.test.ts:3</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/ops/backup-data.mjs#L122-L126" rel="noopener noreferrer">scripts/ops/backup-data.mjs:122-126</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-api-settings.test.ts#L13" rel="noopener noreferrer">server/test/conversation-api-settings.test.ts:13</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/vite.config.ts#L11" rel="noopener noreferrer">web/vite.config.ts:11</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/admin/localhost.test.ts#L7" rel="noopener noreferrer">server/test/admin/localhost.test.ts:7</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/scripts/spike-fts-tokenizers.mjs#L7" rel="noopener noreferrer">server/scripts/spike-fts-tokenizers.mjs:7</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches-audit.integration.test.ts#L4" rel="noopener noreferrer">server/test/conversation-branches-audit.integration.test.ts:4</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/ops/backup-data.mjs#L21" rel="noopener noreferrer">scripts/ops/backup-data.mjs:21</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/test/conversation-chat-request-body.test.ts#L7" rel="noopener noreferrer">web/test/conversation-chat-request-body.test.ts:7</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/terminal-link.mjs#L22" rel="noopener noreferrer">scripts/terminal-link.mjs:22</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jqff-g426-hqxp:pkg:9d5a0ee915070fcb3b4f0f49 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches.integration.test.ts#L33" rel="noopener noreferrer">server/test/conversation-branches.integration.test.ts:33</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/run-dev.mjs#L47" rel="noopener noreferrer">scripts/run-dev.mjs:47</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fph4-wmhf-6fwf:pkg:02097b1c123d52488af54cbe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/chunk-chain-index-repair.integration.test.ts#L33" rel="noopener noreferrer">server/test/chunk-chain-index-repair.integration.test.ts:33</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-chunks-unreadable.test.ts#L34" rel="noopener noreferrer">server/test/conversation-chunks-unreadable.test.ts:34</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5jgf-p345-68v8:pkg:0c0b4150b3480deab8a6ef16 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/scripts/spike-fts-tokenizers.mjs#L110" rel="noopener noreferrer">server/scripts/spike-fts-tokenizers.mjs:110</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/run-prod.mjs#L85-L94" rel="noopener noreferrer">scripts/run-prod.mjs:85-94</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/run-dev.mjs#L21" rel="noopener noreferrer">scripts/run-dev.mjs:21</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f65p-4m7j-42xc:pkg:d8eaa1be485d9c348ff3a796 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/scripts/spike-fts-tokenizers.mjs#L51-L55" rel="noopener noreferrer">server/scripts/spike-fts-tokenizers.mjs:51-55</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/build.mjs#L12" rel="noopener noreferrer">scripts/build.mjs:12</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches-delete-memory.integration.test.ts#L32" rel="noopener noreferrer">server/test/conversation-branches-delete-memory.integration.test.ts:32</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/plugin-lorebook-ensure.test.ts#L10" rel="noopener noreferrer">server/test/plugin-lorebook-ensure.test.ts:10</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.short-identifiers</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/test/utils/composer-slash.test.ts#L1" rel="noopener noreferrer">web/test/utils/composer-slash.test.ts:1</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/chunk-chain-index-repair.integration.test.ts#L4" rel="noopener noreferrer">server/test/chunk-chain-index-repair.integration.test.ts:4</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches-delete-memory.integration.test.ts#L30" rel="noopener noreferrer">server/test/conversation-branches-delete-memory.integration.test.ts:30</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/dev-config.mjs#L35" rel="noopener noreferrer">scripts/dev-config.mjs:35</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/scripts/build-analyze.mjs#L8-L12" rel="noopener noreferrer">web/scripts/build-analyze.mjs:8-12</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/sync-all-shared.mjs#L11" rel="noopener noreferrer">scripts/sync-all-shared.mjs:11</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/run-server-test-sandbox.mjs#L13" rel="noopener noreferrer">scripts/run-server-test-sandbox.mjs:13</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/build-meta.mjs#L15-L18" rel="noopener noreferrer">scripts/build-meta.mjs:15-18</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches-delete-memory.integration.test.ts#L4" rel="noopener noreferrer">server/test/conversation-branches-delete-memory.integration.test.ts:4</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches.integration.test.ts#L31" rel="noopener noreferrer">server/test/conversation-branches.integration.test.ts:31</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/run-prod.mjs#L84-L93" rel="noopener noreferrer">scripts/run-prod.mjs:84-93</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-stmt</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/generate-api-error-codes.mjs#L9-L11" rel="noopener noreferrer">scripts/generate-api-error-codes.mjs:9-11</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/regex-rules-file.test.ts#L13" rel="noopener noreferrer">server/test/regex-rules-file.test.ts:13</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/scripts/build-analyze.mjs#L5" rel="noopener noreferrer">web/scripts/build-analyze.mjs:5</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/chunk-chain-index-repair.integration.test.ts#L31" rel="noopener noreferrer">server/test/chunk-chain-index-repair.integration.test.ts:31</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/generate-api-error-codes.mjs#L9-L11" rel="noopener noreferrer">scripts/generate-api-error-codes.mjs:9-11</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches.integration.test.ts#L4" rel="noopener noreferrer">server/test/conversation-branches.integration.test.ts:4</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/plugin-dist.mjs#L85" rel="noopener noreferrer">scripts/plugin-dist.mjs:85</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-api-settings.test.ts#L20" rel="noopener noreferrer">server/test/conversation-api-settings.test.ts:20</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/client-ip.test.ts#L11" rel="noopener noreferrer">server/test/client-ip.test.ts:11</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/watch-plugins.mjs#L129" rel="noopener noreferrer">scripts/watch-plugins.mjs:129</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-chunks-unreadable.test.ts#L32" rel="noopener noreferrer">server/test/conversation-chunks-unreadable.test.ts:32</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-branches-audit.integration.test.ts#L31" rel="noopener noreferrer">server/test/conversation-branches-audit.integration.test.ts:31</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w2qp-rph6-63g4:pkg:df0d988a34d87e958d33fd6d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-command</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/scripts/check-git-eol.mjs#L10-L13" rel="noopener noreferrer">scripts/check-git-eol.mjs:10-13</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/test/conversation-chunks-unreadable.test.ts#L4" rel="noopener noreferrer">server/test/conversation-chunks-unreadable.test.ts:4</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (9)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is just a made-up conversation ID used in a test file. It is a normal test fixture, not a hidden secret or obfuscated code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged literal is a simple test fixture constant CONV_ID set to the string value on line 12. This is an integration test file that creates a temporary conversation index and verifies error handling for missing chunk files. The constant is a hardcoded test identifier, not an encoded secret, credential, or obfuscated payload.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/src/integration/conversation-chunks-unreadable-integration.ts#L12" rel="noopener noreferrer">server/src/integration/conversation-chunks-unreadable-integration.ts:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is a Docker health check that pings the app&#39;s own local health endpoint to see if it is running. It reads the port number from an environment variable and makes a local-only request. No secrets are read or sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/Dockerfile#L47" rel="noopener noreferrer">Dockerfile:47</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The code runs regex operations in a sandboxed environment with a time limit to prevent a malicious or poorly-written regex from freezing the app. The code that runs is fixed by the application, not controllable by users, so this is not a code injection risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The runInNewContext call executes a fixed, static script string that constructs a RegExp from passed parameters and calls text.replace. User-controlled values (pattern, flags, text, replacement) are passed as context data variables, not interpolated into the script string, so there is no arbitrary code injection path. The purpose is to enforce a 250ms timeout on regex execution to prevent ReDoS denial of service, which is a security improvement. While node:vm is not a true security sandbox, it is not being used for isolation here but for its timeout capability, and the executed code is entirely application-controlled.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/src/regex-exec-timeout.ts#L26-L33" rel="noopener noreferrer">server/src/regex-exec-timeout.ts:26-33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The file saves user settings and sends embedding API key information only to the app&#39;s own server, which is the intended design. It deliberately avoids storing raw API keys in the browser. There is no indication of keys being sent to any outside location.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This preferences store manages embedding API configuration and patches it via fetch to the same-origin relative path /api/user-preferences. The persistEmbeddingLocal function explicitly removes any plaintext API key from localStorage and stores only an apiKeyId reference. The buildEmbeddingServerPatch sends a plaintext apiKey to the app&#39;s own backend only when the user has entered a new key and no apiKeyId exists yet, which is the normal key-submission flow. This matches the README&#39;s stated design that keys stay on the server and the browser UI never holds plaintext keys. All network calls are same-origin with no external or dynamic destinations and no obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/src/stores/preferences.ts#L705" rel="noopener noreferrer">web/src/stores/preferences.ts:705</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged patterns are standard parts of common JavaScript libraries (Handlebars template engine and source maps) bundled into this generated file. They are normal parser rules, not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regexes are standard tokenizer rules from the bundled Handlebars lexer and URL-parsing utilities from the source-map library. These are well-known patterns in a generated bundle file. The regexes operate on template and source-map text during normal library operation. No attacker-controlled path to catastrophic backtracking is demonstrated, and the patterns are part of widely used, established dependencies.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/plugins/trace-keeper/dist/web.mjs#L1896" rel="noopener noreferrer">plugins/trace-keeper/dist/web.mjs:1896</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The file manages login tokens and sends them only to the app&#39;s own backend server using standard web requests. This is exactly what an authentication module is supposed to do. There is no sign of tokens being sent anywhere unexpected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> This is a Pinia auth store that reads auth tokens from localStorage and sends them via fetch to same-origin relative API paths (/api/auth/status, /api/auth/refresh, /api/auth/me, /api/auth/login, /api/auth/setup, /api/auth/register, /api/auth/logout, /api/auth/device-default). The token is used as a Bearer header and the refreshToken is sent in a POST body, both to the application&#39;s own backend. There is no fetch to any external or third-party destination, no dynamic URL construction, and no obfuscation. The co-location of credential storage and network calls is inherent to any frontend auth store and matches the project&#39;s stated authentication purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/web/src/stores/auth.ts#L127" rel="noopener noreferrer">web/src/stores/auth.ts:127</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is from well-known libraries and actually protects against prototype pollution rather than causing it. The references to __proto__ are part of built-in safety checks, not vulnerabilities.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner&#39;s prototype-pollution signal was triggered by references to __proto__ in bundled third-party code. The first occurrence is Handlebars&#39; proto-access control module, which explicitly sets propertyWhiteList[&#39;__proto__&#39;] = false on an object created via Object.create(null) to block prototype-chain access during template rendering. The second occurrence is the source-map library&#39;s supportsNullProto feature detection, also using Object.create(null). Both are defensive patterns that mitigate or detect prototype access, not pollution sinks. No attacker-controlled data flows into these assignments.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/plugins/trace-keeper/dist/web.mjs#L589" rel="noopener noreferrer">plugins/trace-keeper/dist/web.mjs:589</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The build script checks an environment variable to decide whether to run tests after building. This is normal build-tool behavior and does not read or transmit any secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The JS-X-Ray serialize-environment signal was triggered by process.env access at line 41. The code checks process.env.PLUGIN_WATCH to decide whether to skip running tests after an esbuild bundle step. This is a build-time script, not shipped runtime code. It reads a single build-configuration flag with no credential or sensitive value, and there is no network transmission or persistence of environment data.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/plugins/trace-keeper/build.mjs#L41" rel="noopener noreferrer">plugins/trace-keeper/build.mjs:41</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code reads a single setting from the environment to know which plugin to load. This is normal configuration, not credential theft. The file actually strengthens security by blocking direct network access from plugins.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line reads a single environment variable PLUGIN_WORKER_ENTRY_PATH to determine which plugin module to load in the sandboxed worker subprocess. This is a configuration mechanism set by the host process, not serialization or exfiltration of environment variables. The file also implements security hardening: it denies raw network access by replacing fetch and WebSocket, routes all API calls through IPC to the host, and supports Node permission-based filesystem restrictions. Reading one configuration variable for plugin entry path discovery is proportional and expected for a plugin sandbox bootstrap.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/server/src/plugin-system/plugin-worker-bootstrap.mjs#L105" rel="noopener noreferrer">server/src/plugin-system/plugin-worker-bootstrap.mjs:105</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Bundled Handlebars lexer rules and source-map utilities</h3>
+    <p><strong>low risk</strong> &middot; medium confidence</p>
+    <p>These regexes come from popular third-party libraries included in the bundle. They look complex because parser generators produce them automatically, but they are standard and expected.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The lexer.rules array and URL regex constants originate from the Handlebars parser generator output and the source-map library, both standard npm dependencies. The complex patterns are characteristic of generated lexers and URL parsers, not hand-crafted obfuscation or ReDoS vectors.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/vevan/arousalPub/blob/d4bd40420f9ee99a3dc9daa957024f0550a88e5e/plugins/trace-keeper/dist/web.mjs#L1896" rel="noopener noreferrer">plugins/trace-keeper/dist/web.mjs:1896</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>1098 files &middot; 11457688 bytes</dd>
+      <dt>Contextual coverage</dt><dd>64 of 64 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>802 files &middot; 4464773 bytes</dd>
+        <dt>X-Ray review families</dt><dd>84 warning occurrences compacted to 53 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>802 raw &middot; 36 decoded &middot; 2 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>802 raw signatures &middot; 136 raw AST &middot; 802 raw OpenGrep &middot; 38 derived signatures &middot; 2 derived AST &middot; 38 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>plugins/conversation-export/src/web/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/guidance-generate/dist/web.mjs</code> &mdash; derived-ast / parse</li><li><code>plugins/guidance-generate/dist/web.mjs</code> &mdash; normalize / parse</li><li><code>plugins/guidance-generate/src/server/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/guidance-generate/src/web/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/guidance-generate/test/server/injection.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/auto-summarize-companion.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/auto-summarize-progress.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/batch-write.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/dialogs.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/errors.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/lifecycle.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/notify-outcome.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/parse-plot-slash.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/pipeline.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/plot-slash.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/prepare-context.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/prompt-preview.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/range-picker.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/review.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/server/complete-context-hooks.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/settings.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/entry-sort.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/lorebook-sort.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/plot-summary-context-blocks.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/prepare-context-blocks.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/range-limits.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/summarize.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/summary-group-placement.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/summary-prompt-layout.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/task-notify-label.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/shared/utils.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/sidecar.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/state.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/src/types.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/test/complete-draft.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/test/errors.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/test/plot-summary-context-blocks.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/test/settings.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/plot-summary/test/task-notify-label.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/swipe-cleaner/src/web/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/dist/server.mjs</code> &mdash; derived-ast / parse</li><li><code>plugins/trace-keeper/dist/server.mjs</code> &mdash; normalize / parse</li><li><code>plugins/trace-keeper/dist/web.mjs</code> &mdash; derived-ast / parse</li><li><code>plugins/trace-keeper/dist/web.mjs</code> &mdash; normalize / parse</li><li><code>plugins/trace-keeper/src/audit-debug.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/bundle-resolve.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/constants.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/host-segment-snapshot.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/panel-empty.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/panel-render.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/parse-block.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/patch-state-client.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/prepare-context.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/separate-debug.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/separate-dialogue.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/separate-regenerate-client.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/separate-turn-settings.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/server/complete-context-hooks.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/server/index.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/server/patch-state.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/server/separate-regenerate.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/shared/separate-prompt-layout.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/shared/trace-keeper-context-blocks.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/state.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/trace-state-resolve.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/tracker-prompt.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/turn-view-segment.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/src/types.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/host-segment-snapshot.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/panel-empty.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/segment-action-flow.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/separate-dialogue.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/server/injection.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/sidebar-segment-e2e.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/trace-state-resolve.test.ts</code> &mdash; raw-ast / parse</li><li><code>plugins/trace-keeper/test/tracker-prompt.test.ts</code> &mdash; raw-ast / parse</li><li><code>server/scripts/import-st-preset.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/admin/console-url.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/admin/rotate-data-key.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/admin/routes.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-config-references.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-credential-resolve.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-error-codes.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-keys-file.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-keys-sanitize.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-preset-test.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-settings-default-seed.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-settings-file.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/api-settings-sanitize.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/assemble-prompts.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/asset-hybrid-fts-status.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/asset-hybrid-fts.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/auth-config.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/auth-password.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/auth-rate-limit.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/auth-secret.ts</code> &mdash; raw-ast / parse</li><li><code>server/src/auth-sessions.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/vevan/arousalPub/commit/d4bd40420f9ee99a3dc9daa957024f0550a88e5e" rel="noopener noreferrer">d4bd40420f9ee99a3dc9daa957024f0550a88e5e</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-02T19:26:02.762Z">Sep 2, 2026</time></dd>
+        <dt>History depth</dt><dd>3 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>0 fresh / 9 reused groups &middot; 0 fresh / 9 reused candidates</dd>
+        <dt>Review source reports</dt><dd><code>1b5d045cc4d09951321b2f73c5d491df3d4784486e5478f1f5a2cee238613a71</code></dd>
+        <dt>Evidence triage</dt><dd>55 deterministic / 9 contextual candidates &middot; 9 contextual / 44 total behavior cases</dd>
+        <dt>Model budget</dt><dd>0 model calls &middot; 0 / 12 fresh cases &middot; 0 / 200000 estimated input &middot; 0 / 250000 actual input &middot; 0 / 40000 output tokens</dd>
+        
+        <dt>Review usage</dt><dd>0 input &middot; 0 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>e98636b57775a1edce89ea4f1b38c74b0504f494eed27a7bad0e179e9522fe5b</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1248993662/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
