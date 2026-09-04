@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for MentallyQuill/Directive at commit 3bdde99.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; MentallyQuill/Directive</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/MentallyQuill/Directive" rel="noopener noreferrer">MentallyQuill/Directive</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/MentallyQuill/Directive/commit/3bdde99ad29f9b682d29f3f354aacd60e884067e" rel="noopener noreferrer">3bdde99</a></span>
+        <span>Reviewed <time datetime="2026-09-04T12:26:11.177Z">Sep 4, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>46 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/runtime/v1-accepted-pair-source.mjs#L4" rel="noopener noreferrer">src/runtime/v1-accepted-pair-source.mjs:4</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/time/time-evidence.mjs#L10" rel="noopener noreferrer">src/time/time-evidence.mjs:10</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/hosts/sillytavern/preset-manager.mjs#L15" rel="noopener noreferrer">src/hosts/sillytavern/preset-manager.mjs:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/time/ship-time.mjs#L2" rel="noopener noreferrer">src/time/ship-time.mjs:2</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (37)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-mobile-campaign-mission-accordions.mjs#L39" rel="noopener noreferrer">tools/scripts/test-mobile-campaign-mission-accordions.mjs:39</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-ship-mechanics-state.mjs#L146" rel="noopener noreferrer">tools/scripts/test-v1-ship-mechanics-state.mjs:146</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-campaign-required-empty-state.mjs#L95" rel="noopener noreferrer">tools/scripts/test-campaign-required-empty-state.mjs:95</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/repair-sam-vickers-pending-pair.mjs#L478" rel="noopener noreferrer">tools/scripts/repair-sam-vickers-pending-pair.mjs:478</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-mission-journey.mjs#L93" rel="noopener noreferrer">tools/scripts/test-v1-mission-journey.mjs:93</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-character-creator-assist-layout.mjs#L201" rel="noopener noreferrer">tools/scripts/test-character-creator-assist-layout.mjs:201</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/helpers/fake-dom.mjs#L82" rel="noopener noreferrer">tools/scripts/helpers/fake-dom.mjs:82</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-directive-launcher-button-visual.mjs#L23" rel="noopener noreferrer">tools/scripts/test-directive-launcher-button-visual.mjs:23</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-mission-evidence.mjs#L567" rel="noopener noreferrer">tools/scripts/test-v1-mission-evidence.mjs:567</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/repair-sam-vickers-premature-evidence.mjs#L555" rel="noopener noreferrer">tools/scripts/repair-sam-vickers-premature-evidence.mjs:555</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.prototype-pollution</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/runtime/state-delta-gateway.mjs#L7" rel="noopener noreferrer">src/runtime/state-delta-gateway.mjs:7</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-expanded-interface-shell.mjs#L92" rel="noopener noreferrer">tools/scripts/test-expanded-interface-shell.mjs:92</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-cohesion-ship-visual.mjs#L82" rel="noopener noreferrer">tools/scripts/test-cohesion-ship-visual.mjs:82</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/capture-runtime-route-live.mjs#L6" rel="noopener noreferrer">tools/scripts/capture-runtime-route-live.mjs:6</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/repair-sam-vickers-pending-pair.mjs#L39" rel="noopener noreferrer">tools/scripts/repair-sam-vickers-pending-pair.mjs:39</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-state-delta-codec.mjs#L47" rel="noopener noreferrer">tools/scripts/test-v1-state-delta-codec.mjs:47</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/capture-runtime-route-live.mjs#L6" rel="noopener noreferrer">tools/scripts/capture-runtime-route-live.mjs:6</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-cohesion-ship-visual.mjs#L32" rel="noopener noreferrer">tools/scripts/test-cohesion-ship-visual.mjs:32</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-mission-reducer.mjs#L61" rel="noopener noreferrer">tools/scripts/test-v1-mission-reducer.mjs:61</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.prototype-pollution</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/storage/v1-state-delta-codec.mjs#L5" rel="noopener noreferrer">src/storage/v1-state-delta-codec.mjs:5</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-episode-evaluator.mjs#L326" rel="noopener noreferrer">tools/scripts/test-v1-episode-evaluator.mjs:326</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-command-bearing.mjs#L77" rel="noopener noreferrer">tools/scripts/test-v1-command-bearing.mjs:77</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-sam-vickers-pending-pair-repair.mjs#L78" rel="noopener noreferrer">tools/scripts/test-sam-vickers-pending-pair-repair.mjs:78</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/serve-expanded-interface-preview.mjs#L56" rel="noopener noreferrer">tools/scripts/serve-expanded-interface-preview.mjs:56</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/repair-sam-vickers-premature-evidence.mjs#L37" rel="noopener noreferrer">tools/scripts/repair-sam-vickers-premature-evidence.mjs:37</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/serve-expanded-interface-preview.mjs#L8" rel="noopener noreferrer">tools/scripts/serve-expanded-interface-preview.mjs:8</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-sam-vickers-premature-evidence-repair.mjs#L149" rel="noopener noreferrer">tools/scripts/test-sam-vickers-premature-evidence-repair.mjs:149</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-campaign-required-empty-state-visual.mjs#L54" rel="noopener noreferrer">tools/scripts/test-campaign-required-empty-state-visual.mjs:54</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-gameplay-notification-visual.mjs#L62" rel="noopener noreferrer">tools/scripts/test-gameplay-notification-visual.mjs:62</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-turn-activity-indicator-visual.mjs#L23" rel="noopener noreferrer">tools/scripts/test-turn-activity-indicator-visual.mjs:23</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-browser-runtime-safety.mjs#L28" rel="noopener noreferrer">tools/scripts/test-browser-runtime-safety.mjs:28</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-certified-ui-authority.mjs#L10" rel="noopener noreferrer">tools/scripts/test-certified-ui-authority.mjs:10</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-duty-report-runtime.mjs#L147" rel="noopener noreferrer">tools/scripts/test-v1-duty-report-runtime.mjs:147</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-mission-entry-capabilities.mjs#L142" rel="noopener noreferrer">tools/scripts/test-v1-mission-entry-capabilities.mjs:142</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.encoded-literal</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-v1-duty-report-planner.mjs#L166" rel="noopener noreferrer">tools/scripts/test-v1-duty-report-planner.mjs:166</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-authoritative-ship-chronometer-visual.mjs#L14" rel="noopener noreferrer">tools/scripts/test-authoritative-ship-chronometer-visual.mjs:14</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-sillytavern-fresh-chat-hygiene.mjs#L667" rel="noopener noreferrer">tools/scripts/test-sillytavern-fresh-chat-hygiene.mjs:667</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (5)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This test script launches a small local helper program to serve preview pages for automated visual checks. It hands that helper the same environment settings any program normally inherits. Nothing is collected or sent anywhere; this is a standard way to start a helper program.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The serialize-environment signal corresponds to spawning a local preview-server helper script with the parent process environment copied to the child so it inherits PATH and other standard runtime variables. This is ordinary child-process plumbing for a developer-run conformance test: the environment is forwarded locally to a repository-owned script, never serialized to storage, a network destination, or any output that leaves the machine. No credentials are read, transformed, or transmitted beyond normal process inheritance, and the file is tooling-only with no shipped extension behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-expanded-interface-visual-conformance.mjs#L70" rel="noopener noreferrer">tools/scripts/test-expanded-interface-visual-conformance.mjs:70</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner mistook the official technical name used for drawing vector graphics for a suspicious web link. It is just a required label for creating SVG drawings on screen; nothing connects to the internet or sends information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged three string literals that resemble web addresses, but every occurrence in the supplied source is the standard SVG namespace identifier passed to the browser&#39;s namespaced element-creation API when building SVG shapes, leader lines, and cohesion-ring graphics for the ship journal UI. The string is a namespace constant required by the DOM API, not a network destination. The surrounding code contains no fetch, socket, script loading, or resource retrieval of any kind, and no data is transmitted. The flagged capability matches the extension&#39;s stated purpose of rendering its own interface.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/src/ui/ship-journal.js#L158" rel="noopener noreferrer">src/ui/ship-journal.js:158</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>An automated test needs two things: it starts a small local helper server, and it opens pages from that local server in a headless browser to check the interface visually. A scanner saw both &#39;network&#39; and &#39;run a program&#39; in one file and flagged the combination, but the program being run is a fixed helper script from the project itself, and the only network traffic goes to that same local helper. Nothing downloaded is ever executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The correlation arises because the file both performs network requests and spawns a process. Examining actual data flow: the network requests are fetches to a loopback-only preview server on a dynamically chosen port started by this same script, and the process spawn is a fixed, repository-relative helper script executed with the same interpreter, not a command derived from network input. No data retrieved over the network is ever passed to the process execution path, and the entire flow is confined to the developer machine within a test harness. This is the ordinary architecture for a browser-based conformance test, not a download-to-execution chain, and the file ships no runtime behavior to extension users.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-expanded-interface-visual-conformance.mjs#L58-L1894" rel="noopener noreferrer">tools/scripts/test-expanded-interface-visual-conformance.mjs:58-1894</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.credential-exfiltration.javascript-secret-to-network</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a developer tool that opens a private, invisible browser on the developer&#39;s own computer, points it at their own local chat install, and takes pictures of the interface for design checks. The scanner saw an environment variable near a network operation, but the variable only holds the local address to visit. There is no password or API key involved, and no information leaves the developer&#39;s machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.credential-exfiltration.javascript-secret-to-network. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is a developer-only screenshot-capture tool that is not part of the shipped extension runtime. The flagged line passes a base address, read from an environment variable and defaulting to the local loopback host where a SillyTavern instance runs, to a page-navigation command sent over a DevTools protocol WebSocket. That WebSocket connects to a headless browser the script itself spawned with its debug endpoint bound to the loopback interface. The environment variable holds a destination address, not a credential; no key, token, password, or secret is read anywhere in the file. The value flows only to a locally spawned browser process on the same machine, and nothing is transmitted to any external host. The pattern is a false positive for credential exfiltration: a URL configuration value reaching a local automation sink, proportionate to the tool&#39;s stated purpose of capturing UI layout screenshots.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.credential-exfiltration.javascript-secret-to-network</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/capture-runtime-route-live.mjs#L234" rel="noopener noreferrer">tools/scripts/capture-runtime-route-live.mjs:234</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.encoded-literal</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The test takes a known artwork file, computes a fingerprint of it, and checks that fingerprint against a fixed expected value written in the code. That long string of letters and numbers is just a recorded fingerprint used to notice if the artwork file ever changes by accident. It is not hidden code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.encoded-literal. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The encoded-literal signal at the flagged location corresponds to a long hexadecimal digest used as an expected value in a conformance assertion: the test hashes the alpha channel of a known bundled image with SHA-256 inside the browser and compares the result against a pinned literal to detect accidental asset changes. A hardcoded expected digest is a standard deterministic testing technique, not concealment of executable content or a covert channel. The literal is compared, never decoded or executed, and the file is tooling-only.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.encoded-literal</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/Directive/blob/3bdde99ad29f9b682d29f3f354aacd60e884067e/tools/scripts/test-expanded-interface-visual-conformance.mjs#L1147" rel="noopener noreferrer">tools/scripts/test-expanded-interface-visual-conformance.mjs:1147</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>1124 files &middot; 57823311 bytes</dd>
+      <dt>Contextual coverage</dt><dd>46 of 46 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>322 files &middot; 3635957 bytes</dd>
+        <dt>X-Ray review families</dt><dd>77 warning occurrences compacted to 44 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>322 raw &middot; 6 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>322 raw signatures &middot; 322 raw AST &middot; 322 raw OpenGrep &middot; 6 derived signatures &middot; 0 derived AST &middot; 6 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/MentallyQuill/Directive/commit/3bdde99ad29f9b682d29f3f354aacd60e884067e" rel="noopener noreferrer">3bdde99ad29f9b682d29f3f354aacd60e884067e</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-04T12:26:11.177Z">Sep 4, 2026</time></dd>
+        <dt>History depth</dt><dd>7 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>3 fresh / 0 reused groups &middot; 5 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>41 deterministic / 5 contextual candidates &middot; 3 contextual / 41 total behavior cases</dd>
+        <dt>Model budget</dt><dd>2 model calls &middot; 3 / 12 fresh cases &middot; 72984 / 200000 estimated input &middot; 54980 / 250000 actual input &middot; 3720 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>2 model calls &middot; up to 2 groups and 3 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>54980 input &middot; 3720 output &middot; 1344 cache read &middot; 177 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>25751d20ee4bada0cf04c179bda8e18cc3058bd577f9a6094e42d061cf51b74d</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1273112032/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
