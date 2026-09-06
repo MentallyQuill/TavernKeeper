@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for unrefined803/RPGraph at commit afa7516.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; unrefined803/RPGraph</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/unrefined803/RPGraph" rel="noopener noreferrer">unrefined803/RPGraph</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/unrefined803/RPGraph/commit/afa75164a83f12b72f25f3469f5a28b22f9cecfc" rel="noopener noreferrer">afa7516</a></span>
+        <span>Reviewed <time datetime="2026-09-06T11:59:34.480Z">Sep 6, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>44 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/electron/main.cjs#L2469" rel="noopener noreferrer">electron/main.cjs:2469</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (16)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:c301f7c72c558e741e2a83a0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c83g-rgw3-j3cx:pkg:55c4a668cc988d5ceedbfbf6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8xcm-r25x-g524:pkg:9efcb22ccad71d16e9fbb4db applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jqff-g426-hqxp:pkg:9d5a0ee915070fcb3b4f0f49 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4cwx-7wf7-3272:pkg:1176429e737cfabdf766cdff applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fph4-wmhf-6fwf:pkg:02097b1c123d52488af54cbe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m8rv-5g2x-5cg5:pkg:effd824192445928106e41b7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5jgf-p345-68v8:pkg:0c0b4150b3480deab8a6ef16 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f65p-4m7j-42xc:pkg:d8eaa1be485d9c348ff3a796 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6gmq-8vp8-gcm6:pkg:71da7330fe763fba912b9efe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9f4c-93c8-jc8g:pkg:efaea3d20909e7a86cc5178e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r4w5-6pfg-jxp5:pkg:1b5485487a562a9e909542d7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-73wf-gq98-2v4g:pkg:978489779fc1a775f3f91fab applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p95v-992w-h6c3:pkg:5cae82464e421b021afa723a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v3r7-h72x-cjcm:pkg:2f99006f4e2ddba635fa3089 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jr45-8vmc-qm54:pkg:ef6cbe09bba3516afec0221f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (26)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line only arranges the buttons at the bottom of a small image-picking window inside the app. It is pure visual styling and cannot save anything, run anything, or change how the app or computer starts.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a stylesheet declaration that lays out the action button row of the application&#39;s profile-image picker dialog. It sets only visual layout properties. Stylesheet rules in this project contain no scripting, storage access, network calls, or startup hooks, so no startup-persistence behavior is possible at this location. The scanner match is a category false positive on presentational markup.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15944" rel="noopener noreferrer">src/styles.css:15944</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a line of visual styling for a pop-up image-picker window. Stylesheet lines cannot run programs or change how your computer starts up, so this match is a false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS style-sheet declaration inside a modal dialog rule block, part of a stylesheet shipped with the renderer UI. It contains no executable code, no script, no persistence mechanism, and no capability to modify startup behavior or system state. The scanner rule targeting startup persistence modification has matched stylesheet text, which cannot perform any of the behaviors the rule is designed to detect.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15852" rel="noopener noreferrer">src/styles.css:15852</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script checks two simple settings to decide how to display test results. It does not copy, save, or send any environment data anywhere, so there is no secret-leaking risk.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines read two environment variables to decide whether test output should be interactive or redirected to a local log file. Environment values are only compared against fixed literal strings and a boolean flag; nothing is copied into a serialized payload, transmitted, or persisted beyond a temporary local log that is deleted afterward. This is ordinary test-runner configuration with no credential or data flow to any destination.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/scripts/run-tests.mjs#L21" rel="noopener noreferrer">scripts/run-tests.mjs:21</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script asks the computer where its temporary folder is so it can store test logs there, then cleans them up. Nothing is sent outside your machine, so this is not data theft.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/scripts/run-tests.mjs#L3" rel="noopener noreferrer">scripts/run-tests.mjs:3</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-import</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script looks up where the installed testing tools live on your machine and runs them. It only allows two specific testing tools that are part of the project, so there is no hidden or risky code loading here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-import. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line resolves the local entrypoint file of one of two fixed test runners (vitest or playwright), both pinned devDependencies of this repository, and then spawns the project&#39;s own Node executable with that entrypoint. The module specifier comes from a hardcoded allow-listed map, not from user input, network data, or package metadata fetched at runtime. This is a standard, non-dynamic local test launcher with no supply-chain exposure demonstrated by the supplied code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-import</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/scripts/run-tests.mjs#L23" rel="noopener noreferrer">scripts/run-tests.mjs:23</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line only sets the size of a pop-up window in the app&#39;s interface. It cannot run anything or persist on your system, so there is no security issue.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is the opening selector of a CSS rule that styles a dialog element&#39;s width and height. It is static presentation markup with no executable semantics, no file or registry access, and no startup or persistence capability. A stylesheet declaration cannot implement the persistence behavior the scanner rule targets.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15830" rel="noopener noreferrer">src/styles.css:15830</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner mistook a streaming-message keyword for a suspicious link. This file only prepares requests and read replies from the user&#39;s own model server; it never contacts any website or sends information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line belongs to a server-sent-event parser that dispatches on a leading data-field prefix to accumulate streaming payload lines. The full module only shapes request bodies for the local LM Studio integration and parses streamed replies; it contains no URL construction, network client, or outbound data flow. The scanner signal is a keyword false positive on the SSE field prefix, with no destination, timing, or disclosure concern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/electron/lmStudioChat.cjs#L150" rel="noopener noreferrer">electron/lmStudioChat.cjs:150</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line just controls how big the preview picture looks in a cropping window. It changes nothing except appearance and cannot affect anything outside that window.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line begins a rule that sizes and fits the preview image shown inside the profile-image crop dialog. It declares only display and sizing values. CSS declarations here have no executable capability, no data flow, and no persistence or startup mechanism, so the matched persistence rule does not correspond to any behavior in the supplied code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15888" rel="noopener noreferrer">src/styles.css:15888</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner reacted to a routine system-information import. The visible code communicates only with the model services the user sets up, which is the app&#39;s stated purpose; nothing sends your keys, stories, or machine details anywhere unexpected.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/electron/main.cjs#L8" rel="noopener noreferrer">electron/main.cjs:8</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A test runs the app&#39;s own bridge code in an isolated bubble with fake Electron parts to check that it behaves correctly. It only ever executes the project&#39;s own code during automated testing, so there is no way for an attacker or outside input to use it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged construct executes the project&#39;s own committed preload bridge script inside a VM context with stubbed Electron globals so unit tests can verify IPC cancellation and provider error propagation. The only code executed is first-party, file-resident source read from the repository itself; no untrusted, user-supplied, or remote input reaches the execution call, and the file is test scaffolding that does not ship in the application&#39;s runtime path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/electron/providerModelLists.test.ts#L10-L15" rel="noopener noreferrer">electron/providerModelLists.test.ts:10-15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line styles the box that holds a picture while the user crops it. It is ordinary appearance code with no power to run, save, or change anything on its own.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line begins a rule styling the container that holds the image in the profile-image crop dialog, setting only positioning and interaction hint properties. A stylesheet declaration cannot register startup execution, write persistent state, or originate any data flow, so no persistence exposure is demonstrated by this evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15879" rel="noopener noreferrer">src/styles.css:15879</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is more pop-up styling, deciding how an image area is laid out. Styles cannot start programs or persist, so this is a false positive.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS rule for a layout stage element inside the same character profile picker styling block. It declares grid layout, overflow, borders, and background colors. There is no code execution, no persistence, and no state modification of any kind; the scanner rule for startup persistence modification cannot be satisfied by stylesheet text.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15862" rel="noopener noreferrer">src/styles.css:15862</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>When you install the project, this helper tells git to use the project&#39;s own commit-check scripts. It runs two fixed, well-known git commands, changes nothing outside the project folder, and does nothing at all when git is absent. This is a common, harmless setup step.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged calls execute two fully hardcoded git commands: one read-only check for whether the current directory is a git work tree, and one local repository configuration change that points git at the tracked hooks directory inside the same repository. Neither command contains interpolation, user input, network access, or out-of-repo modification. The script runs as an npm prepare step, is guarded by a try/catch no-op outside a repository, and modifies only the local clone&#39;s git config. This is a widely used, disclosed pattern for installing committed git hooks and does not create system persistence or code execution beyond the developer&#39;s own checkout.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/scripts/setup-git-hooks.mjs#L8-L10" rel="noopener noreferrer">scripts/setup-git-hooks.mjs:8-10</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line only changes the mouse pointer shape while you drag the cropping circle. It is cosmetic and cannot do anything beyond how the app looks.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is an interaction-state rule that changes the mouse pointer shown while the crop ring in the profile-image dialog is being dragged. It only sets a cursor appearance. There is no execution, persistence, network, or file activity possible in this declaration, so the persistence-category match reflects no actual behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15918" rel="noopener noreferrer">src/styles.css:15918</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The script copies the program&#39;s settings list so it can hand them to the app it starts on your own computer. Nothing is sent anywhere else. This is a normal way to start the desktop app and does not expose any secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line copies the current process environment into a plain object solely to remove one Electron-specific variable before spawning the local Electron binary as a child process. This is a standard launcher pattern: the environment is passed to the project&#39;s own child process and never serialized to disk, logged, or sent to any external destination. The spread copies the environment locally within the same machine and process tree; there is no exfiltration path or attacker-controlled data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/scripts/run-electron.mjs#L7" rel="noopener noreferrer">scripts/run-electron.mjs:7</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A styling line that removes spacing around text in a pop-up header. It cannot do anything harmful.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS element selector that resets margins for headings and paragraphs inside a dialog header. It is inert presentation markup with no executable or persistent behavior; the startup-modification scanner rule is not applicable to stylesheet content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15853" rel="noopener noreferrer">src/styles.css:15853</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line makes the cropping circle in the image picker look the way it does. It is styling only and has no ability to run or store anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line begins a rule that visually styles the draggable circular crop overlay in the profile-image dialog, defining borders, shape, shadow, and pointer hints. It is presentational only; a stylesheet declaration cannot perform startup modification or persistence, and the supplied context shows no executable code at or near this line.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15902" rel="noopener noreferrer">src/styles.css:15902</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line draws the faint dashed ring inside the cropping circle so the user can see the crop area. It is purely cosmetic.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line begins a rule drawing the dashed inner guide inside the crop ring of the profile-image dialog, setting only position, border, and pointer-pass-through values. No code execution, data flow, or persistence capability exists in this declaration, so the startup-persistence rule category does not match the actual content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15922" rel="noopener noreferrer">src/styles.css:15922</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line styles the little round handle used to make the crop circle bigger or smaller. It only affects how that handle looks and feels.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line begins a rule styling the small resize knob on the crop overlay in the profile-image dialog, defining its placement, size, shape, colors, and resize pointer. It is purely presentational; no startup modification, storage, network, or execution path exists at this location in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15930" rel="noopener noreferrer">src/styles.css:15930</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A line that colors and sizes a pop-up title. Harmless styling, not a startup change.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS heading selector setting text color and size in the profile picker dialog. It is static styling with no code, data flow, or persistence capability; the matched scanner rule describes executable startup modification, which stylesheet text cannot perform.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15857" rel="noopener noreferrer">src/styles.css:15857</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A tiny fake image used in an automated test was mistaken for a suspicious link. It exists only inside the test and never leaves the developer&#39;s machine or affects app users.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged literals are inline placeholder image data URIs used as unit-test fixtures to verify multimodal request construction. They are never transmitted, the containing file is test scaffolding rather than shipped runtime code, and there is no network destination or credential involvement anywhere in the file.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/electron/lmStudioChat.test.ts#L69" rel="noopener noreferrer">electron/lmStudioChat.test.ts:69</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Styling that dims the background behind a pop-up window inside the app. It only affects what you see on screen and cannot change anything on your system.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line opens a CSS rule for a full-screen backdrop behind a modal dialog, declaring fixed positioning, z-index, flex centering, and a translucent background. This positions an overlay within the app&#39;s web view only; it does not touch the operating system, autorun locations, or any persistence mechanism. The scanner&#39;s startup-persistence rule matched static stylesheet keywords, not executable behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15819" rel="noopener noreferrer">src/styles.css:15819</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Layout styling for a pop-up header. Purely visual, with no ability to run or persist anything.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a CSS rule laying out a dialog header with flexbox, gap, padding, and a bottom border. It is inert markup for visual presentation with no executable code or persistence behavior; the matched scanner rule cannot apply to stylesheet declarations.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15843" rel="noopener noreferrer">src/styles.css:15843</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged web addresses are the standard local addresses of the user&#39;s own model programs running on the same computer, which is exactly what this local-first desktop app is built to connect to. There is no hidden external destination.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The occurrences correspond to plain-HTTP default addresses for loopback model and image services, a local development-server address, and user-configurable base URLs, matching the project&#39;s documented local-first architecture. The ComfyUI URL handling explicitly restricts protocols, and destinations default to the user&#39;s own machine rather than any concealed external host. Non-TLS loopback defaults are normal for local inference servers, which typically do not terminate TLS.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/electron/main.cjs#L50" rel="noopener noreferrer">electron/main.cjs:50</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>More pop-up styling for the image area. It cannot run code or change startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line opens a CSS rule for the image-stage element of the same picker dialog, containing grid and box styling only. As with the other candidates in this stylesheet block, there is no executable code, no data flow, and no persistence capability, so the startup-modification rule match is a textual false positive against presentation markup.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15868" rel="noopener noreferrer">src/styles.css:15868</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This line slightly darkens the area around the cropping circle so the crop region stands out. It is a visual effect and nothing more.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line begins a rule creating the dimming overlay behind the crop ring in the profile-image dialog, setting only positioning and a translucent background. A stylesheet declaration has no capability to persist state or modify startup behavior, so this scanner match does not correspond to any demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15895" rel="noopener noreferrer">src/styles.css:15895</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Startup-persistence scanner rule matched purely presentational stylesheet rules</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A scanning tool flagged these lines as suspicious startup-related behavior, but the lines only describe how a picture-cropping window looks in the app. Styling code cannot run programs, save data, or change how the computer starts up, so nothing harmful is present.</p>
+    <details><summary>Technical assessment</summary>
+      <p>All eight candidates point into a contiguous block of stylesheet rules that define the look of an in-app profile-image cropping dialog: the image frame, preview image sizing, dimming overlay, draggable crop ring, its active-state pointer, inner guide, resize knob, and the button row. Every flagged line contains only visual declarations. Stylesheets in this project carry no script execution, storage access, network requests, or startup registration, so a persistence/startup-modification rule cannot correspond to real behavior here; the matches appear to be pattern-driven false positives on styling keywords.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15879" rel="noopener noreferrer">src/styles.css:15879</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15888" rel="noopener noreferrer">src/styles.css:15888</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15895" rel="noopener noreferrer">src/styles.css:15895</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15902" rel="noopener noreferrer">src/styles.css:15902</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15918" rel="noopener noreferrer">src/styles.css:15918</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15922" rel="noopener noreferrer">src/styles.css:15922</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15930" rel="noopener noreferrer">src/styles.css:15930</a></li><li><a href="https://github.com/unrefined803/RPGraph/blob/afa75164a83f12b72f25f3469f5a28b22f9cecfc/src/styles.css#L15944" rel="noopener noreferrer">src/styles.css:15944</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>403 files &middot; 24971051 bytes</dd>
+      <dt>Contextual coverage</dt><dd>43 of 43 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>327 files &middot; 3973508 bytes</dd>
+        <dt>X-Ray review families</dt><dd>23 warning occurrences compacted to 10 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>327 raw &middot; 20 decoded &middot; 2 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>327 raw signatures &middot; 33 raw AST &middot; 327 raw OpenGrep &middot; 22 derived signatures &middot; 4 derived AST &middot; 22 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>electron/providerModelLists.test.ts</code> &mdash; raw-ast / parse</li><li><code>electron/workflowDefaults.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/App.tsx</code> &mdash; raw-ast / parse</li><li><code>src/app/debugSnapshot.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/debugSnapshot.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/providerCapabilities.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/runOrchestration.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/turnTrace.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/turnTrace.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useCustomNodeAssistant.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useDirectAppActions.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useGraphRun.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useNodeActionsController.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useNodeContextMenu.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useNodeLlmApi.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useNodePalette.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useProviderConnections.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useProviderConnections.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useRoleplayPanelRuntime.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useRpgraphFiles.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useRunLifecycle.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useRuntimeNodePatching.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useTurnTraceState.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useUiScaling.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useWorkflowCapabilities.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/useWorkflowVariables.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/workflowHydration.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/workflowHydration.ts</code> &mdash; raw-ast / parse</li><li><code>src/app/workflowSnapshot.ts</code> &mdash; raw-ast / parse</li><li><code>src/assistant/workflowSnapshot.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/AutoplayControl.tsx</code> &mdash; raw-ast / parse</li><li><code>src/chat/PhoneTab.tsx</code> &mdash; raw-ast / parse</li><li><code>src/chat/RunProgressCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/chat/VoicePlaybackDialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/chat/bankTransfers.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/bankingDummyTransactions.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/dialogueVoiceSegments.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/directAppActions.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/imageGenerationAssistant.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/inputTransforms.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/instructions.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/messageFormats.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/onlyFriendsWallet.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/outputActions.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/phoneAppHistoryMessages.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/phoneAppsSessions.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/phoneCharacters.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/phoneMessages.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/phoneReplies.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/referenceImages.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/rpOutput.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/rpPictures.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/socialCatalogs.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/socialDirectory.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/socialIdentity.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/socialMedia.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/socialMessageValidation.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/structuredCommands.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/textRendering.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/translationEmojiShield.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/ttsNarratorPrompt.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/turns.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/turns.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/useAutoplay.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/useChatGpdPhoneApp.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/useDialogueVoice.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/useNextTurnReferenceImages.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/usePhoneReply.ts</code> &mdash; raw-ast / parse</li><li><code>src/chat/useTurnRecordState.ts</code> &mdash; raw-ast / parse</li><li><code>src/comfy/ComfyGeneratedImageDialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/comfy/api.ts</code> &mdash; raw-ast / parse</li><li><code>src/comfy/connectionRole.ts</code> &mdash; raw-ast / parse</li><li><code>src/comfy/defaultNarratorVoice.ts</code> &mdash; raw-ast / parse</li><li><code>src/comfy/workflowCompatibility.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/AppDialogs.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/AssistantDialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/BankTransferCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/CharacterAvatar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/ChatConversationPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/CommandPillComposer.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/CreatedPhoneNoteCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/DarkAudioPlayer.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/EdgeCharacterPicker.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/ErrorBoundary.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/EventsPanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/ImageContextControl.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/ImageGenerationAssistantDialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/LiveRunClock.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/ModelIdPicker.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhoneBankingScreen.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhoneChatGpdScreen.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhoneGalleryScreen.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhoneImagePicker.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhoneNotesScreen.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhonePanel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PhoneVoiceMessage.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/PromptPresetOverview.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/ResourceMonitor.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/SimulatedAiChatCard.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/SocialPostCard.tsx</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/unrefined803/RPGraph/commit/afa75164a83f12b72f25f3469f5a28b22f9cecfc" rel="noopener noreferrer">afa75164a83f12b72f25f3469f5a28b22f9cecfc</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-06T11:59:34.480Z">Sep 6, 2026</time></dd>
+        <dt>History depth</dt><dd>12 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>9 fresh / 0 reused groups &middot; 26 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>17 deterministic / 26 contextual candidates &middot; 9 contextual / 12 total behavior cases</dd>
+        <dt>Model budget</dt><dd>3 model calls &middot; 9 / 12 fresh cases &middot; 128833 / 200000 estimated input &middot; 104586 / 250000 actual input &middot; 14509 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>3 model calls &middot; up to 4 groups and 13 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>104586 input &middot; 14509 output &middot; 1344 cache read &middot; 5679 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>970b065efe033139b151c534848ec321106764784e177b9609e0f1b53cbaa75a</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1289035231/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
