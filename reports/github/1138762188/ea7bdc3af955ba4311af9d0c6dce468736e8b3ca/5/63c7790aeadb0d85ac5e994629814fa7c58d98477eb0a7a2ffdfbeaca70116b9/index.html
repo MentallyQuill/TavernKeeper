@@ -1,0 +1,979 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Zaakh/SillyTavern-zTracker at commit ea7bdc3.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Zaakh/SillyTavern-zTracker</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Zaakh/SillyTavern-zTracker" rel="noopener noreferrer">Zaakh/SillyTavern-zTracker</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Zaakh/SillyTavern-zTracker/commit/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca" rel="noopener noreferrer">ea7bdc3</a></span>
+        <span>Reviewed <time datetime="2026-09-09T12:38:51.696Z">Sep 9, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>86 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The flagged pattern-matching code comes from libraries bundled into the release. Nothing shown can be abused beyond briefly slowing the user&#39;s own chat window, which is a minor quality issue rather than a security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The regex literals visible in the bundled output are fixed lexer alternations and bounded value validators from vendored parsing and templating libraries, and the scanner retained no matched values showing a catastrophic-backtracking pattern. Theoretical pathological input would only stall the user&#39;s own tab, which is a recoverable low-impact condition under this threat model.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L1" rel="noopener noreferrer">dist/index.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>The extension ships a compressed, machine-generated version of its code, which scanners often mistake for deliberate obfuscation. The visible parts are readable and match the project&#39;s stated features, so this looks like normal build output.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The file is a generated, minified production bundle (file_role generated, transform depth 1), so dense mangled code triggers the obfuscation heuristic. The supplied imports and API calls use readable strings and named host modules, and the surrounding repository publishes source and README, which is inconsistent with deliberate concealment. The practical weakness is reduced reviewability of the shipped artifact, not demonstrated hidden behavior; scanner confidence is low.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Publish or retain an unminified build or source map so the shipped bundle can be more easily reviewed by the community.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L1" rel="noopener noreferrer">dist/index.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>Some text-matching patterns in included parser libraries could in theory be slow on weird input, but the input comes from the user&#39;s own chats and files, so the worst case is a brief slowdown in your own session.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regexes are tokenizer and numeric/date validation patterns inside bundled parsing libraries (template tokenizer, XML parser, JSON path checks) and tracker markdown-fence extraction. Most are linear; the XML tag-matching pattern with backreferences could backtrack on adversarial input, but inputs derive from the user&#39;s own model responses and local files, and the worst demonstrated effect would be a slow parse in the user&#39;s own tab — a recoverable local slowdown, not meaningful concrete harm. No attacker-controlled remote path to these regexes is demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Consider updating bundled parser dependencies to current versions during the next build; no urgent change required.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L476" rel="noopener noreferrer">dist/index.js:476</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (71)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>Dependency advisory GHSA-qx2v-qp2m-jg93:pkg:d0433ccd51b55fc561da06bf applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-gh4j-gqv2-49f6:pkg:2e769c3d435a393f7d6a63cc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8gc5-j5rx-235r:pkg:1ba011ced44a3aa03556255b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m7jm-9gc2-mpf2:pkg:eb295685e4f99fcf0f9aa306 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-h67p-54hq-rp68:pkg:032a72735b89e8109ae31a3d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9cx6-37pm-9jff:pkg:ca52f57e7f6518348696e910 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fj3w-jwp8-x2g3:pkg:553721236f32a20b1e0db5b7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-58qx-3vcg-4xpx:pkg:464f1e56f88977dff15c5c23 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7p8r-x3mc-p8w7:pkg:2f8d75dd087c1050a99a8192 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4c8g-83qw-93j6:pkg:181d5c1a6aff27dd93f86cff applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3ppc-4f35-3m26:pkg:f700a97b2d134373c6c36877 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3jxr-9vmj-r5cp:pkg:a6af0e9fdfc814bb2702c837 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-23c5-xmqv-rm74:pkg:28c6f8e6010383b649a97a01 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3v7f-55p6-f55p:pkg:6567e5dee65459862e18aa65 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/src/__tests__/extension-install.test.ts#L10" rel="noopener noreferrer">src/__tests__/extension-install.test.ts:10</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v39h-62p7-jpjc:pkg:a6be302000b0d22d393bcd4e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-442j-39wm-28r2:pkg:c54738cea96a333e19b8bd79 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xhpv-hc6g-r9c6:pkg:4114756074b3c1883ca427a6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f65p-4m7j-42xc:pkg:92989e2d790a713a91b5bde1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/scripts/sync-version.mjs#L16" rel="noopener noreferrer">scripts/sync-version.mjs:16</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:a3638530d49c16954a754a83 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh99-v99m-4gvg:pkg:f943bf04aa1d0078992a0950 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3ppc-4f35-3m26:pkg:173c1b2fab8e025126fb982c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r28c-9q8g-f849:pkg:309438d8c981844c76003c01 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xjpj-3mr7-gcpf:pkg:2c93c7ce30edf86304d17bbe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f886-m6hf-6m8v:pkg:16af9086b5e4ae9e3d4dc665 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jp2q-39xq-3w4g:pkg:720a7f211d1f6e8a46d0f289 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jmr7-xgp7-cmfj:pkg:0a170fd273ac9e64ed7e2bb5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xwg4-73v4-xw9w:pkg:b0abe8c9840bfaafb5747f78 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7r86-cg39-jmmj:pkg:fa706fb036ae029fca4e7e55 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:56fd66430fa2724b4206a4ad applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xvcm-6775-5m9r:pkg:41b8ae801891d7b3fdae2f6e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v2hh-gcrm-f6hx:pkg:9600c6310040af533d8d1920 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-q3j6-qgpj-74h6:pkg:2d0d5c8fc1bb62c4e3b44b2a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7r86-cg39-jmmj:pkg:d1c7abe70f0b881829849922 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2w6w-674q-4c4q:pkg:d25708df68737694eb8e6977 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qj8w-gfj5-8c6v:pkg:7d87d343aa0c80bd7734851a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2qvq-rjwj-gvw9:pkg:bde04755dd174b8acbe6de92 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6g55-p6wh-862q:pkg:be20184562ed7ac60b9bb3c5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2g4f-4pwh-qvx6:pkg:e75f751e62b1e8418f7d80f3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/src/__tests__/schema-to-example.test.ts#L68" rel="noopener noreferrer">src/__tests__/schema-to-example.test.ts:68</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rgw5-rvv9-x895:pkg:19b149914c26cb2c9c5de439 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jqff-g426-hqxp:pkg:f8eafe50099f6b486dd276b5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-52cp-r559-cp3m:pkg:b50fc3b7dc4817b2367e97d7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mh29-5h37-fv8m:pkg:be84c0d3fc58da2798a815e5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2883-xcg3-v3hh:pkg:d14bd3188f5830360648dc9c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/webpack.config.cjs#L5" rel="noopener noreferrer">webpack.config.cjs:5</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-28wg-ghj8-5hjv:pkg:006e2a19c763cc0fc17b9679 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fxqj-rqcc-2cmp:pkg:80dc2988b9d15a40674cea67 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-37qj-frw5-hhjh:pkg:e687e97ada633175cf3a9dbc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4x5r-pxfx-6jf8:pkg:4b1c458623d5edd1e246a805 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c83g-rgw3-j3cx:pkg:9cc2e79628fa9edb09eb42da applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:a9b17cadf83e3a5de547592b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8fgc-7cc6-rx7x:pkg:f80ec8e25f2f9f2ce4de54ab applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7rx3-28cr-v5wh:pkg:2d05cf734c06fd6d1e77b848 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p95v-992w-h6c3:pkg:5cae82464e421b021afa723a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fv7c-fp4j-7gwp:pkg:43dd868b8e2242ac0ba9d6d7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5c6j-r48x-rmvq:pkg:9695ebfe7ac51867550b15ed applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c2c7-rcm5-vvqj:pkg:6159a1838ee53aace6ac3052 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3jxr-9vmj-r5cp:pkg:0546a3b9043a41cf17d6475f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f886-m6hf-6m8v:pkg:3c9cac5b1efe1960955c0ea1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-c2c7-rcm5-vvqj:pkg:09f761f2e2a83fdc7890eb5a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-23c5-xmqv-rm74:pkg:129158f1f423f49b12e76a97 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-73wf-gq98-2v4g:pkg:f1a31653235e926160d3dd89 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-96hv-2xvq-fx4p:pkg:788f1d7067e1308f3b84ebcc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5p4m-2wfm-xmqj:pkg:854982e350d33df8baa91ad9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3v7f-55p6-f55p:pkg:972939a004a2a625fbda61c7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3mfm-83xf-c92r:pkg:146840b9eb3231ae1d463c20 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-38r7-794h-5758:pkg:3e2169c05cd6e65b3694dd1d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-wf6x-7x77-mvgw:pkg:c54fb3802e9d37bdf9527043 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v56q-mh7h-f735:pkg:85f01818ba1fa2d535c8fe80 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (12)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code the scanner flagged turns out to be the extension talking to its own SillyTavern server the normal, documented way — getting a security token and reading your lorebooks — plus standard bundled helper code. Nothing here sends data elsewhere or runs downloaded code.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The decoded representation supplied for this flag shows the actual data flow: a cached same-origin fetch of the SillyTavern CSRF token, a same-origin POST to the world info API carrying that token, and local parsing/repair of tracker responses (fence stripping, JSON repair, schema coercion) with console diagnostics. All destinations are the SillyTavern host itself, which is the documented purpose of a tracker extension that reads lorebooks and generates trackers via the active connection. The execution-sink half of the correlation comes from transpiled generator/babel helpers in the same bundle; no path from any fetched response into dynamic code execution is demonstrated, and no external destination appears.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L1" rel="noopener noreferrer">dist/index.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.monkey-patch</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged normal code that comes from the tool used to bundle and compile the JavaScript. It sets up standard JavaScript internals, not anything that hijacks the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.monkey-patch. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged occurrences are within repeated regenerator-runtime/babel-style helper blocks visible in the supplied windows, where generator function prototypes and constructor properties are defined via Object.defineProperty and Object.setPrototypeOf. This is standard transpiled helper machinery, not interception of host functions. No monkey-patching of SillyTavern runtime objects is demonstrated at these locations.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.monkey-patch</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L24498" rel="noopener noreferrer">dist/index.js:24498</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code either uses a standard JavaScript internal for normal object setup, or actively blocks a known trick that malicious data could use — the opposite of a vulnerability at these spots.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged lines are generator helper functions using __proto__ for prototype chain setup, plus XML parser code that explicitly neutralizes __proto__ keys by rewriting them to a safe name before storing them. The latter is a defense against prototype pollution in XML-to-object parsing, not an exploitation of it. No attacker-controlled assignment into Object.prototype is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L18591" rel="noopener noreferrer">dist/index.js:18591</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner reacted to code that serializes data with standard JSON functions so tracker content can be shown in an edit box or exported. Nothing sensitive is being gathered or sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L23795" rel="noopener noreferrer">dist/index.js:23795</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is a list of official web standards addresses used to build SVG/MathML elements and to label data schemas. They are labels, not places the extension sends your data to.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged windows show W3C namespace URI constants used for SVG and MathML DOM element creation, JSON Schema draft identifiers, and a React-included guard that replaces javascript: URLs with a throwing placeholder. These are static well-known identifiers, not network destinations contacted at runtime. The demonstrated network calls in the bundle target same-origin SillyTavern endpoints such as the CSRF token and world info endpoints.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L4033" rel="noopener noreferrer">dist/index.js:4033</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner noticed leftover references of the kind release tooling inserts when preparing code. They do not gather secrets, and the evidence shows nothing being collected or sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This signal typically fires on build-time environment variable references that remain in bundled browser code. The bundle executes in the SillyTavern browser context, the supplied windows show no serialization of a runtime environment, and no such values are passed to any destination in the evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L57" rel="noopener noreferrer">dist/index.js:57</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.monkey-patch</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is boilerplate the build tool adds so modern language features run in older browsers. It only sets up its own internal objects and does not tamper with the host application.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.monkey-patch. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The repeated matches are the standard runtime helper emitted by the language transpiler for async and generator support. Each repeated block wires prototype chains for the helper&#39;s own internal classes; none replace or override existing globals, host methods, or other extensions&#39; state. Multiple copies appear because each bundled module receives its own copy of the helper.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.monkey-patch</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L57" rel="noopener noreferrer">dist/index.js:57</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged links are official naming labels that web formats use internally, not places the code visits. Nothing contacts them over a network.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The matched strings visible in the evidence are standard markup namespace identifiers and a schema declaration identifier embedded by the bundled interface and validation libraries. These are naming labels, not dereferenced endpoints; no outbound request to any of them appears in the supplied windows.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L20" rel="noopener noreferrer">dist/index.js:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The file contains both a downloader and a code-runner simply because large bundles include many libraries. There is no sign that anything downloaded is ever executed, which is what would make this dangerous.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate reflects two unrelated primitives co-located in one minified bundle: a bundled template engine that compiles the extension&#39;s own shipped display templates at runtime, and ordinary request helpers used for extension assets and host endpoints. The evidence shows no data flow in which retrieved remote content reaches the compilation sink, so same-file correlation alone does not demonstrate remote code loading.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L1-L57" rel="noopener noreferrer">dist/index.js:1-57</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code does the opposite of the risk: it contains safety checks that block a known trick where specially crafted data could alter the app&#39;s internals.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The visible matches are hardening logic inside the bundled parsers: while parsing untrusted documents they detect a well-known dangerous prototype property name and rename it, and they construct lookup tables from a null-prototype base. These are mitigations against prototype pollution in the libraries&#39; own parse paths, not assignments that pollute shared objects.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L40" rel="noopener noreferrer">dist/index.js:40</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The extension asks the SillyTavern server for its own security handshake value and shows it back to that same server to prove the request is genuine. This is the normal way extensions talk to the host app, and nothing leaves the user&#39;s own setup.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The source obtains the host&#39;s per-session anti-CSRF token from the SillyTavern backend and immediately presents it back to that same backend as a request header when loading a lorebook by name. Both requests use relative same-origin addresses, the token is a request-authenticity value rather than a model-provider credential or API key, and it is never forwarded to any third-party destination. This matches the documented feature of filtering World Info used for tracker generation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/src/sillytavern-world-info.ts#L69" rel="noopener noreferrer">src/sillytavern-world-info.ts:69</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The scanner saw the extension fetch data and also saw generic code patterns that can run dynamic code somewhere in the bundle, and assumed they connect. The visible fetches only talk to the SillyTavern server itself for normal features, and nothing shown feeds downloaded content into code execution.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The network primitives demonstrated in the supplied source are same-origin fetches to the SillyTavern host (CSRF token endpoint and the world info API, using the standard CSRF header) plus template loading, all consistent with the stated tracker purpose. The dynamic-execution signal arises from bundler/runtime helpers (Function/eval-like constructs inside transpiled libraries) in the same large file; the supplied evidence does not show fetched content being passed into any dynamic execution sink. This is a same-file correlation across a 45k-line bundle, not a demonstrated download-then-execute flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/blob/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca/dist/index.js#L30-L29251" rel="noopener noreferrer">dist/index.js:30-29251</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>184 files &middot; 12874732 bytes</dd>
+      <dt>Contextual coverage</dt><dd>86 of 86 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>114 files &middot; 1762185 bytes</dd>
+        <dt>X-Ray review families</dt><dd>209 warning occurrences compacted to 15 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>114 raw &middot; 25 decoded &middot; 1 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>114 raw signatures &middot; 22 raw AST &middot; 113 raw OpenGrep &middot; 26 derived signatures &middot; 1 derived AST &middot; 25 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>dist/index.js</code> &mdash; derived-ast / parse</li><li><code>dist/index.js</code> &mdash; derived-opengrep / parse</li><li><code>dist/index.js</code> &mdash; normalize / parse</li><li><code>dist/index.js</code> &mdash; normalize / unsupported</li><li><code>dist/index.js</code> &mdash; raw-opengrep / parse</li><li><code>scripts/debug-tracker-context-capture.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/debug-tracker-context-fixture.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/write-tracker-context-artifacts.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/character-auto-mode-exclusion.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/config-module.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/embed-snapshot-transform.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/message-status-indicator.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/premade-module-templates.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/schema-preset-section.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/settings-sections.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/settings-ui.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/system-prompt.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-action-helpers.skip-guard.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.cancel.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.cleanup.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.context-menu-indicator.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.edit.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.full-generation-indicator.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.modify-schema.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.prompt-assembly.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.prompt-engineering.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-actions.skip-first-messages.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-apply.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-context-debug.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-include.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-module-chaining.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-parts.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-render.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/tracker-schema-scenarios.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/ui-debug.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/ui-init.auto-mode-exclusion.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/ui-init.idempotent.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/ui-init.rerender.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/__tests__/ui-init.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/Settings.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/DiagnosticsSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/EmbedSnapshotTransformSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/GenerationBehaviorSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/GenerationOrderSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/GenerationPromptTemplatesSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/IncludeModulesSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/SchemaPresetSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/SettingsSectionDrawer.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/SystemPromptSettingsSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/TrackerGenerationSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/TrackerInjectionSection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/WorldInfoPolicySection.tsx</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/module-import.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/preset-state.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/schema-editor-state.ts</code> &mdash; raw-ast / parse</li><li><code>src/components/settings/settings-shared.ts</code> &mdash; raw-ast / parse</li><li><code>src/config.ts</code> &mdash; raw-ast / parse</li><li><code>src/embed-snapshot-transform.ts</code> &mdash; raw-ast / parse</li><li><code>src/extension-install.ts</code> &mdash; raw-ast / parse</li><li><code>src/extension-metadata.ts</code> &mdash; raw-ast / parse</li><li><code>src/file-picker.ts</code> &mdash; raw-ast / parse</li><li><code>src/index.tsx</code> &mdash; raw-ast / parse</li><li><code>src/parser.ts</code> &mdash; raw-ast / parse</li><li><code>src/parser/json.ts</code> &mdash; raw-ast / parse</li><li><code>src/parser/shared.ts</code> &mdash; raw-ast / parse</li><li><code>src/parser/toon.ts</code> &mdash; raw-ast / parse</li><li><code>src/parser/xml.ts</code> &mdash; raw-ast / parse</li><li><code>src/schema-repair.ts</code> &mdash; raw-ast / parse</li><li><code>src/schema-to-example.ts</code> &mdash; raw-ast / parse</li><li><code>src/settings-numeric.ts</code> &mdash; raw-ast / parse</li><li><code>src/sillytavern-world-info.ts</code> &mdash; raw-ast / parse</li><li><code>src/system-prompt.ts</code> &mdash; raw-ast / parse</li><li><code>src/test-fixtures/tracker-prompt-fixtures.ts</code> &mdash; raw-ast / parse</li><li><code>src/test-utils/sillytavern-host-harness.ts</code> &mdash; raw-ast / parse</li><li><code>src/test-utils/tracker-actions-test-helpers.ts</code> &mdash; raw-ast / parse</li><li><code>src/tracker-cleanup.ts</code> &mdash; raw-ast / parse</li><li><code>src/tracker-helpers.ts</code> &mdash; raw-ast / parse</li><li><code>src/tracker-module-chaining.ts</code> &mdash; raw-ast / parse</li><li><code>src/tracker-parts.ts</code> &mdash; raw-ast / parse</li><li><code>src/tracker.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/character-auto-mode-exclusion.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/character-panel-auto-mode.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/debug.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/menu-theme.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/message-status-indicator.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/outgoing-auto-mode.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/parts-menu-portal.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/prompt-engineering.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/templates.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/tracker-action-helpers.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/tracker-actions.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/tracker-cleanup-ui.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/tracker-context-menu-actions.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/ui-init.ts</code> &mdash; raw-ast / parse</li><li><code>src/world-info-allowlist.ts</code> &mdash; raw-ast / parse</li><li><code>src/world-info-policy.ts</code> &mdash; raw-ast / parse</li><li><code>types/global.d.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Zaakh/SillyTavern-zTracker/commit/ea7bdc3af955ba4311af9d0c6dce468736e8b3ca" rel="noopener noreferrer">ea7bdc3af955ba4311af9d0c6dce468736e8b3ca</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-09T12:38:51.696Z">Sep 9, 2026</time></dd>
+        <dt>History depth</dt><dd>6 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>4 fresh / 0 reused groups &middot; 15 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>71 deterministic / 15 contextual candidates &middot; 4 contextual / 17 total behavior cases</dd>
+        <dt>Model budget</dt><dd>2 model calls &middot; 4 / 12 fresh cases &middot; 92135 / 200000 estimated input &middot; 75521 / 250000 actual input &middot; 10304 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>2 model calls &middot; up to 2 groups and 8 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>75521 input &middot; 10304 output &middot; 1344 cache read &middot; 5823 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>63c7790aeadb0d85ac5e994629814fa7c58d98477eb0a7a2ffdfbeaca70116b9</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1138762188/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
