@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for TavernAI/TavernAI at commit 08dbd3e.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; TavernAI/TavernAI</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/TavernAI/TavernAI" rel="noopener noreferrer">TavernAI/TavernAI</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/TavernAI/TavernAI/commit/08dbd3e15f639e75f0450b7c1a33fa7de8695055" rel="noopener noreferrer">08dbd3e</a></span>
+        <span>Reviewed <time datetime="2026-09-28T15:51:20.149Z">Sep 28, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>12 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    
+    <details class="expected">
+      <summary>Contextual expected matches (11)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a German installation guide showing the standard one-line command the project itself recommends for installing on a Linux server. The user types and runs the command themselves and can see exactly where it comes from. Nothing here is hidden or suspicious; this is the common install style used by many open-source projects.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is inside a documentation page, not executable project code. The flagged text is the project&#39;s own documented VPS installer command, which fetches an install script over HTTPS from the project&#39;s own website and pipes it into the shell. The source, destination, and action are all fully disclosed to the user, and the command matches the project&#39;s stated distribution method referenced in its README. No concealed execution, unexpected destination, or obfuscation is present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optionally document a checksum or a download-then-review variant of the install command so cautious users can inspect the script before running it.</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/de/docs/installation.md#L43-L44" rel="noopener noreferrer">docs-site/docs/de/docs/installation.md:43-44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the project&#39;s English installation guide showing its standard one-line server install command. The user runs it deliberately and can see its source. This is a normal, transparent install pattern used widely in open source.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is in the English documentation page, not executable code. It is the project&#39;s own documented installer instruction fetching a script over HTTPS from the project&#39;s own domain and piping it into bash. The command is visible to users, matches the distribution method stated in the README, and shows no concealed execution, hidden destination, or unexpected behavior in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/docs/installation.md#L94-L95" rel="noopener noreferrer">docs-site/docs/docs/installation.md:94-95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the Russian version of the guide showing the project&#39;s standard install command with a folder option. The user runs it deliberately and can see where it comes from; nothing is concealed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is in the Russian documentation page. It is the project&#39;s own documented installer command with an install-directory environment variable, fetching the installer over HTTPS from the project&#39;s own domain and executing it with a user-supplied target path. The source, action, and destination are disclosed, match the project&#39;s README distribution method, and show no hidden or obfuscated behavior in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/ru/docs/installation.md#L94-L95" rel="noopener noreferrer">docs-site/docs/ru/docs/installation.md:94-95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the Russian guide&#39;s standard one-line server install command. It is shown openly to users and comes from the project&#39;s own site; this is a common and transparent install style.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is the primary documented installer command in the Russian documentation. It downloads the project&#39;s install script over HTTPS from the project&#39;s own website and pipes it into the shell, as part of an openly documented VPS installation flow. The behavior is disclosed, proportional to the stated purpose, and involves no unexpected destination or execution path in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/ru/docs/installation.md#L43-L44" rel="noopener noreferrer">docs-site/docs/ru/docs/installation.md:43-44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the Spanish version of the guide showing the project&#39;s standard one-line server install command. The user runs it themselves and can see where it comes from; nothing is concealed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is in the Spanish documentation page. It is the project&#39;s own documented VPS installer command, fetching the installer over HTTPS from the project&#39;s own domain and piping it into the shell. The command is disclosed to users, matches the README&#39;s stated distribution method, and the supplied evidence shows no hidden destination, obfuscation, or execution beyond the documented install.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/es/docs/installation.md#L43-L44" rel="noopener noreferrer">docs-site/docs/es/docs/installation.md:43-44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same install command with a folder option, shown openly in the Spanish guide. It does exactly what the documentation says.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is the same documented installer command with an install-directory environment variable in the Spanish documentation. It downloads the project&#39;s installer over HTTPS to a user-specified path and runs it, with the source, action, and destination all disclosed to the user and consistent with the project&#39;s stated purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/es/docs/installation.md#L94-L95" rel="noopener noreferrer">docs-site/docs/es/docs/installation.md:94-95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same recommended install command from the guide, just with an extra option to choose the installation folder. It is shown openly to the user, comes from the project&#39;s own website, and does exactly what the guide says it does.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The second match is the same documented installer command with an install-directory environment variable, still inside the documentation file. It downloads the project&#39;s own installer over HTTPS and executes it with an explicit, user-supplied target path. The behavior, source, and destination are disclosed, match the project&#39;s stated distribution model, and involve no obfuscated or unexpected data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/de/docs/installation.md#L94-L95" rel="noopener noreferrer">docs-site/docs/de/docs/installation.md:94-95</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same recommended install command with a folder-choice option, shown openly in the guide. Nothing hidden or unexpected is present.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is the same documented installer command with an install-directory environment variable, in the documentation file. It downloads the project&#39;s installer over HTTPS to a user-chosen directory and executes it, fully disclosed and consistent with the project&#39;s stated distribution and update workflow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/docs/installation.md#L43-L44" rel="noopener noreferrer">docs-site/docs/docs/installation.md:43-44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text is just a recommended install command in the project&#39;s README for setting it up on a Linux server. It downloads an installer from the project&#39;s own website and runs it, which is a normal way server software is installed. Nothing here shows the command doing anything sneaky or downloading from an unexpected place, and it only runs when a user deliberately copies and runs it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner matched a documentation code block in a README that pipes a remote shell script into a shell interpreter. This is an installation instruction for the project&#39;s own server deployment, and the download destination is the project&#39;s own website domain, consistent with the repository&#39;s stated purpose and its other official download links. The supplied evidence contains no executable project code, no script content, no obfuscated second-stage fetch, and no destination that deviates from the project&#39;s own distribution channel. Piping a remote installer directly into a shell is a widely used, user-initiated deployment pattern for server software; the matched text documents an install method rather than concealing execution. The contents of the referenced installer were not supplied, so no behavior of that script is demonstrated by this evidence, but nothing in the supplied data indicates a disguised destination or hidden execution.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/README.md#L39-L40" rel="noopener noreferrer">README.md:39-40</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the French version of the guide showing the project&#39;s standard one-line server install command. The user chooses to run it and can see its source; this is a normal transparent install pattern.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is in the French documentation page. It is the project&#39;s own documented installer instruction, downloading the install script over HTTPS from the project&#39;s own domain and piping it into bash. The command is fully visible to the user, matches the project&#39;s stated distribution model in its README, and the supplied evidence contains no concealed execution, hidden destination, or obfuscation.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/fr/docs/installation.md#L43-L44" rel="noopener noreferrer">docs-site/docs/fr/docs/installation.md:43-44</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is the same install command with a folder option, shown openly in the French guide. It behaves exactly as documented.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The match is the same documented installer command with an install-directory environment variable in the French documentation. It fetches the project&#39;s installer over HTTPS to a user-chosen directory and executes it, with the behavior and destination disclosed and proportional to the project&#39;s stated installation purpose.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/docs-site/docs/fr/docs/installation.md#L94-L95" rel="noopener noreferrer">docs-site/docs/fr/docs/installation.md:94-95</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Pipe-to-shell installer pattern in documentation warrants no finding on its own</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>Running an installer straight from the internet is a common convenience, but it means users trust the project&#39;s website every time. Letting users download and read the installer first, or checking it against a published checksum, would be a nice extra, though nothing currently shown suggests any problem.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The pattern of fetching a remote script and immediately executing it is a legitimate, disclosed, user-initiated installation method when the destination is the project&#39;s own distribution domain, as it is here. The evidence does not include the installer&#39;s contents, so any assessment of the installer itself is outside what this review can demonstrate. Best practice would be to also publish the installer in the version-controlled repository, provide checksums, or offer a two-step download-and-inspect instruction so users can review the script before running it, but the absence of those refinements is a documentation quality consideration, not demonstrated exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optionally publish the install script in the repository and link a checksum so users can verify it before executing; no security change is required by the supplied evidence.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/TavernAI/TavernAI/blob/08dbd3e15f639e75f0450b7c1a33fa7de8695055/README.md#L39-L40" rel="noopener noreferrer">README.md:39-40</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>161 files &middot; 19319996 bytes</dd>
+      <dt>Contextual coverage</dt><dd>11 of 11 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>0 files &middot; 0 bytes</dd>
+        <dt>X-Ray review families</dt><dd>0 warning occurrences compacted to 0 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>0 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>0 raw signatures &middot; 0 raw AST &middot; 0 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/TavernAI/TavernAI/commit/08dbd3e15f639e75f0450b7c1a33fa7de8695055" rel="noopener noreferrer">08dbd3e15f639e75f0450b7c1a33fa7de8695055</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-28T15:51:20.149Z">Sep 28, 2026</time></dd>
+        <dt>History depth</dt><dd>2 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 11 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>0 deterministic / 11 contextual candidates &middot; 6 contextual / 6 total behavior cases</dd>
+        <dt>Model budget</dt><dd>2 model calls &middot; 6 / 12 fresh cases &middot; 75383 / 200000 estimated input &middot; 58730 / 250000 actual input &middot; 4253 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>2 model calls &middot; up to 5 groups and 10 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>58730 input &middot; 4253 output &middot; 1359 cache read &middot; 559 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>672d5f4cc673eaea2f6077ce94c1a4dc55c8acd45363e3a7e9145aaf6bc5130d</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1271548133/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
