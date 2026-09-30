@@ -1,0 +1,1235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for AventurasTeam/Aventuras at commit 1aa6832.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; AventurasTeam/Aventuras</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/AventurasTeam/Aventuras" rel="noopener noreferrer">AventurasTeam/Aventuras</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/AventurasTeam/Aventuras/commit/1aa68321c528c89c46187e29398998ba8bcb433f" rel="noopener noreferrer">1aa6832</a></span>
+        <span>Reviewed <time datetime="2026-09-30T20:10:08.184Z">Sep 30, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>122 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The release pipeline hands every secret the project stores to its Android build job. Since that job&#39;s definition lives in the same project and is written by the same maintainers, this is normal practice and not evidence of anything harmful. It is just broader than strictly necessary, so a future problem in that build job could touch more secrets than it needs.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The release workflow&#39;s android build job passes all repository secrets to a reusable workflow via unconditional secrets inheritance. The called workflow is defined in the same repository under maintainer control, so this is a common CI pattern rather than an external exposure. The hygiene concern is that every repository secret, rather than only the ones the build needs, becomes available to the called workflow, which widens the blast radius if the called workflow or any action it uses is later compromised or changed. No attacker-controlled trigger, exfiltration path, or malicious consumer is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Prefer passing only the specific secrets each reusable build workflow needs, for example the GitHub token and any signing credentials, instead of inheriting all secrets.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L57" rel="noopener noreferrer">.github/workflows/release.yml:57</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unsound-ternary</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A conditional expression in the release automation is written in a way that always picks the same outcome, so re-running a pre-release build may stomp on notes a maintainer typed into the draft. It is a small logic bug in the project&#39;s own tooling, not something an outsider can exploit or that affects the app users get.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unsound-ternary. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The release-body input uses an and/or chain intended as a conditional, but in GitHub&#39;s expression language an empty string is falsy, so both branches resolve to the fallback text and the intended empty-on-re-run case never occurs. The observable effect is that the fixed pre-release banner is applied even when re-running against an existing draft, which can overwrite manually typed release notes. This is a correctness flaw in trusted automation logic: the inputs come from an internal guard step, no attacker-controlled data reaches it, and no secrets, exfiltration, or shipped-product behavior are involved.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace the and/or pseudo-ternary with a proper conditional expression so the release body is genuinely left unset when re-running an existing draft.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unsound-ternary</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L46" rel="noopener noreferrer">.github/workflows/pre-release.yml:46</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Gitleaks reported generic-api-key</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>A scanner flagged an API key hardcoded in the app. Looking at how it is used, it is a publicly available search key from another website—the same key that site gives to every web browser—and it is only used to search that site for characters to download. It is not the project&#39;s own secret and not the user&#39;s key, so nothing sensitive is exposed. Hardcoding it is still untidy: it can stop working without warning and looks like a real secret to scanners.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> Gitleaks matched secret-detection rule generic-api-key. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> A 64-hex-character bearer token is hardcoded as a fallback in a discovery provider for a third-party character-card site. The surrounding code shows the token is normally scraped at runtime from that site&#39;s own public client-side JavaScript, meaning it is a token the site already publishes to every browser visitor, not a private project or user credential. The token is sent only to that site&#39;s search endpoint to power a character discovery feature that matches the project&#39;s stated purpose; no user data, provider API keys, or story content is involved. The hardcoded fallback is a hygiene weakness because it embeds a third party&#39;s token and will silently rot or could be confused with a genuine secret, but the evidence does not demonstrate exposure of any sensitive credential.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Document inline that this is the third-party site&#39;s public client token, and consider dropping the hardcoded fallback in favor of failing gracefully and re-fetching the token, so it cannot be mistaken for a genuine secret.</p>
+      <dl>
+        <dt>Scanner</dt><dd>gitleaks 8.30.1</dd>
+        <dt>Rule</dt><dd>generic-api-key</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src/lib/services/discovery/providers/janny.ts#L28" rel="noopener noreferrer">src/lib/services/discovery/providers/janny.ts:28</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The automated release script hands every secret the project has to its build sub-scripts. Those sub-scripts live in the same project and are run only by maintainers when publishing a release, so nothing in the evidence shows secrets leaking to outsiders. It is still a good idea to hand over only the specific secrets each build actually needs, in case the build scripts change later.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> A release workflow passes all repository secrets to three reusable build workflows. The called workflows are local, same-repository files referenced by relative path, so this is not a cross-repository secret disclosure; it is a maintainers-only release pipeline triggered by protected tags or manual dispatch. The pattern is a real hygiene weakness because every current and future repository secret becomes available to the build jobs, expanding the blast radius if a build workflow step is later modified, but the supplied evidence shows no attacker-controlled trigger, no untrusted input reaching the called jobs, and no demonstrated secret misuse or exfiltration.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace blanket secret inheritance with explicit per-secret passing so each build job receives only the credentials it needs, and keep the called workflows&#39; permissions scoped.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L64" rel="noopener noreferrer">.github/workflows/release.yml:64</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The desktop build job also receives every project secret rather than just the ones it needs. Nothing in the supplied evidence shows misuse; this is a least-privilege hygiene note for the release pipeline.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Identical pattern to the other called workflow: the desktop build job inherits all repository secrets unconditionally. The reusable workflow is local to the same repository and maintainers control its content, so there is no demonstrated external or attacker-controlled destination. The weakness is over-broad secret scope relative to what the job needs, which increases potential blast radius if the called workflow or its actions are ever compromised, but no such compromise or exfiltration is evidenced.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Pass only the required secrets explicitly to the reusable desktop build workflow instead of inheriting all of them.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L49" rel="noopener noreferrer">.github/workflows/release.yml:49</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/scripts/version.js#L14" rel="noopener noreferrer">scripts/version.js:14</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported unsound-ternary</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; high confidence</p>
+    <p>The expression chosen to leave the release notes blank on a re-run never actually produces a blank value, so the placeholder text is always used and could overwrite notes someone typed into a draft release. This is a release-pipeline bug, not a security issue, and it only affects maintainers publishing releases.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule unsound-ternary. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The release-body parameter uses a chained and/or pseudo-ternary. In GitHub expression semantics, the intended-empty branch evaluates to an empty string, which is falsy, so the or-branch is taken in every case. The result is that the body always receives the fallback text, including on re-runs of an existing draft, where the surrounding comment says the notes should be left untouched. This is a demonstrated logic defect in the workflow, but it affects only release-note content in a maintainer-operated pipeline; there is no attacker-controlled input, secret exposure, or code-execution consequence, and the fallback text itself is a harmless static string.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Replace the chained and/or expression with a proper conditional, such as an if-based step or a format/if expression that yields an empty body when the release state is draft, so typed draft notes are preserved on re-runs.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>unsound-ternary</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L45" rel="noopener noreferrer">.github/workflows/release.yml:45</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (103)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0080:pkg:d9db6230dfa23e8ba0fa93cf applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L24" rel="noopener noreferrer">.github/workflows/pre-release.yml:24</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-desktop.yml#L105" rel="noopener noreferrer">.github/workflows/build-desktop.yml:105</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L149" rel="noopener noreferrer">.github/workflows/build-android.yml:149</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L23" rel="noopener noreferrer">.github/workflows/release.yml:23</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported template-injection</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/actions/build-version/action.yml#L37" rel="noopener noreferrer">.github/actions/build-version/action.yml:37</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-72xf-g2v4-qvf3:pkg:2f098d09dffd8939e104e6f0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2mjp-6q6p-2qxm:pkg:6d96a46fadb25a056091e448 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m8rv-5g2x-5cg5:pkg:4960f6321d5eb83e948ad4ac applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-desktop.yml#L83" rel="noopener noreferrer">.github/workflows/build-desktop.yml:83</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g8m3-5g58-fq7m:pkg:e4124745cfdd4bc7b9a15ac1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0258:pkg:222a355a74aca3bba6fbb9da applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L39" rel="noopener noreferrer">.github/workflows/build-android.yml:39</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L22-L23" rel="noopener noreferrer">.github/workflows/release.yml:22-23</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/actions/npm-install/action.yml#L34" rel="noopener noreferrer">.github/actions/npm-install/action.yml:34</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v3r7-h72x-cjcm:pkg:3442b6d04e2f119213e16797 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5v7r-6r5c-r473:pkg:db1c36cdfd066cb137608ca0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vrm6-8vpv-qv8q:pkg:0b992fe91b0b56ff0c3a69a0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L48" rel="noopener noreferrer">.github/workflows/build-android.yml:48</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vxpw-j846-p89q:pkg:2b5722d889310f1a977423f1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L109" rel="noopener noreferrer">.github/workflows/build-android.yml:109</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L71" rel="noopener noreferrer">.github/workflows/build-android.yml:71</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L10" rel="noopener noreferrer">.github/workflows/release.yml:10</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/lint-and-typecheck.yml#L24" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:24</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L23-L24" rel="noopener noreferrer">.github/workflows/pre-release.yml:23-24</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2023-0071:pkg:ee975215c8fb081d4be2c2de applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-pxg6-pf52-xh8x:pkg:6da1e3539f31ff57c2a349c3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L66" rel="noopener noreferrer">.github/workflows/build-android.yml:66</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L24-L25" rel="noopener noreferrer">.github/workflows/build-android.yml:24-25</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9rgm-9g3h-6x36:pkg:8a05d6d431ec29dc9927e432 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0370:pkg:9b268f40461da81c7a1c55ed applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L39" rel="noopener noreferrer">.github/workflows/pre-release.yml:39</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w5hq-g745-h8pq:pkg:557a6d9a353e8755eba18deb applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/bootstrap-ios.yml#L63" rel="noopener noreferrer">.github/workflows/bootstrap-ios.yml:63</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-pmjh-fq2x-6v4x:pkg:814e6386268dbf3533461ca1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/scripts/remote.test.js#L10" rel="noopener noreferrer">scripts/remote.test.js:10</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-wrw7-89jp-8q8g:pkg:4b30aae73f1836d87a5b008c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0258:pkg:95f9173f3d1ac6374e456fa8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L55" rel="noopener noreferrer">.github/workflows/build-android.yml:55</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L48" rel="noopener noreferrer">.github/workflows/build-android.yml:48</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L33" rel="noopener noreferrer">.github/workflows/build-ios.yml:33</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-q2hr-2g5m-vwhr:pkg:795fdc464a3888c7b68760ab applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rx4f-c7p8-82vq:pkg:84b2df35347fd80a7d52507c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0081:pkg:5c764120c78ffcfe5027b39c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-desktop.yml#L76-L80" rel="noopener noreferrer">.github/workflows/build-desktop.yml:76-80</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/bootstrap-ios.yml#L22-L23" rel="noopener noreferrer">.github/workflows/bootstrap-ios.yml:22-23</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/bootstrap-ios.yml#L23" rel="noopener noreferrer">.github/workflows/bootstrap-ios.yml:23</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/actions/npm-install/action.yml#L47" rel="noopener noreferrer">.github/actions/npm-install/action.yml:47</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/bootstrap-ios.yml#L51" rel="noopener noreferrer">.github/workflows/bootstrap-ios.yml:51</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2gqq-gqf2-x968:pkg:46832ca569076237770558e9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2v37-7h3g-55p8:pkg:06ad0185911f4bb6106d61dc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fjxv-7rqg-78g4:pkg:6c89c9914b40635e432f1415 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-desktop.yml#L77" rel="noopener noreferrer">.github/workflows/build-desktop.yml:77</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hmw2-7cc7-3qxx:pkg:b55f5aef11b0369cc46f988a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6rw7-vpxm-498p:pkg:43bb4aeefd1a794ecdaf18ba applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8436-99hf-9mmv:pkg:8ca5f098d431dc526b1c0927 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src/lib/services/syncActions.test.ts#L15" rel="noopener noreferrer">src/lib/services/syncActions.test.ts:15</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2024-0429:pkg:d2e88fc02f6be9987f66e6e8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L32-L33" rel="noopener noreferrer">.github/workflows/build-ios.yml:32-33</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rfgv-xxqx-mfg5:pkg:fa194ca81f9401706246a35f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L138" rel="noopener noreferrer">.github/workflows/build-android.yml:138</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L54" rel="noopener noreferrer">.github/workflows/build-ios.yml:54</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r53p-7pc4-xj5r:pkg:bd7641efc84f0d9546a70936 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-35p6-xmwp-9g52:pkg:d8c1871761b9627fdd34c81b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-desktop.yml#L114" rel="noopener noreferrer">.github/workflows/build-desktop.yml:114</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.serialize-environment</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-tooling</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/vite.config.js#L5" rel="noopener noreferrer">vite.config.js:5</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6j4f-fj2g-mc7p:pkg:1b256821002216bb3b207a3c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8xcm-r25x-g524:pkg:cc5804616c4fb4e83e60068a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0235:pkg:d039eb756756d5d8fe092ddd applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2jfj-6hjv-fm6j:pkg:175831eb9d2400b3cdc340b4 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L25" rel="noopener noreferrer">.github/workflows/build-android.yml:25</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w293-vg96-wgc3:pkg:d43b5e923dc7ff1e776c4a60 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0100:pkg:bd8adf60c37242745cb633a0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r53p-7pc4-xj5r:pkg:1059646a53ed0e896cbf29be applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/actions/npm-install/action.yml#L20" rel="noopener noreferrer">.github/actions/npm-install/action.yml:20</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported excessive-permissions</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L10" rel="noopener noreferrer">.github/workflows/pre-release.yml:10</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0285:pkg:08db2c0c1ca8ee1872b3d40f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0075:pkg:3e15a087e2f1d00bbc8d944a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2025-0098:pkg:bc6e2fc910a7ca702c31e56a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3wwx-pv8p-q78v:pkg:a08e866514b3f530ce58da45 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-82fw-gwwq-j7x9:pkg:e73b265e463302d69e55909b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory RUSTSEC-2026-0293:pkg:8490244dc01980c032c6e3d6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src-tauri/Cargo.lock" rel="noopener noreferrer">src-tauri/Cargo.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L112" rel="noopener noreferrer">.github/workflows/build-ios.yml:112</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/lint-and-typecheck.yml#L23-L24" rel="noopener noreferrer">.github/workflows/lint-and-typecheck.yml:23-24</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qhr7-859c-m2p7:pkg:30aebd0885cdb30a5bdc22ef applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L47" rel="noopener noreferrer">.github/workflows/build-ios.yml:47</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p8p7-x288-28g6:pkg:e8e7ad0090121b0f387eaa27 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p88m-4jfj-68fv:pkg:0aa6e836b145749eb5c5bae2 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4992-7rv2-5pvq:pkg:787189633d8ba93446193680 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-desktop.yml#L132" rel="noopener noreferrer">.github/workflows/build-desktop.yml:132</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L38" rel="noopener noreferrer">.github/workflows/release.yml:38</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3xpg-4rpp-hhhm:pkg:a6f8bf7a6965562dac1ca61a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L66" rel="noopener noreferrer">.github/workflows/build-android.yml:66</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/bootstrap-ios.yml#L29" rel="noopener noreferrer">.github/workflows/bootstrap-ios.yml:29</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L100" rel="noopener noreferrer">.github/workflows/build-ios.yml:100</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-v9p9-hfj2-hcw8:pkg:272b59ddefffdd1746f88817 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4mjr-xmp4-gh2g:pkg:71d1998e85e0b475b0071821 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-82fw-gwwq-j7x9:pkg:00f885f51d12cc13a66b964f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported template-injection</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L92" rel="noopener noreferrer">.github/workflows/build-ios.yml:92</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.data-exfiltration</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/scripts/package-manager.test.js#L3" rel="noopener noreferrer">scripts/package-manager.test.js:3</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g9mf-h72j-4rw9:pkg:2ae61459d96677abe6b160ba applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported template-injection</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L96" rel="noopener noreferrer">.github/workflows/build-android.yml:96</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L54" rel="noopener noreferrer">.github/workflows/build-ios.yml:54</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (11)</summary>
+      <article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The pre-release pipeline passes the project&#39;s secrets to its own iOS build recipe, even though the iOS build is intentionally unsigned and does not use them. Only maintainers can start this pipeline, so no outsider can reach the secrets through it. Trimming the handoff would be tidier, not safer in any demonstrated way.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Blanket secret inheritance into the local iOS build workflow, invoked from the pre-release pipeline that triggers only on maintainer-controlled version-tag pushes and manual dispatch. The iOS build is deliberately unsigned and uses no signing secrets, so the inheritance is broader than strictly necessary, but the called workflow is a local same-ref file, the caller&#39;s permissions are limited to repository contents, and no pull-request or fork path can reach these jobs. As a least-privilege hygiene matter the iOS leg could receive no secrets at all, but no untrusted trigger or exposure is demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optionally pass no secrets (or only the specific required ones) to the iOS build call, as a least-privilege tidy-up.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L65" rel="noopener noreferrer">.github/workflows/pre-release.yml:65</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw &#39;reads settings&#39; and &#39;makes network requests&#39; in the same test file and raised a flag. In reality the only setting read is a yes/no switch for turning on optional live tests, and the network requests just fetch public character cards from the same websites the app&#39;s search feature uses. No passwords or keys are touched, and these tests only run when a developer deliberately enables them.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> A heuristic flagged a test file that both reads an environment variable and performs network fetches. The environment variable is a single opt-in flag controlling whether live smoke tests run; no credential, token, or user secret is read anywhere in the file. The network calls go through a mock that substitutes plain platform fetch for the production Tauri HTTP wrapper, and the tests exercise public character-card search and download endpoints for providers the app legitimately integrates with. This is a standard live integration test behind an explicit opt-in, matching the project&#39;s stated character-discovery purpose; there is no credential source and no exfiltration path.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/src/lib/services/discovery/providers/providers.live.test.ts#L12" rel="noopener noreferrer">src/lib/services/discovery/providers/providers.live.test.ts:12</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The pre-release pipeline passes the project&#39;s signing secrets to its own Android build recipe so the app can be signed before publishing. Only maintainers can start this pipeline (by pushing a version tag or clicking run), so outside contributors cannot reach the secrets through it.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L58" rel="noopener noreferrer">.github/workflows/pre-release.yml:58</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A linter noted that this step leans on an outside helper for something the build machine might do by itself. The step just attaches the finished iOS app file to a draft release page, matching the project&#39;s documented release process. There is no evidence of anything risky happening here.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The candidate is an informational workflow-audit note that a third-party release-upload action duplicates capability the hosted runner already ships. The step only uploads an unsigned, locally built iOS package to a draft GitHub release behind an explicit publish input; the version and tag come from an internal resolution step, and the workflow runs only via workflow_call from trusted pipelines. No untrusted input path, secret flow, persistence, or obfuscation is present, so this is a lint-style style observation rather than a security exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-ios.yml#L112" rel="noopener noreferrer">.github/workflows/build-ios.yml:112</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A linter noted the release step uses a helper that roughly overlaps with what the build machine can already do. This is a style note about the release recipe, not a security problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flags the release-creation step as duplicating functionality already available on the runner. This is an informational workflow-hygiene finding about using a third-party action where a built-in could serve. The action is pinned to a major version and used for its documented purpose of creating a draft GitHub release with assets, which matches the release pipeline&#39;s stated function. No secret flow, code execution, or attacker-controlled input beyond normal release metadata is shown.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L38" rel="noopener noreferrer">.github/workflows/release.yml:38</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The iOS build gets the project&#39;s secrets handed to it even though it does not need them, since iOS builds are intentionally unsigned. That is slightly generous, but the builds only run from maintainers&#39; own actions, so no outsider can reach the secrets this way. Tightening it would be nice-to-have, not urgent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Identical blanket-secret-inheritance pattern into the local iOS build workflow. The iOS leg uses no signing secrets at all (it deliberately produces an unsigned package), so the inheritance is broader than strictly needed, but the caller&#39;s triggers exclude pull requests and fork input, and the called workflow is a local file at the same commit. The audit rule&#39;s concern — secrets reaching a workflow an untrusted actor can influence — has no demonstrated path here. This is at most a least-privilege hygiene note, not a demonstrated exposure.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optionally pass only the specific secrets each build workflow needs instead of inheriting all of them, as a least-privilege hardening measure.</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/ci.yml#L59" rel="noopener noreferrer">.github/workflows/ci.yml:59</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The build file passes the project&#39;s signing secrets to its own Android build recipe, which needs them to sign the app it produces. These builds only start from maintainers&#39; commits, a weekly timer, or a manual button, so an outside contributor cannot use this route to reach the secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Same pattern as the sibling call sites: blanket secret inheritance into a local, same-commit reusable Android build workflow. The Android build genuinely requires the keystore and key secrets to sign the artifacts it uploads, so the inheritance is proportionate to the stated purpose. The caller is restricted to default-branch pushes on dependency/CI paths, scheduled runs, and manual dispatch, with no pull-request trigger, so no untrusted or fork-controlled input can reach the inherited secrets through this workflow. Exposure is not demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/ci.yml#L66" rel="noopener noreferrer">.github/workflows/ci.yml:66</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>An automated linter left a note saying this step uses an outside helper that the build machine could perhaps do without. The step simply attaches the finished Android app file to a draft release page, which is exactly what this project&#39;s release process is supposed to do. Nothing here sends data anywhere unexpected or handles secrets improperly.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged step is an informational audit note that a third-party release-upload action may duplicate functionality the hosted runner already provides (the gh command-line tool). The step only attaches a locally built, already-signed Android package to a draft GitHub release, gated behind an explicit publish input, with the tag and version values sourced from an internal version-resolution step. The workflow is invoked only through workflow_call from trusted CI and release pipelines, so no untrusted input reaches this step, no secrets are passed to it, and there is no exfiltration, persistence, or obfuscation in the data flow. Using an external action instead of the runner&#39;s built-in CLI is a style choice, not a demonstrated security exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/build-android.yml#L149" rel="noopener noreferrer">.github/workflows/build-android.yml:149</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file hands the project&#39;s stored secrets to its own build recipes so they can sign app packages. A scanner flags that handoff as broad, but these builds only run from maintainers&#39; own commits, a weekly timer, or a manual button — never from a stranger&#39;s pull request — and the recipes live in the same repository. There is no shown way for an outsider to reach those secrets through this file.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The workflow forwards all repository secrets to a reusable build workflow defined in the same repository at the same commit. The audit rule flags blanket secret inheritance because it widens exposure if a called workflow were ever reachable from untrusted input. Here the caller runs only on a weekly schedule, pushes to the default branch restricted to dependency and CI-related paths, and manual dispatch; it never runs on pull requests, and fork contributions cannot modify or trigger these jobs. The called desktop build workflow is local, and the Android leg of the same pipeline legitimately consumes the signing secrets to produce signed artifacts, which matches the project&#39;s stated release purpose. No untrusted trigger or attacker-controlled path to the inherited secrets is demonstrated.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/ci.yml#L52" rel="noopener noreferrer">.github/workflows/ci.yml:52</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported superfluous-actions</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A linter note says this step uses an outside helper for something the build machine can already do. The step just creates a draft pre-release entry on the project&#39;s release page using the version number worked out by an earlier step. Nothing risky is happening.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule superfluous-actions. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> An informational audit note that a third-party release-creation action duplicates capability the hosted runner provides. The step creates or reuses a draft pre-release using only values from the internal guard step (version, release state) and the triggering commit, and runs in a maintainer-only workflow. No untrusted input reaches it, no secrets are exposed by it, and the draft-then-publish sequencing is consistent with the project&#39;s documented release process. Using an external action versus the runner&#39;s built-in tooling is a style consideration, not a security exposure.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>superfluous-actions</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L39" rel="noopener noreferrer">.github/workflows/pre-release.yml:39</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>zizmor reported secrets-inherit</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The pre-release pipeline hands the project&#39;s secrets to its own desktop build recipe. Only maintainers can start it, and the recipe lives in the same repository, so there is no shown way for an outsider to use this route to the secrets.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> zizmor matched workflow-security rule secrets-inherit. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Blanket secret inheritance into the local desktop build workflow from a workflow that triggers only on maintainer-controlled tag pushes and manual dispatch. The called workflow is a same-repository file, the caller&#39;s permission scope is limited to repository contents, and the release-guard step runs before any release interaction. As with the sibling call sites, the audit rule&#39;s generic concern about secrets reaching an attacker-influenced workflow has no demonstrated trigger path here.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>zizmor 1.28.0</dd>
+        <dt>Rule</dt><dd>secrets-inherit</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/pre-release.yml#L50" rel="noopener noreferrer">.github/workflows/pre-release.yml:50</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Release-body fallback text is applied on every run, including draft re-runs</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A logic slip means the workflow always writes its placeholder release notes, even when it is supposed to leave existing draft notes alone. Only release notes are affected, and only for maintainers.</p>
+    <details><summary>Technical assessment</summary>
+      <p>Because the intermediate empty-string branch is falsy, the pseudo-ternary always resolves to the fallback body text. On a re-run over an existing draft release, the release step will set that static text rather than leaving the notes as the workflow comment intends, potentially replacing maintainer-entered draft notes. This is confined to release-note content in CI and has no attacker-controlled path or user-facing security effect.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Use an explicit conditional to produce an empty body value when the release is in draft state.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/AventurasTeam/Aventuras/blob/1aa68321c528c89c46187e29398998ba8bcb433f/.github/workflows/release.yml#L45" rel="noopener noreferrer">.github/workflows/release.yml:45</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>983 files &middot; 10988769 bytes</dd>
+      <dt>Contextual coverage</dt><dd>121 of 121 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>523 files &middot; 3672435 bytes</dd>
+        <dt>X-Ray review families</dt><dd>5 warning occurrences compacted to 5 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>523 raw &middot; 23 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>523 raw signatures &middot; 77 raw AST &middot; 523 raw OpenGrep &middot; 23 derived signatures &middot; 0 derived AST &middot; 23 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>scripts/release.js</code> &mdash; derived-ast / parse</li><li><code>scripts/release.js</code> &mdash; normalize / parse</li><li><code>src/lib/components/settings/advancedPanelView.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/settings/advancedPanelView.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/story/genreColors.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/alert/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/badge/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/button/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/drawer/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/drawer/swipe-guard.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/responsive-modal/context.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/ui/toggle/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/vault/prompts/sampleContext.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/vault/prompts/templateGroups.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/vault/prompts/templateGroups.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/components/wizard/wizardTypes.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/constants/modelHealth.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/log.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/duration.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/duration.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/recorder.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/recorder.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/reporter.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/retention.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/retention.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/trackPhase.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/trackPhase.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/tree.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/tree.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/activity/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/BaseAIService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/core/config.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/core/defaults.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/core/factory.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/core/reasoning.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/core/reasoning.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/core/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/ActionChoicesService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/ClassifierService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/MemoryService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/NarrativeService.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/NarrativeService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/StyleReviewerService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/SuggestionsService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/WorldStateInjector.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/WorldStateInjector.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/generation/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/BackgroundImageService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/ImageAnalysisService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/InlineImageService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/InlineImageTracker.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/InlineImageTracker.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/imageUtils.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/imageUtils.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/a1111.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/chutes.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/comfy.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/fetchAdapter.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/google.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/nanogpt.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/openai.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/openrouter.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/pollinations.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/registry.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/registry.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/providers/zhipu.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/image/stylePrompt.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/LoreManagementService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/entryFields.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/entryState.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/newChapter.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/newChapter.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/sessionChanges.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/lorebook/sessionChanges.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/AgenticRetrievalService.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/AgenticRetrievalService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/EntryRetrievalService.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/EntryRetrievalService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/TimelineFillService.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/TimelineFillService.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/alreadyInContext.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/chapterContentBudget.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/chapterContentBudget.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/grepSampling.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/grepSampling.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/recentTail.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/recentTail.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/retrievalHistory.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/retrievalHistory.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/retrievalSnapshot.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/retrievalSnapshot.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/retrievalSteps.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/retrievalSteps.ts</code> &mdash; raw-ast / parse</li><li><code>src/lib/services/ai/retrieval/stickiness.test.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/AventurasTeam/Aventuras/commit/1aa68321c528c89c46187e29398998ba8bcb433f" rel="noopener noreferrer">1aa68321c528c89c46187e29398998ba8bcb433f</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-09-30T20:10:08.184Z">Sep 30, 2026</time></dd>
+        <dt>History depth</dt><dd>11 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>9 fresh / 0 reused groups &middot; 17 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>104 deterministic / 17 contextual candidates &middot; 9 contextual / 28 total behavior cases</dd>
+        <dt>Model budget</dt><dd>3 model calls &middot; 9 / 12 fresh cases &middot; 95434 / 200000 estimated input &middot; 72371 / 250000 actual input &middot; 10944 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>3 model calls &middot; up to 5 groups and 10 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>72371 input &middot; 10944 output &middot; 1359 cache read &middot; 4042 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>45f64b6a8b4bfa442209ba110f04d709d16dd650d6221e7fb78a384521232e00</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1126279204/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
