@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for jschm42/taleweaver at commit de741a1.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; jschm42/taleweaver</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/jschm42/taleweaver" rel="noopener noreferrer">jschm42/taleweaver</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/jschm42/taleweaver/commit/de741a18276cbfbae50c0175c4aec605f42fbfd0" rel="noopener noreferrer">de741a1</a></span>
+        <span>Reviewed <time datetime="2026-10-07T19:58:09.271Z">Oct 7, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>65 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (57)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/.github/workflows/ci.yml#L24" rel="noopener noreferrer">.github/workflows/ci.yml:24</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-3546:pkg:1bc96bdddbbff21ac418748b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2106:pkg:736242df4ac18ef85180b6f7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-4066:pkg:449780c3fc55bccdc1c61caa applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2598:pkg:ceef7426e81de2d0a15344a6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-4070:pkg:7e7100c9a412d0f6dddbeb67 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vfj7-8cjw-p6xm:pkg:efd3ff768f6f1133cf11c41f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hx8v-g79f-8w5f:pkg:611b0cac03476ca8d9be733d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/.github/workflows/ci.yml#L21" rel="noopener noreferrer">.github/workflows/ci.yml:21</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g3cq-j2xw-wf74:pkg:95e22b0a5a3878a05852385a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-237:pkg:4ff78714f2b2a85a1673908f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-3476:pkg:06966d2725327ca4b75394eb applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-63hw-fmq6-xxg2:pkg:8044be2bc3916a5738f51546 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9x8q-7h8h-wcw9:pkg:4466de15784613b608784e19 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6688-9rhm-gjv2:pkg:0e92d3862b26a991a884938c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-4067:pkg:b77e9035c697ba9fb9142e21 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qrc4-49gv-mv9m:pkg:da15ab9a102db79267d04fac applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mq44-7p77-q5h7:pkg:8d4f27589d8ae5670d7dba96 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-m6qw-4cw2-hm4m:pkg:facf4170fcb5b81c8a74908a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2107:pkg:60c73d7d2bfd71c47b0afb5a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-3545:pkg:c8d4bff3ff92cdf033e5289a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2600:pkg:87027a4a3f3fab62509acb41 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-3479:pkg:61c68c7919e02687963bb007 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/.github/workflows/ci.yml#L20-L21" rel="noopener noreferrer">.github/workflows/ci.yml:20-21</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4jcj-7x88-m979:pkg:9bf971adab6b43b107dad8a2 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3cv6-jpf6-8222:pkg:6d136d9a6def34b127afb063 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2fqr-mr3j-6wp8:pkg:cdd1c668289ba3ece3b765e2 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-68fv-2mgg-jv7q:pkg:9534329f616dc744f00f37e0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2110:pkg:41da6412b07705346d7eea6c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2104:pkg:a01b3d582d6e6062779da86b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2108:pkg:91d49a41716eef4f738685e5 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rj75-hqrm-r3gf:pkg:78aa5c5da8976703de35744b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2112:pkg:28e5afbcbc413f96d736d959 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2601:pkg:2e79a284f5757270720ba290 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2109:pkg:846edfc9b99377502025186f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2105:pkg:fddbb7f972ebe280f33de23b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4g5m-c9r5-49xf:pkg:631acce7ceba724ff28f0c25 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-388:pkg:e4f41a09fcba10a836713f85 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-wxxx-gvqv-xp7p:pkg:c813da0f3a2d11584eb7cbd4 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4m7w-qmgq-4wj5:pkg:47e2703add802c700f9c6fd8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-wpfp-gwwc-vwq6:pkg:80adc922512b39b78d486a3b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-g2v6-rqmx-r4w6:pkg:86e27635ae63081d7f2a518d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-p98j-92pf-mc4p:pkg:216b03ca9a7d2e7ff12f78f2 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/package-lock.json" rel="noopener noreferrer">frontend/package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hpj7-wq8m-9hgp:pkg:b4ab583588e5a3649474ba31 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jg22-mg44-37j8:pkg:abb00ca2c51eb75ab7c8ca4c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mfx4-hv73-q22v:pkg:bdc8ac498d70f4d2712efbf9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2113:pkg:c07baccbd5237d6e857f4a12 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-3547:pkg:c27187677a086102b51d0948 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4fvr-rgm6-gqmc:pkg:44923be5ecdc7a0319ee8e73 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2111:pkg:e47a3c757f78f89ba374b992 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xcgm-r5h9-7989:pkg:591d8eea198b02b124a050f6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hg6j-4rv6-33pg:pkg:f94ebc65a23339dce25c9bd6 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-7488-6r32-c95q:pkg:2ea2cb3e67f935a263ce8549 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-mf9w-mj56-hr94:pkg:dcf36134bb8329ed97c3fe0e applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory PYSEC-2026-2270:pkg:88ff04df9ed742352e55b924 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-cq5v-8q36-5273:pkg:4918df759a428790c46586f9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-4xpc-pv4p-pm3w:pkg:4cba9985d4470b672f24238d applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/poetry.lock" rel="noopener noreferrer">poetry.lock</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (8)</summary>
+      <article class="finding risk-low">
+    <h3>Credential access and network transmission in one file</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner noticed that a login token and an internet request appear in the same file, which can sometimes signal theft. Reading the actual code, the token is only attached to calls the game makes to its own server to load or send your saved adventure chat, like showing your ticket at the venue that issued it. Nothing is sent anywhere else, so this is normal, expected behavior rather than a problem.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> A credential source and an outbound network operation were detected in the same file.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged co-location of a credential source and a network sink, but the actual data flow is benign. The composable reads the application&#39;s own session token from its auth store and attaches it as a bearer authorization header on fetch calls to a fixed relative, same-origin API base path used for loading and posting adventure chat state. Every observed request stays within the application&#39;s own backend, which is the standard authenticated single-page-application pattern for a project of this stated purpose (a browser game with a backend GM service). There is no third-party or external destination, no dynamic or attacker-influenced URL, no obfuscation, and no transmission of any model-provider or unrelated credential. The scan result is a keyword-level capability heuristic, not demonstrated exfiltration.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>tavernkeeper 5</dd>
+        <dt>Rule</dt><dd>credential-exfiltration</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/src/composables/useGameSocket.ts#L200" rel="noopener noreferrer">frontend/src/composables/useGameSocket.ts:200</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is ordinary page styling code that controls the spacing and scrolling of the user profile page. It does not touch any files, settings, or startup behavior on your computer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is the opening selector of a scoped CSS rule in the component&#39;s style block that sets padding, scroll behavior, and width for the profile page container. It performs no file, registry, startup, or configuration modification of any kind; it is purely visual styling. The scanner match is a keyword-level false positive on stylesheet syntax, with no executable data flow, destination, or persistence behavior behind it.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/src/components/portal/UserProfileContent.vue#L492" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:492</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is just styling code for the profile card&#39;s size, background, and shadow. It cannot change files, settings, or any startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a scoped CSS selector for the profile card, defining its size, background gradient, border radius, and shadow. It is declarative styling with no execution, data flow, or persistence capability. The scanner match is a false positive on stylesheet syntax.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/src/components/portal/UserProfileContent.vue#L450" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:450</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.download-and-execute.shell-pipeline</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The documentation shows a harmless example command that asks your own locally running image-generation program for a list of installed models and formats the answer for easier reading. Nothing is downloaded from the internet, nothing runs automatically, and the response is only displayed, never executed.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.download-and-execute.shell-pipeline. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a documentation snippet inside a Markdown setup guide, not shipped executable code. It instructs the user to fetch a JSON model list from a loopback address on their own machine and pipe it into a JSON pretty-printing module. The piped content is parsed as data and printed, not executed as code, the source is the user&#39;s own local daemon, and the command is run manually by the user only during optional setup verification. There is no hidden download, no remote attacker-controlled source, and no execution of fetched content.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.download-and-execute.shell-pipeline</dd>
+        <dt>File role</dt><dd>documentation</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/docs/HOWTO_LOCAL_STABLE_DIFFUSION.md#L155" rel="noopener noreferrer">docs/HOWTO_LOCAL_STABLE_DIFFUSION.md:155</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is layout styling that arranges the profile dashboard on screen, including how it adapts to wider displays. It has no ability to modify files, settings, or startup behavior.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a scoped CSS selector that defines a responsive grid layout for the profile dashboard, including column configuration under a media query. It is declarative presentation styling only, with no code execution, file access, or persistence behavior. The scanner match is a keyword-level false positive on stylesheet syntax.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/src/components/portal/UserProfileContent.vue#L470" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:470</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code is part of the project&#39;s code-quality checking setup. It checks whether the project is being built in production mode so it can turn on stricter warnings for developers. This is a completely normal, openly documented pattern and does not read, copy, or send any sensitive information anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged construct is the lint configuration file comparing a build-time environment flag to a constant string in order to enable or disable console and debugger lint rules. This is the standard, documented pattern for this lint tool, runs only in the developer toolchain, is fully visible in source, reads a single well-known environment variable, and sends the value nowhere. There is no credential handling, no serialization of environment contents to any destination, and no runtime or user-facing behavior. The scanner signal is a false positive on a benign environment-variable comparison.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/.eslintrc.cjs#L17" rel="noopener noreferrer">frontend/.eslintrc.cjs:17</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is styling code for the sidebar&#39;s spacing and background on the profile page. It cannot affect files, settings, or startup behavior on your machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a scoped CSS selector for the profile sidebar that sets its padding, background, border, and spacing. It is declarative styling with no executable behavior, no data flow, and no persistence capability. The scanner match is a false positive on stylesheet syntax.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/src/components/portal/UserProfileContent.vue#L457" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:457</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.persistence.startup-modification</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged line is ordinary styling code that controls the spacing and layout of the main profile content area. It has no ability to change files, settings, or startup behavior on your computer.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.persistence.startup-modification. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a scoped CSS selector for the profile main content panel that sets padding, flex direction, and spacing. It is declarative presentation styling with no execution, no data flow, and no persistence capability. The surrounding file&#39;s actual logic consists of authenticated fetch calls to the application&#39;s own backend API for profile bio, language, and avatar management, which matches the project&#39;s stated purpose. The scanner match is a false positive on stylesheet syntax.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.persistence.startup-modification</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/jschm42/taleweaver/blob/de741a18276cbfbae50c0175c4aec605f42fbfd0/frontend/src/components/portal/UserProfileContent.vue#L662" rel="noopener noreferrer">frontend/src/components/portal/UserProfileContent.vue:662</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>574 files &middot; 71713044 bytes</dd>
+      <dt>Contextual coverage</dt><dd>65 of 65 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>44 files &middot; 308921 bytes</dd>
+        <dt>X-Ray review families</dt><dd>2 warning occurrences compacted to 1 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>44 raw &middot; 0 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>44 raw signatures &middot; 7 raw AST &middot; 44 raw OpenGrep &middot; 0 derived signatures &middot; 0 derived AST &middot; 0 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>frontend/src/composables/useApi.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useComicTurns.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameAutoSpeak.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameCommandFlow.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameInteractionState.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameProgressState.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameSessionLifecycle.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameSocket.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useGameUiFeedback.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useNotifications.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/usePortalData.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/usePortalModals.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/usePortalPendingState.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/usePortalSectionRouting.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/composables/useVoiceInput.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/constants/createAdventureHelpTexts.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/env.d.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/adventureService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/audioService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/catalogService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/entityService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/gameActionService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/gameCommandService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/gameViewService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/hoverEntityService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/http.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/notificationService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/settingsService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/testService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/userService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/services/visualService.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/store/auth.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/store/config.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/types/index.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/utils/commands.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/utils/editor_utils.ts</code> &mdash; raw-ast / parse</li><li><code>frontend/src/utils/game_icons.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/jschm42/taleweaver/commit/de741a18276cbfbae50c0175c4aec605f42fbfd0" rel="noopener noreferrer">de741a18276cbfbae50c0175c4aec605f42fbfd0</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-10-07T19:58:09.271Z">Oct 7, 2026</time></dd>
+        <dt>History depth</dt><dd>8 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>0 fresh / 5 reused groups &middot; 0 fresh / 8 reused candidates</dd>
+        <dt>Review source reports</dt><dd><code>4a36a559cac617910d10c9c3aab623d459a4f3ab156de0ee9ee1b65e3045e7b2</code></dd>
+        <dt>Evidence triage</dt><dd>57 deterministic / 8 contextual candidates &middot; 5 contextual / 13 total behavior cases</dd>
+        <dt>Model budget</dt><dd>0 model calls &middot; 0 / 12 fresh cases &middot; 0 / 200000 estimated input &middot; 0 / 250000 actual input &middot; 0 / 40000 output tokens</dd>
+        
+        <dt>Review usage</dt><dd>0 input &middot; 0 output &middot; 0 cache read &middot; 0 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>f179e89f31579c067567b8d6e7865ef27b1d79692143aeee724896efc493436e</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1208471920/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
