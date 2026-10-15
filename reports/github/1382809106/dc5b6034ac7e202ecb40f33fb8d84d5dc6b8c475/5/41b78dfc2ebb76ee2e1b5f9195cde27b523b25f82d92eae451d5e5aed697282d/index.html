@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for Dulgadurbit/SillyCanvas at commit dc5b603.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; Dulgadurbit/SillyCanvas</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/Dulgadurbit/SillyCanvas" rel="noopener noreferrer">Dulgadurbit/SillyCanvas</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/Dulgadurbit/SillyCanvas/commit/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475" rel="noopener noreferrer">dc5b603</a></span>
+        <span>Reviewed <time datetime="2026-10-15T12:06:43.794Z">Oct 15, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>9 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (2)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.short-identifiers</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/tests/decider-memory.test.mjs#L1" rel="noopener noreferrer">tests/decider-memory.test.mjs:1</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> tooling-only</p>
+    <p><strong>Source:</strong> <a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/tools/bump-version.mjs#L27" rel="noopener noreferrer">tools/bump-version.mjs:27</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (6)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a link with a special &#39;javascript&#39; address and flagged it. In reality these are just styled click targets for &#39;remove rule&#39; and &#39;add rule&#39; buttons in the extension&#39;s editor. Clicking them only edits the canvas&#39;s own settings on your device; nothing is sent anywhere and nothing harmful happens.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged a fixed &#39;shady-link&#39; signal at line 3006 (and a duplicate at 3013). The matched literal is the string &#39;javascript:void(0)&#39; assigned as the href of anchor elements used as click buttons (&#39;remove this rule&#39;, &#39;+ another rule for this output&#39;). The anchors&#39; click handlers perform local, in-memory list operations on the extension&#39;s own configuration data (splicing conditions, pushing new rule objects) followed by a UI redraw. No network request, navigation, or data exfiltration is triggered by these hrefs; javascript:void(0) is a common no-op placeholder so anchor elements behave like buttons. This is a false positive of the static heuristic, not actual network access.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/ui.js#L3006" rel="noopener noreferrer">src/ui.js:3006</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a web address in the code and flagged it. That address is just the official name a browser needs when drawing charts with vector graphics; the code uses it as an identifier when creating chart elements, never as a destination to contact. Nothing is downloaded and no data is sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged literal on line 29 is the standard W3C SVG namespace identifier, used solely as the namespace argument to document.createElementNS when the State editor builds its chart graphics. It is not fetched, not loaded as a script, and produces no network traffic. The supplied source shows the module constructing DOM elements and chart visuals locally with no outbound requests. The scanner&#39;s shady-link signal is a false positive on a namespace constant.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/state-window.js#L29" rel="noopener noreferrer">src/state-window.js:29</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw a web address in the code and flagged it. It is the official identifier the browser requires to draw vector graphics; the program uses it as a label when creating drawing elements, not as a place to fetch anything from. Nothing is downloaded and nothing leaves your machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged literal on line 20 is the standard W3C SVG namespace identifier required by document.createElementNS to construct SVG elements. It is used only as a namespace argument when building the canvas wire layer; it is never fetched, never used to load a script, and no network request originates from it. The scanner&#39;s shady-link heuristic misidentified a namespace constant as a suspicious link. No network access, exfiltration, or external code loading is demonstrated anywhere in the supplied context.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/canvas.js#L20" rel="noopener noreferrer">src/canvas.js:20</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a link that uses a javascript: address, which can sound alarming. Here it is a hardcoded, empty placeholder used to make a &#39;Show all&#39; text look like a clickable link; the real behavior is a local click handler that expands text on the page. No code is injected, nothing leaves the browser, and the string is fixed in the source rather than coming from chat content or any untrusted source.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged literal is a static, empty javascript: URI assigned to an anchor&#39;s href so it renders as a clickable &#39;Show all&#39; control inside the extension&#39;s prompt-inspector UI. The URI is a constant string in the shipped code, not derived from model output, chat content, or any untrusted input, so it cannot be used to execute attacker-chosen script. The attached click handler calls preventDefault and replaces clipped text with the full text locally; there is no navigation, no network request, and no data leaving the page. All message content in this UI path is rendered via textContent, not innerHTML, except for two hardcoded icon fragments, so model-generated content is not interpreted as markup. The scanner rule is a keyword heuristic on the javascript: scheme and does not demonstrate exposure in this data flow.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Optional cleanup: replace the anchor with a styled button element (or set role/tabindex on a span) and drop the javascript: URI entirely; this avoids tripping strict Content-Security-Policy configurations that forbid javascript: navigation and removes the scanner signal.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/thoughts.js#L229" rel="noopener noreferrer">src/thoughts.js:229</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>A code scanner warned about potentially problematic pattern matching in this file. The patterns in question are used to recognize color values like hex codes and rgba() so the extension can apply its themes. They run on short color strings and cannot lock up or harm anything, so this is a harmless false alarm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged the regular expressions in the color-parsing helper. These are fixed, anchored patterns that match short CSS color strings (three- or six-digit hex, optional alpha, and a bounded rgba/rgb functional form). They contain no nested unbounded quantifiers capable of catastrophic backtracking, and the inputs are theme color values (preset constants, user-picked colors, or computed style values) that are short by nature. The file&#39;s data flow is entirely local: parsed colors feed theme application, contrast adjustment, and styling of the extension&#39;s own UI. No network destination, credential access, obfuscation, or persistence beyond saving theme preferences is present. The scanner signal is a static heuristic about regex construction, not a demonstrated execution or timing problem.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/theme.js#L149" rel="noopener noreferrer">src/theme.js:149</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged a text-matching pattern it thought could be slow or dangerous. The pattern is a simple, short one that only recognizes numbers like 3 or 2.5 in user formulas; it cannot loop excessively or hang the app. The file also avoids using JavaScript&#39;s eval command on purpose, checking formulas with its own safe interpreter instead.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged pattern on line 35 is a small linear regex used to tokenize numeric literals in the extension&#39;s hand-rolled formula language. It contains no nested or overlapping quantifiers, so it cannot exhibit catastrophic backtracking (ReDoS); matching is bounded by input length. More broadly, the module deliberately implements a recursive-descent parser and evaluator instead of eval, restricting formulas to whitelisted functions and caller-supplied variables. The scanner&#39;s unsafe-regex heuristic is a false positive on a well-formed tokenizer pattern, and no denial-of-service or injection path is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/expr.js#L35" rel="noopener noreferrer">src/expr.js:35</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Anchor elements with no-op hrefs used as buttons</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>A second &#39;add rule&#39; link uses the same harmless placeholder address. Both links only edit the extension&#39;s own settings when clicked. Using regular buttons instead would stop the scanner from complaining, but nothing is wrong either way.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The same literal &#39;javascript:void(0)&#39; is also assigned to the &#39;+ another rule&#39; anchor at line 3013, explaining the scanner&#39;s second occurrence. Both anchors have click listeners that mutate only the extension&#39;s local node configuration and re-render the UI. Replacing these with real button elements would remove the static-analysis noise but is a style choice, not a security fix.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/Dulgadurbit/SillyCanvas/blob/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475/src/ui.js#L3006" rel="noopener noreferrer">src/ui.js:3006</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>66 files &middot; 1737150 bytes</dd>
+      <dt>Contextual coverage</dt><dd>8 of 8 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>59 files &middot; 852493 bytes</dd>
+        <dt>X-Ray review families</dt><dd>10 warning occurrences compacted to 8 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>59 raw &middot; 77 decoded &middot; 2 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>59 raw signatures &middot; 59 raw AST &middot; 59 raw OpenGrep &middot; 79 derived signatures &middot; 2 derived AST &middot; 79 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>src/canvas.js</code> &mdash; derived-ast / parse</li><li><code>src/ui.js</code> &mdash; derived-ast / parse</li><li><code>src/ui.js</code> &mdash; normalize / unsupported</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/Dulgadurbit/SillyCanvas/commit/dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475" rel="noopener noreferrer">dc5b6034ac7e202ecb40f33fb8d84d5dc6b8c475</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-10-15T12:06:43.794Z">Oct 15, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 6 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>2 deterministic / 6 contextual candidates &middot; 6 contextual / 8 total behavior cases</dd>
+        <dt>Model budget</dt><dd>3 model calls &middot; 6 / 12 fresh cases &middot; 116512 / 200000 estimated input &middot; 98241 / 250000 actual input &middot; 3810 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>3 model calls &middot; up to 3 groups and 3 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>98241 input &middot; 3810 output &middot; 1024 cache read &middot; 863 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>41b78dfc2ebb76ee2e1b5f9195cde27b523b25f82d92eae451d5e5aed697282d</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1382809106/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
