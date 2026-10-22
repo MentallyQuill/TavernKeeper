@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for MentallyQuill/TavernaryCompanion at commit a19eaf6.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; MentallyQuill/TavernaryCompanion</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/MentallyQuill/TavernaryCompanion" rel="noopener noreferrer">MentallyQuill/TavernaryCompanion</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/MentallyQuill/TavernaryCompanion/commit/a19eaf62cd26b64683a569381e1a64e80ff44666" rel="noopener noreferrer">a19eaf6</a></span>
+        <span>Reviewed <time datetime="2026-10-22T14:55:16.245Z">Oct 22, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>55 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    <details class="expected">
+      <summary>Deterministic technical evidence (41)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/check.yml#L20" rel="noopener noreferrer">.github/workflows/check.yml:20</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rq7h-c2jc-7f22:pkg:3aec41a6cfa7e1b2a4042fd3 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-587h-7wmj-h5pm:pkg:b41be7a7462df650440a4fc0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/check.yml#L19" rel="noopener noreferrer">.github/workflows/check.yml:19</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/release-artifact.yml#L25" rel="noopener noreferrer">.github/workflows/release-artifact.yml:25</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-jqff-g426-hqxp:pkg:9d5a0ee915070fcb3b4f0f49 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-q2hr-2g5m-vwhr:pkg:5071d948cc44d0262ff79d5b applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-fph4-wmhf-6fwf:pkg:02097b1c123d52488af54cbe applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/release-artifact.yml#L14" rel="noopener noreferrer">.github/workflows/release-artifact.yml:14</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r825-w8mm-5pxw:pkg:3259ffa7e3cefed5e5cdc3c9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-pmjh-fq2x-6v4x:pkg:814e6386268dbf3533461ca1 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2883-xcg3-v3hh:pkg:d0255a07b416d6426cad8ae8 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-xp26-3454-mjgp:pkg:05e998734cfc7252d5bdf2fc applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-q2hr-2g5m-vwhr:pkg:795fdc464a3888c7b68760ab applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rx4f-c7p8-82vq:pkg:84b2df35347fd80a7d52507c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-5jgf-p345-68v8:pkg:0c0b4150b3480deab8a6ef16 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-f65p-4m7j-42xc:pkg:d8eaa1be485d9c348ff3a796 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2gqq-gqf2-x968:pkg:46832ca569076237770558e9 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/release-artifact.yml#L15" rel="noopener noreferrer">.github/workflows/release-artifact.yml:15</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-hrr3-gc8f-f4qj:pkg:092c05eeb590cb190e9aa084 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-8436-99hf-9mmv:pkg:8ca5f098d431dc526b1c0927 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-698v-4r3x-3vcv:pkg:99b85b777507832b1528d4ee applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported artipacked</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/release-artifact.yml#L14" rel="noopener noreferrer">.github/workflows/release-artifact.yml:14</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-rfgv-xxqx-mfg5:pkg:fa194ca81f9401706246a35f applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-r53p-7pc4-xj5r:pkg:bd7641efc84f0d9546a70936 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported cache-poisoning</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/release-artifact.yml#L15" rel="noopener noreferrer">.github/workflows/release-artifact.yml:15</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-vfpm-58rq-9qcg:pkg:0daee9a9c68a2c822a9b9edd applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6j4f-fj2g-mc7p:pkg:1b256821002216bb3b207a3c applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-68fv-2mgg-jv7q:pkg:9534329f616dc744f00f37e0 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-2jfj-6hjv-fm6j:pkg:175831eb9d2400b3cdc340b4 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qw65-cvwx-89v3:pkg:919579613c6f8464c1814045 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-w293-vg96-wgc3:pkg:d43b5e923dc7ff1e776c4a60 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3wwx-pv8p-q78v:pkg:a08e866514b3f530ce58da45 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-6j4f-fj2g-mc7p:pkg:5bd3a73046cf56d467e3fe31 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qhr7-859c-m2p7:pkg:30aebd0885cdb30a5bdc22ef applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/check.yml#L19" rel="noopener noreferrer">.github/workflows/check.yml:19</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-3xpg-4rpp-hhhm:pkg:a6f8bf7a6965562dac1ca61a applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qhr7-859c-m2p7:pkg:51214a760489337721516703 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>zizmor reported unpinned-uses</strong> &middot; zizmor 1.28.0</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>zizmor-known-workflow-rule</code> &middot; <strong>Execution scope:</strong> automation</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/.github/workflows/check.yml#L30" rel="noopener noreferrer">.github/workflows/check.yml:30</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-9jrq-w75r-8gcw:pkg:7d885660c3103155c3124eb7 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li>
+<li>
+    <p><strong>Dependency advisory GHSA-qxg6-89mg-rqv8:pkg:b74bbaf10e6570abe6f79a19 applies</strong> &middot; osv-scanner 2.4.0</p>
+    <p>A dependency has a published security issue, though this scan does not show that the project exposes it to an attacker.</p>
+    <p><strong>Policy reason:</strong> <code>osv-structured-advisory</code> &middot; <strong>Execution scope:</strong> unknown</p>
+    <p><strong>Source:</strong> <a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/package-lock.json" rel="noopener noreferrer">package-lock.json</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (13)</summary>
+      <article class="finding risk-low">
+    <h3>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code belongs to a well-known validation library that turns its rule sheets into fast checking functions. That is simply how the library works, and it runs on the project&#39;s own rules, not on anything downloaded or typed in by a user.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> OpenGrep matched static-analysis rule tavernkeeper.dynamic-execution.javascript-eval. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged construct is the bundled Ajv JSON-schema validator&#39;s schema compiler. It generates a validation function from a schema definition and instantiates it with a function constructor at compile time. This is the library&#39;s documented, standard internal mechanism, present because the dependency is bundled into the generated build. The schemas it compiles ship inside the extension; fetched catalog data is the payload being validated, not a schema. The supplied evidence shows no flow of network or user-controlled content into the code generator, so no concealed or attacker-reachable execution is demonstrated.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>opengrep 1.26.0</dd>
+        <dt>Rule</dt><dd>tavernkeeper.dynamic-execution.javascript-eval</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/dist/extension.js#L2937" rel="noopener noreferrer">dist/extension.js:2937</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw web-address-looking text inside code the project bundled from well-known standard libraries. These are labels and namespaces, not destinations where your information is sent.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged string literals are URI scheme names and namespace identifiers embedded in bundled third-party libraries (a URI parsing library, a JSON-schema validator, and a UI rendering library). They are parsing constants and schema identifiers, not endpoints that the extension contacts. The project&#39;s documented network behavior is limited to fetching its public catalog JSON, which matches the project&#39;s stated purpose and is disclosed to users. No data flow from host state or credentials to these literals is present in the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/dist/extension.js#L3424" rel="noopener noreferrer">dist/extension.js:3424</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a build helper that downloads a specific, locked-in version of a known source package, checks that the files match their recorded fingerprints, and stores them inside the project. Nothing is sent out from your computer. The scanner&#39;s alert was triggered by a routine use of the computer&#39;s temporary-folder feature, not by any actual data leaving the machine.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/scripts/sync-tavernary-core.mjs#L13" rel="noopener noreferrer">scripts/sync-tavernary-core.mjs:13</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged links are local test addresses used by a performance script to feed the extension&#39;s own build output to a simulated browser. Nothing is sent over the network.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shady-link signal maps to localhost URL literals inside a Playwright route handler in a developer-only performance audit script. The handler resolves request pathnames against the project root, returns a 403 when the resolved path escapes the root, and otherwise serves locally built bundle and fixture files to a headless Chromium. Navigation targets the same local pseudo-origin. There is no remote endpoint, no transmission of user data, and no involvement of the shipped extension at runtime; this is standard local-harness scaffolding with an explicit path-containment guard.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/scripts/performance-installed-audit.mjs#L78" rel="noopener noreferrer">scripts/performance-installed-audit.mjs:78</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is a test file that builds the extension in a temporary folder on the same computer and checks that the output is correct. It never sends anything anywhere. The scanner&#39;s warning came from a routine temporary-folder feature, not from any real data leak.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>test</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/tests/unit/build.test.ts#L5" rel="noopener noreferrer">tests/unit/build.test.ts:5</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.serialize-environment</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged pattern is just a test script copying the local environment when it runs git to set up a throwaway test repository. Nothing is collected or sent anywhere.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.serialize-environment. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged an environment-serialization pattern at the spread of process.env into the env option of a child-process call. The supplied source is a test-fixture tooling script that creates a temporary directory, copies a fixture extension into it, and runs git init/add/commit/rev-parse there via execFileSync. Spreading the parent environment is the standard way to spawn git with overridden author/committer identity, and the child&#39;s output is only used locally for the commit hash. No environment data is logged, transmitted, or persisted outside the temporary git repository, and the script runs only in the development tooling path, not in the shipped extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.serialize-environment</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/scripts/create-fixture-repository.mjs#L15" rel="noopener noreferrer">scripts/create-fixture-repository.mjs:15</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged address is the automated test setup pointing at a server on the developer&#39;s own computer. It is part of the test tooling, never reaches users, and sends nothing to anyone else.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged literal is a loopback address on a test port configured as the base address for the project&#39;s end-to-end test suite. The file is test tooling configuration, not shipped runtime code, and a loopback address directs traffic to the local machine only. There is no external destination, no credential handling, and no path to user-facing behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/playwright.config.ts#L18" rel="noopener noreferrer">playwright.config.ts:18</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged text appears in a validation library that deliberately ignores a dangerous special key so it cannot be abused. The scanner mistook a safety guard for a hazard.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The two matched signals are literal prototype-key comparisons inside the bundled Ajv validator. Both occurrences are defensive filters that explicitly skip the prototype key when enumerating schema properties and dependencies. This is mitigating code that reduces prototype-pollution risk, not a pollution sink. No attacker-controlled path writes inherited properties, and no vulnerable behavior is demonstrated by the supplied evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/dist/extension.js#L1750" rel="noopener noreferrer">dist/extension.js:1750</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.download-to-execution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The tool noticed that the file both downloads data and has a code-building feature. The download is the project&#39;s normal catalog fetch, and the code-building feature belongs to a standard validation library that turns the project&#39;s own rule sheets into fast checking functions. The downloaded data is checked by those rules; it is never used as the rules themselves.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.download-to-execution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is same-file co-occurrence, not a demonstrated data flow. The network primitive is the documented catalog client, which checks response status and requires a JSON content type before parsing the body. The dynamic code construction is the bundled Ajv validator&#39;s standard mechanism for compiling JSON schemas into validation functions. The schemas compiled ship inside the extension bundle; the fetched catalog response is the data being validated, not a schema. Nothing in the supplied evidence routes response content into the code generator, so no download-to-execution chain exists.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Keep the JSON schemas passed to the bundled validator static and developer-defined; never construct or compile schemas from fetched catalog content.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.download-to-execution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/dist/extension.js#L195-L6973" rel="noopener noreferrer">dist/extension.js:195-6973</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; medium confidence</p>
+    <p>The flagged patterns are familiar text-matching rules from standard validation libraries, such as ones recognizing web addresses, email addresses, and identification strings. They are ordinary and widely used; at worst an unusual input could cause a brief local slowdown while it is checked.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shown matches are standard validation patterns from the bundled libraries (UUID, IPv4, IPv6, email, hostname, URI, JSON-pointer formats) plus the project&#39;s own display-cleanup patterns. These are widely deployed library patterns used to validate strings, not adversarial constructs. A theoretical worst case for complex validation regexes is elevated CPU time during validation of unusual input, which is a recoverable local slowdown with low impact in this threat model. Not all 33 occurrences were individually shown, but every supplied sample is a known library pattern.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/dist/extension.js#L2776" rel="noopener noreferrer">dist/extension.js:2776</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged links are just a local test web address used by a performance-measuring script to load the extension&#39;s own test files in a simulated browser. No real internet connection or data transfer happens.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The shady-link signal corresponds to localhost URL literals used with a Playwright route handler in a developer-only performance audit harness. The script intercepts requests to a local pseudo-origin, resolves the requested pathname inside the project root, and explicitly rejects paths that escape the root with a 403 before serving local fixture files to a headless Chromium instance. No traffic leaves the machine, no remote host is contacted, the URLs never leave the local route interceptor, and the script is part of the repository&#39;s tooling rather than the shipped extension bundle. The path-containment check further constrains what can be served, so this is a self-contained local measurement setup.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/scripts/performance-audit.mjs#L61" rel="noopener noreferrer">scripts/performance-audit.mjs:61</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-command</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The flagged code runs the standard git program to fetch and verify a specific saved version of a source package during development builds. It does not execute arbitrary commands from outside input, and it only runs on the developer&#39;s machine, not as part of the extension users install.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-command. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner flagged the synchronous child-process call that runs git in this vendoring script. The supplied code spawns the git executable with an array of literal arguments rather than a shell string, so there is no shell-injection surface in the shown call sites. The arguments are fixed subcommands plus values validated by a strict 40-character hexadecimal commit check, and the working directory is either a freshly created temporary directory or a caller-supplied local checkout. This is standard, proportionate tooling for the script&#39;s stated purpose of fetching and verifying a pinned upstream commit. It runs only as a development-time build script, not inside the shipped SillyTavern extension.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-command</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/scripts/sync-tavernary-core.mjs#L22-L26" rel="noopener noreferrer">scripts/sync-tavernary-core.mjs:22-26</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.data-exfiltration</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>Detailed wording was omitted by the public report safety filter.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.data-exfiltration. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.data-exfiltration</dd>
+        <dt>File role</dt><dd>tooling</dd>
+        <dt>Source</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/scripts/create-fixture-repository.mjs#L2" rel="noopener noreferrer">scripts/create-fixture-repository.mjs:2</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    <section class="report-section"><h2>Related contextual observations</h2><article class="finding risk-low">
+    <h3>Network responses are validated defensively and are not linked to the flagged code-generation routine</h3>
+    <p><strong>low risk</strong> &middot; high confidence</p>
+    <p>The part of the code that downloads data carefully checks what it received before reading it, and the part that builds code on the fly works from the project&#39;s own rule sheets. The two are neighbors in the same bundled file, not partners in a dangerous chain.</p>
+    <details><summary>Technical assessment</summary>
+      <p>The visible catalog client rejects non-success statuses and requires a JSON content type before reading the response body, then parses it as data. The dynamic function construction flagged elsewhere belongs to the bundled schema validator&#39;s compiler and operates on schemas that ship with the extension. The supplied evidence shows separation between response handling and code generation, so the scanner&#39;s correlation reflects dependency bundling rather than a runtime path from downloaded content to executed code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> Continue validating fetched catalog responses against bundled, developer-defined schemas before use.</p>
+      <p><strong>Sources:</strong></p><ul><li><a href="https://github.com/MentallyQuill/TavernaryCompanion/blob/a19eaf62cd26b64683a569381e1a64e80ff44666/dist/extension.js#L195" rel="noopener noreferrer">dist/extension.js:195</a></li></ul>
+    </details>
+  </article></section>
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>408 files &middot; 5733786 bytes</dd>
+      <dt>Contextual coverage</dt><dd>54 of 54 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>279 files &middot; 2509900 bytes</dd>
+        <dt>X-Ray review families</dt><dd>57 warning occurrences compacted to 11 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>279 raw &middot; 50 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>279 raw signatures &middot; 37 raw AST &middot; 279 raw OpenGrep &middot; 50 derived signatures &middot; 0 derived AST &middot; 50 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>scripts/sync-tavernary-core.d.mts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/catalog-cache.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/catalog-client.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/catalog-core.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/catalog-errors.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/catalog-status.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/catalog-transport.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/discovery-controller.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/indexeddb-catalog-cache.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/installed-view-model.ts</code> &mdash; raw-ast / parse</li><li><code>src/catalog/project-view-model.ts</code> &mdash; raw-ast / parse</li><li><code>src/extension/bootstrap.ts</code> &mdash; raw-ast / parse</li><li><code>src/extension/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/extension/lifecycle.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/host-errors.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/host-types.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/runtime-host.ts</code> &mdash; raw-ast / parse</li><li><code>src/host/sillytavern-host.ts</code> &mdash; raw-ast / parse</li><li><code>src/integrity/sha256.ts</code> &mdash; raw-ast / parse</li><li><code>src/inventory/inventory-reconciler.ts</code> &mdash; raw-ast / parse</li><li><code>src/inventory/inventory-types.ts</code> &mdash; raw-ast / parse</li><li><code>src/inventory/managed-registry.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-activation-commit.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-discovery-controller.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-draft.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-executor.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-install-targets.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-operation-journal.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-plan.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-planner.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-portability.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-receipt.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-reconciler.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-reference-index.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-store.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-types.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-validation.ts</code> &mdash; raw-ast / parse</li><li><code>src/kits/kit-view-model.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/bulk-removal.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/install-target-fallback-broker.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/install-target-resolver.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/install-target.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/lifecycle-coordinator.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/lifecycle-policy.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/lifecycle-types.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/operation-lock.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/operation-receipt.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/removal-impact.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/self-protection.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/trust-prompt-broker.ts</code> &mdash; raw-ast / parse</li><li><code>src/lifecycle/verified-install.ts</code> &mdash; raw-ast / parse</li><li><code>src/runtime-id.ts</code> &mdash; raw-ast / parse</li><li><code>src/state/profile-state.ts</code> &mdash; raw-ast / parse</li><li><code>src/state/profile-store.ts</code> &mdash; raw-ast / parse</li><li><code>src/state/state-migrations.ts</code> &mdash; raw-ast / parse</li><li><code>src/styles.d.ts</code> &mdash; raw-ast / parse</li><li><code>src/trust/trust-policy.ts</code> &mdash; raw-ast / parse</li><li><code>src/trust/trust-types.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/catalog/catalog-change-notice.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/catalog/catalog-freshness.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/catalog/catalog-state-panel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/add-to-kit-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/installed-bulk-bar.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/installed-kit-card.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/installed-route.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/installed-section.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/installed-selection.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/installed-status-help.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/installed/update-version-chooser.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/inventory-refresh-coordinator.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/dual-range.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-card.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-component-group.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-delete-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-editor.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-export-action.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-filter-panel.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-impact-summary.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-import-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-inspector.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-member-row.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-operation-tray.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-preflight-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-receipt.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-selection-dock.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-switcher.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-version-choices.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kit-warning-group.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/kits/kits-route.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/launcher.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/assessment-warning-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/bulk-removal-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/bulk-removal-receipt.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/dialog-frame.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/install-version-chooser.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/operation-receipt.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/operation-success-notification.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/operation-tray.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/removal-dialog.tsx</code> &mdash; raw-ast / parse</li><li><code>src/ui/lifecycle/trust-disclosure-dialog.tsx</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; completed</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/MentallyQuill/TavernaryCompanion/commit/a19eaf62cd26b64683a569381e1a64e80ff44666" rel="noopener noreferrer">a19eaf62cd26b64683a569381e1a64e80ff44666</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-10-22T14:55:16.245Z">Oct 22, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>8 fresh / 0 reused groups &middot; 13 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>41 deterministic / 13 contextual candidates &middot; 8 contextual / 14 total behavior cases</dd>
+        <dt>Model budget</dt><dd>3 model calls &middot; 8 / 12 fresh cases &middot; 119717 / 200000 estimated input &middot; 109689 / 250000 actual input &middot; 9429 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>3 model calls &middot; up to 3 groups and 6 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>109689 input &middot; 9429 output &middot; 0 cache read &middot; 4205 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>b73ed2945103d29bf175ac6f579b279c89dfdbc8a5b83ace188e6a336b744175</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1338469080/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
