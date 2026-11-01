@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for AMousePad/LumiBooks at commit d51755e.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; AMousePad/LumiBooks</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/AMousePad/LumiBooks" rel="noopener noreferrer">AMousePad/LumiBooks</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/AMousePad/LumiBooks/commit/d51755e8fb10140ffac6b6394ef60bdab041ea37" rel="noopener noreferrer">d51755e</a></span>
+        <span>Reviewed <time datetime="2026-11-01T09:30:06.998Z">Nov 1, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>7 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    
+    
+    <details class="expected">
+      <summary>Contextual expected matches (7)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged the mention of a special reserved key name. In this code that key name appears only in checks that deliberately refuse to use it, which protects the app from a known trick where crafted data can corrupt program behavior. This is protective coding, not a flaw.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The prototype-pollution signal is a keyword match on the literal dunder-proto token. The supplied code is the opposite of a pollution sink: both the field-drafting and field-application routines explicitly skip that reserved key before performing any keyed write or delete on a record object, and records originate from a JSON parser that creates own properties rather than assigning the prototype. The keyed assignments operate on per-record plain objects parsed from the user&#39;s own codex files, so no prototype chain modification, cross-object contamination, or downstream execution is reachable through the shown paths.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/dist/frontend.js#L13802" rel="noopener noreferrer">dist/frontend.js:13802</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw code that copies extra fields from user-imported data and worried it could tamper with core JavaScript behavior. In reality, the flagged line is the safety check itself: the code deliberately refuses to copy the one dangerous field name before doing anything with it, and it only copies simple text, number, and true/false values. There is no demonstrated way for imported content to change how other objects behave.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged line is a guard, not a sink. During validation of imported codex JSON, a loop copies unrecognized extra fields into a freshly created plain object using computed-key assignment; the prototype-pollution heuristic fires on the literal prototype-chain property name appearing at that line. The code explicitly skips that exact property name before any assignment occurs, and only primitive string, finite number, boolean, and string-array values are copied. Assigning other inherited property names to a plain object merely creates own properties and cannot modify shared prototypes, so no prototype-pollution data flow exists. The check is correctly scoped: only the exact prototype accessor name can trigger chain mutation, and variants in other casing are ordinary harmless keys.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/dist/backend.js#L8464" rel="noopener noreferrer">dist/backend.js:8464</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner thought the file might be deliberately scrambled to hide what it does. What the evidence actually shows is an ordinary build output that combines the project&#39;s code with its open-source libraries, still fully readable and with comments intact. Nothing is hidden or encoded.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The generated frontend artifact is standard bundler output produced by the project&#39;s declared build step, which inlines its declared dependencies. The evidence at the flagged location shows readable, commented, unminified third-party memoization and ICU message-format code with normal identifiers and preserved module attribution headers. There is no packing, encoded payload, eval-style decoding, string-array indirection, or identifier mangling characteristic of obfuscation. The heuristic reacted to the bundle&#39;s structure, and the scanner itself reports low confidence, so the high scanner severity is not corroborated by the supplied code.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/dist/frontend.js#L1" rel="noopener noreferrer">dist/frontend.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The same flagged pattern-matching expression from the translation library also appears in the browser-side build. It only processes the extension&#39;s own translation patterns, which ship with the extension itself, so outside input cannot reach it in a way that would cause harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> This is the same vendored ICU date-time skeleton expression from the internationalization dependency, inlined into the browser-facing bundle. It parses developer-authored date/time patterns that ship with the extension&#39;s translation catalogs; runtime values supply message arguments, not skeleton patterns. No attacker-controlled or untrusted input path to this parser is shown, so the heuristic backtracking concern does not establish a reachable denial-of-service vector, and the worst case would be a local slowdown while formatting localized strings.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/dist/frontend.js#L68" rel="noopener noreferrer">dist/frontend.js:68</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner flagged this line because it contains a very long piece of encoded text that can look like a suspicious hidden link. It is actually just a small picture (an avatar image) stored directly inside the code as text, the same way images are sometimes embedded in web pages. Nothing is contacted, downloaded, or sent anywhere; the picture is simply displayed by the interface. No harm is possible from this.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/src/ui/lessons/avatar.ts#L2" rel="noopener noreferrer">src/ui/lessons/avatar.ts:2</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.shady-link</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The scanner saw text that looked like a web address or encoded link. What is actually there is a bundled picture stored as text inside the app and a standard identifier used when drawing graphics. Nothing in the shown code connects to the internet or sends information anywhere outside the app.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.shady-link. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The scanner&#39;s shady-link signal fired on string literals near the flagged line, but the supplied context shows only an embedded base64-encoded image asset for an avatar and the standard SVG namespace identifier, which is an XML namespace name rather than a network endpoint. The surrounding code builds modal UI, writes a local clipboard copy on a user-initiated button click, generates random request IDs, and sends internal structured messages between the extension frontend and its own backend. No external network destination, outbound request, credential access, or data transmission is present in the evidence.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.shady-link</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/dist/frontend.js#L10423" rel="noopener noreferrer">dist/frontend.js:10423</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>An automated scanner flagged a pattern-matching expression that can be slow on unusual input. The code belongs to a standard, widely used translation library that was bundled into the build, and the patterns it handles come from the extension&#39;s own translation files rather than from users or outsiders. The evidence does not show any way for someone outside the project to feed it harmful input.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged regular expression is the ICU date-time skeleton parser inlined from the project&#39;s declared internationalization dependency (intl-messageformat and its formatjs internals) into the generated backend bundle. It parses date/time skeleton patterns that originate from the extension&#39;s own translation catalogs, not from runtime users or remote parties. The scanner&#39;s unsafe-regex heuristic flags potential super-linear backtracking on pathological inputs, but the supplied evidence shows no untrusted-input path reaching this parser; the worst theoretical outcome is a self-inflicted slowdown while formatting localized messages.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>generated</dd>
+        <dt>Source</dt><dd><a href="https://github.com/AMousePad/LumiBooks/blob/d51755e8fb10140ffac6b6394ef60bdab041ea37/dist/backend.js#L69" rel="noopener noreferrer">dist/backend.js:69</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>190 files &middot; 8987473 bytes</dd>
+      <dt>Contextual coverage</dt><dd>7 of 7 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Incomplete</dd>
+        <dt>Candidates</dt><dd>128 files &middot; 3498267 bytes</dd>
+        <dt>X-Ray review families</dt><dd>11 warning occurrences compacted to 7 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>128 raw &middot; 68 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>128 raw signatures &middot; 8 raw AST &middot; 124 raw OpenGrep &middot; 68 derived signatures &middot; 0 derived AST &middot; 68 derived OpenGrep</dd>
+      </dl>
+      <h4>Unresolved JavaScript stages</h4><ul class="limitations"><li><code>dist/backend.js</code> &mdash; derived-ast / parse</li><li><code>dist/backend.js</code> &mdash; literal-decode / derivative-limit</li><li><code>dist/backend.js</code> &mdash; normalize / parse</li><li><code>dist/backend.js</code> &mdash; raw-opengrep / parse</li><li><code>dist/frontend.js</code> &mdash; raw-opengrep / parse</li><li><code>scripts/check-lessons.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/check-locales.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/ghost-host-scenarios.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/locale-tools.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/prompt-host-scenarios.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/test-real-host.ts</code> &mdash; raw-ast / parse</li><li><code>scripts/vector-host-scenarios.ts</code> &mdash; raw-ast / parse</li><li><code>src/activation.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/activation.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/__test-exports.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/activation.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/binding.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/binding.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/book-binding.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/book-copy.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/chapter-pipeline.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/adopt.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/agent.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/backup.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/backup.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/knowledge-dedup.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/placement.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/profile-sync.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/prompt.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/relations.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/schema.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/store.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/sync-delete-retry.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/sync.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/tidy.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/token-cache.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/tokens.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/tokens.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/undo.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/codex/update-states.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/coverage-windows.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/coverage.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/diagnostics.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/diagnostics.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/fork.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/fork.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/generation-stream.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/higher-tiers.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/hooks.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/injection-ranges.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/injection-timeout.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/injection.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/lessons.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/manual-filing.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/memoria.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/pipeline.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/presets.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/prompt-breakdown.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/prompt-breakdown.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/prompt-categories.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/rebase.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/regex.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/regex.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/retry.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/runtime.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/shelf-actions.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/state.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/storage-concurrency.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/storage.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summarizer.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summarizer.ts</code> &mdash; raw-opengrep / parse</li><li><code>src/backend/summary-backup.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summary-backup.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summary-commit.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summary-matching.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summary-matching.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summary-transfer.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/summary-transfer.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/visibility.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/backend/world-book.ts</code> &mdash; raw-ast / parse</li><li><code>src/codex-tidy.ts</code> &mdash; raw-ast / parse</li><li><code>src/frontend-diagnostics.ts</code> &mdash; raw-ast / parse</li><li><code>src/i18n/index.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/i18n/index.ts</code> &mdash; raw-ast / parse</li><li><code>src/prompt-breakdown.ts</code> &mdash; raw-ast / parse</li><li><code>src/prompts/categories.ts</code> &mdash; raw-ast / parse</li><li><code>src/prompts/codex/registry.ts</code> &mdash; raw-ast / parse</li><li><code>src/prompts/fill.ts</code> &mdash; raw-ast / parse</li><li><code>src/shared.ts</code> &mdash; raw-ast / parse</li><li><code>src/summary-transfer.ts</code> &mdash; raw-ast / parse</li><li><code>src/txt.d.ts</code> &mdash; raw-ast / parse</li><li><code>src/types.ts</code> &mdash; raw-ast / parse</li><li><code>src/types.ts</code> &mdash; raw-opengrep / parse</li><li><code>src/ui/activation-control.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/app.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/codex-extra-fields.test.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/codex-extra-fields.ts</code> &mdash; raw-ast / parse</li><li><code>src/ui/codex-file-state.test.ts</code> &mdash; raw-ast / parse</li></ul>
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; completed</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; completed</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li><li>JavaScript analysis was incomplete, so this first-filter scan supports no clean conclusion about unobserved behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/AMousePad/LumiBooks/commit/d51755e8fb10140ffac6b6394ef60bdab041ea37" rel="noopener noreferrer">d51755e8fb10140ffac6b6394ef60bdab041ea37</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-11-01T09:30:06.998Z">Nov 1, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 7 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>0 deterministic / 7 contextual candidates &middot; 6 contextual / 6 total behavior cases</dd>
+        <dt>Model budget</dt><dd>3 model calls &middot; 6 / 12 fresh cases &middot; 131770 / 200000 estimated input &middot; 147507 / 250000 actual input &middot; 9328 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>3 model calls &middot; up to 3 groups and 4 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>147507 input &middot; 9328 output &middot; 0 cache read &middot; 6260 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>4e4b8502fa74bdc2864aa14347ae32eac43dafe1ba759a14e85032d0b0455f8d</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1248922425/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
