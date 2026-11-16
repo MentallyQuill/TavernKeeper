@@ -1,0 +1,685 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Advisory TavernKeeper scan report for ze-ro-soda/storybooster at commit a55705c.">
+  <meta http-equiv="Content-Security-Policy" content="default-src &#39;none&#39;; style-src &#39;unsafe-inline&#39;; img-src &#39;none&#39;; connect-src &#39;none&#39;; font-src &#39;none&#39;; media-src &#39;none&#39;; object-src &#39;none&#39;; frame-src &#39;none&#39;; base-uri &#39;none&#39;; form-action &#39;none&#39;; frame-ancestors &#39;none&#39;">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon.ico" sizes="any">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-16.png" type="image/png" sizes="16x16">
+  <link rel="apple-touch-icon" href="https://mentallyquill.github.io/TavernKeeper/assets/apple-touch-icon.png" sizes="180x180">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-192.png" type="image/png" sizes="192x192">
+  <link rel="icon" href="https://mentallyquill.github.io/TavernKeeper/assets/favicon-512.png" type="image/png" sizes="512x512">
+  <title>TavernKeeper scan report &middot; ze-ro-soda/storybooster</title>
+  <style>
+  :root {
+    color-scheme: dark;
+    --canvas: #0d1117;
+    --header: #101820;
+    --surface: #182228;
+    --surface-raised: #1c282e;
+    --border: #2b3a40;
+    --border-strong: #3e535b;
+    --text: #e6edf3;
+    --text-secondary: #a8b3ba;
+    --muted: #829099;
+    --link: #6ee7d8;
+    --link-hover: #99f6e4;
+    --focus: #5eead4;
+    --functional: #e18a24;
+    --warning: #d29922;
+    --danger: #f85149;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; }
+  html { min-width: 320px; background: var(--canvas); color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--text);
+    font-family: Inter, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:hover { color: var(--link-hover); }
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  code { overflow-wrap: anywhere; }
+  .site-header { border-bottom: 1px solid var(--border); background: var(--header); }
+  .site-header-inner,
+  .page-shell { width: min(calc(100% - 32px), 1040px); margin-inline: auto; }
+  .site-header-inner {
+    display: flex;
+    min-height: 66px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+  }
+  .brand {
+    display: grid;
+    color: var(--functional);
+    font-size: 21px;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+  }
+  .brand:hover { color: var(--functional); }
+  .brand small {
+    margin-top: 5px;
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-weight: 500;
+  }
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 16px;
+    font-size: 12px;
+  }
+  .site-nav a { color: var(--text); text-decoration: none; }
+  .site-nav a:hover { color: var(--link-hover); }
+  .page-shell { padding-block: 42px 64px; }
+  .eyebrow {
+    color: var(--functional);
+    font-size: 12px;
+    font-weight: 750;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+  h1,
+  h2,
+  h3 {
+    color: var(--text);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+  h1 { font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.035em; }
+  h2 { margin-top: 0; font-size: 1.5rem; }
+  .surface {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 24%), 0 4px 12px rgb(0 0 0 / 12%);
+  }
+  .secondary { color: var(--text-secondary); }
+  .risk-low { --risk: var(--link); }
+  .risk-material { --risk: var(--warning); }
+  .risk-high { --risk: var(--danger); }
+  .risk-mark { border-left: 4px solid var(--risk); }
+  .metadata {
+    display: grid;
+    grid-template-columns: minmax(9rem, auto) 1fr;
+    gap: 0.45rem 1rem;
+  }
+  .metadata dt { color: var(--muted); }
+  .metadata dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  details > summary { cursor: pointer; font-weight: 700; }
+  @media (max-width: 640px) {
+    .site-header-inner {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 14px;
+      padding-block: 14px;
+    }
+    .site-nav { justify-content: flex-start; }
+    .page-shell { padding-top: 28px; }
+    .metadata { grid-template-columns: 1fr; gap: 0.15rem; }
+    .metadata dd { margin-bottom: 0.65rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    input,
+    select {
+      transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    }
+  }
+
+  .report-page { width: min(calc(100% - 32px), 900px); }
+  .report-heading { margin-bottom: 24px; }
+  .report-heading .eyebrow { margin-bottom: 8px; }
+  .report-heading h1 { margin: 0; font-size: clamp(2rem, 5vw, 2.8rem); }
+  .report-heading h1 a { color: var(--text); text-decoration: none; }
+  .report-heading h1 a:hover { color: var(--link-hover); }
+  .report-identity-line { display: flex; flex-wrap: wrap; gap: 5px 14px; margin-top: 12px; color: var(--text-secondary); }
+  .assessment-summary { margin-bottom: 34px; padding: 20px; }
+  .assessment-summary h2 { margin-bottom: 8px; font-size: 1.35rem; }
+  .assessment-summary p { margin: 8px 0 0; }
+  .risk-counts { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--text-secondary); font-size: 13px; }
+  .report-section { padding-block: 28px; border-top: 1px solid var(--border); }
+  .report-section > p:first-of-type { color: var(--text-secondary); }
+  .finding { margin-top: 14px; border: 1px solid var(--border); border-left: 4px solid var(--risk); border-radius: var(--radius); padding: 18px; background: var(--surface); }
+  .finding h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .finding p { color: var(--text-secondary); }
+  .finding .label { color: var(--text); }
+  .finding details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .expected { margin-top: 16px; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; background: var(--surface); }
+  .expected > p { color: var(--text-secondary); }
+  .technical-evidence-list { margin: 14px 0 0; padding-left: 22px; }
+  .technical-evidence-list li + li { margin-top: 12px; }
+  .technical-evidence-list p { margin: 3px 0; color: var(--text-secondary); }
+  .coverage-summary { margin-bottom: 22px; }
+  .tools,
+  .limitations { color: var(--text-secondary); }
+  .technical-identity { margin-top: 28px; padding: 16px 18px; }
+  .technical-identity[open] > summary { margin-bottom: 18px; }
+  .technical-identity .metadata { margin: 0; }
+  .report-footer { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 30px; border-top: 1px solid var(--border); padding-top: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a class="brand" href="https://mentallyquill.github.io/TavernKeeper/">
+        TavernKeeper
+        <small>Advisory reports for Tavernary</small>
+      </a>
+      <nav class="site-nav" aria-label="Site navigation">
+        <a href="https://mentallyquill.github.io/TavernKeeper/#reports">Reports</a>
+        <a href="https://mentallyquill.github.io/TavernKeeper/#how-it-works">How it works</a>
+        <a href="https://tavernary.org/">Return to Tavernary</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell report-page">
+    <header class="report-heading">
+      <p class="eyebrow">TavernKeeper Scan Report</p>
+      <h1><a href="https://github.com/ze-ro-soda/storybooster" rel="noopener noreferrer">ze-ro-soda/storybooster</a></h1>
+      <p class="report-identity-line">
+        <span>Commit <a href="https://github.com/ze-ro-soda/storybooster/commit/a55705c135190b6438cfab5c00c31f81c258e52e" rel="noopener noreferrer">a55705c</a></span>
+        <span>Reviewed <time datetime="2026-11-16T17:36:58.841Z">Nov 16, 2026</time></span>
+      </p>
+    </header>
+
+    <section class="assessment-summary surface risk-mark risk-low" aria-labelledby="assessment-summary-title">
+      <h2 id="assessment-summary-title">No material or immediate-danger concern was identified in this review.</h2>
+      <p>This advisory report describes what the named tools and review process found at one exact commit. Unknown or unobserved behavior may still exist.</p>
+      <p class="risk-counts">
+        <span>0 immediate danger</span>
+        <span>0 material</span>
+        <span>45 low</span>
+      </p>
+    </section>
+
+    <section class="report-section" aria-labelledby="assessment-title">
+      <h2 id="assessment-title">What this review found</h2>
+      <p>No material or immediate-danger item was identified.</p>
+    <h3>Minor cautions</h3><article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/text.js#L33" rel="noopener noreferrer">core/text.js:33</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/features/plot.js#L581" rel="noopener noreferrer">features/plot.js:581</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/diagnostics.js#L52" rel="noopener noreferrer">core/diagnostics.js:52</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/automatic-plot-trace.js#L34" rel="noopener noreferrer">core/automatic-plot-trace.js:34</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.unsafe-regex</h3>
+    <p class="label"><strong>Minor caution</strong> &middot; medium confidence</p>
+    <p>A crafted input might briefly slow or freeze the local client, without showing broader security harm.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.unsafe-regex. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The expression may permit a local CPU slowdown, but this evidence shows no credential, persistence, code-execution, or cross-user impact.</p>
+      <p><strong>Impact:</strong> low &middot; <strong>Exploitability:</strong> plausible</p>
+      <p><strong>Developer action:</strong> Bound the input length or replace the expression when practical.</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.unsafe-regex</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/audit-run-trace.js#L103" rel="noopener noreferrer">core/audit-run-trace.js:103</a></dd>
+      </dl>
+    </details>
+  </article>
+    <details class="expected">
+      <summary>Deterministic technical evidence (34)</summary>
+      <ul class="technical-evidence-list"><li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/jev-storage.test.mjs#L16" rel="noopener noreferrer">tests/jev-storage.test.mjs:16</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/dev15-restart-status.test.mjs#L8" rel="noopener noreferrer">tests/dev15-restart-status.test.mjs:8</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L2109-L2130" rel="noopener noreferrer">tests/regression.test.mjs:2109-2130</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L263-L266" rel="noopener noreferrer">tests/regression.test.mjs:263-266</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1553-L1575" rel="noopener noreferrer">tests/regression.test.mjs:1553-1575</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L340-L351" rel="noopener noreferrer">tests/regression.test.mjs:340-351</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1852-L1860" rel="noopener noreferrer">tests/regression.test.mjs:1852-1860</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1332-L1344" rel="noopener noreferrer">tests/regression.test.mjs:1332-1344</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L48-L85" rel="noopener noreferrer">tests/regression.test.mjs:48-85</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L458-L468" rel="noopener noreferrer">tests/regression.test.mjs:458-468</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L2049-L2059" rel="noopener noreferrer">tests/regression.test.mjs:2049-2059</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L124-L128" rel="noopener noreferrer">tests/regression.test.mjs:124-128</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1464-L1468" rel="noopener noreferrer">tests/regression.test.mjs:1464-1468</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L747-L753" rel="noopener noreferrer">tests/regression.test.mjs:747-753</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L528-L533" rel="noopener noreferrer">tests/regression.test.mjs:528-533</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-stmt</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L48-L85" rel="noopener noreferrer">tests/regression.test.mjs:48-85</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1164-L1170" rel="noopener noreferrer">tests/regression.test.mjs:1164-1170</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1067-L1118" rel="noopener noreferrer">tests/regression.test.mjs:1067-1118</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.obfuscated-code</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/fixtures/storybooster-1.5.6.js#L1" rel="noopener noreferrer">tests/fixtures/storybooster-1.5.6.js:1</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.unsafe-regex</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-unsafe-regex-inert</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/fixtures/storybooster-1.5.6.js#L160" rel="noopener noreferrer">tests/fixtures/storybooster-1.5.6.js:160</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/baseline-transfer.test.mjs#L125" rel="noopener noreferrer">tests/baseline-transfer.test.mjs:125</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L206-L209" rel="noopener noreferrer">tests/regression.test.mjs:206-209</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L219-L225" rel="noopener noreferrer">tests/regression.test.mjs:219-225</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/credential-recovery.test.mjs#L20" rel="noopener noreferrer">tests/credential-recovery.test.mjs:20</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1418-L1431" rel="noopener noreferrer">tests/regression.test.mjs:1418-1431</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L309-L312" rel="noopener noreferrer">tests/regression.test.mjs:309-312</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1972-L1981" rel="noopener noreferrer">tests/regression.test.mjs:1972-1981</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L904-L918" rel="noopener noreferrer">tests/regression.test.mjs:904-918</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L428-L431" rel="noopener noreferrer">tests/regression.test.mjs:428-431</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L647-L651" rel="noopener noreferrer">tests/regression.test.mjs:647-651</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.prototype-pollution</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>The code has a known weakness, though this scan does not show that anyone can exploit it here.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-structured-weakness</code> &middot; <strong>Execution scope:</strong> runtime</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/baseline-transfer.js#L58" rel="noopener noreferrer">core/baseline-transfer.js:58</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/browser-key-storage.test.mjs#L10" rel="noopener noreferrer">tests/browser-key-storage.test.mjs:10</a></p>
+  </li>
+<li>
+    <p><strong>OpenGrep reported tavernkeeper.dynamic-execution.javascript-eval</strong> &middot; opengrep 1.26.0</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>owned-inert-tooling</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/regression.test.mjs#L1749-L1766" rel="noopener noreferrer">tests/regression.test.mjs:1749-1766</a></p>
+  </li>
+<li>
+    <p><strong>JavaScript analysis reported javascript.xray.shady-link</strong> &middot; javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</p>
+    <p>This technical signal is not part of the shipped runtime behavior.</p>
+    <p><strong>Policy reason:</strong> <code>javascript-xray-inert-content</code> &middot; <strong>Execution scope:</strong> test-documentation-data</p>
+    <p><strong>Source:</strong> <a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/tests/stability.test.mjs#L143" rel="noopener noreferrer">tests/stability.test.mjs:143</a></p>
+  </li></ul>
+    </details>
+    <details class="expected">
+      <summary>Contextual expected matches (6)</summary>
+      <article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.prototype-pollution</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>The code actually blocks the dangerous key names the scanner is worried about when reading an imported file, and it carefully checks the file&#39;s size, structure, and contents before saving anything. This is protective coding, not a flaw.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.prototype-pollution. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.prototype-pollution</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/plot-shelf-transfer.js#L32" rel="noopener noreferrer">core/plot-shelf-transfer.js:32</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file builds the extension&#39;s settings popup and matches the advertised features. The code is clearly readable, and the scanner&#39;s obfuscation warning does not correspond to anything actually present; it looks like a false positive.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The supplied text source for this popup module is readable ES-module JavaScript that builds the extension&#39;s settings interface. Its imports match the project&#39;s stated purpose (genre, character, and plot boosters plus the optional Jev connection UI). Interpolated values in the shown sections are either internal constants, numeric or boolean-derived labels, or routed through the extension&#39;s HTML-escaping helper. No encoded strings, dynamic evaluation, concealed execution, credential exposure, or obfuscation appear in the supplied context. The low-confidence obfuscation signal is not supported by the code and is plausibly triggered by file size, dense template literals, and non-English UI text.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/ui/popup.js#L1" rel="noopener noreferrer">ui/popup.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is normal, readable code that manages saved character profiles and asks the AI model for structured updates. Nothing is hidden or disguised, despite the scanner&#39;s low-confidence guess.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/features/character.js#L1" rel="noopener noreferrer">features/character.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file draws the extension&#39;s status and results panels. It is ordinary, human-readable code that matches the project&#39;s advertised features. The automated &#39;obfuscated code&#39; warning appears to be a false alarm, and nothing hidden or harmful is present in the supplied evidence.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/ui/panels.js#L1" rel="noopener noreferrer">ui/panels.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This file is just a list of named settings and text templates written in ordinary, human-readable code. There is nothing hidden or disguised in it, despite the automated scanner&#39;s guess.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> The flagged file is a constants module containing plain readable declarations: a module identifier, version string, prompt keys, numeric thresholds, frozen configuration objects, and genre definitions with Korean labels and emoji. There is no encoded payload, string obfuscation, dynamic evaluation, network access, or concealed execution. The scanner signal is a false positive, most plausibly triggered by the high density of non-ASCII string literals, and its own confidence is low. Nothing in the supplied code indicates any attempt to hide behavior.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/core/constants.js#L1" rel="noopener noreferrer">core/constants.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+<article class="finding risk-low">
+    <h3>JavaScript analysis reported javascript.xray.obfuscated-code</h3>
+    <p class="label"><strong>Expected behavior</strong> &middot; high confidence</p>
+    <p>This is ordinary, readable code that runs the extension&#39;s diagnostic feature: it builds instructions for the AI model and shows on-screen messages. Nothing is hidden or disguised, despite the scanner&#39;s low-confidence guess.</p>
+    <details>
+      <summary>Technical evidence</summary>
+      <p><strong>Scanner reason:</strong> JavaScript analysis matched static JavaScript security signal javascript.xray.obfuscated-code. The match applies to this repository.</p>
+      <p><strong>Contextual assessment:</strong> Detailed technical wording was omitted by the public report safety filter.</p>
+      <p><strong>Impact:</strong> none &middot; <strong>Exploitability:</strong> unlikely</p>
+      <p><strong>Developer action:</strong> none</p>
+      <dl>
+        <dt>Scanner</dt><dd>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1</dd>
+        <dt>Rule</dt><dd>javascript.xray.obfuscated-code</dd>
+        <dt>File role</dt><dd>production</dd>
+        <dt>Source</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/blob/a55705c135190b6438cfab5c00c31f81c258e52e/features/audit.js#L1" rel="noopener noreferrer">features/audit.js:1</a></dd>
+      </dl>
+    </details>
+  </article>
+    </details>
+    </section>
+
+    
+
+    <section class="report-section" aria-labelledby="coverage-title">
+      <h2 id="coverage-title">Coverage and limitations</h2>
+      <dl class="metadata coverage-summary">
+      <dt>Inventory</dt><dd>103 files &middot; 2335262 bytes</dd>
+      <dt>Contextual coverage</dt><dd>45 of 45 candidates assessed</dd>
+      </dl>
+      <h3>JavaScript coverage</h3>
+      <dl class="metadata coverage-summary">
+        <dt>Status</dt><dd>Complete</dd>
+        <dt>Candidates</dt><dd>93 files &middot; 2026470 bytes</dd>
+        <dt>X-Ray review families</dt><dd>51 warning occurrences compacted to 21 evidence-preserving review families</dd>
+        <dt>Representations</dt><dd>93 raw &middot; 3 decoded &middot; 0 normalized &middot; 0 bundle modules</dd>
+        <dt>Stage scans</dt><dd>93 raw signatures &middot; 93 raw AST &middot; 93 raw OpenGrep &middot; 3 derived signatures &middot; 0 derived AST &middot; 3 derived OpenGrep</dd>
+      </dl>
+      
+      <h3>Tools</h3>
+      <ul class="tools"><li>inventory 0.1.0 &mdash; completed</li><li>tavernkeeper-static 5 &mdash; completed</li><li>gitleaks 8.30.1 &mdash; completed</li><li>opengrep 1.26.0 &mdash; completed</li><li>javascript-analysis webcrack-2.16.0_js-x-ray-16.0.0_signatures-1_literals-1_families-1 &mdash; completed</li><li>osv-scanner 2.4.0 &mdash; not-applicable</li><li>zizmor 1.28.0 &mdash; not-applicable</li><li>malcontent 1.25.7 &mdash; not-applicable</li></ul>
+      <h3>Limitations</h3>
+      <ul class="limitations"><li>This advisory review cannot prove the absence of unknown behavior.</li></ul>
+    </section>
+
+    <details class="technical-identity surface">
+      <summary>Technical scan identity</summary>
+      <dl class="metadata">
+        <dt>Full commit</dt><dd><a href="https://github.com/ze-ro-soda/storybooster/commit/a55705c135190b6438cfab5c00c31f81c258e52e" rel="noopener noreferrer">a55705c135190b6438cfab5c00c31f81c258e52e</a></dd>
+        <dt>Completed</dt><dd><time datetime="2026-11-16T17:36:58.841Z">Nov 16, 2026</time></dd>
+        <dt>History depth</dt><dd>20 commits</dd>
+        <dt>Method</dt><dd>Deterministic evidence with contextual review</dd>
+        <dt>Reviewer</dt><dd>nano-gpt.com &middot; zai-org/glm-latest</dd>
+        <dt>Scanner</dt><dd>0.1.0</dd>
+        <dt>Scanner policy</dt><dd>5</dd>
+        <dt>Rule catalog</dt><dd>2</dd>
+        <dt>Contextual policy</dt><dd>5</dd>
+        <dt>Ecosystem context</dt><dd>sillytavern-community-v1</dd>
+        <dt>Prompt</dt><dd>contextual-review-v7</dd>
+        <dt>Assessment schema</dt><dd>contextual-assessment-v2</dd>
+        <dt>Review provenance</dt><dd>6 fresh / 0 reused groups &middot; 6 fresh / 0 reused candidates</dd>
+        <dt>Review source reports</dt><dd>none</dd>
+        <dt>Evidence triage</dt><dd>39 deterministic / 6 contextual candidates &middot; 6 contextual / 32 total behavior cases</dd>
+        <dt>Model budget</dt><dd>2 model calls &middot; 6 / 12 fresh cases &middot; 101063 / 200000 estimated input &middot; 72050 / 250000 actual input &middot; 6223 / 40000 output tokens</dd>
+        <dt>Review batching</dt><dd>2 model calls &middot; up to 4 groups and 4 candidates per call &middot; 0 retry calls &middot; 0 over-budget singleton calls</dd>
+        <dt>Review usage</dt><dd>72050 input &middot; 6223 output &middot; 0 cache read &middot; 4024 reasoning tokens</dd>
+        <dt>Report</dt><dd><code>2969b64d4cca9ee31095f0274d127169e10f3fea1ab557aeb97f351c884830ce</code></dd>
+      </dl>
+    </details>
+
+    <footer class="report-footer">
+      <a href="https://mentallyquill.github.io/TavernKeeper/reports/github/1312817198/history/" rel="noopener noreferrer">View scan history</a>
+      <a href="https://mentallyquill.github.io/TavernKeeper/" rel="noopener noreferrer">Browse reports</a>
+      <a href="https://tavernary.org/" rel="noopener noreferrer">Return to Tavernary</a>
+    </footer>
+  </main>
+</body>
+</html>
